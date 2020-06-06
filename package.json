@@ -1,0 +1,25 @@
+{
+  "name": "@flamingo/core",
+  "version": "0.0.1",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "types": "./build/typings/index.d.ts",
+  "devDependencies": {
+    "@types/express": "^4.17.6",
+    "@types/mongodb": "^3.5.20",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.5"
+  },
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,ts,css}'",
+    "server:build": "tsc --p tsconfig.json",
+    "server:watch": "tsc --watch --p tsconfig.json"
+  },
+  "dependencies": {
+    "@types/dotenv": "^8.2.0",
+    "consola": "^2.12.2",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongodb": "^3.5.8"
+  }
+}
