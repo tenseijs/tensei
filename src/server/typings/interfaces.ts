@@ -2,6 +2,8 @@ import { Application } from 'express'
 
 export interface FlamingoServiceProviderInterface {
   db: DatabaseRepository | null
+
+  app: Application
   /**
    * This function should return an instance of the express application.
    * In case the user needs to pass in a custom express app,
@@ -24,7 +26,11 @@ export interface Config {
   port: string | number
 }
 
-export interface Resource {}
+export interface Asset {
+  name: string
+  path: string
+}
 
+export interface Resource {}
 
 export interface DatabaseRepository {}

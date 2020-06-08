@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Flamingo</title>
+    {{#styles}}
+        <link media="all" href="/{{name}}" rel="stylesheet" />
+    {{/styles}}
+</head>
+<body>
+    <div id="app"></div>
+
+    {{#scripts}}
+        <script src='/{{name}}'></script>
+    {{/scripts}}
+</body>
+</html>

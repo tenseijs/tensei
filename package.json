@@ -5,21 +5,38 @@
   "license": "MIT",
   "types": "./build/typings/index.d.ts",
   "devDependencies": {
+    "@babel/preset-react": "^7.10.1",
     "@types/express": "^4.17.6",
     "@types/mongodb": "^3.5.20",
+    "laravel-mix": "^5.0.4",
     "prettier": "^2.0.5",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "ts-loader": "^7.0.5",
     "typescript": "^3.9.5"
   },
   "scripts": {
     "prettier": "prettier --write './**/*.{js,ts,css}'",
-    "server:build": "tsc --p tsconfig.json",
-    "server:watch": "tsc --watch --p tsconfig.json"
+    "server:build": "tsc --p tsconfig.json && yarn copy:index-mustache",
+    "server:watch": "tsc --watch --p tsconfig.json",
+    "copy:index-mustache": "cp src/server/index.mustache build/index.mustache",
+    "client:watch": "NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+    "client:build": "NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "dependencies": {
+    "@types/app-root-path": "^1.2.4",
+    "@types/body-parser": "^1.19.0",
     "@types/dotenv": "^8.2.0",
+    "@types/mustache": "^4.0.1",
+    "@types/react": "^16.9.35",
+    "@types/react-dom": "^16.9.8",
+    "app-root-path": "^3.0.0",
+    "body-parser": "^1.19.0",
     "consola": "^2.12.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "mongodb": "^3.5.8"
+    "mongodb": "^3.5.8",
+    "mustache": "^4.0.1",
+    "shx": "^0.3.2"
   }
 }

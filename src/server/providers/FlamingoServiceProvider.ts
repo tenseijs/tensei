@@ -3,7 +3,7 @@ import Path from 'path'
 import Dotenv from 'dotenv'
 import Express from 'express'
 import Mongodb from 'mongodb'
-import Consola from 'consola'
+import BodyParser from 'body-parser'
 import {
   Config,
   Resource,
@@ -40,21 +40,23 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
 
     await this.registerResources()
 
-    await this.registerServer()
+    this.registerMiddleware()
+
+    await this.registerRoutes()
 
     this.db = await this.establishDatabaseConnection()
   }
 
   public registerEnvironmentVariables() {
     Dotenv.config({
-      path: Path.resolve(this.$root, '.env')
+      path: Path.resolve(this.$root, '.env'),
     })
 
     this.registerConfig()
   }
 
-  public async registerServer() {
-    // this.app.use()
+  public registerMiddleware() {
+    this.app.use(BodyParser.json())
   }
 
   public async registerRoutes() {
@@ -79,9 +81,9 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
       .filter((file) => file.substring(file.length - 3) === '.js')
 
       .map((file) => {
-        const Resource = require(Path.resolve(resourcesPath, file)).default
+        const Resource = require(Path.resolve(resourcesPath, file))
 
-        return new Resource()
+        return Resource.default ? new Resource.default() : new Resource()
       })
   }
 
@@ -96,10 +98,10 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
     return new DatabaseRepository(client.db())
   }
 
-  private registerConfig () {
+  private registerConfig() {
     this.config = {
       databaseUri: process.env.DATABASE_URI || 'mongodb://localhost/flamingo',
-      port: process.env.PORT || 1377
+      port: process.env.PORT || 1377,
     }
   }
 }
