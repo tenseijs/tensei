@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`The login endpoint returns validation errors if user is not found 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "These credentials do not match our records.",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`The login endpoint validates the data before processing the login 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "The email is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "password",
+      "message": "The password is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;

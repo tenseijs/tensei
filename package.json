@@ -9,12 +9,18 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.10.1",
+    "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",
+    "@babel/preset-typescript": "^7.10.1",
+    "@types/jest": "^25.2.3",
+    "@types/supertest": "^2.0.9",
+    "jest": "^26.0.1",
     "laravel-mix": "^5.0.4",
     "laravel-mix-bundle-analyzer": "^1.0.5",
     "prettier": "^2.0.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "supertest": "^4.0.2",
     "tailwindcss": "^1.4.6",
     "ts-loader": "^7.0.5",
     "typescript": "^3.9.5"
@@ -23,6 +29,7 @@
     "prettier": "prettier --write './**/*.{js,ts,css}'",
     "server:build": "tsc --p tsconfig.json && yarn copy:index-mustache",
     "server:watch": "tsc --watch --p tsconfig.json",
+    "test": "jest --verbose",
     "copy:index-mustache": "cp src/server/index.mustache build/server/index.mustache",
     "client:watch": "NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
     "client:build": "NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"

@@ -42,7 +42,7 @@ class LoginController {
         request.session!.user = user
 
         response.status(200).json({
-            user,
+            message: 'Login successful.'
         })
     }
 
