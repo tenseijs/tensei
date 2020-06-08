@@ -4,17 +4,22 @@ import Dotenv from 'dotenv'
 import Express from 'express'
 import Mongodb from 'mongodb'
 import BodyParser from 'body-parser'
+import ConnectMongo from 'connect-mongo'
+import ExpressSession, { Store } from 'express-session'
 import {
   Config,
   Resource,
   FlamingoServiceProviderInterface,
 } from './../typings/interfaces'
 import ClientController from '../controllers/ClientController'
+import LoginController from '../controllers/auth/LoginController'
 
 import DatabaseRepository from '../database/Repository'
 
 class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
   public app: Express.Application = Express()
+
+  public client: Mongodb.MongoClient | null = null
 
   public router: Express.Router = Express.Router()
 
@@ -40,11 +45,11 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
 
     await this.registerResources()
 
+    this.db = await this.establishDatabaseConnection()
+
     this.registerMiddleware()
 
     await this.registerRoutes()
-
-    this.db = await this.establishDatabaseConnection()
   }
 
   public registerEnvironmentVariables() {
@@ -57,10 +62,25 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
 
   public registerMiddleware() {
     this.app.use(BodyParser.json())
+
+    const Store = ConnectMongo(ExpressSession)
+
+    this.app.use(
+      ExpressSession({
+        secret: this.config?.sessionSecret!,
+        store: new Store({
+          client: this.client!,
+        }),
+        resave: false,
+        saveUninitialized: false,
+      })
+    )
   }
 
   public async registerRoutes() {
     this.registerAuthRoutes()
+
+    this.router.get('*', ClientController.index)
 
     this.app.use(this.router)
   }
@@ -70,7 +90,7 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
   }
 
   public registerAuthRoutes() {
-    this.router.get('*', ClientController.index)
+    this.router.post('/api/login', LoginController.store)
   }
 
   public async registerResources() {
@@ -88,20 +108,21 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
   }
 
   public async establishDatabaseConnection() {
-    const client = new Mongodb.MongoClient(process.env.DATABASE_URI as string, {
+    this.client = new Mongodb.MongoClient(process.env.DATABASE_URI as string, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
 
-    await client.connect()
+    await this.client.connect()
 
-    return new DatabaseRepository(client.db())
+    return new DatabaseRepository(this.client.db())
   }
 
   private registerConfig() {
     this.config = {
-      databaseUri: process.env.DATABASE_URI || 'mongodb://localhost/flamingo',
       port: process.env.PORT || 1377,
+      sessionSecret: process.env.SESSION_SECRET || 'test-session-secret',
+      databaseUri: process.env.DATABASE_URI || 'mongodb://localhost/flamingo',
     }
   }
 }

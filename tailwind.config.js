@@ -4,7 +4,11 @@ module.exports = {
     content: ['src/client/**/*.js'],
   },
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'blue-primary': '#0078D4',
+      },
+    },
   },
   variants: {},
   plugins: [],

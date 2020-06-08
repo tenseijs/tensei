@@ -12,6 +12,11 @@
 <body>
     <div id="app"></div>
 
+    <script>
+        window.Flamingo = {
+            user: '{{user}}'
+        }
+    </script>
     {{#scripts}}
         <script src='/{{name}}'></script>
     {{/scripts}}

@@ -11,8 +11,9 @@ class ClientController {
   public index(request: Express.Request, response: Express.Response) {
     response.send(
       Mustache.render(indexFileContent, {
-        scripts: request.scripts,
         styles: request.styles,
+        scripts: request.scripts,
+        user: request.session ? JSON.stringify(request.session.user) : null,
       })
     )
   }

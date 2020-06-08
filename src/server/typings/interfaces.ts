@@ -24,6 +24,7 @@ export interface FlamingoServiceProviderInterface {
 export interface Config {
   databaseUri: string
   port: string | number
+  sessionSecret: string
 }
 
 export interface Asset {

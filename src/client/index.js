@@ -1,9 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Wrapper from './components/Wrapper'
+import { initializeIcons } from '@uifabric/icons'
 
-ReactDOM.render(
-  <div>
-    <h1>HELLO WORLD RIGHT HERE</h1>
-  </div>,
-  document.getElementById('app')
-)
+initializeIcons()
+
+ReactDOM.render(<Wrapper />, document.getElementById('app'))
