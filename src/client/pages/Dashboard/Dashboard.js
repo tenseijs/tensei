@@ -1,14 +1,12 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
 
-class DashboardPage extends React.Component {
-  render() {
-    if (true) {
-      return <Redirect to="/auth/login" />
-    }
+import { mustBeAuthenticated } from '../../store/auth'
 
-    return <div>this is the dashboard</div>
-  }
+class DashboardPage extends React.Component {
+    render() {
+        return <div>this is the dashboard</div>
+    }
 }
 
-export default DashboardPage
+export default mustBeAuthenticated(DashboardPage)

@@ -1,9 +1,12 @@
 {
   "name": "@flamingo/core",
   "version": "0.0.1",
-  "main": "./build/index.js",
+  "main": "./build/server/index.js",
   "license": "MIT",
   "types": "./build/typings/index.d.ts",
+  "bin": {
+    "flamingo": "build/cli/index.js"
+  },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.10.1",
     "@babel/preset-react": "^7.10.1",
@@ -20,13 +23,15 @@
     "prettier": "prettier --write './**/*.{js,ts,css}'",
     "server:build": "tsc --p tsconfig.json && yarn copy:index-mustache",
     "server:watch": "tsc --watch --p tsconfig.json",
-    "copy:index-mustache": "cp src/server/index.mustache build/index.mustache",
+    "copy:index-mustache": "cp src/server/index.mustache build/server/index.mustache",
     "client:watch": "NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
     "client:build": "NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "dependencies": {
     "@fluentui/react": "^7.117.3",
+    "@types/bcryptjs": "^2.4.2",
     "@types/body-parser": "^1.19.0",
+    "@types/commander": "^2.12.2",
     "@types/connect-mongo": "^3.1.3",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.6",
@@ -35,9 +40,12 @@
     "@types/mustache": "^4.0.1",
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@types/readline-sync": "^1.4.3",
     "@uifabric/icons": "^7.3.48",
     "axios": "^0.19.2",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "commander": "^5.1.0",
     "connect-mongo": "^3.2.0",
     "consola": "^2.12.2",
     "dotenv": "^8.2.0",
@@ -46,6 +54,7 @@
     "indicative": "^7.4.4",
     "mongodb": "^3.5.8",
     "mustache": "^4.0.1",
-    "react-router-dom": "^5.2.0"
+    "react-router-dom": "^5.2.0",
+    "readline-sync": "^1.4.10"
   }
 }
