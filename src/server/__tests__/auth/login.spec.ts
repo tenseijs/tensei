@@ -2,10 +2,9 @@ import Bcrypt from 'bcryptjs'
 import Supertest from 'supertest'
 import FlamingoServiceProvider from '../../providers/FlamingoServiceProvider'
 
-
 describe('The login endpoint', () => {
     const setup = async () => {
-        let instance = (new FlamingoServiceProvider(__dirname))
+        let instance = new FlamingoServiceProvider(__dirname)
 
         await instance.register()
 
@@ -32,7 +31,7 @@ describe('The login endpoint', () => {
 
         const response = await client.post('/api/login').send({
             email: 'hey@unknown-user.io',
-            password:'password'
+            password: 'password',
         })
 
         expect(response.status).toBe(422)
@@ -50,19 +49,19 @@ describe('The login endpoint', () => {
         const testPassword = 'password'
         const testLastName = 'Flamingo'
         const testEmail = 'hey@flamingo.io'
-        
+
         const client = Supertest(instance.app)
 
         await instance.db?.admin().insertOne({
             email: testEmail,
             password: Bcrypt.hashSync(testPassword),
             firstName: testFirstName,
-            lastName: testLastName
+            lastName: testLastName,
         })
 
         const response = await client.post('/api/login').send({
             email: testEmail,
-            password: testPassword
+            password: testPassword,
         })
 
         expect(response.status).toBe(200)

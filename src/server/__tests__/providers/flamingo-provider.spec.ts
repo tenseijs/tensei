@@ -18,7 +18,7 @@ describe('The flamingo service provider', () => {
         expect(instance.config).toEqual({
             port: TEST_PORT,
             databaseUri: TEST_DATABASE_URI,
-            sessionSecret: TEST_SESSION_SECRET
+            sessionSecret: TEST_SESSION_SECRET,
         })
     })
 
@@ -29,7 +29,9 @@ describe('The flamingo service provider', () => {
     })
 
     it('can correctly load all resources', () => {
-        const instance = new FlamingoProvider(Path.resolve(process.env.PWD!, 'src/server/__tests__'))
+        const instance = new FlamingoProvider(
+            Path.resolve(process.env.PWD!, 'src/server/__tests__')
+        )
 
         instance.registerResources()
 
@@ -45,7 +47,9 @@ describe('The flamingo service provider', () => {
     })
 
     it('correctly establishes a database connection', async () => {
-        const instance = new FlamingoProvider(Path.resolve(process.env.PWD!, 'src/server/__tests__'))
+        const instance = new FlamingoProvider(
+            Path.resolve(process.env.PWD!, 'src/server/__tests__')
+        )
 
         const TEST_DATABASE_URI = 'mongodb://localhost/flamingo-testdb'
 
