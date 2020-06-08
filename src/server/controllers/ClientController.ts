@@ -12,7 +12,7 @@ class ClientController {
     response.send(
       Mustache.render(indexFileContent, {
         scripts: request.scripts,
-        styles: request.styles
+        styles: request.styles,
       })
     )
   }

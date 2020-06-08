@@ -7,15 +7,19 @@ import FlamingoServiceProvider from './providers/FlamingoServiceProvider'
 class Flamingo {
   private $serviceProvider: FlamingoServiceProviderInterface
 
-  public scripts: Asset[] = [{
-    name: 'flamingo.js',
-    path: Path.join(__dirname, '..', 'build', 'client', 'index.js')
-  }]
+  public scripts: Asset[] = [
+    {
+      name: 'flamingo.js',
+      path: Path.join(__dirname, '..', 'build', 'client', 'index.js'),
+    },
+  ]
 
-  public styles: Asset[] = [{
-    name: 'flamingo.css',
-    path: Path.join(__dirname, '..', 'build', 'client', 'index.css')
-  }]
+  public styles: Asset[] = [
+    {
+      name: 'flamingo.css',
+      path: Path.join(__dirname, '..', 'build', 'client', 'index.css'),
+    },
+  ]
 
   /**
    * A service provider is a class used to define all configurations
@@ -41,32 +45,36 @@ class Flamingo {
   }
 
   public registerAssetsRoutes() {
-    this.$serviceProvider.app.use((request: Express.Request, response: Express.Response, next: Express.NextFunction) => {
-      request.scripts = this.scripts
-      request.styles = this.styles
+    this.$serviceProvider.app.use(
+      (
+        request: Express.Request,
+        response: Express.Response,
+        next: Express.NextFunction
+      ) => {
+        request.scripts = this.scripts
+        request.styles = this.styles
 
-      next()
-    })
+        next()
+      }
+    )
 
-    this.scripts.concat(this.styles).forEach(asset => {
-      this.$serviceProvider.app.get(`/${asset.name}`, (request: Express.Request, response: Express.Response) => response.sendFile(asset.path))
+    this.scripts.concat(this.styles).forEach((asset) => {
+      this.$serviceProvider.app.get(
+        `/${asset.name}`,
+        (request: Express.Request, response: Express.Response) =>
+          response.sendFile(asset.path)
+      )
     })
   }
 
   public script(script: Asset) {
-    this.scripts = [
-      ...this.scripts,
-      script
-    ]
+    this.scripts = [...this.scripts, script]
 
     return this
   }
 
   public style(style: Asset) {
-    this.styles = [
-      ...this.styles,
-      style
-    ]
+    this.styles = [...this.styles, style]
 
     return this
   }
