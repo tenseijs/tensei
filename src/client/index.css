@@ -1,5 +1,7 @@
-* {
-  font-family: 'IBM Plex Mono';
-  margin: 0;
-  padding: 0;
-}
+@tailwind base;
+
+@tailwind components;
+
+/* Start purging... */
+@tailwind utilities;
+/* Stop purging. */
