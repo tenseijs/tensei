@@ -9,7 +9,7 @@ class Password extends Text {
     public htmlAttributes(attributes: {}) {
         this.attributes = {
             ...attributes,
-            type: 'password'
+            type: 'password',
         }
 
         return this

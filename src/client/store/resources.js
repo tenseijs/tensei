@@ -1,14 +1,16 @@
 import React from 'react'
 
 const Resources = React.createContext({
-    resources: []
+    resources: [],
 })
 
 export const withResources = (Component) => {
-    const WithResourcesComponent = props => {
+    const WithResourcesComponent = (props) => {
         return (
             <Resources.Consumer>
-                {(value) => <Component resources={value.resources} {...props}   />}
+                {(value) => (
+                    <Component resources={value.resources} {...props} />
+                )}
             </Resources.Consumer>
         )
     }

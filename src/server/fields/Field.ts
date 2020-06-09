@@ -48,16 +48,16 @@ class Field {
     public type: string = `${this.constructor.name}Field`
 
     /**
-     * 
+     *
      * This is a set of all html attributes to be passed
      * to this component
-     * 
+     *
      */
     public attributes: {} = {}
 
     /**
-     * 
-     * This is a short name for the frontend component that 
+     *
+     * This is a short name for the frontend component that
      * will be mounted for this field.
      */
     public component: string = `${paramCase(this.constructor.name)}-field`
@@ -289,7 +289,7 @@ class Field {
     }
 
     /**
-     * 
+     *
      * Set html attributes for this component
      */
     public htmlAttributes(attributes: {}) {

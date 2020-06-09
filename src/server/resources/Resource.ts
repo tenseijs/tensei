@@ -70,16 +70,12 @@ class Resource {
     }
 
     /**
-     * 
+     *
      * This will be used as the route param for
      * /resources/:param or /resuces/param
      */
     private param(): string {
-        return Pluralize(
-            paramCase(
-                this.name()
-            )
-        )
+        return Pluralize(paramCase(this.name()))
     }
 
     /**

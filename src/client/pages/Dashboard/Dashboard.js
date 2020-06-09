@@ -27,7 +27,7 @@ class DashboardPage extends React.Component {
                     style={{ height: 'calc(100vh - 3rem)' }}
                     className="flex flex-wrap h-screen"
                 >
-                    <div className="w-full md:w-1/6 bg-dark-primary h-full py-5 px-6">
+                    <div className="w-full md:w-1/7 bg-dark-primary h-full py-5 px-6">
                         <span className="flex items-center text-white text-sm uppercase opacity-75">
                             <svg
                                 className="stroke-current fill-current text-white w-5 h-5 mr-3"
@@ -92,7 +92,7 @@ class DashboardPage extends React.Component {
                         </span>
 
                         <div className="flex flex-col pl-8">
-                            {this.props.resources.map(resource => (
+                            {this.props.resources.map((resource) => (
                                 <Link
                                     key={resource.collection}
                                     to={`/resources/${resource.collection}`}
@@ -103,8 +103,13 @@ class DashboardPage extends React.Component {
                             ))}
                         </div>
                     </div>
-                    <div className="w-full md:w-5/6 bg-gray-100 h-full">
-                        <Route path='/resources/:resource' component={ResourceIndex} />
+                    <div className="w-full md:w-6/7 h-full">
+                        <div className="py-4 px-3 md:py-10 md:px-12">
+                            <Route
+                                path="/resources/:resource"
+                                component={ResourceIndex}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

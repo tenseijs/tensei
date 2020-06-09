@@ -17,7 +17,7 @@ class Wrapper extends React.Component {
 
         return {
             user,
-            resources
+            resources,
         }
     })()
 
@@ -31,9 +31,11 @@ class Wrapper extends React.Component {
         return (
             <BrowserRouter>
                 <Auth.Provider value={[this.state.user, this.setUser]}>
-                    <Resources.Provider value={{
-                        resources: this.state.resources
-                    }}>
+                    <Resources.Provider
+                        value={{
+                            resources: this.state.resources,
+                        }}
+                    >
                         <Route path="/" component={DashboardPage} />
                         <Route path="/auth/login" component={LoginPage} />
                     </Resources.Provider>

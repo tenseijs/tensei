@@ -5,12 +5,12 @@ class NumberField extends Text {
      * Set the min value for this number field.
      * Will be the min on the number in
      * forms
-     * 
+     *
      */
     public min(min: number) {
         this.attributes = {
             ...this.attributes,
-            min
+            min,
         }
 
         return this
@@ -20,12 +20,12 @@ class NumberField extends Text {
      * Set the max value for this number field.
      * Will be the max on the number in
      * forms
-     * 
+     *
      */
     public max(max: number) {
         this.attributes = {
             ...this.attributes,
-            max
+            max,
         }
 
         return this

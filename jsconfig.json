@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "pages": ["./src/client/pages"],
+        "store": ["./src/client/store"],
+        "helpers": ["./src/client/helpers"],
+        "components": ["./src/client/components"]
+      }
+    }
+  }

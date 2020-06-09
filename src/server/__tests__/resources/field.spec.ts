@@ -18,7 +18,7 @@ describe('The Field', () => {
             name: 'First name',
             attributes: {},
             prefix: '',
-            suffix: ''
+            suffix: '',
         })
     })
 
@@ -46,7 +46,7 @@ describe('The Field', () => {
             name: 'Email',
             attributes: {},
             prefix: '',
-            suffix: ''
+            suffix: '',
         })
     })
 
@@ -54,11 +54,11 @@ describe('The Field', () => {
         const textField = new Text('Last name')
 
         textField.htmlAttributes({
-            placeholder: 'Enter your last name here'
+            placeholder: 'Enter your last name here',
         })
 
         expect(textField.serialize().attributes).toEqual({
-            placeholder: 'Enter your last name here'
+            placeholder: 'Enter your last name here',
         })
     })
 })
