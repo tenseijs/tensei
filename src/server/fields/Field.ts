@@ -1,4 +1,5 @@
-import { camelCase } from 'change-case'
+import { Request } from 'express'
+import { camelCase, paramCase } from 'change-case'
 
 class Field {
     public showHideField = {
@@ -41,9 +42,25 @@ class Field {
 
     /**
      *
-     * The field type
+     * The field type. For example TextField,
+     * PlaceField, IDField
      */
-    public type: string = ''
+    public type: string = `${this.constructor.name}Field`
+
+    /**
+     * 
+     * This is a set of all html attributes to be passed
+     * to this component
+     * 
+     */
+    public attributes: {} = {}
+
+    /**
+     * 
+     * This is a short name for the frontend component that 
+     * will be mounted for this field.
+     */
+    public component: string = `${paramCase(this.constructor.name)}-field`
 
     /**
      *
@@ -272,6 +289,16 @@ class Field {
     }
 
     /**
+     * 
+     * Set html attributes for this component
+     */
+    public htmlAttributes(attributes: {}) {
+        this.attributes = attributes
+
+        return this
+    }
+
+    /**
      *
      * Serializes the field for data to be sent
      * to the frontend
@@ -282,7 +309,10 @@ class Field {
             ...this.showHideField,
 
             name: this.name,
+            type: this.type,
+            component: this.component,
             isSortable: this.isSortable,
+            attributes: this.attributes,
             defaultValue: this.defaultValue,
             databaseField: this.databaseField,
         }

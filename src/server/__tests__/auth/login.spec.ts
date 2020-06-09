@@ -1,10 +1,15 @@
+import Path from 'path'
 import Bcrypt from 'bcryptjs'
 import Supertest from 'supertest'
 import FlamingoServiceProvider from '../../providers/FlamingoServiceProvider'
 
 describe('The login endpoint', () => {
+    process.env.DATABASE_URI = 'mongodb://localhost/flamingo-testdb'
+
     const setup = async () => {
-        let instance = new FlamingoServiceProvider(__dirname)
+        let instance = new FlamingoServiceProvider(
+            Path.resolve(__dirname, '..', '..')
+        )
 
         await instance.register()
 
