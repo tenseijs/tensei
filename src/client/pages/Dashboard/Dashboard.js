@@ -1,8 +1,10 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { Icon } from '@fluentui/react/lib/Icon'
+import { Link, Route } from 'react-router-dom'
 import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox'
 
+import ResourceIndex from '../ResourceIndex'
+
+import { withResources } from '../../store/resources'
 import { mustBeAuthenticated } from '../../store/auth'
 
 class DashboardPage extends React.Component {
@@ -90,37 +92,24 @@ class DashboardPage extends React.Component {
                         </span>
 
                         <div className="flex flex-col pl-8">
-                            <Link
-                                to="/"
-                                className="text-white my-3 hover:opacity-75 transition duration-100 inline-block"
-                            >
-                                Posts
-                            </Link>
-                            <Link
-                                to="/"
-                                className="text-white hover:opacity-75 transition duration-100 inline-block"
-                            >
-                                Users
-                            </Link>
+                            {this.props.resources.map(resource => (
+                                <Link
+                                    key={resource.collection}
+                                    to={`/resources/${resource.collection}`}
+                                    className="text-white hover:opacity-75 transition duration-100 mt-4 inline-block"
+                                >
+                                    {resource.label}
+                                </Link>
+                            ))}
                         </div>
                     </div>
-                    <div className="w-full md:w-5/6 bg-gray-100 h-full"></div>
-                </div>
-                {/* <div className="w-1/6 h-screen">
-                    <div className="w-full h-12 bg-blue-500">
-
-                    </div>
-                    <div className="w-full bg-dark-primary" style={{ height: `calc(100vh - 3rem)` }}>
-
+                    <div className="w-full md:w-5/6 bg-gray-100 h-full">
+                        <Route path='/resources/:resource' component={ResourceIndex} />
                     </div>
                 </div>
-
-                <div className="w-5/6">
-
-                </div> */}
             </div>
         )
     }
 }
 
-export default mustBeAuthenticated(DashboardPage)
+export default withResources(mustBeAuthenticated(DashboardPage))

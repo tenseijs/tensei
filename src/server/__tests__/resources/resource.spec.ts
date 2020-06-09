@@ -36,6 +36,7 @@ describe('Resource class', () => {
             displayInNavigation: true,
             group: 'All',
             primaryKey: '_id',
+            param: 'posts',
             perPageOptions: [10, 25, 50, 100],
             name: 'Post',
         })
@@ -52,6 +53,7 @@ describe('Resource class', () => {
             primaryKey: 'id',
             perPageOptions: [100, 250, 500],
             name: 'User',
+            param: 'users',
         })
     })
 
@@ -64,6 +66,7 @@ describe('Resource class', () => {
             displayInNavigation: true,
             group: 'All',
             primaryKey: '_id',
+            param: 'shopping-carts',
             perPageOptions: [10, 25, 50, 100],
             name: 'ShoppingCart',
         })

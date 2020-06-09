@@ -72,6 +72,7 @@ class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
                 next: Express.NextFunction
             ) => {
                 request.db = this.db
+                request.resources = this.resources
 
                 next()
             }

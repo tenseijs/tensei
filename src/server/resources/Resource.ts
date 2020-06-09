@@ -70,6 +70,19 @@ class Resource {
     }
 
     /**
+     * 
+     * This will be used as the route param for
+     * /resources/:param or /resuces/param
+     */
+    private param(): string {
+        return Pluralize(
+            paramCase(
+                this.name()
+            )
+        )
+    }
+
+    /**
      * Serialize the resource to be sent to
      * the frontend
      *
@@ -79,6 +92,7 @@ class Resource {
             name: this.name(),
             label: this.label(),
             group: this.group(),
+            param: this.param(),
             primaryKey: this.primaryKey(),
             collection: this.collection(),
             perPageOptions: this.perPageOptions(),

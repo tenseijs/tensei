@@ -16,6 +16,7 @@ class ClientController {
                 user: request.session!.user
                     ? JSON.stringify(request.session!.user)
                     : null,
+                resources: JSON.stringify(request.resources.map(resource => resource.serialize()))
             })
         )
     }
