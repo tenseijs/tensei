@@ -30,16 +30,16 @@ describe('The flamingo service provider', () => {
 
     it('can correctly load all resources', () => {
         const instance = new FlamingoProvider(
-            Path.resolve(process.env.PWD!, 'src/server/__tests__')
+            Path.resolve(process.env.PWD!, 'src/server/__tests__/mocks')
         )
 
         instance.registerResources()
 
         expect(instance.resources).toHaveLength(3)
 
-        const Post = require('./../resources/Post')
-        const User = require('./../resources/User')
-        const Todo = require('./../resources/Todo')
+        const Post = require('./../mocks/resources/Post')
+        const User = require('./../mocks/resources/User')
+        const Todo = require('./../mocks/resources/Todo')
 
         expect(instance.resources[0]).toBeInstanceOf(Post)
         expect(instance.resources[1]).toBeInstanceOf(Todo.default)
@@ -48,7 +48,7 @@ describe('The flamingo service provider', () => {
 
     it('correctly establishes a database connection', async () => {
         const instance = new FlamingoProvider(
-            Path.resolve(process.env.PWD!, 'src/server/__tests__')
+            Path.resolve(process.env.PWD!, 'src/server/__tests__/mocks')
         )
 
         const TEST_DATABASE_URI = 'mongodb://localhost/flamingo-testdb'
