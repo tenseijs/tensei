@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Resource class correctly serializes all fields passed to resource 1`] = `
+Object {
+  "collection": "shopping-carts",
+  "displayInNavigation": true,
+  "fields": Array [
+    Object {
+      "asObjectId": true,
+      "asString": false,
+      "attributes": Object {},
+      "component": "id-field",
+      "databaseField": "_id",
+      "defaultValue": "",
+      "isSortable": false,
+      "name": "ID",
+      "showOnCreation": false,
+      "showOnDetail": true,
+      "showOnIndex": true,
+      "showOnUpdate": false,
+      "type": "IDField",
+    },
+    Object {
+      "attributes": Object {
+        "email": true,
+        "required": true,
+        "title": "User first name",
+      },
+      "component": "text-field",
+      "databaseField": "first_name",
+      "defaultValue": "beans",
+      "isSortable": true,
+      "name": "Name",
+      "prefix": "ox",
+      "showOnCreation": true,
+      "showOnDetail": true,
+      "showOnIndex": false,
+      "showOnUpdate": false,
+      "suffix": "ox",
+      "type": "TextField",
+    },
+  ],
+  "group": "All",
+  "label": "Shopping Carts",
+  "name": "ShoppingCart",
+  "param": "shopping-carts",
+  "perPageOptions": Array [
+    10,
+    25,
+    50,
+    100,
+  ],
+  "primaryKey": "_id",
+}
+`;
+
+exports[`Resource class serialises multiple word resources correctly 1`] = `
+Object {
+  "collection": "post-author-labels",
+  "displayInNavigation": true,
+  "fields": Array [],
+  "group": "All",
+  "label": "Post Author Labels",
+  "name": "PostAuthorLabel",
+  "param": "post-author-labels",
+  "perPageOptions": Array [
+    10,
+    25,
+    50,
+    100,
+  ],
+  "primaryKey": "_id",
+}
+`;

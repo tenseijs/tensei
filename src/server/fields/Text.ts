@@ -29,7 +29,7 @@ class Text extends Field {
      * the backend
      *
      */
-    public prefix(prefix: string) {
+    public prefix(prefix: string): Text {
         this.withPrefix = prefix
 
         return this
@@ -40,10 +40,10 @@ class Text extends Field {
      * Set a suffix to the text input on
      * the frontend
      */
-    public suffix(suffix: string) {
+    public suffix(suffix: string): Text {
         this.withSuffix = suffix
 
-        return
+        return this
     }
 
     /**

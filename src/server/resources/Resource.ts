@@ -1,6 +1,7 @@
 // import { Resource as ResourceInterface } from '../typings/interfaces'
 import Pluralize from 'pluralize'
 import { paramCase, capitalCase } from 'change-case'
+import Field from 'server/fields/Field'
 
 class Resource {
     /**
@@ -70,6 +71,17 @@ class Resource {
     }
 
     /**
+     * 
+     * Define all the fields for this resource.
+     * This array will be serialised and
+     * sent to the frontend
+     * 
+     */
+    public fields(): Array<any> {
+        return []
+    }
+
+    /**
      *
      * This will be used as the route param for
      * /resources/:param or /resuces/param
@@ -93,6 +105,7 @@ class Resource {
             collection: this.collection(),
             perPageOptions: this.perPageOptions(),
             displayInNavigation: this.displayInNavigation(),
+            fields: this.fields().map(field => field.serialize()),
         }
     }
 }

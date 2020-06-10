@@ -1,5 +1,9 @@
 import Field from './Field'
 
+interface Constructor<M> {
+    new (...args: any[]): M
+}
+
 class ID extends Field {
     /**
      *
@@ -19,13 +23,16 @@ class ID extends Field {
     public objectId: boolean = true
 
     /**
-     *
-     * This overrides the default for the database field
-     * Instead of camel case if ID, it will be _id
-     *
+     * When a new ID field is created, by default,
+     * we'll call the exceptOnForms() method.
+     * That way, this field won't be
+     * available on create
+     * and update forms.
      */
-    public static make(name: string = 'ID', databaseField: string = '_id') {
-        return new ID(name, databaseField)
+    public constructor(name: string, databaseField?: string) {
+        super(name, databaseField || '_id')
+
+        this.exceptOnForms()
     }
 
     /**
@@ -48,6 +55,15 @@ class ID extends Field {
         this.objectId = true
 
         return this
+    }
+
+    /**
+     * Create a new instance of the field
+     * requires constructor parameters
+     *
+     */
+    public static make<T extends Field>(this: Constructor<T>, name?: string, databaseField?: string): T {
+        return new this(name || 'ID', databaseField || '_id')
     }
 
     /**

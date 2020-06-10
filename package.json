@@ -50,6 +50,7 @@
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "@types/readline-sync": "^1.4.3",
+    "@uifabric/fluent-theme": "^7.1.94",
     "@uifabric/icons": "^7.3.48",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",

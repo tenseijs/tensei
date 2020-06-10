@@ -12,7 +12,7 @@ module.exports = {
                 'dark-primary-400': '#706F6E',
                 'dark-primary-500': '#323130',
 
-                'dark-secondary': '#1B1B1D',
+                'dark-secondary': '#1B1B1D'
             },
             fontFamily: {},
             width: theme => ({

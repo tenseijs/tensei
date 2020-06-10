@@ -1,6 +1,10 @@
 import { Request } from 'express'
 import { camelCase, paramCase } from 'change-case'
 
+interface Constructor<M> {
+    new (...args: any[]): M
+}
+
 class Field {
     public showHideField = {
         /**
@@ -260,8 +264,8 @@ class Field {
      * requires constructor parameters
      *
      */
-    public static make(name: string, databaseField?: string) {
-        return new Field(name, databaseField)
+    public static make<T extends Field>(this: Constructor<T>, name: string, databaseField?: string): T {
+        return new this(name, databaseField)
     }
 
     /**
@@ -269,7 +273,7 @@ class Field {
      * Make this field sortable
      *
      */
-    public sortable(): Field {
+    public sortable<T extends Field>(this: T): T {
         this.isSortable = true
 
         return this
@@ -282,7 +286,7 @@ class Field {
      * default
      *
      */
-    public default(value: string): Field {
+    public default<T extends Field>(this: T, value: string): T {
         this.defaultValue = value
 
         return this
@@ -292,7 +296,7 @@ class Field {
      *
      * Set html attributes for this component
      */
-    public htmlAttributes(attributes: {}) {
+    public htmlAttributes<T extends Field>(this: T, attributes: {}): T {
         this.attributes = attributes
 
         return this
