@@ -50,6 +50,10 @@ class CreateResource extends React.Component {
 
     getDefaultEditingFormState = () => {}
 
+    resetForm = () => this.setState({
+        form: this.getDefaultFormState()
+    })
+
     getDefaultCreationFormState = () => {
         const form = {}
 
@@ -84,7 +88,7 @@ class CreateResource extends React.Component {
                     <Text variant="xLarge">Create {resource.name}</Text>
 
                     <div className="w-full md:w-auto mt-4 md:mt-0">
-                        <DefaultButton className="mr-3">Reset</DefaultButton>
+                        <DefaultButton onClick={this.resetForm} className="mr-3">Reset</DefaultButton>
 
                         <PrimaryButton>
                             <Text>Create {resource.name}</Text>

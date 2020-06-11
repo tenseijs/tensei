@@ -12,6 +12,7 @@ class DateField extends React.Component {
                 name={field.inputName}
                 value={new Date(value)}
                 description={field.description}
+                firstDayOfWeek={field.firstDayOfWeek}
             />
         )
     }
