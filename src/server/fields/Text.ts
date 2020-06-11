@@ -1,6 +1,6 @@
 import Field from './Field'
 
-class Text extends Field {
+export class Text extends Field {
     /**
      *
      * Set a prefix to the text input on

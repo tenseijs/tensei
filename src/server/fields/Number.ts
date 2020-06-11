@@ -1,6 +1,6 @@
 import Text from '../fields/Text'
 
-class NumberField extends Text {
+export class NumberField extends Text {
     /**
      * Set the min value for this number field.
      * Will be the min on the number in

@@ -1,25 +1,15 @@
 import React from 'react'
-import Auth from '../../store/auth'
-import LoginPage from '../../pages/Login'
-import Resources from '../../store/resources'
-import DashboardPage from '../../pages/Dashboard'
+import Auth from 'store/auth'
+import LoginPage from 'pages/Login'
+import Resources from 'store/resources'
+import DashboardPage from 'pages/Dashboard'
 import { Route, BrowserRouter } from 'react-router-dom'
 
 class Wrapper extends React.Component {
-    state = (() => {
-        let user = null
-        let resources = []
-
-        try {
-            user = JSON.parse(window.Flamingo.user)
-            resources = JSON.parse(window.Flamingo.resources)
-        } catch (errors) {}
-
-        return {
-            user,
-            resources,
-        }
-    })()
+    state = {
+        user: window.Flamingo.state.user,
+        resources: window.Flamingo.state.resources,
+    }
 
     setUser = (user) => {
         this.setState({

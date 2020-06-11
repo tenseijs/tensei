@@ -1,9 +1,8 @@
 // import { Resource as ResourceInterface } from '../typings/interfaces'
 import Pluralize from 'pluralize'
 import { paramCase, capitalCase } from 'change-case'
-import Field from 'server/fields/Field'
 
-class Resource {
+export class Resource {
     /**
      * This is the collection this resource will connect to
      * By default, it is the plural of the lower
@@ -71,11 +70,11 @@ class Resource {
     }
 
     /**
-     * 
+     *
      * Define all the fields for this resource.
      * This array will be serialised and
      * sent to the frontend
-     * 
+     *
      */
     public fields(): Array<any> {
         return []
@@ -105,7 +104,7 @@ class Resource {
             collection: this.collection(),
             perPageOptions: this.perPageOptions(),
             displayInNavigation: this.displayInNavigation(),
-            fields: this.fields().map(field => field.serialize()),
+            fields: this.fields().map((field) => field.serialize()),
         }
     }
 }

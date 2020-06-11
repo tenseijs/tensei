@@ -1,5 +1,6 @@
 import Flamingo from './Flamingo'
 import BaseResource from './resources/Resource'
+
 import FlamingoServiceProvider from './providers/FlamingoServiceProvider'
 
 export const flamingo = (
@@ -12,3 +13,10 @@ export const flamingo = (
 }
 
 export const Resource = BaseResource
+
+export { ID } from './fields/ID'
+export { Text } from './fields/Text'
+export { Field } from './fields/Field'
+export { DateField } from './fields/Date'
+export { Password } from './fields/Password'
+export { NumberField } from './fields/Number'

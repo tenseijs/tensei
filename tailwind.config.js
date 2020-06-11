@@ -12,10 +12,10 @@ module.exports = {
                 'dark-primary-400': '#706F6E',
                 'dark-primary-500': '#323130',
 
-                'dark-secondary': '#1B1B1D'
+                'dark-secondary': '#1B1B1D',
             },
             fontFamily: {},
-            width: theme => ({
+            width: (theme) => ({
                 ...theme('spacing'),
                 '1/7': '14.30%',
                 '6/7': '85.7%',
@@ -36,7 +36,7 @@ module.exports = {
                 '11/12': '91.666667%',
                 full: '100%',
                 screen: '100vw',
-              }),
+            }),
         },
     },
     variants: {},

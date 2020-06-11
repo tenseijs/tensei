@@ -4,16 +4,14 @@ import {
     DialogType,
     DialogFooter,
 } from 'office-ui-fabric-react/lib/Dialog'
-import { Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown'
 import {
-    PrimaryButton,
-    DefaultButton,
-} from 'office-ui-fabric-react/lib/Button'
+    Dropdown,
+    DropdownMenuItemType,
+} from 'office-ui-fabric-react/lib/Dropdown'
+import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button'
 
 class IndexSettings extends React.Component {
-    state = {
-
-    }
+    state = {}
 
     render() {
         return (
@@ -21,7 +19,7 @@ class IndexSettings extends React.Component {
                 isOpen={true}
                 maxWidth={'768px'}
                 styles={{
-                    className: 'w-full'
+                    className: 'w-full',
                 }}
                 onDismiss={console.log}
                 dialogContentProps={{
@@ -33,21 +31,23 @@ class IndexSettings extends React.Component {
                     styles: {
                         main: {
                             maxWidth: '600px',
-                            
-                        }
-                    }
+                        },
+                    },
                 }}
             >
                 <Dropdown
                     label="Displayed fields"
                     defaultSelectedKeys={['apple', 'banana', 'grape']}
                     multiSelect
-                    options={[{
-                        key: 'orange', text: 'Orange'
-                    }]}
+                    options={[
+                        {
+                            key: 'orange',
+                            text: 'Orange',
+                        },
+                    ]}
                     // styles={dropdownStyles}
                 />
-                <DialogFooter className='mt-12'>
+                <DialogFooter className="mt-12">
                     <PrimaryButton text="Save changes" />
                     <DefaultButton
                         // onClick={toggleHideDialog}

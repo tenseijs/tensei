@@ -10,15 +10,15 @@ describe('The Field', () => {
             showOnDetail: true,
             showOnUpdate: true,
             showOnCreation: true,
-            databaseField: 'firstName',
+            inputName: 'firstName',
             isSortable: false,
             defaultValue: '',
-            type: 'TextField',
-            component: 'text-field',
+            component: 'TextField',
             name: 'First name',
             attributes: {},
             prefix: '',
             suffix: '',
+            description: '',
         })
     })
 
@@ -38,15 +38,15 @@ describe('The Field', () => {
             showOnDetail: false,
             showOnUpdate: true,
             showOnCreation: true,
-            databaseField: 'email',
+            inputName: 'email',
             isSortable: true,
-            type: 'TextField',
-            component: 'text-field',
+            component: 'TextField',
             defaultValue: 'john@example.com',
             name: 'Email',
             attributes: {},
             prefix: '',
             suffix: '',
+            description: '',
         })
     })
 

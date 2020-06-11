@@ -40,10 +40,10 @@ class ShoppingCart extends Resource {
                 .htmlAttributes({
                     required: true,
                     email: true,
-                    title: 'User first name'
+                    title: 'User first name',
                 })
                 .hideFromIndex()
-                .hideWhenUpdating()
+                .hideWhenUpdating(),
         ]
     }
 }
@@ -61,7 +61,7 @@ describe('Resource class', () => {
             param: 'posts',
             perPageOptions: [10, 25, 50, 100],
             name: 'Post',
-            fields: []
+            fields: [],
         })
     })
 
@@ -77,7 +77,7 @@ describe('Resource class', () => {
             perPageOptions: [100, 250, 500],
             name: 'User',
             param: 'users',
-            fields: []
+            fields: [],
         })
     })
 
@@ -93,7 +93,7 @@ describe('Resource class', () => {
             param: 'post-author-labels',
             perPageOptions: [10, 25, 50, 100],
             name: 'PostAuthorLabel',
-            fields: []
+            fields: [],
         })
 
         expect(postAuthorLabel.serialize()).toMatchSnapshot()
@@ -111,39 +111,42 @@ describe('Resource class', () => {
             param: 'shopping-carts',
             perPageOptions: [10, 25, 50, 100],
             name: 'ShoppingCart',
-            fields: [{
-                attributes: {},
-                component: 'id-field',
-                databaseField: '_id',
-                defaultValue: '',
-                name: 'ID',
-                showOnCreation: false,
-                showOnDetail: true,
-                showOnIndex: true,
-                showOnUpdate: false,
-                type: 'IDField',
-                isSortable: false,
-                asObjectId: true,
-                asString: false
-            }, {
-                attributes: {
-                    required: true,
-                    email: true,
-                    title: 'User first name'
+            fields: [
+                {
+                    attributes: {},
+                    component: 'IDField',
+                    inputName: '_id',
+                    defaultValue: '',
+                    name: 'ID',
+                    showOnCreation: false,
+                    showOnDetail: true,
+                    showOnIndex: true,
+                    showOnUpdate: false,
+                    isSortable: false,
+                    asObjectId: true,
+                    asString: false,
+                    description: '',
                 },
-                component: 'text-field',
-                databaseField: 'first_name',
-                defaultValue: 'beans',
-                name: 'Name',
-                prefix: 'ox',
-                showOnCreation: true,
-                showOnDetail: true,
-                showOnIndex: false,
-                showOnUpdate: false,
-                suffix: 'ox',
-                type: 'TextField',
-                isSortable: true
-            }]
+                {
+                    attributes: {
+                        required: true,
+                        email: true,
+                        title: 'User first name',
+                    },
+                    component: 'TextField',
+                    inputName: 'first_name',
+                    defaultValue: 'beans',
+                    name: 'Name',
+                    prefix: 'ox',
+                    showOnCreation: true,
+                    showOnDetail: true,
+                    showOnIndex: false,
+                    showOnUpdate: false,
+                    suffix: 'ox',
+                    isSortable: true,
+                    description: '',
+                },
+            ],
         })
 
         expect(shoppingCart.serialize()).toMatchSnapshot()

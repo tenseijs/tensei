@@ -4,7 +4,7 @@ interface Constructor<M> {
     new (...args: any[]): M
 }
 
-class ID extends Field {
+export class ID extends Field {
     /**
      *
      * If set to true, this field will
@@ -62,7 +62,11 @@ class ID extends Field {
      * requires constructor parameters
      *
      */
-    public static make<T extends Field>(this: Constructor<T>, name?: string, databaseField?: string): T {
+    public static make<T extends Field>(
+        this: Constructor<T>,
+        name?: string,
+        databaseField?: string
+    ): T {
         return new this(name || 'ID', databaseField || '_id')
     }
 

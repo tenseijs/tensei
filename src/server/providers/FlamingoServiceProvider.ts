@@ -16,7 +16,8 @@ import LoginController from '../controllers/auth/LoginController'
 
 import DatabaseRepository from '../database/Repository'
 
-class FlamingoServiceProvider implements FlamingoServiceProviderInterface {
+export class FlamingoServiceProvider
+    implements FlamingoServiceProviderInterface {
     public app: Express.Application = Express()
 
     public client: Mongodb.MongoClient | null = null

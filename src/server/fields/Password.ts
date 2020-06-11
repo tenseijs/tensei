@@ -1,18 +1,17 @@
 import Text from './Text'
 
-class Password extends Text {
+export class Password extends Text {
     /**
-     * Overrides the parent method
-     * and sets the type of the
-     * input to password
+     * When a new password is made, we'll set type
+     * password as an html attribute
+     *
      */
-    public htmlAttributes(attributes: {}) {
-        this.attributes = {
-            ...attributes,
-            type: 'password',
-        }
+    public constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
 
-        return this
+        this.htmlAttributes({
+            type: 'password',
+        })
     }
 }
 

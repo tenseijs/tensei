@@ -5,7 +5,7 @@ interface Constructor<M> {
     new (...args: any[]): M
 }
 
-class Field {
+export class Field {
     public showHideField = {
         /**
          *
@@ -46,13 +46,6 @@ class Field {
 
     /**
      *
-     * The field type. For example TextField,
-     * PlaceField, IDField
-     */
-    public type: string = `${this.constructor.name}Field`
-
-    /**
-     *
      * This is a set of all html attributes to be passed
      * to this component
      *
@@ -64,7 +57,7 @@ class Field {
      * This is a short name for the frontend component that
      * will be mounted for this field.
      */
-    public component: string = `${paramCase(this.constructor.name)}-field`
+    public component: string = `${this.constructor.name}Field`
 
     /**
      *
@@ -74,6 +67,12 @@ class Field {
      *
      */
     public databaseField: string
+
+    /**
+     *
+     * The
+     */
+    public helpText: string = ''
 
     /**
      *
@@ -264,7 +263,11 @@ class Field {
      * requires constructor parameters
      *
      */
-    public static make<T extends Field>(this: Constructor<T>, name: string, databaseField?: string): T {
+    public static make<T extends Field>(
+        this: Constructor<T>,
+        name: string,
+        databaseField?: string
+    ): T {
         return new this(name, databaseField)
     }
 
@@ -275,6 +278,18 @@ class Field {
      */
     public sortable<T extends Field>(this: T): T {
         this.isSortable = true
+
+        return this
+    }
+
+    /**
+     *
+     * Define the description. This would be a help text
+     * that provides more information to the user
+     * about this field on forms.
+     */
+    public description<T extends Field>(this: T, description: string): T {
+        this.helpText = description
 
         return this
     }
@@ -313,12 +328,12 @@ class Field {
             ...this.showHideField,
 
             name: this.name,
-            type: this.type,
             component: this.component,
+            description: this.helpText,
             isSortable: this.isSortable,
             attributes: this.attributes,
+            inputName: this.databaseField,
             defaultValue: this.defaultValue,
-            databaseField: this.databaseField,
         }
     }
 }

@@ -8,39 +8,41 @@ import {
     DefaultButton,
     ActionButton,
 } from 'office-ui-fabric-react/lib/Button'
-import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
-import {
-    DetailsList,
-    DetailsListLayoutMode,
-    Selection,
-    SelectionMode,
-    IColumn,
-  } from 'office-ui-fabric-react/lib/DetailsList'
+import { DetailsListLayoutMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox'
+import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
 
 class ResourceIndex extends React.Component {
-    state = {
-        resource: this.findResource(),
-        showingSettings: false,
-        loading: true
+    state = this.defaultState()
+
+    defaultState() {
+        return {
+            resource: this.findResource(),
+            showingSettings: false,
+            loading: true,
+        }
     }
 
     componentDidMount() {
         setTimeout(() => {
             this.setState({
-                loading: false
+                loading: false,
             })
-        }, 3000)
+        }, 1500)
     }
 
     componentDidUpdate(prevProps) {
         if (
             prevProps.match.params.resource !== this.props.match.params.resource
         ) {
-            this.setState({
-                resource: this.findResource(),
-            })
+            this.bootComponent()
         }
+    }
+
+    bootComponent = () => {
+        this.setState(this.defaultState())
+
+        this.componentDidMount()
     }
 
     findResource() {
@@ -49,29 +51,29 @@ class ResourceIndex extends React.Component {
         )
     }
 
-    getTableColumns () {
+    getTableColumns = () => {
         return [
             {
                 key: 'email',
                 fieldName: 'email',
-                name: 'Email'
+                name: 'Email',
             },
             {
                 key: 'name',
                 fieldName: 'name',
                 name: 'Name',
             },
-            
+
             {
                 key: 'date_joined',
                 fieldName: 'date_joined',
-                name: 'Date joined'
+                name: 'Date joined',
             },
 
             {
                 key: 'date_ended',
                 fieldName: 'date_ended',
-                name: 'Date ended'
+                name: 'Date ended',
             },
         ]
     }
@@ -107,21 +109,21 @@ class ResourceIndex extends React.Component {
                 </header>
 
                 <div className="w-full mt-8 flex flex-wrap items-center justify-between">
-                    <SearchBox className='w-full md:w-1/4' placeholder={`Search ${resource.label.toLowerCase()}`}>
-
-                    </SearchBox>
-                    <div className='w-full md:w-3/4 mt-4 md:mt-0 flex items-center justify-between md:justify-end'>
+                    <SearchBox
+                        className="w-full md:w-1/4"
+                        placeholder={`Search ${resource.label.toLowerCase()}`}
+                    ></SearchBox>
+                    <div className="w-full md:w-3/4 mt-4 md:mt-0 flex items-center justify-between md:justify-end">
                         <DefaultButton
                             iconProps={{
                                 iconName: 'Filter',
-                                
                             }}
                         >
                             Filters
                         </DefaultButton>
 
                         <ActionButton
-                            className='ml-2'
+                            className="ml-2"
                             iconProps={{
                                 iconName: 'Settings',
                             }}
@@ -130,15 +132,17 @@ class ResourceIndex extends React.Component {
                         </ActionButton>
                     </div>
                 </div>
-            
+
                 <div className="mt-8 w-full">
                     <ShimmeredDetailsList
-                        items={[{
-                            name: 'Bahdcoder Kati',
-                            email: 'bahdcoder@gmail.com',
-                            date_joined: '2020-02-1939',
-                            date_ended: '2020-05-03'
-                        }]}
+                        items={[
+                            {
+                                name: 'Bahdcoder Kati',
+                                email: 'bahdcoder@gmail.com',
+                                date_joined: '2020-02-1939',
+                                date_ended: '2020-05-03',
+                            },
+                        ]}
                         enableShimmer={loading}
                         columns={this.getTableColumns()}
                         layoutMode={DetailsListLayoutMode.justified}
