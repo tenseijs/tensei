@@ -62,6 +62,7 @@ describe('Resource class', () => {
             perPageOptions: [10, 25, 50, 100],
             name: 'Post',
             fields: [],
+            messages: {}
         })
     })
 
@@ -78,6 +79,7 @@ describe('Resource class', () => {
             name: 'User',
             param: 'users',
             fields: [],
+            messages: {}
         })
     })
 
@@ -94,6 +96,7 @@ describe('Resource class', () => {
             perPageOptions: [10, 25, 50, 100],
             name: 'PostAuthorLabel',
             fields: [],
+            messages: {}
         })
 
         expect(postAuthorLabel.serialize()).toMatchSnapshot()
@@ -126,6 +129,9 @@ describe('Resource class', () => {
                     asObjectId: true,
                     asString: false,
                     description: '',
+                    rules: [],
+                    creationRules: [],
+                    updateRules: []
                 },
                 {
                     attributes: {
@@ -145,8 +151,12 @@ describe('Resource class', () => {
                     suffix: 'ox',
                     isSortable: true,
                     description: '',
+                    rules: [],
+                    creationRules: [],
+                    updateRules: []
                 },
             ],
+            messages: {}
         })
 
         expect(shoppingCart.serialize()).toMatchSnapshot()

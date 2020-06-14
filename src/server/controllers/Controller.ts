@@ -41,7 +41,7 @@ class Controller {
         return rules
     }
 
-    protected validate = async (
+    validate = async (
         data: any,
         resource: Resource
     ): Promise<

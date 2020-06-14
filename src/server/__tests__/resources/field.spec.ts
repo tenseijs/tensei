@@ -19,6 +19,9 @@ describe('The Field', () => {
             prefix: '',
             suffix: '',
             description: '',
+            rules: [],
+            creationRules: [],
+            updateRules: []
         })
     })
 
@@ -47,6 +50,9 @@ describe('The Field', () => {
             prefix: '',
             suffix: '',
             description: '',
+            rules: [],
+            creationRules: [],
+            updateRules: []
         })
     })
 
