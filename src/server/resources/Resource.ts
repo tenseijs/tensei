@@ -91,7 +91,7 @@ export class Resource {
     }
 
     /**
-     * 
+     *
      * Set the custom validation messages for the
      * validation rules.
      */
@@ -100,7 +100,6 @@ export class Resource {
     } {
         return {}
     }
-
 
     /**
      * Serialize the resource to be sent to

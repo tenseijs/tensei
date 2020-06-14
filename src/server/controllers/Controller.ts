@@ -21,25 +21,22 @@ class Controller {
             [key: string]: string
         } = {}
 
-        fields.forEach(
-            (field) =>
-                {
-                    const serializedField = field.serialize()
+        fields.forEach((field) => {
+            const serializedField = field.serialize()
 
-                    const fieldValidationRules = Array.from(
-                        new Set([
-                            ...serializedField.rules,
-                            ...serializedField[
-                                creationRules ? 'creationRules' : 'updateRules'
-                            ]
-                        ])
-                    ).join('|')
+            const fieldValidationRules = Array.from(
+                new Set([
+                    ...serializedField.rules,
+                    ...serializedField[
+                        creationRules ? 'creationRules' : 'updateRules'
+                    ],
+                ])
+            ).join('|')
 
-                    if (fieldValidationRules) {
-                        rules[serializedField.inputName] = fieldValidationRules
-                    }
-                }
-        )
+            if (fieldValidationRules) {
+                rules[serializedField.inputName] = fieldValidationRules
+            }
+        })
 
         return rules
     }
@@ -47,13 +44,22 @@ class Controller {
     protected validate = async (
         data: any,
         resource: Resource
-    ): Promise<[boolean, {
-        [key: string]: string
-    }|null]> => {
+    ): Promise<
+        [
+            boolean,
+            {
+                [key: string]: string
+            } | null
+        ]
+    > => {
         try {
             const validationRules = this.getValidationRules(resource)
 
-            await validateAll(data, validationRules, resource.serialize().messages)
+            await validateAll(
+                data,
+                validationRules,
+                resource.serialize().messages
+            )
 
             return [false, null]
         } catch (errors) {
@@ -61,14 +67,16 @@ class Controller {
         }
     }
 
-    protected formatValidationErrors = (errors:  Array<ValidationError>): {
+    protected formatValidationErrors = (
+        errors: Array<ValidationError>
+    ): {
         [key: string]: string
     } => {
         const formattedErrors: {
             [key: string]: string
-        }= {}
+        } = {}
 
-        errors.forEach(error => {
+        errors.forEach((error) => {
             formattedErrors[error.field] = error.message
         })
 

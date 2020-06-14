@@ -2,7 +2,10 @@ import Express from 'express'
 import Controller from '../Controller'
 
 class CreateResourceController extends Controller {
-    public store = async (request: Express.Request, response: Express.Response) => {
+    public store = async (
+        request: Express.Request,
+        response: Express.Response
+    ) => {
         const resource = this.findResource(
             request.params.resource,
             request.resources
@@ -14,7 +17,10 @@ class CreateResourceController extends Controller {
             })
         }
 
-        const [validationFailed, errors] = await this.validate(request.body, resource)
+        const [validationFailed, errors] = await this.validate(
+            request.body,
+            resource
+        )
 
         if (validationFailed) {
             return response.status(422).json(errors)
