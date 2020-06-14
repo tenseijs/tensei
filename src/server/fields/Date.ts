@@ -1,13 +1,23 @@
-import dayjs from 'dayjs'
 import Field from './Field'
+import format from 'date-fns/format'
 
 export class DateField extends Field {
     /**
-     * 
+     *
      * Defines which day should be the first day of the week.
-     * 
+     *
      */
     private dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 0
+
+    /**
+     *
+     * The date format to be used
+     * The date-fns library is used by
+     * flamingo
+     *
+     * https://date-fns.org/v2.14.0/docs/format
+     */
+    private dateFormat: string = 'MM/dd/yyyy'
 
     /**
      *
@@ -17,9 +27,9 @@ export class DateField extends Field {
     public component = 'DateField'
 
     /**
-     * 
+     *
      * Set which day should be the first day of the week.
-     * 
+     *
      * 0 => Sunday
      * 1 => Monday
      * 2 => Tuesday
@@ -41,14 +51,30 @@ export class DateField extends Field {
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
-        this.default(dayjs().subtract(7, 'year').format())
+        this.default(format(new Date(), this.dateFormat))
+    }
+
+    /**
+     *
+     * Set the date format to be used
+     * The date-fns library is used by
+     * flamingo
+     *
+     * https://date-fns.org/v2.14.0/docs/format
+     */
+    public format(format: string) {
+        this.dateFormat = format
+
+        return this
     }
 
     public serialize() {
         return {
             ...super.serialize(),
 
-            firstDayOfWeek: this.dayOfWeek
+            firstDayOfWeek: this.dayOfWeek,
+
+            format: this.dateFormat,
         }
     }
 }

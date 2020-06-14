@@ -1,3 +1,5 @@
+import Axios from 'axios'
+
 import TextField from './fields/Text'
 import DateField from './fields/Date'
 
@@ -16,6 +18,10 @@ class Flamingo {
             resources,
         }
     })()
+
+    request = Axios.create({
+        baseURL: '/api/',
+    })
 
     fieldComponents = {
         DateField,

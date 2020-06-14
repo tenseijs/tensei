@@ -46,6 +46,27 @@ export class Field {
 
     /**
      *
+     * Define validation rules to be used to validate
+     * this field on forms
+     */
+    public validationRules: Array<string> = []
+
+    /**
+     *
+     * Define validation rules to be used to validate
+     * this field on creation forms
+     */
+    public creationValidationRules: Array<string> = []
+
+    /**
+     *
+     * Define validation rules to be used to validate
+     * this field on update forms
+     */
+    public updateValidationRules: Array<string> = []
+
+    /**
+     *
      * This is a set of all html attributes to be passed
      * to this component
      *
@@ -319,11 +340,56 @@ export class Field {
 
     /**
      *
+     * @param this
+     */
+    public rules<T extends Field>(this: T, ...rules: Array<string>): T {
+        this.validationRules = rules
+
+        return this
+    }
+
+    /**
+     * Set the validation rules to be used when
+     * creating this field to the database
+     */
+    public creationRules<T extends Field>(this: T, ...rules: Array<string>): T {
+        this.creationValidationRules = rules
+
+        return this
+    }
+
+    /**
+     * Set the validation rules to be used when updating
+     * this field
+     */
+    public updateRules<T extends Field>(this: T, ...rules: Array<string>): T {
+        this.updateValidationRules = rules
+
+        return this
+    }
+
+    /**
+     *
      * Serializes the field for data to be sent
      * to the frontend
      *
      */
-    public serialize(): any {
+    public serialize(): {
+        name: string
+        component: string
+        inputName: string
+        isSortable: Boolean
+        description: string
+        rules: Array<string>
+        defaultValue: string
+        showOnIndex: boolean
+        showOnDetail: boolean
+        showOnUpdate: boolean
+        showOnCreation: boolean
+        updateRules: Array<string>
+        creationRules: Array<string>
+        attributes: { [key: string]: string }
+    } {
         return {
             ...this.showHideField,
 
@@ -332,8 +398,11 @@ export class Field {
             description: this.helpText,
             isSortable: this.isSortable,
             attributes: this.attributes,
+            rules: this.validationRules,
             inputName: this.databaseField,
             defaultValue: this.defaultValue,
+            updateRules: this.updateValidationRules,
+            creationRules: this.creationValidationRules,
         }
     }
 }

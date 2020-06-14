@@ -1,10 +1,8 @@
 import React from 'react'
-import Axios from '../../helpers/axios'
-
+import { mustBeNotAuthenticated } from 'store/auth'
 import { Button } from 'office-ui-fabric-react/lib/Button'
 import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox'
 import { TextField } from 'office-ui-fabric-react/lib/TextField'
-import { withAuth, mustBeNotAuthenticated } from '../../store/auth'
 
 class LoginPage extends React.Component {
     state = {
@@ -22,11 +20,12 @@ class LoginPage extends React.Component {
             isLoading: true,
         })
 
-        Axios.post('login', {
-            email: this.state.email,
-            password: this.state.password,
-            rememberMe: this.state.rememberMe,
-        })
+        Flamingo.request
+            .post('login', {
+                email: this.state.email,
+                password: this.state.password,
+                rememberMe: this.state.rememberMe,
+            })
             .then(() => {
                 window.location.href = '/'
             })

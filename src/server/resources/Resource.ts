@@ -1,5 +1,6 @@
 // import { Resource as ResourceInterface } from '../typings/interfaces'
 import Pluralize from 'pluralize'
+import Field from '../fields/Field'
 import { paramCase, capitalCase } from 'change-case'
 
 export class Resource {
@@ -90,16 +91,40 @@ export class Resource {
     }
 
     /**
+     * 
+     * Set the custom validation messages for the
+     * validation rules.
+     */
+    public messages(): {
+        [key: string]: string
+    } {
+        return {}
+    }
+
+
+    /**
      * Serialize the resource to be sent to
      * the frontend
      *
      */
-    public serialize(): any {
+    public serialize(): {
+        name: string
+        label: string
+        group: string
+        param: string
+        primaryKey: string
+        collection: string
+        fields: Array<any>
+        displayInNavigation: boolean
+        perPageOptions: Array<number>
+        messages: { [key: string]: string }
+    } {
         return {
             name: this.name(),
             label: this.label(),
             group: this.group(),
             param: this.param(),
+            messages: this.messages(),
             primaryKey: this.primaryKey(),
             collection: this.collection(),
             perPageOptions: this.perPageOptions(),

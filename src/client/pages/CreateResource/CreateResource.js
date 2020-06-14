@@ -9,6 +9,7 @@ class CreateResource extends React.Component {
     defaultState() {
         return {
             form: {},
+            submitting: false,
             formInitialized: false,
             resource: this.findResource(),
             editingState: !!this.props.match.params.resourceId,
@@ -50,9 +51,10 @@ class CreateResource extends React.Component {
 
     getDefaultEditingFormState = () => {}
 
-    resetForm = () => this.setState({
-        form: this.getDefaultFormState()
-    })
+    resetForm = () =>
+        this.setState({
+            form: this.getDefaultFormState(),
+        })
 
     getDefaultCreationFormState = () => {
         const form = {}
@@ -74,13 +76,36 @@ class CreateResource extends React.Component {
                     onChange={console.log}
                     label={resourceField.name}
                     value={this.state.form[resourceField.inputName]}
+                    onFieldChange={(value) =>
+                        this.handleFieldChange(resourceField.inputName, value)
+                    }
                 />
             </div>
         )
     }
 
+    submit = () => {
+        this.setState({
+            submitting: true,
+        })
+
+        Flamingo.request.post(
+            `resources/${this.state.resource.param}`,
+            this.state.form
+        )
+    }
+
+    handleFieldChange = (field, value) => {
+        this.setState({
+            form: {
+                ...this.state.form,
+                [field]: value,
+            },
+        })
+    }
+
     render() {
-        const { resource } = this.state
+        const { resource, form } = this.state
 
         return (
             <React.Fragment>
@@ -88,9 +113,14 @@ class CreateResource extends React.Component {
                     <Text variant="xLarge">Create {resource.name}</Text>
 
                     <div className="w-full md:w-auto mt-4 md:mt-0">
-                        <DefaultButton onClick={this.resetForm} className="mr-3">Reset</DefaultButton>
+                        <DefaultButton
+                            onClick={this.resetForm}
+                            className="mr-3"
+                        >
+                            Reset
+                        </DefaultButton>
 
-                        <PrimaryButton>
+                        <PrimaryButton onClick={this.submit}>
                             <Text>Create {resource.name}</Text>
                         </PrimaryButton>
                     </div>

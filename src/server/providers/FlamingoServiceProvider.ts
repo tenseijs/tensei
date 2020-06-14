@@ -15,6 +15,7 @@ import ClientController from '../controllers/ClientController'
 import LoginController from '../controllers/auth/LoginController'
 
 import DatabaseRepository from '../database/Repository'
+import CreateResourceController from '../controllers/resources/CreateResourceController'
 
 export class FlamingoServiceProvider
     implements FlamingoServiceProviderInterface {
@@ -94,6 +95,8 @@ export class FlamingoServiceProvider
     public async registerRoutes() {
         this.registerAuthRoutes()
 
+        this.registerResourcesRoutes()
+
         this.router.get('*', ClientController.index)
 
         this.app.use(this.router)
@@ -101,6 +104,13 @@ export class FlamingoServiceProvider
 
     public launchServer(serverCallback: (config: Config) => void) {
         this.app.listen(this.config!.port, () => serverCallback(this.config!))
+    }
+
+    public registerResourcesRoutes() {
+        this.router.post(
+            `/api/resources/:resource`,
+            CreateResourceController.store
+        )
     }
 
     public registerAuthRoutes() {
