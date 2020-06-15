@@ -39,10 +39,17 @@ class CreateResource extends React.Component {
     getCreationFields = () =>
         this.state.resource.fields.filter((field) => field.showOnCreation)
 
-    getResourceFields = () =>
-        this.state.editingState
+    getResourceFields = (objectFields = false) =>
+        (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
+        ).filter((field) =>
+            objectFields
+                ? field.component === 'ObjectField'
+                : field.component !== 'ObjectField'
+        )
+
+    getResourceObjectFields = () => this.getResourceFields(true)
 
     getDefaultFormState = () =>
         this.state.editingState
@@ -59,25 +66,49 @@ class CreateResource extends React.Component {
     getDefaultCreationFormState = () => {
         const form = {}
 
-        this.getCreationFields().forEach((field) => {
+        this.getResourceFields().forEach((field) => {
             form[field.inputName] = field.defaultValue
+        })
+
+        this.getResourceObjectFields().forEach((objectField) => {
+            form[objectField.inputName] = form[objectField.inputName] || {}
+
+            objectField.fields.forEach((childField) => {
+                form[objectField.inputName][childField.inputName] =
+                    childField.defaultValue
+            })
         })
 
         return form
     }
 
-    renderResourceField = (resourceField) => {
+    renderResourceField = (resourceField, parentResourceField = null) => {
         const Component = Flamingo.fieldComponents[resourceField.component]
 
         return (
             <div key={resourceField.inputName} className="mb-3">
                 <Component
                     field={resourceField}
-                    onChange={console.log}
                     label={resourceField.name}
-                    value={this.state.form[resourceField.inputName]}
+                    value={
+                        parentResourceField
+                            ? console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>', parentResourceField, this.state.form[parentResourceField.inputName]) || this.state.form[parentResourceField.inputName][
+                                  resourceField.inputName
+                              ]
+                            : this.state.form[resourceField.inputName]
+                    }
+                    // value={''}
                     onFieldChange={(value) =>
-                        this.handleFieldChange(resourceField.inputName, value)
+                        parentResourceField
+                            ? this.handleObjectFieldChange(
+                                  parentResourceField,
+                                  resourceField,
+                                  value
+                              )
+                            : this.handleFieldChange(
+                                  resourceField.inputName,
+                                  value
+                              )
                     }
                 />
             </div>
@@ -104,8 +135,20 @@ class CreateResource extends React.Component {
         })
     }
 
+    handleObjectFieldChange = (parentField, field, value) => {
+        this.setState({
+            form: {
+                ...this.state.form,
+                [parentField.inputName]: {
+                    ...this.state.form[parentField.inputName],
+                    [field.inputName]: value,
+                },
+            },
+        })
+    }
+
     render() {
-        const { resource, form } = this.state
+        const { resource, formInitialized } = this.state
 
         return (
             <React.Fragment>
@@ -126,7 +169,9 @@ class CreateResource extends React.Component {
                     </div>
                 </header>
 
-                <div className="w-full flex flex-wrap mt-10">
+                {formInitialized && (
+                    <React.Fragment>
+                        <div className="w-full flex flex-wrap mt-10">
                     <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
                         <Text variant="large">{resource.name}</Text>
                         <Text variant="medium" className="opacity-75">
@@ -136,9 +181,31 @@ class CreateResource extends React.Component {
                     </div>
 
                     <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                        {this.getResourceFields().map(this.renderResourceField)}
+                        {this.getResourceFields().map(field => this.renderResourceField(field))}
                     </div>
                 </div>
+
+                {this.getResourceObjectFields().map((field) => (
+                    <div
+                        key={field.inputName}
+                        className="w-full flex flex-wrap mt-10"
+                    >
+                        <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
+                            <Text variant="large">{field.name}</Text>
+                            <Text variant="medium" className="opacity-75">
+                                Put in information about the new object field
+                            </Text>
+                        </div>
+
+                        <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
+                            {field.fields.map((childField) =>
+                                this.renderResourceField(childField, field)
+                            )}
+                        </div>
+                    </div>
+                ))}
+                    </React.Fragment>
+                )}
             </React.Fragment>
         )
     }

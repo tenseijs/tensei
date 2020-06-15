@@ -62,7 +62,7 @@ describe('Resource class', () => {
             perPageOptions: [10, 25, 50, 100],
             name: 'Post',
             fields: [],
-            messages: {}
+            messages: {},
         })
     })
 
@@ -79,7 +79,7 @@ describe('Resource class', () => {
             name: 'User',
             param: 'users',
             fields: [],
-            messages: {}
+            messages: {},
         })
     })
 
@@ -96,7 +96,7 @@ describe('Resource class', () => {
             perPageOptions: [10, 25, 50, 100],
             name: 'PostAuthorLabel',
             fields: [],
-            messages: {}
+            messages: {},
         })
 
         expect(postAuthorLabel.serialize()).toMatchSnapshot()
@@ -131,7 +131,7 @@ describe('Resource class', () => {
                     description: '',
                     rules: [],
                     creationRules: [],
-                    updateRules: []
+                    updateRules: [],
                 },
                 {
                     attributes: {
@@ -153,10 +153,10 @@ describe('Resource class', () => {
                     description: '',
                     rules: [],
                     creationRules: [],
-                    updateRules: []
+                    updateRules: [],
                 },
             ],
-            messages: {}
+            messages: {},
         })
 
         expect(shoppingCart.serialize()).toMatchSnapshot()

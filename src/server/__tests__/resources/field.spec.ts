@@ -21,7 +21,7 @@ describe('The Field', () => {
             description: '',
             rules: [],
             creationRules: [],
-            updateRules: []
+            updateRules: [],
         })
     })
 
@@ -52,7 +52,7 @@ describe('The Field', () => {
             description: '',
             rules: [],
             creationRules: [],
-            updateRules: []
+            updateRules: [],
         })
     })
 

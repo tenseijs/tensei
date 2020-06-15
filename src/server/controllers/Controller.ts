@@ -15,7 +15,7 @@ class Controller {
     }
 
     getValidationRules = (resource: Resource, creationRules = true) => {
-        const fields: Array<Field> = resource.fields()
+        const fields: Array<any> = resource.fields()
 
         const rules: {
             [key: string]: string
@@ -35,6 +35,19 @@ class Controller {
 
             if (fieldValidationRules) {
                 rules[serializedField.inputName] = fieldValidationRules
+            }
+
+            if (field.component === 'ObjectField') {
+                serializedField.fields.forEach((childField: any) => {
+                    rules[`${serializedField.inputName}.${childField.inputName}`] = Array.from(
+                        new Set([
+                            ...childField.rules,
+                            ...childField[
+                                creationRules ? 'creationRules' : 'updateRules'
+                            ],
+                        ])
+                    ).join('|')
+                })
             }
         })
 
@@ -77,6 +90,10 @@ class Controller {
         } = {}
 
         errors.forEach((error) => {
+            if (error.field.indexOf('.') !== -1) {
+                console.log('>>>>>> need to parse object errors')
+            }
+
             formattedErrors[error.field] = error.message
         })
 
