@@ -39,7 +39,9 @@ class Controller {
 
             if (field.component === 'ObjectField') {
                 serializedField.fields.forEach((childField: any) => {
-                    rules[`${serializedField.inputName}.${childField.inputName}`] = Array.from(
+                    rules[
+                        `${serializedField.inputName}.${childField.inputName}`
+                    ] = Array.from(
                         new Set([
                             ...childField.rules,
                             ...childField[

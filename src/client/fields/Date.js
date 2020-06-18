@@ -5,7 +5,6 @@ import { DatePicker } from 'office-ui-fabric-react/lib/DatePicker'
 class DateField extends React.Component {
     render() {
         const { value, onFieldChange, field, ...rest } = this.props
-
         return (
             <DatePicker
                 {...rest}

@@ -51,39 +51,19 @@ class ResourceIndex extends React.Component {
         )
     }
 
-    getTableColumns = () => {
-        return [
-            {
-                key: 'email',
-                fieldName: 'email',
-                name: 'Email',
-            },
-            {
-                key: 'name',
-                fieldName: 'name',
-                name: 'Name',
-            },
+    getShowOnIndexColumns = () =>
+        this.state.resource.fields.filter((field) => field.showOnIndex)
 
-            {
-                key: 'date_joined',
-                fieldName: 'date_joined',
-                name: 'Date joined',
-            },
-
-            {
-                key: 'date_ended',
-                fieldName: 'date_ended',
-                name: 'Date ended',
-            },
-        ]
-    }
+    getTableColumns = () =>
+        this.getShowOnIndexColumns().map((field) => ({
+            key: field.inputName,
+            fieldName: field.inputName,
+            name: field.name,
+            isSorted: field.isSortable
+        }))
 
     render() {
         const { resource, loading } = this.state
-
-        if (!this.state.resource) {
-            return <Redirect to="/" />
-        }
 
         return (
             <Fragment>

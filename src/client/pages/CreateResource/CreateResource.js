@@ -13,6 +13,7 @@ class CreateResource extends React.Component {
             formInitialized: false,
             resource: this.findResource(),
             editingState: !!this.props.match.params.resourceId,
+            errors: {},
         }
     }
 
@@ -90,9 +91,10 @@ class CreateResource extends React.Component {
                 <Component
                     field={resourceField}
                     label={resourceField.name}
+                    errors={this.state.errors[resourceField.inputName]}
                     value={
                         parentResourceField
-                            ? console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>', parentResourceField, this.state.form[parentResourceField.inputName]) || this.state.form[parentResourceField.inputName][
+                            ? this.state.form[parentResourceField.inputName][
                                   resourceField.inputName
                               ]
                             : this.state.form[resourceField.inputName]
@@ -120,10 +122,14 @@ class CreateResource extends React.Component {
             submitting: true,
         })
 
-        Flamingo.request.post(
-            `resources/${this.state.resource.param}`,
-            this.state.form
-        )
+        Flamingo.request
+            .post(`resources/${this.state.resource.param}`, this.state.form)
+            .then(() => {})
+            .catch((err) => {
+                this.setState({
+                    errors: err.response.data,
+                })
+            })
     }
 
     handleFieldChange = (field, value) => {
@@ -172,38 +178,47 @@ class CreateResource extends React.Component {
                 {formInitialized && (
                     <React.Fragment>
                         <div className="w-full flex flex-wrap mt-10">
-                    <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                        <Text variant="large">{resource.name}</Text>
-                        <Text variant="medium" className="opacity-75">
-                            Put in information about the new{' '}
-                            {resource.name.toLowerCase()}
-                        </Text>
-                    </div>
+                            <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
+                                <Text variant="large">{resource.name}</Text>
+                                <Text variant="medium" className="opacity-75">
+                                    Put in information about the new{' '}
+                                    {resource.name.toLowerCase()}
+                                </Text>
+                            </div>
 
-                    <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                        {this.getResourceFields().map(field => this.renderResourceField(field))}
-                    </div>
-                </div>
-
-                {this.getResourceObjectFields().map((field) => (
-                    <div
-                        key={field.inputName}
-                        className="w-full flex flex-wrap mt-10"
-                    >
-                        <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                            <Text variant="large">{field.name}</Text>
-                            <Text variant="medium" className="opacity-75">
-                                Put in information about the new object field
-                            </Text>
+                            <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
+                                {this.getResourceFields().map((field) =>
+                                    this.renderResourceField(field)
+                                )}
+                            </div>
                         </div>
 
-                        <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                            {field.fields.map((childField) =>
-                                this.renderResourceField(childField, field)
-                            )}
-                        </div>
-                    </div>
-                ))}
+                        {this.getResourceObjectFields().map((field) => (
+                            <div
+                                key={field.inputName}
+                                className="w-full flex flex-wrap mt-10"
+                            >
+                                <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
+                                    <Text variant="large">{field.name}</Text>
+                                    <Text
+                                        variant="medium"
+                                        className="opacity-75"
+                                    >
+                                        Put in information about the new object
+                                        field
+                                    </Text>
+                                </div>
+
+                                <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
+                                    {field.fields.map((childField) =>
+                                        this.renderResourceField(
+                                            childField,
+                                            field
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </React.Fragment>
                 )}
             </React.Fragment>

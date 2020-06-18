@@ -22,6 +22,8 @@ export class ObjectField extends Field {
      */
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
+
+        this.hideFromIndex()
     }
 
     /**
