@@ -15,6 +15,7 @@ import ClientController from '../controllers/ClientController'
 import LoginController from '../controllers/auth/LoginController'
 
 import DatabaseRepository from '../database/Repository'
+import IndexResourceController from '../controllers/resources/IndexResourceController'
 import CreateResourceController from '../controllers/resources/CreateResourceController'
 
 export class FlamingoServiceProvider
@@ -45,9 +46,9 @@ export class FlamingoServiceProvider
     public async register() {
         this.registerEnvironmentVariables()
 
-        await this.registerResources()
-
         this.db = await this.establishDatabaseConnection()
+
+        await this.registerResources()
 
         this.registerMiddleware()
 
@@ -111,6 +112,11 @@ export class FlamingoServiceProvider
             `/api/resources/:resource`,
             CreateResourceController.store
         )
+
+        this.router.get(
+            `/api/resources/:resource`,
+            IndexResourceController.index
+        )
     }
 
     public registerAuthRoutes() {
@@ -128,8 +134,8 @@ export class FlamingoServiceProvider
                 const Resource = require(Path.resolve(resourcesPath, file))
 
                 return Resource.default
-                    ? new Resource.default()
-                    : new Resource()
+                    ? new Resource.default(this.db)
+                    : new Resource(this.db)
             })
     }
 

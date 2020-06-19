@@ -63,7 +63,11 @@ class Controller {
         [
             boolean,
             {
-                [key: string]: string
+                [key: string]:
+                    | string
+                    | {
+                          [key: string]: string
+                      }
             } | null
         ]
     > => {
@@ -85,18 +89,31 @@ class Controller {
     protected formatValidationErrors = (
         errors: Array<ValidationError>
     ): {
-        [key: string]: string
+        [key: string]:
+            | string
+            | {
+                  [key: string]: string
+              }
     } => {
         const formattedErrors: {
-            [key: string]: string
+            [key: string]:
+                | string
+                | {
+                      [key: string]: string
+                  }
         } = {}
 
         errors.forEach((error) => {
             if (error.field.indexOf('.') !== -1) {
-                console.log('>>>>>> need to parse object errors')
-            }
+                const [objectField, nestedField] = error.field.split('.')
 
-            formattedErrors[error.field] = error.message
+                formattedErrors[objectField] = {
+                    ...((formattedErrors[objectField] || {}) as {}),
+                    [nestedField]: error.message,
+                }
+            } else {
+                formattedErrors[error.field] = error.message
+            }
         })
 
         return formattedErrors

@@ -24,11 +24,16 @@ class ResourceIndex extends React.Component {
     }
 
     componentDidMount() {
-        setTimeout(() => {
-            this.setState({
-                loading: false,
-            })
-        }, 1500)
+        this.fetch()
+    }
+
+    fetch = () => {
+        Flamingo.request
+            .get(
+                `resources/${this.state.resource.param}?_id_in=1&_id_in=2&_id_in=3`
+            )
+            .then(console.log)
+            .catch(console.log)
     }
 
     componentDidUpdate(prevProps) {
@@ -59,7 +64,7 @@ class ResourceIndex extends React.Component {
             key: field.inputName,
             fieldName: field.inputName,
             name: field.name,
-            isSorted: field.isSortable
+            isSorted: field.isSortable,
         }))
 
     render() {

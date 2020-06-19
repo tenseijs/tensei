@@ -2,8 +2,44 @@
 import Pluralize from 'pluralize'
 import Field from '../fields/Field'
 import { paramCase, capitalCase } from 'change-case'
+import { DatabaseRepository } from 'server/typings/interfaces'
+import Repository from 'server/database/Repository'
 
 export class Resource {
+    /**
+     *
+     * The private database instance. This will be
+     * used to perform operations on the
+     * resource.
+     */
+    private $db: Repository
+
+    /**
+     *
+     * The model instance for this resource
+     *
+     */
+    private $model: null | {} = null
+
+    /**
+     *
+     * Instantiate resource with the model
+     */
+    public constructor($db: Repository) {
+        this.$db = $db
+    }
+
+    /**
+     * This would match a model, which is a
+     * database row or collection
+     * item
+     */
+    public model(model: {}) {
+        this.$model = model
+
+        return this
+    }
+
     /**
      * This is the collection this resource will connect to
      * By default, it is the plural of the lower
@@ -130,6 +166,64 @@ export class Resource {
             displayInNavigation: this.displayInNavigation(),
             fields: this.fields().map((field) => field.serialize()),
         }
+    }
+
+    public create = (data: any = this.$model) => {
+        return this.$db.insertOne(this.collection(), data)
+    }
+
+    public findAll = () => {
+        return this.$db.findAll(this.collection(), {})
+    }
+
+    public parseQueryParameters = (params: {} = {}) => {
+        const query: any = {}
+
+        const operators = [
+            {
+                key: '_in',
+                value: '$in',
+            },
+            {
+                key: '_lt',
+                value: '$lt',
+            },
+            {
+                key: '_nin',
+                value: '$nin',
+            },
+            {
+                key: '_ne',
+                value: '$ne',
+            },
+            {
+                key: '_gt',
+                value: '$gt',
+            },
+            {
+                key: '_lte',
+                value: '$lte',
+            },
+            {
+                key: '_gte',
+                value: '$gte',
+            },
+        ]
+
+        Object.keys(params).forEach((param) => {
+            operators.forEach((operator) => {
+                if (param.match(operator.key)) {
+                    const field = param.split(operator.key)[0]
+
+                    query[field] = {
+                        ...(query[field] || {}),
+                        [operator.value]: (params as any)[param],
+                    }
+                }
+            })
+        })
+
+        return query
     }
 }
 

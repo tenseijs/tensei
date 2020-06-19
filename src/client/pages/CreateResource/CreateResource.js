@@ -28,9 +28,11 @@ class CreateResource extends React.Component {
     }
 
     initializeForm = () => {
+        const [form, errors] = this.getDefaultFormState()
         this.setState({
             formInitialized: true,
-            form: this.getDefaultFormState(),
+            form,
+            errors,
         })
     }
 
@@ -66,21 +68,26 @@ class CreateResource extends React.Component {
 
     getDefaultCreationFormState = () => {
         const form = {}
+        const errors = {}
 
         this.getResourceFields().forEach((field) => {
             form[field.inputName] = field.defaultValue
+            errors[field.inputName] = null
         })
 
         this.getResourceObjectFields().forEach((objectField) => {
             form[objectField.inputName] = form[objectField.inputName] || {}
+            errors[objectField.inputName] = {}
 
             objectField.fields.forEach((childField) => {
                 form[objectField.inputName][childField.inputName] =
                     childField.defaultValue
+
+                errors[objectField.inputName][childField.inputName] = null
             })
         })
 
-        return form
+        return [form, errors]
     }
 
     renderResourceField = (resourceField, parentResourceField = null) => {
@@ -91,7 +98,13 @@ class CreateResource extends React.Component {
                 <Component
                     field={resourceField}
                     label={resourceField.name}
-                    errors={this.state.errors[resourceField.inputName]}
+                    errorMessage={
+                        parentResourceField
+                            ? this.state.errors[parentResourceField.inputName][
+                                  resourceField.inputName
+                              ]
+                            : this.state.errors[resourceField.inputName]
+                    }
                     value={
                         parentResourceField
                             ? this.state.form[parentResourceField.inputName][
@@ -99,7 +112,6 @@ class CreateResource extends React.Component {
                               ]
                             : this.state.form[resourceField.inputName]
                     }
-                    // value={''}
                     onFieldChange={(value) =>
                         parentResourceField
                             ? this.handleObjectFieldChange(
@@ -125,9 +137,9 @@ class CreateResource extends React.Component {
         Flamingo.request
             .post(`resources/${this.state.resource.param}`, this.state.form)
             .then(() => {})
-            .catch((err) => {
+            .catch((error) => {
                 this.setState({
-                    errors: err.response.data,
+                    errors: error.response.data,
                 })
             })
     }

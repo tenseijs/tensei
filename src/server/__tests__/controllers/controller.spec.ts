@@ -2,7 +2,7 @@ import Article from '../mocks/resources/Article'
 import Controller from '../../controllers/Controller'
 
 test('can get validation rules from resource correctly', async () => {
-    const rules = new Controller().getValidationRules(new Article())
+    const rules = new Controller().getValidationRules(new Article({}))
 
     expect(rules).toMatchInlineSnapshot(`
         Object {
@@ -17,7 +17,7 @@ test('can validate data correctly for a resource', async () => {
         {
             publishedAt: 'WRONG-DATE-FORMAT',
         },
-        new Article()
+        new Article({})
     )
 
     expect(validationFailed).toBe(true)

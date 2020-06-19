@@ -50,7 +50,7 @@ class ShoppingCart extends Resource {
 
 describe('Resource class', () => {
     it('Correctly serializes the resource', () => {
-        const post = new Post()
+        const post = new Post({})
 
         expect(post.serialize()).toEqual({
             label: 'Posts',
@@ -67,7 +67,7 @@ describe('Resource class', () => {
     })
 
     it('Correctly serializes the resource when properties are updated', () => {
-        const user = new User()
+        const user = new User({})
 
         expect(user.serialize()).toEqual({
             label: 'Department leads',
@@ -84,7 +84,7 @@ describe('Resource class', () => {
     })
 
     it('serialises multiple word resources correctly', () => {
-        const postAuthorLabel = new PostAuthorLabel()
+        const postAuthorLabel = new PostAuthorLabel({})
 
         expect(postAuthorLabel.serialize()).toEqual({
             label: 'Post Author Labels',
@@ -103,7 +103,7 @@ describe('Resource class', () => {
     })
 
     it('correctly serializes all fields passed to resource', () => {
-        const shoppingCart = new ShoppingCart()
+        const shoppingCart = new ShoppingCart({})
 
         expect(shoppingCart.serialize()).toEqual({
             label: 'Shopping Carts',

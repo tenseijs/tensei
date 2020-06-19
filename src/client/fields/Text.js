@@ -11,9 +11,6 @@ class Text extends React.Component {
             ...rest
         } = this.props
 
-        if (value.length < 0) {
-            console.log('we got an error')
-        }
         return (
             <TextField
                 {...rest}
