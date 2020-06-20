@@ -1,6 +1,7 @@
 import ID from '../../fields/ID'
 import Text from '../../fields/Text'
 import Resource from '../../resources/Resource'
+import Repository from 'server/database/Repository'
 
 class Post extends Resource {}
 
@@ -50,7 +51,7 @@ class ShoppingCart extends Resource {
 
 describe('Resource class', () => {
     it('Correctly serializes the resource', () => {
-        const post = new Post({})
+        const post = new Post({} as Repository)
 
         expect(post.serialize()).toEqual({
             label: 'Posts',
@@ -67,7 +68,7 @@ describe('Resource class', () => {
     })
 
     it('Correctly serializes the resource when properties are updated', () => {
-        const user = new User({})
+        const user = new User({} as Repository)
 
         expect(user.serialize()).toEqual({
             label: 'Department leads',
@@ -84,7 +85,7 @@ describe('Resource class', () => {
     })
 
     it('serialises multiple word resources correctly', () => {
-        const postAuthorLabel = new PostAuthorLabel({})
+        const postAuthorLabel = new PostAuthorLabel({} as Repository)
 
         expect(postAuthorLabel.serialize()).toEqual({
             label: 'Post Author Labels',
@@ -103,7 +104,7 @@ describe('Resource class', () => {
     })
 
     it('correctly serializes all fields passed to resource', () => {
-        const shoppingCart = new ShoppingCart({})
+        const shoppingCart = new ShoppingCart({} as Repository)
 
         expect(shoppingCart.serialize()).toEqual({
             label: 'Shopping Carts',

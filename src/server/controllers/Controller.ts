@@ -2,7 +2,7 @@ import Field from '../fields/Field'
 import Resource from '../resources/Resource'
 import { validateAll } from 'indicative/validator'
 
-interface ValidationError {
+export interface ValidationError {
     message: string
     field: string
 }

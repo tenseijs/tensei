@@ -17,9 +17,17 @@ class IndexResourceController extends Controller {
             })
         }
 
-        console.log('>>>>>>>>>>>', resource.parseQueryParameters(request.query))
+        const [successful, query, errors] = await resource.parseQueryParameters(
+            request.query
+        )
 
-        const data = await resource.findAll()
+        if (!successful) {
+            return response.status(400).json(errors)
+        }
+
+        const data = await resource.findAll(query)
+
+        console.log(query)
 
         return response.json(data)
     }

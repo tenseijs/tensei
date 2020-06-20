@@ -11,6 +11,7 @@ import {
 import { DetailsListLayoutMode } from 'office-ui-fabric-react/lib/DetailsList'
 import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox'
 import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
+import Filter from '../../components/Filter'
 
 class ResourceIndex extends React.Component {
     state = this.defaultState()
@@ -20,6 +21,15 @@ class ResourceIndex extends React.Component {
             resource: this.findResource(),
             showingSettings: false,
             loading: true,
+            data: [],
+            showFilter: false,
+            filters: [
+                {
+                    property: '',
+                    operator: '',
+                    value: '',
+                },
+            ],
         }
     }
 
@@ -28,15 +38,19 @@ class ResourceIndex extends React.Component {
     }
 
     fetch = () => {
+        // console.log(this.state.resource, '++++++++')
         Flamingo.request
-            .get(
-                `resources/${this.state.resource.param}?_id_in=1&_id_in=2&_id_in=3`
-            )
-            .then(console.log)
+            .get(`resources/${this.state.resource.param}`)
+            .then((data) => {
+                this.setState({
+                    data: data.data,
+                    loading: false,
+                })
+            })
             .catch(console.log)
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         if (
             prevProps.match.params.resource !== this.props.match.params.resource
         ) {
@@ -45,9 +59,7 @@ class ResourceIndex extends React.Component {
     }
 
     bootComponent = () => {
-        this.setState(this.defaultState())
-
-        this.componentDidMount()
+        this.setState(this.defaultState(), () => this.componentDidMount())
     }
 
     findResource() {
@@ -67,67 +79,73 @@ class ResourceIndex extends React.Component {
             isSorted: field.isSortable,
         }))
 
-    render() {
-        const { resource, loading } = this.state
+    showFilter = () => {
+        this.setState({
+            showFilter: !this.state.showFilter,
+        })
+    }
 
+    addNewLine = () => {}
+
+    removeLine = () => {}
+
+    render() {
+        const { resource, loading, data, showFilter } = this.state
+
+        console.log(this.state)
         return (
             <Fragment>
-                <header className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                        <Text variant="xLarge">{resource.label}</Text>
+                {showFilter ? (
+                    <Filter
+                        showFilter={this.showFilter}
+                        resource={resource}
+                        lines={this.state.filters}
+                    />
+                ) : (
+                    <header className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <Text variant="xLarge">{resource.label}</Text>
+                            <Text variant="smallPlus">0 entries found</Text>
+                        </div>
 
-                        <Text variant="smallPlus">0 entries found</Text>
-                    </div>
+                        <Link to={`/resources/${resource.param}/new`}>
+                            <PrimaryButton
+                                iconProps={{
+                                    iconName: 'Add',
+                                    styles: {
+                                        marginRight: '5px',
+                                    },
+                                }}
+                            >
+                                Add new {resource.name}
+                            </PrimaryButton>
+                        </Link>
+                    </header>
+                )}
 
-                    <Link to={`/resources/${resource.param}/new`}>
-                        <PrimaryButton
-                            iconProps={{
-                                iconName: 'Add',
-                                styles: {
-                                    marginRight: '5px',
-                                },
-                            }}
-                        >
-                            Add new {resource.name}
-                        </PrimaryButton>
-                    </Link>
-                </header>
+                <div className="w-full mt-12 flex flex-wrap items-center justify-between">
+                    <DefaultButton
+                        iconProps={{
+                            iconName: 'Filter',
+                        }}
+                        onClick={this.showFilter}
+                    >
+                        {showFilter ? 'Hide Filters' : 'Filters'}
+                    </DefaultButton>
 
-                <div className="w-full mt-8 flex flex-wrap items-center justify-between">
-                    <SearchBox
-                        className="w-full md:w-1/4"
-                        placeholder={`Search ${resource.label.toLowerCase()}`}
-                    ></SearchBox>
-                    <div className="w-full md:w-3/4 mt-4 md:mt-0 flex items-center justify-between md:justify-end">
-                        <DefaultButton
-                            iconProps={{
-                                iconName: 'Filter',
-                            }}
-                        >
-                            Filters
-                        </DefaultButton>
-
-                        <ActionButton
-                            className="ml-2"
-                            iconProps={{
-                                iconName: 'Settings',
-                            }}
-                        >
-                            Settings
-                        </ActionButton>
-                    </div>
+                    <ActionButton
+                        className="ml-2"
+                        iconProps={{
+                            iconName: 'Settings',
+                        }}
+                    >
+                        Settings
+                    </ActionButton>
                 </div>
 
                 <div className="mt-8 w-full">
                     <ShimmeredDetailsList
-                        items={[
-                            {
-                                name: 'Bahdcoder Kati',
-                                email: 'bahdcoder@gmail.com',
-                                date_joined: '2020-02-1939',
-                                date_ended: '2020-05-03',
-                            },
-                        ]}
+                        items={data}
                         enableShimmer={loading}
                         columns={this.getTableColumns()}
                         layoutMode={DetailsListLayoutMode.justified}
