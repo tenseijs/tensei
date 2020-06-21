@@ -28,7 +28,7 @@ class DashboardPage extends React.Component {
                 </div>
                 <div
                     style={{ height: 'calc(100vh - 3rem)' }}
-                    className="flex flex-wrap min-h-screen"
+                    className="flex flex-wrap min-h-screen overflow-scroll"
                 >
                     <div
                         className="w-full md:w-1/7 h-full py-5 px-6"
@@ -112,7 +112,7 @@ class DashboardPage extends React.Component {
                         </div>
                     </div>
                     <div
-                        className="w-full md:w-6/7 h-full"
+                        className="w-full md:w-6/7"
                         style={{ backgroundColor: NeutralColors.gray10 }}
                     >
                         <div className="py-4 px-3 md:py-10 md:px-12">

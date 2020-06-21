@@ -1,12 +1,13 @@
 import Field from './Field'
+import { singular } from 'pluralize'
 
-export class ObjectField extends Field {
+export class ObjectArrayField extends Field {
     /**
      *
      * This is a short name for the frontend component that
      * will be mounted for this field.
      */
-    public component = 'ObjectField'
+    public component = 'ObjectArrayField'
 
     /**
      *
@@ -43,7 +44,7 @@ export class ObjectField extends Field {
      * @param this
      */
     public rules<T extends Field>(this: T, ...rules: Array<string>): T {
-        this.validationRules = ['object', ...rules]
+        this.validationRules = ['array', ...rules]
 
         return this
     }
@@ -55,9 +56,10 @@ export class ObjectField extends Field {
     public serialize() {
         return {
             ...super.serialize(),
+            singleName: singular(this.name),
             fields: this.objectFields.map((field) => field.serialize()),
         }
     }
 }
 
-export default ObjectField
+export default ObjectArrayField

@@ -1,7 +1,11 @@
 import React from 'react'
 import { withResources } from 'store/resources'
 import { Text } from 'office-ui-fabric-react/lib/Text'
-import { DefaultButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button'
+import {
+    DefaultButton,
+    PrimaryButton,
+    IconButton,
+} from 'office-ui-fabric-react/lib/Button'
 
 class CreateResource extends React.Component {
     state = this.defaultState()
@@ -42,17 +46,26 @@ class CreateResource extends React.Component {
     getCreationFields = () =>
         this.state.resource.fields.filter((field) => field.showOnCreation)
 
-    getResourceFields = (objectFields = false) =>
+    getResourceFields = () =>
         (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
-        ).filter((field) =>
-            objectFields
-                ? field.component === 'ObjectField'
-                : field.component !== 'ObjectField'
+        ).filter(
+            (field) =>
+                !['ObjectField', 'ObjectArrayField'].includes(field.component)
         )
 
-    getResourceObjectFields = () => this.getResourceFields(true)
+    getResourceObjectFields = () =>
+        (this.state.editingState
+            ? this.getUpdateFields()
+            : this.getCreationFields()
+        ).filter((field) => field.component === 'ObjectField')
+
+    getResourceObjectArrayFields = () =>
+        (this.state.editingState
+            ? this.getUpdateFields()
+            : this.getCreationFields()
+        ).filter((field) => field.component === 'ObjectArrayField')
 
     getDefaultFormState = () =>
         this.state.editingState
@@ -87,7 +100,33 @@ class CreateResource extends React.Component {
             })
         })
 
+        this.getResourceObjectArrayFields().forEach((field) => {
+            form[field.inputName] = form[field.inputName] || []
+            errors[field.inputName] = []
+
+            field.fields.forEach((childField) => {
+                form[field.inputName][0] = form[field.inputName][0] || {}
+                form[field.inputName][0][childField.inputName] =
+                    childField.defaultValue
+
+                errors[field.inputName][0] = errors[field.inputName][0] || {}
+
+                errors[field.inputName][0][childField.inputName] = null
+            })
+        })
+
         return [form, errors]
+    }
+
+    getObjectArrayFieldDefaultItem = (field) => {
+        const form = {}
+
+        field.fields.forEach((childField) => {
+            form[childField.inputName] = form[field.inputName] || {}
+            form[childField.inputName] = childField.defaultValue
+        })
+
+        return form
     }
 
     renderResourceField = (resourceField, parentResourceField = null) => {
@@ -165,8 +204,50 @@ class CreateResource extends React.Component {
         })
     }
 
+    renderObjectField = (field) => {
+        return (
+            <div key={field.inputName} className="w-full flex flex-wrap mt-10">
+                <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
+                    <Text variant="large">{field.name}</Text>
+                    <Text variant="medium" className="opacity-75">
+                        {field.description || `Provide the ${field.inputName}`}
+                    </Text>
+                </div>
+
+                <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
+                    {field.fields.map((childField) =>
+                        this.renderResourceField(childField, field)
+                    )}
+                </div>
+            </div>
+        )
+    }
+
+    removeObjectArrayItem = (field, index) => {
+        this.setState({
+            form: {
+                ...this.state.form,
+                [field.inputName]: this.state.form[field.inputName].filter(
+                    (fieldItem, fieldItemIndex) => fieldItemIndex !== index
+                ),
+            },
+        })
+    }
+
+    addObjectArrayItem = (field) => {
+        this.setState({
+            form: {
+                ...this.state.form,
+                [field.inputName]: [
+                    ...this.state.form[field.inputName],
+                    this.getObjectArrayFieldDefaultItem(field),
+                ],
+            },
+        })
+    }
+
     render() {
-        const { resource, formInitialized } = this.state
+        const { resource, formInitialized, form } = this.state
 
         return (
             <React.Fragment>
@@ -189,48 +270,106 @@ class CreateResource extends React.Component {
 
                 {formInitialized && (
                     <React.Fragment>
-                        <div className="w-full flex flex-wrap mt-10">
-                            <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                                <Text variant="large">{resource.name}</Text>
-                                <Text variant="medium" className="opacity-75">
-                                    Put in information about the new{' '}
-                                    {resource.name.toLowerCase()}
-                                </Text>
-                            </div>
-
-                            <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                                {this.getResourceFields().map((field) =>
-                                    this.renderResourceField(field)
-                                )}
-                            </div>
-                        </div>
-
-                        {this.getResourceObjectFields().map((field) => (
-                            <div
-                                key={field.inputName}
-                                className="w-full flex flex-wrap mt-10"
-                            >
+                        {this.getResourceFields().length > 0 ? (
+                            <div className="w-full flex flex-wrap mt-10">
                                 <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                                    <Text variant="large">{field.name}</Text>
+                                    <Text variant="large">{resource.name}</Text>
                                     <Text
                                         variant="medium"
                                         className="opacity-75"
                                     >
-                                        Put in information about the new object
-                                        field
+                                        Put in information about the new{' '}
+                                        {resource.name.toLowerCase()}
                                     </Text>
                                 </div>
 
                                 <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                                    {field.fields.map((childField) =>
-                                        this.renderResourceField(
-                                            childField,
-                                            field
-                                        )
+                                    {this.getResourceFields().map((field) =>
+                                        this.renderResourceField(field)
                                     )}
                                 </div>
                             </div>
-                        ))}
+                        ) : null}
+
+                        {this.getResourceObjectFields().map((field) =>
+                            this.renderObjectField(field)
+                        )}
+
+                        {this.getResourceObjectArrayFields().map((field) => {
+                            return (
+                                <div
+                                    key={field.inputName}
+                                    className="w-full flex flex-wrap mt-10"
+                                >
+                                    <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
+                                        <Text variant="large">
+                                            {field.name}
+                                        </Text>
+                                        <Text
+                                            variant="medium"
+                                            className="opacity-75"
+                                        >
+                                            {field.description ||
+                                                `Provide the ${field.inputName}`}
+                                        </Text>
+                                    </div>
+
+                                    <div className="w-full md:w-2/4">
+                                        {form[field.inputName].map(
+                                            (formField, formIndex) => (
+                                                <div
+                                                    className="mb-5"
+                                                    key={`${field.inputName}-${formIndex}`}
+                                                >
+                                                    <div className="w-full flex justify-between mb-2 items-center">
+                                                        <h3 className="mb-3">
+                                                            {field.singleName}{' '}
+                                                            {formIndex + 1}
+                                                        </h3>
+
+                                                        <IconButton
+                                                            onClick={() =>
+                                                                this.removeObjectArrayItem(
+                                                                    field,
+                                                                    formIndex
+                                                                )
+                                                            }
+                                                            iconProps={{
+                                                                iconName:
+                                                                    'ChromeClose',
+                                                            }}
+                                                        >
+                                                            Remove
+                                                        </IconButton>
+                                                    </div>
+                                                    <div className="bg-white shadow p-6">
+                                                        {field.fields.map(
+                                                            (childField) =>
+                                                                this.renderResourceField(
+                                                                    childField,
+                                                                    field
+                                                                )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                        <div className="w-full flex justify-end mt-3">
+                                            <PrimaryButton
+                                                className="mr-2"
+                                                onClick={() =>
+                                                    this.addObjectArrayItem(
+                                                        field
+                                                    )
+                                                }
+                                            >
+                                                Add new
+                                            </PrimaryButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </React.Fragment>
                 )}
             </React.Fragment>
