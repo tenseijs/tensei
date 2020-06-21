@@ -1,12 +1,12 @@
 import Field from './Field'
 
-export class ObjectField extends Field {
+export class HasOne extends Field {
     /**
      *
      * This is a short name for the frontend component that
      * will be mounted for this field.
      */
-    public component = 'ObjectField'
+    public component = 'HasOneField'
 
     /**
      *
@@ -60,4 +60,4 @@ export class ObjectField extends Field {
     }
 }
 
-export default ObjectField
+export default HasOne

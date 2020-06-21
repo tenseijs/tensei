@@ -52,20 +52,20 @@ class CreateResource extends React.Component {
             : this.getCreationFields()
         ).filter(
             (field) =>
-                !['ObjectField', 'ObjectArrayField'].includes(field.component)
+                !['HasOneField', 'HasManyField', 'HasManyEmbeddedField'].includes(field.component)
         )
 
     getResourceObjectFields = () =>
         (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
-        ).filter((field) => field.component === 'ObjectField')
+        ).filter((field) => field.component === 'HasOneField')
 
     getResourceObjectArrayFields = () =>
         (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
-        ).filter((field) => field.component === 'ObjectArrayField')
+        ).filter((field) => field.component === 'HasManyEmbeddedField')
 
     getDefaultFormState = () =>
         this.state.editingState
@@ -143,7 +143,7 @@ class CreateResource extends React.Component {
 
         if (parentResourceField) {
             errorMessage =
-                errors[parentResourceField.inputName][resourceField.inputName]
+                (errors[parentResourceField.inputName] || {})[resourceField.inputName]
         }
 
         if (!parentResourceField) {

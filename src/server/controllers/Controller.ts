@@ -37,11 +37,11 @@ class Controller {
                 rules[serializedField.inputName] = fieldValidationRules
             }
 
-            if (['ObjectField', 'ObjectArrayField'].includes(field.component)) {
+            if (['HasOneField', 'HasManyEmbeddedField'].includes(field.component)) {
                 serializedField.fields.forEach((childField: any) => {
                     rules[
                         `${serializedField.inputName}.${
-                            field.component === 'ObjectArrayField' ? '*.' : ''
+                            field.component === 'HasManyEmbeddedField' ? '*.' : ''
                         }${childField.inputName}`
                     ] = Array.from(
                         new Set([

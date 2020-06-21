@@ -1,13 +1,13 @@
 import Field from './Field'
 import { singular } from 'pluralize'
 
-export class ObjectArrayField extends Field {
+export class HasManyEmbedded extends Field {
     /**
      *
      * This is a short name for the frontend component that
      * will be mounted for this field.
      */
-    public component = 'ObjectArrayField'
+    public component = 'HasManyEmbeddedField'
 
     /**
      *
@@ -62,4 +62,4 @@ export class ObjectArrayField extends Field {
     }
 }
 
-export default ObjectArrayField
+export default HasManyEmbedded
