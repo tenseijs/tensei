@@ -37,10 +37,12 @@ class Controller {
                 rules[serializedField.inputName] = fieldValidationRules
             }
 
-            if (field.component === 'ObjectField') {
+            if (['ObjectField', 'ObjectArrayField'].includes(field.component)) {
                 serializedField.fields.forEach((childField: any) => {
                     rules[
-                        `${serializedField.inputName}.${childField.inputName}`
+                        `${serializedField.inputName}.${
+                            field.component === 'ObjectArrayField' ? '*.' : ''
+                        }${childField.inputName}`
                     ] = Array.from(
                         new Set([
                             ...childField.rules,
@@ -68,6 +70,9 @@ class Controller {
                     | {
                           [key: string]: string
                       }
+                    | Array<{
+                          [key: string]: string
+                      }>
             } | null
         ]
     > => {
@@ -94,6 +99,9 @@ class Controller {
             | {
                   [key: string]: string
               }
+            | Array<{
+                  [key: string]: string
+              }>
     } => {
         const formattedErrors: {
             [key: string]:
@@ -101,15 +109,34 @@ class Controller {
                 | {
                       [key: string]: string
                   }
+                | Array<{
+                      [key: string]: string
+                  }>
         } = {}
 
         errors.forEach((error) => {
-            if (error.field.indexOf('.') !== -1) {
+            if (error.field.split('.').length === 2) {
                 const [objectField, nestedField] = error.field.split('.')
 
                 formattedErrors[objectField] = {
                     ...((formattedErrors[objectField] || {}) as {}),
                     [nestedField]: error.message,
+                }
+            } else if (error.field.split('.').length > 2) {
+                const [
+                    parentFieldName,
+                    errorIndex,
+                    childFieldName,
+                ] = error.field.split('.')
+
+                if (!formattedErrors[parentFieldName]) {
+                    formattedErrors[parentFieldName] = []
+                }
+
+                // @ts-ignore
+                formattedErrors[parentFieldName][errorIndex] = {
+                    // @ts-ignore
+                    [childFieldName]: error.message,
                 }
             } else {
                 formattedErrors[error.field] = error.message

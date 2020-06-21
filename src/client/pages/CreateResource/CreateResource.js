@@ -129,40 +129,83 @@ class CreateResource extends React.Component {
         return form
     }
 
-    renderResourceField = (resourceField, parentResourceField = null) => {
+    renderResourceField = (
+        resourceField,
+        parentResourceField = null,
+        [arrayParentResourceField, resourceFieldIndex] = []
+    ) => {
         const Component = Flamingo.fieldComponents[resourceField.component]
+
+        const { errors, form } = this.state
+
+        let fieldValue = ''
+        let errorMessage = null
+
+        if (parentResourceField) {
+            errorMessage =
+                errors[parentResourceField.inputName][resourceField.inputName]
+        }
+
+        if (!parentResourceField) {
+            errorMessage = errors[resourceField.inputName]
+        }
+
+        if (arrayParentResourceField) {
+            errorMessage = ((errors[arrayParentResourceField.inputName] || [])[
+                resourceFieldIndex
+            ] || {})[resourceField.inputName]
+        }
+
+        if (parentResourceField) {
+            fieldValue =
+                form[parentResourceField.inputName][resourceField.inputName]
+        }
+
+        if (!parentResourceField) {
+            fieldValue = form[resourceField.inputName]
+        }
+
+        if (arrayParentResourceField) {
+            fieldValue =
+                form[arrayParentResourceField.inputName][resourceFieldIndex][
+                    resourceField.inputName
+                ]
+        }
+
+        let onFieldChange = console.log
+
+        if (parentResourceField) {
+            onFieldChange = (value) =>
+                this.handleObjectFieldChange(
+                    parentResourceField,
+                    resourceField,
+                    value
+                )
+        }
+
+        if (!parentResourceField) {
+            onFieldChange = (value) =>
+                this.handleFieldChange(resourceField.inputName, value)
+        }
+
+        if (arrayParentResourceField) {
+            onFieldChange = (value) =>
+                this.handleArrayObjectField(
+                    parentResourceField,
+                    resourceField,
+                    resourceFieldIndex,
+                    value
+                )
+        }
 
         return (
             <div key={resourceField.inputName} className="mb-3">
                 <Component
+                    value={fieldValue}
                     field={resourceField}
                     label={resourceField.name}
-                    errorMessage={
-                        parentResourceField
-                            ? this.state.errors[parentResourceField.inputName][
-                                  resourceField.inputName
-                              ]
-                            : this.state.errors[resourceField.inputName]
-                    }
-                    value={
-                        parentResourceField
-                            ? this.state.form[parentResourceField.inputName][
-                                  resourceField.inputName
-                              ]
-                            : this.state.form[resourceField.inputName]
-                    }
-                    onFieldChange={(value) =>
-                        parentResourceField
-                            ? this.handleObjectFieldChange(
-                                  parentResourceField,
-                                  resourceField,
-                                  value
-                              )
-                            : this.handleFieldChange(
-                                  resourceField.inputName,
-                                  value
-                              )
-                    }
+                    errorMessage={errorMessage}
+                    onFieldChange={onFieldChange}
                 />
             </div>
         )
@@ -188,6 +231,26 @@ class CreateResource extends React.Component {
             form: {
                 ...this.state.form,
                 [field]: value,
+            },
+        })
+    }
+
+    handleArrayObjectField = (parentField, field, arrayFieldIndex, value) => {
+        this.setState({
+            form: {
+                ...this.state.form,
+                [parentField.inputName]: this.state.form[
+                    parentField.inputName
+                ].map((formValue, stateFormFieldIndex) => {
+                    if (arrayFieldIndex === stateFormFieldIndex) {
+                        return {
+                            ...formValue,
+                            [field.inputName]: value,
+                        }
+                    }
+
+                    return formValue
+                }),
             },
         })
     }
@@ -228,6 +291,12 @@ class CreateResource extends React.Component {
             form: {
                 ...this.state.form,
                 [field.inputName]: this.state.form[field.inputName].filter(
+                    (fieldItem, fieldItemIndex) => fieldItemIndex !== index
+                ),
+            },
+            errors: {
+                ...this.state.errors,
+                [field.inputName]: this.state.errors[field.inputName].filter(
                     (fieldItem, fieldItemIndex) => fieldItemIndex !== index
                 ),
             },
@@ -344,10 +413,17 @@ class CreateResource extends React.Component {
                                                     </div>
                                                     <div className="bg-white shadow p-6">
                                                         {field.fields.map(
-                                                            (childField) =>
+                                                            (
+                                                                childField,
+                                                                childFieldIndex
+                                                            ) =>
                                                                 this.renderResourceField(
                                                                     childField,
-                                                                    field
+                                                                    field,
+                                                                    [
+                                                                        field,
+                                                                        formIndex,
+                                                                    ]
                                                                 )
                                                         )}
                                                     </div>

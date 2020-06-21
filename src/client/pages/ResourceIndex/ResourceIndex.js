@@ -38,7 +38,6 @@ class ResourceIndex extends React.Component {
     }
 
     fetch = () => {
-        // console.log(this.state.resource, '++++++++')
         Flamingo.request
             .get(`resources/${this.state.resource.param}`)
             .then((data) => {
@@ -92,7 +91,6 @@ class ResourceIndex extends React.Component {
     render() {
         const { resource, loading, data, showFilter } = this.state
 
-        console.log(this.state)
         return (
             <Fragment>
                 {showFilter ? (
