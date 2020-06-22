@@ -2,6 +2,7 @@ import Axios from 'axios'
 
 import TextField from './fields/Text'
 import DateField from './fields/Date'
+import HasManyField from './fields/HasMany'
 
 class Flamingo {
     state = (() => {
@@ -26,6 +27,7 @@ class Flamingo {
     fieldComponents = {
         DateField,
         TextField,
+        HasManyField,
     }
 }
 

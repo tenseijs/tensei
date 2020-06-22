@@ -52,7 +52,9 @@ class CreateResource extends React.Component {
             : this.getCreationFields()
         ).filter(
             (field) =>
-                !['HasOneField', 'HasManyField', 'HasManyEmbeddedField'].includes(field.component)
+                !['HasOneField', 'HasManyEmbeddedField'].includes(
+                    field.component
+                )
         )
 
     getResourceObjectFields = () =>
@@ -142,8 +144,9 @@ class CreateResource extends React.Component {
         let errorMessage = null
 
         if (parentResourceField) {
-            errorMessage =
-                (errors[parentResourceField.inputName] || {})[resourceField.inputName]
+            errorMessage = (errors[parentResourceField.inputName] || {})[
+                resourceField.inputName
+            ]
         }
 
         if (!parentResourceField) {
@@ -321,7 +324,9 @@ class CreateResource extends React.Component {
         return (
             <React.Fragment>
                 <header className="flex flex-wrap items-center justify-between">
-                    <Text variant="xLarge">Create {resource.name}</Text>
+                    <Text variant="xLarge">
+                        Create {resource.name.toLowerCase()}
+                    </Text>
 
                     <div className="w-full md:w-auto mt-4 md:mt-0">
                         <DefaultButton
@@ -439,7 +444,8 @@ class CreateResource extends React.Component {
                                                     )
                                                 }
                                             >
-                                                Add new
+                                                Add new{' '}
+                                                {field.singleName.toLowerCase()}
                                             </PrimaryButton>
                                         </div>
                                     </div>

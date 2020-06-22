@@ -6,13 +6,16 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                'blue-primary': '#0078D4',
+                'blue-primary': '#007eff',
                 'dark-primary': '#323130',
 
                 'dark-primary-400': '#706F6E',
                 'dark-primary-500': '#323130',
 
                 'dark-secondary': '#1B1B1D',
+                'blue-darkest': '#18202E',
+
+                'gray-lightest': 'rgba(14, 22, 34, 0.02)',
             },
             fontFamily: {},
             width: (theme) => ({
@@ -36,7 +39,7 @@ module.exports = {
                 '11/12': '91.666667%',
                 full: '100%',
                 screen: '100vw',
-            }),
+            })
         },
     },
     variants: {},
