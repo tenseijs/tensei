@@ -1,17 +1,16 @@
 import React, { Fragment } from 'react'
+import { Card, Button, Text, Icon, Form } from 'tabler-react'
 import { withResources } from 'store/resources'
 import { Link, Redirect } from 'react-router-dom'
 import IndexSettings from 'components/IndexSettings'
-import { Text } from 'office-ui-fabric-react/lib/Text'
+import Checkbox from 'components/Checkbox'
 import {
     PrimaryButton,
     DefaultButton,
     ActionButton,
 } from 'office-ui-fabric-react/lib/Button'
-import { DetailsListLayoutMode } from 'office-ui-fabric-react/lib/DetailsList'
-import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox'
-import { ShimmeredDetailsList } from 'office-ui-fabric-react/lib/ShimmeredDetailsList'
-import Filter from '../../components/Filter'
+import Table from 'components/Table'
+import Filter from 'components/Filter'
 
 class ResourceIndex extends React.Component {
     state = this.defaultState()
@@ -93,7 +92,7 @@ class ResourceIndex extends React.Component {
 
         return (
             <Fragment>
-                {showFilter ? (
+                {/* {showFilter ? (
                     <Filter
                         showFilter={this.showFilter}
                         resource={resource}
@@ -139,20 +138,90 @@ class ResourceIndex extends React.Component {
                     >
                         Settings
                     </ActionButton>
-                </div>
+                </div> */}
 
-                <div className="mt-8 w-full">
-                    <ShimmeredDetailsList
-                        items={data}
-                        enableShimmer={loading}
-                        columns={this.getTableColumns()}
-                        layoutMode={DetailsListLayoutMode.justified}
-                        isHeaderVisible={true}
-                        // onItemInvoked={this._onItemInvoked}
-                        ariaLabelForSelectionColumn={`Toggle selection for this ${resource.name.toLowerCase()}`}
-                        ariaLabelForSelectAllCheckbox={`Toggle selection for all ${resource.label.toLowerCase()}`}
-                    />
-                </div>
+                <Card title={
+                        <div>
+                            Invoices
+                        </div>
+                    }>
+                        <Table
+                            responsive
+                            className="card-table table-vcenter text-nowrap"
+                            headerItems={[
+                                { content: (
+                                    <Checkbox />
+                                ) },
+                                { content: 'No.', className: 'w-1' },
+                                { content: 'Invoice Subject' },
+                                { content: 'Client' },
+                                { content: 'VAT No.' },
+                                { content: 'Created' },
+                                { content: 'Status' },
+                                { content: 'Price' },
+                                { content: null },
+                                { content: null },
+                            ]}
+                            bodyItems={[
+                                {
+                                    key: '1',
+                                    item: [
+                                        {
+                            content: (
+                                                <Checkbox />
+                                            )
+                                        },
+                                        {
+                                            content: (
+                                                <Text
+                                                    RootComponent="span"
+                                                    muted
+                                                >
+                                                    001401
+                                                </Text>
+                                            ),
+                                        },
+                                        {
+                                            content: (
+                                                <a
+                                                    href="invoice.html"
+                                                    className="text-inherit"
+                                                >
+                                                    Design Works
+                                                </a>
+                                            ),
+                                        },
+                                        { content: 'Carlson Limited' },
+                                        { content: '87956621' },
+                                        { content: '15 Dec 2017' },
+                                        {
+                                            content: (
+                                                <React.Fragment>
+                                                    <span className="status-icon bg-success" />{' '}
+                                                    Paid
+                                                </React.Fragment>
+                                            ),
+                                        },
+                                        { content: '$887' },
+                                        {
+                                            alignContent: 'right',
+                                            content: (
+                                                <React.Fragment>
+                                                    <Button
+                                                        size="sm"
+                                                        color='white'
+                                                    >
+                                                        Manage
+                                                    </Button>
+                                                </React.Fragment>
+                                            ),
+                                        },
+                                        { content: <Icon link name="edit" /> },
+                                    ],
+                                },
+                            ]}
+                        />
+                    </Card>
             </Fragment>
         )
     }

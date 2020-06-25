@@ -2,7 +2,7 @@ import './Flamingo'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import "tabler-react/dist/Tabler.css"
+// import "tabler-react/dist/Tabler.css"
 import Wrapper from './components/Wrapper'
 import { loadTheme } from '@fluentui/react'
 import { initializeIcons } from '@uifabric/icons'
