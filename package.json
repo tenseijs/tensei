@@ -72,6 +72,7 @@
         "mustache": "^4.0.1",
         "pluralize": "^8.0.0",
         "react-router-dom": "^5.2.0",
-        "readline-sync": "^1.4.10"
+        "readline-sync": "^1.4.10",
+        "tabler-react": "^1.30.1"
     }
 }
