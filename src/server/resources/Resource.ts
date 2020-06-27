@@ -1,11 +1,13 @@
-// import { Resource as ResourceInterface } from '../typings/interfaces'
 import Pluralize from 'pluralize'
-import Field from '../fields/Field'
-import { paramCase, capitalCase } from 'change-case'
-import { DatabaseRepository } from 'server/typings/interfaces'
-import Repository from 'server/database/Repository'
 import { validateAll } from 'indicative/validator'
+import Repository from 'server/database/Repository'
+import { paramCase, capitalCase } from 'change-case'
 import { ValidationError } from '../controllers/Controller'
+
+interface QueryParam {
+    perPage?: string | number
+    page?: string | number
+}
 
 export class Resource {
     /**
@@ -152,6 +154,7 @@ export class Resource {
         primaryKey: string
         collection: string
         fields: Array<any>
+        defaultPerPage: number
         displayInNavigation: boolean
         perPageOptions: Array<number>
         messages: { [key: string]: string }
@@ -165,6 +168,7 @@ export class Resource {
             primaryKey: this.primaryKey(),
             collection: this.collection(),
             perPageOptions: this.perPageOptions(),
+            defaultPerPage: this.perPageOptions()[0],
             displayInNavigation: this.displayInNavigation(),
             fields: this.fields().map((field) => field.serialize()),
         }
@@ -174,11 +178,39 @@ export class Resource {
         return this.$db.insertOne(this.collection(), data)
     }
 
-    public findAll = (query = {}) => {
-        return this.$db.findAll(this.collection(), query)
+    public findAll = (query = {}, params: any) => {
+        return this.$db.findAll(this.collection(), query, params)
     }
 
-    public parseQueryParameters = async (params: {} = {}) => {
+    /**
+     * This method parses limit, perPage, page etc
+     */
+    public parseQueryParams = (
+        params: {
+            perPage?: string
+            page?: string
+        } = {}
+    ) => {
+        const query: {
+            perPage: number
+            page: number
+        } = {
+            perPage: this.perPageOptions()[0],
+            page: 1,
+        }
+
+        if (params.perPage && !isNaN(parseInt(params.perPage))) {
+            query.perPage = parseInt(params.perPage)
+        }
+
+        if (params.page && !isNaN(parseInt(params.page))) {
+            query.page = parseInt(params.page)
+        }
+
+        return query
+    }
+
+    public parseQueryFilters = async (params: {} = {}) => {
         const query: any = {}
 
         let errors: ValidationError[] = []

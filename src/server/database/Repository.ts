@@ -30,9 +30,26 @@ class Repository {
 
     public findAll = async (
         collectionName: string,
-        query: {} = {}
+        query = {},
+        params: {
+            perPage: number
+            page: number
+        }
     ): Promise<any> => {
-        return this.$db.collection(collectionName).find(query).toArray()
+        let builder = this.$db
+            .collection(collectionName)
+            .find(query)
+            .limit(params.perPage)
+            .skip(params.perPage * params.page - 1)
+        const total = await builder.count()
+
+        return {
+            total,
+            page: params.page,
+            perPage: params.perPage,
+            data: await builder.toArray(),
+            pageCount: Math.ceil(total / params.perPage),
+        }
     }
 }
 

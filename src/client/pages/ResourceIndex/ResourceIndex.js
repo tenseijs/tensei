@@ -1,23 +1,21 @@
+import Table from 'components/Table'
 import React, { Fragment } from 'react'
-import { Card, Button, Text, Icon, Form } from 'tabler-react'
+import Checkbox from 'components/Checkbox'
 import { withResources } from 'store/resources'
 import { Link, Redirect } from 'react-router-dom'
-import IndexSettings from 'components/IndexSettings'
-import Checkbox from 'components/Checkbox'
-import {
-    PrimaryButton,
-    DefaultButton,
-    ActionButton,
-} from 'office-ui-fabric-react/lib/Button'
-import Table from 'components/Table'
-import Filter from 'components/Filter'
+import Card from 'components/Card'
+import Icon from 'components/Icon'
+import Button from 'components/Button'
+import Paginator from 'react-paginate'
+import Dropdown from 'components/Dropdown'
 
 class ResourceIndex extends React.Component {
     state = this.defaultState()
 
     defaultState() {
+        const resource = this.findResource()
         return {
-            resource: this.findResource(),
+            resource,
             showingSettings: false,
             loading: true,
             data: [],
@@ -29,20 +27,40 @@ class ResourceIndex extends React.Component {
                     value: '',
                 },
             ],
+            page: 1,
+            perPage: resource.defaultPerPage,
+            total: 0,
+            pageCount: 1,
         }
     }
 
     componentDidMount() {
         this.fetch()
+
+        this.pushParamsToUrl()
+    }
+
+    pushParamsToUrl = () => {
+        this.props.history.push(
+            `${this.props.location.pathname}?page=${this.state.page}&perPage=${this.state.perPage}`
+        )
     }
 
     fetch = () => {
+        const { resource, perPage, page } = this.state
+
+        this.pushParamsToUrl()
+
         Flamingo.request
-            .get(`resources/${this.state.resource.param}`)
-            .then((data) => {
+            .get(`resources/${resource.param}?perPage=${perPage}&page=${page}`)
+            .then(({ data }) => {
                 this.setState({
                     data: data.data,
                     loading: false,
+                    page: data.page,
+                    total: data.total,
+                    perPage: data.perPage,
+                    pageCount: data.pageCount,
                 })
             })
             .catch(console.log)
@@ -73,9 +91,24 @@ class ResourceIndex extends React.Component {
         this.getShowOnIndexColumns().map((field) => ({
             key: field.inputName,
             fieldName: field.inputName,
-            name: field.name,
+            content: field.name,
             isSorted: field.isSortable,
         }))
+
+        getTableData = () => {
+
+            return this.state.data.map(row => ({
+                key: row[this.state.resource.primaryKey],
+                item: [
+                    {
+                        content: <Checkbox />
+                    },
+                    ...this.getTableColumns().map(column => ({
+                        content: row[column.fieldName]
+                    }))
+                ]
+            }))
+        }
 
     showFilter = () => {
         this.setState({
@@ -88,140 +121,161 @@ class ResourceIndex extends React.Component {
     removeLine = () => {}
 
     render() {
-        const { resource, loading, data, showFilter } = this.state
+        const {
+            resource,
+            loading,
+            data,
+            showFilter,
+            page,
+            perPage,
+            total,
+            pageCount,
+        } = this.state
 
         return (
             <Fragment>
-                {/* {showFilter ? (
-                    <Filter
-                        showFilter={this.showFilter}
-                        resource={resource}
-                        lines={this.state.filters}
-                    />
-                ) : (
-                    <header className="flex items-center justify-between">
-                        <div className="flex flex-col">
-                            <Text variant="xLarge">{resource.label}</Text>
-                            <Text variant="smallPlus">0 entries found</Text>
+                <Card
+                    footerClasses="d-flex flex-wrap flex-column flex-md-row align-items-center justify-content-between"
+                    footer={
+                        <>
+                            <div className="d-flex">
+                                <div className="text-muted">
+                                    Show
+                                    <div className="mx-2 d-inline-block">
+                                        <select
+                                            defaultValue={perPage}
+                                            className="form-select"
+                                            onChange={(event) =>
+                                                this.setState(
+                                                    {
+                                                        perPage:
+                                                            event.target.value,
+                                                        loading: true,
+                                                    },
+                                                    () => this.fetch()
+                                                )
+                                            }
+                                        >
+                                            {resource.perPageOptions.map(
+                                                (perPageOption) => (
+                                                    <option
+                                                        key={perPageOption}
+                                                        value={perPageOption}
+                                                    >
+                                                        {perPageOption}
+                                                    </option>
+                                                )
+                                            )}
+                                        </select>
+                                    </div>
+                                    entries
+                                </div>
+                            </div>
+
+                            <p className="m-0 text-muted mt-1 mt-md-0">
+                                Showing <span>{perPage * (page - 1)}</span> to{' '}
+                                <span>
+                                    {parseInt(perPage * (page - 1) + perPage)}
+                                </span>{' '}
+                                of <span>{total}</span> entries
+                            </p>
+
+                            <Paginator
+                                forcePage={page - 1}
+                                pageCount={pageCount}
+                                onPageChange={({ selected }) =>
+                                    this.setState(
+                                        {
+                                            page: selected + 1,
+                                            loading: true,
+                                        },
+                                        () => this.fetch()
+                                    )
+                                }
+                                previousLinkClassName="page-link"
+                                previousClassName="page-item"
+                                previousLabel={
+                                    <Fragment>
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="icon"
+                                            width={24}
+                                            height={24}
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2}
+                                            stroke="currentColor"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <path
+                                                stroke="none"
+                                                d="M0 0h24v24H0z"
+                                            />
+                                            <polyline points="15 6 9 12 15 18" />
+                                        </svg>
+                                        prev
+                                    </Fragment>
+                                }
+                                nextLabel={
+                                    <Fragment>
+                                        next{' '}
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="icon"
+                                            width={24}
+                                            height={24}
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2}
+                                            stroke="currentColor"
+                                            fill="none"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <path
+                                                stroke="none"
+                                                d="M0 0h24v24H0z"
+                                            />
+                                            <polyline points="9 6 15 12 9 18" />
+                                        </svg>
+                                    </Fragment>
+                                }
+                                pageClassName="page-item"
+                                pageLinkClassName="page-link"
+                                nextLinkClassName="page-link"
+                                nextClassName="page-item"
+                                breakLabel="..."
+                                containerClassName="pagination m-0 mt-1 mt-md-0"
+                                activeClassName="active"
+                            />
+                        </>
+                    }
+                    title={
+                        <div className="d-flex justify-content-between align-items-center">
+                            <Checkbox />
                         </div>
-
-                        <Link to={`/resources/${resource.param}/new`}>
-                            <PrimaryButton
-                                iconProps={{
-                                    iconName: 'Add',
-                                    styles: {
-                                        marginRight: '5px',
-                                    },
-                                }}
-                            >
-                                Add new {resource.name}
-                            </PrimaryButton>
-                        </Link>
-                    </header>
-                )}
-
-                <div className="w-full mt-12 flex flex-wrap items-center justify-between">
-                    <DefaultButton
-                        iconProps={{
-                            iconName: 'Filter',
-                        }}
-                        onClick={this.showFilter}
-                    >
-                        {showFilter ? 'Hide Filters' : 'Filters'}
-                    </DefaultButton>
-
-                    <ActionButton
-                        className="ml-2"
-                        iconProps={{
-                            iconName: 'Settings',
-                        }}
-                    >
-                        Settings
-                    </ActionButton>
-                </div> */}
-
-                <Card title={
-                        <div>
-                            Invoices
+                    }
+                >
+                    {loading ? (
+                        <div className="d-flex justify-content-center align-items-center py-5">
+                            <div className="spinner-border" role="status"></div>
                         </div>
-                    }>
+                    ) : (
                         <Table
                             responsive
                             className="card-table table-vcenter text-nowrap"
                             headerItems={[
-                                { content: (
-                                    <Checkbox />
-                                ) },
-                                { content: 'No.', className: 'w-1' },
-                                { content: 'Invoice Subject' },
-                                { content: 'Client' },
-                                { content: 'VAT No.' },
-                                { content: 'Created' },
-                                { content: 'Status' },
-                                { content: 'Price' },
-                                { content: null },
-                                { content: null },
+                                {
+                                    content: null,
+                                },
+                                ...this.getTableColumns(),
                             ]}
                             bodyItems={[
-                                {
-                                    key: '1',
-                                    item: [
-                                        {
-                            content: (
-                                                <Checkbox />
-                                            )
-                                        },
-                                        {
-                                            content: (
-                                                <Text
-                                                    RootComponent="span"
-                                                    muted
-                                                >
-                                                    001401
-                                                </Text>
-                                            ),
-                                        },
-                                        {
-                                            content: (
-                                                <a
-                                                    href="invoice.html"
-                                                    className="text-inherit"
-                                                >
-                                                    Design Works
-                                                </a>
-                                            ),
-                                        },
-                                        { content: 'Carlson Limited' },
-                                        { content: '87956621' },
-                                        { content: '15 Dec 2017' },
-                                        {
-                                            content: (
-                                                <React.Fragment>
-                                                    <span className="status-icon bg-success" />{' '}
-                                                    Paid
-                                                </React.Fragment>
-                                            ),
-                                        },
-                                        { content: '$887' },
-                                        {
-                                            alignContent: 'right',
-                                            content: (
-                                                <React.Fragment>
-                                                    <Button
-                                                        size="sm"
-                                                        color='white'
-                                                    >
-                                                        Manage
-                                                    </Button>
-                                                </React.Fragment>
-                                            ),
-                                        },
-                                        { content: <Icon link name="edit" /> },
-                                    ],
-                                },
+                                ...this.getTableData()
                             ]}
                         />
-                    </Card>
+                    )}
+                </Card>
             </Fragment>
         )
     }

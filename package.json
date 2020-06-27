@@ -37,6 +37,7 @@
     },
     "dependencies": {
         "@fluentui/react": "^7.117.3",
+        "@popperjs/core": "^2.4.2",
         "@types/bcryptjs": "^2.4.2",
         "@types/body-parser": "^1.19.0",
         "@types/classnames": "^2.2.10",
@@ -70,7 +71,10 @@
         "indicative": "^7.4.4",
         "mongodb": "^3.5.8",
         "mustache": "^4.0.1",
+        "numeral": "^2.0.6",
         "pluralize": "^8.0.0",
+        "react-paginate": "^6.3.2",
+        "react-popper": "^2.2.3",
         "react-router-dom": "^5.2.0",
         "readline-sync": "^1.4.10",
         "tabler-react": "^1.30.1"

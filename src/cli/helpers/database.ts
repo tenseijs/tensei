@@ -7,7 +7,7 @@ export default async () => {
         path: Path.join(process.env.PWD!, '.env'),
     })
 
-    const client = new Mongo.MongoClient('mongodb://localhost/flamingo', {
+    const client = new Mongo.MongoClient(process.env.DATABASE_URI!, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })

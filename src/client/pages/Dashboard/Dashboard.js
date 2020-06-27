@@ -2,15 +2,14 @@ import cn from 'classnames'
 import React, { Fragment } from 'react'
 import { Link, Route } from 'react-router-dom'
 import { Text } from 'office-ui-fabric-react/lib/Text'
-import { Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona'
-import { SearchBox } from 'office-ui-fabric-react/lib/SearchBox'
-import { NeutralColors } from '@uifabric/fluent-theme/lib/fluent/FluentColors'
 
 import ResourceIndex from '../ResourceIndex'
 import CreateResource from '../CreateResource'
 
 import { withResources } from '../../store/resources'
 import { mustBeAuthenticated } from '../../store/auth'
+
+import AccountDropdown from 'components/AccountDropdown'
 
 class DashboardPage extends React.Component {
     renderOld() {
@@ -202,110 +201,24 @@ class DashboardPage extends React.Component {
                                     </div>
                                 </div>
                                 <div className="nav-item dropdown">
-                                    <a
-                                        href="#"
-                                        className="nav-link d-flex lh-1 text-reset p-0"
-                                        data-toggle="dropdown"
-                                    >
-                                        <span
-                                            className="avatar"
-                                            style={{
-                                                backgroundImage:
-                                                    'url(./static/avatars/000m.jpg)',
-                                            }}
-                                        />
-                                        <div className="d-none d-xl-block pl-2">
-                                            <div>Paweł Kuna</div>
-                                            <div className="mt-1 small text-muted">
-                                                UI Designer
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <div className="dropdown-menu dropdown-menu-right">
-                                        <a className="dropdown-item" href="#">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="icon dropdown-item-icon"
-                                                width={24}
-                                                height={24}
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={2}
-                                                stroke="currentColor"
-                                                fill="none"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            >
-                                                <path
-                                                    stroke="none"
-                                                    d="M0 0h24v24H0z"
-                                                />
-                                                <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                <circle cx={12} cy={12} r={3} />
-                                            </svg>
-                                            Action
-                                        </a>
-                                        <a className="dropdown-item" href="#">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="icon dropdown-item-icon"
-                                                width={24}
-                                                height={24}
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={2}
-                                                stroke="currentColor"
-                                                fill="none"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            >
-                                                <path
-                                                    stroke="none"
-                                                    d="M0 0h24v24H0z"
-                                                />
-                                                <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
-                                                <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
-                                                <line
-                                                    x1={16}
-                                                    y1={5}
-                                                    x2={19}
-                                                    y2={8}
-                                                />
-                                            </svg>
-                                            Another action
-                                        </a>
-                                        <div className="dropdown-divider" />
-                                        <a className="dropdown-item" href="#">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="icon dropdown-item-icon"
-                                                width={24}
-                                                height={24}
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={2}
-                                                stroke="currentColor"
-                                                fill="none"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            >
-                                                <path
-                                                    stroke="none"
-                                                    d="M0 0h24v24H0z"
-                                                />
-                                                <line
-                                                    x1={12}
-                                                    y1={5}
-                                                    x2={12}
-                                                    y2={19}
-                                                />
-                                                <line
-                                                    x1={5}
-                                                    y1={12}
-                                                    x2={19}
-                                                    y2={12}
-                                                />
-                                            </svg>
-                                            Separated link
-                                        </a>
-                                    </div>
+                                    <AccountDropdown
+                                        avatarURL="./demo/faces/female/25.jpg"
+                                        name="Jane Pearson"
+                                        description="Administrator"
+                                        options={[
+                                            'profile',
+                                            {
+                                                icon: 'settings',
+                                                value: 'Settings',
+                                                to: '/settings',
+                                            },
+                                            'mail',
+                                            'message',
+                                            'divider',
+                                            'help',
+                                            'logout',
+                                        ]}
+                                    />
                                 </div>
                             </div>
                             <div
@@ -496,125 +409,25 @@ class DashboardPage extends React.Component {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="nav-item dropdown">
-                                        <a
-                                            href="#"
-                                            className="nav-link d-flex lh-1 text-reset p-0"
-                                            data-toggle="dropdown"
-                                        >
-                                            <span
-                                                className="avatar"
-                                                style={{
-                                                    backgroundImage:
-                                                        'url(./static/avatars/000m.jpg)',
-                                                }}
-                                            />
-                                            <div className="d-none d-xl-block pl-2">
-                                                <div>Paweł Kuna</div>
-                                                <div className="mt-1 small text-muted">
-                                                    UI Designer
-                                                </div>
-                                            </div>
-                                        </a>
-                                        <div className="dropdown-menu dropdown-menu-right">
-                                            <a
-                                                className="dropdown-item"
-                                                href="#"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="icon dropdown-item-icon"
-                                                    width={24}
-                                                    height={24}
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    fill="none"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                >
-                                                    <path
-                                                        stroke="none"
-                                                        d="M0 0h24v24H0z"
-                                                    />
-                                                    <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                                    <circle
-                                                        cx={12}
-                                                        cy={12}
-                                                        r={3}
-                                                    />
-                                                </svg>
-                                                Action
-                                            </a>
-                                            <a
-                                                className="dropdown-item"
-                                                href="#"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="icon dropdown-item-icon"
-                                                    width={24}
-                                                    height={24}
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    fill="none"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                >
-                                                    <path
-                                                        stroke="none"
-                                                        d="M0 0h24v24H0z"
-                                                    />
-                                                    <path d="M9 7 h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
-                                                    <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
-                                                    <line
-                                                        x1={16}
-                                                        y1={5}
-                                                        x2={19}
-                                                        y2={8}
-                                                    />
-                                                </svg>
-                                                Another action
-                                            </a>
-                                            <div className="dropdown-divider" />
-                                            <a
-                                                className="dropdown-item"
-                                                href="#"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="icon dropdown-item-icon"
-                                                    width={24}
-                                                    height={24}
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    fill="none"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                >
-                                                    <path
-                                                        stroke="none"
-                                                        d="M0 0h24v24H0z"
-                                                    />
-                                                    <line
-                                                        x1={12}
-                                                        y1={5}
-                                                        x2={12}
-                                                        y2={19}
-                                                    />
-                                                    <line
-                                                        x1={5}
-                                                        y1={12}
-                                                        x2={19}
-                                                        y2={12}
-                                                    />
-                                                </svg>
-                                                Separated link
-                                            </a>
-                                        </div>
-                                    </div>
+                                    <AccountDropdown
+                                        type="link"
+                                        avatarURL="./demo/faces/female/25.jpg"
+                                        name="Jane Pearson"
+                                        description="Administrator"
+                                        options={[
+                                            'profile',
+                                            {
+                                                icon: 'settings',
+                                                value: 'Settings',
+                                                to: '/settings',
+                                            },
+                                            'mail',
+                                            'message',
+                                            'divider',
+                                            'help',
+                                            'logout',
+                                        ]}
+                                    />
                                 </div>
                                 <div
                                     className="collapse navbar-collapse"

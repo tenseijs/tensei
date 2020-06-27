@@ -1,15 +1,15 @@
-import cn from "classnames";
-import * as React from "react";
+import cn from 'classnames'
+import * as React from 'react'
 
 function TableBody({ className, children, ...props }) {
-  const classes = cn(className);
-  return (
-    <tbody className={classes} {...props}>
-      {children}
-    </tbody>
-  );
+    const classes = cn(className)
+    return (
+        <tbody className={classes} {...props}>
+            {children}
+        </tbody>
+    )
 }
 
-TableBody.displayName = "Table.Body";
+TableBody.displayName = 'Table.Body'
 
-export default TableBody;
+export default TableBody
