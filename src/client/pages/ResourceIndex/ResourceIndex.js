@@ -1,13 +1,26 @@
-import Table from 'components/Table'
-import React, { Fragment } from 'react'
-import Checkbox from 'components/Checkbox'
-import { withResources } from 'store/resources'
-import { Link, Redirect } from 'react-router-dom'
-import Card from 'components/Card'
-import Icon from 'components/Icon'
-import Button from 'components/Button'
+import cn from 'classnames'
 import Paginator from 'react-paginate'
-import Dropdown from 'components/Dropdown'
+import { Link } from 'react-router-dom'
+import React, { Fragment } from 'react'
+import { withResources } from 'store/resources'
+import ArrowIcon from 'components/ArrowIcon'
+import {
+    ModalConfirm,
+    Option,
+    IconButton,
+    Heading,
+    Table,
+    Select,
+    TextInput,
+    Button,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    SkeletonRow,
+    Checkbox,
+    Paragraph,
+} from '@contentful/forma-36-react-components'
 
 class ResourceIndex extends React.Component {
     state = this.defaultState()
@@ -31,6 +44,8 @@ class ResourceIndex extends React.Component {
             perPage: resource.defaultPerPage,
             total: 0,
             pageCount: 1,
+            selected: [],
+            deleting: null
         }
     }
 
@@ -87,28 +102,40 @@ class ResourceIndex extends React.Component {
     getShowOnIndexColumns = () =>
         this.state.resource.fields.filter((field) => field.showOnIndex)
 
-    getTableColumns = () =>
-        this.getShowOnIndexColumns().map((field) => ({
-            key: field.inputName,
-            fieldName: field.inputName,
-            content: field.name,
-            isSorted: field.isSortable,
+    getTableColumns = () => this.getShowOnIndexColumns()
+
+    handleCheckboxChange = (event, row) => {
+        const primaryKey = row[this.state.resource.primaryKey]
+
+        this.setState({
+            selected: this.state.selected.includes(primaryKey)
+                ? this.state.selected.filter((key) => key !== primaryKey)
+                : [...this.state.selected, primaryKey],
+        })
+    }
+
+    getTableData = () => {
+        return this.state.data.map((row) => ({
+            key: row[this.state.resource.primaryKey],
+            cells: [
+                ...this.getTableColumns().map((column) => {
+                    const Component =
+                        Flamingo.indexFieldComponents[column.component]
+
+                    return {
+                        content: Component ? (
+                            <Component
+                                value={row[column.inputName]}
+                                field={column}
+                            />
+                        ) : (
+                            row[column.inputName]
+                        ),
+                    }
+                }),
+            ],
         }))
-
-        getTableData = () => {
-
-            return this.state.data.map(row => ({
-                key: row[this.state.resource.primaryKey],
-                item: [
-                    {
-                        content: <Checkbox />
-                    },
-                    ...this.getTableColumns().map(column => ({
-                        content: row[column.fieldName]
-                    }))
-                ]
-            }))
-        }
+    }
 
     showFilter = () => {
         this.setState({
@@ -120,162 +147,238 @@ class ResourceIndex extends React.Component {
 
     removeLine = () => {}
 
+    handleSelectAllClicked = (event) => {
+        this.setState({
+            selected: event.target.checked
+                ? this.state.data.map(
+                      (row) => row[this.state.resource.primaryKey]
+                  )
+                : [],
+        })
+    }
+
     render() {
         const {
             resource,
             loading,
             data,
-            showFilter,
+            deleting,
             page,
             perPage,
             total,
             pageCount,
+            selected,
         } = this.state
+
+        const selectAllChecked =
+            selected.length === data.length && data.length > 0
 
         return (
             <Fragment>
-                <Card
-                    footerClasses="d-flex flex-wrap flex-column flex-md-row align-items-center justify-content-between"
-                    footer={
-                        <>
-                            <div className="d-flex">
-                                <div className="text-muted">
-                                    Show
-                                    <div className="mx-2 d-inline-block">
-                                        <select
-                                            defaultValue={perPage}
-                                            className="form-select"
-                                            onChange={(event) =>
-                                                this.setState(
-                                                    {
-                                                        perPage:
-                                                            event.target.value,
-                                                        loading: true,
-                                                    },
-                                                    () => this.fetch()
-                                                )
-                                            }
-                                        >
-                                            {resource.perPageOptions.map(
-                                                (perPageOption) => (
-                                                    <option
-                                                        key={perPageOption}
-                                                        value={perPageOption}
-                                                    >
-                                                        {perPageOption}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </div>
-                                    entries
-                                </div>
-                            </div>
+                <Heading>{resource.label}</Heading>
+                <div className="flex justify-between my-5">
+                    <TextInput
+                        width="large"
+                        placeholder={`Type to search for ${resource.label.toLowerCase()}`}
+                    />
 
-                            <p className="m-0 text-muted mt-1 mt-md-0">
-                                Showing <span>{perPage * (page - 1)}</span> to{' '}
-                                <span>
-                                    {parseInt(perPage * (page - 1) + perPage)}
-                                </span>{' '}
-                                of <span>{total}</span> entries
-                            </p>
+                    <Link to={`/resources/${resource.collection}/new`}>
+                        <Button>Add {resource.name.toLowerCase()}</Button>
+                    </Link>
+                </div>
 
-                            <Paginator
-                                forcePage={page - 1}
-                                pageCount={pageCount}
-                                onPageChange={({ selected }) =>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                <Checkbox
+                                    checked={selectAllChecked}
+                                    onChange={this.handleSelectAllClicked}
+                                />
+                            </TableCell>
+                            {this.getTableColumns().map((column) => (
+                                <TableCell key={column.inputName}>
+                                    {column.name}
+                                </TableCell>
+                            ))}
+                            <TableCell />
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {loading ? (
+                            <SkeletonRow rowCount={10} columnCount={4} />
+                        ) : (
+                            <>
+                                {this.getTableData().map((row) => (
+                                    <TableRow
+                                        className={cn('cursor-pointer', {
+                                            'bg-blue-lightest': selected.includes(
+                                                row.key
+                                            ),
+                                        })}
+                                        key={row.key}
+                                    >
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selected.includes(
+                                                    row.key
+                                                )}
+                                                onChange={() => {
+                                                    const primaryKey = row.key
+
+                                                    this.setState({
+                                                        selected: selected.includes(
+                                                            primaryKey
+                                                        )
+                                                            ? selected.filter(
+                                                                  (key) =>
+                                                                      key !==
+                                                                      primaryKey
+                                                              )
+                                                            : [
+                                                                  ...selected,
+                                                                  primaryKey,
+                                                              ],
+                                                    })
+                                                }}
+                                            />
+                                        </TableCell>
+                                        {row.cells.map((cell, index) => (
+                                            <TableCell
+                                                onClick={() => {
+                                                    this.props.history.push(
+                                                        `/resources/${resource.collection}/${row.key}`
+                                                    )
+                                                }}
+                                                key={`${row.key}-cell-${index}`}
+                                            >
+                                                <Link
+                                                    to={`/resources/${resource.collection}/${row.key}`}
+                                                >
+                                                    {cell.content}
+                                                </Link>
+                                            </TableCell>
+                                        ))}
+                                        <TableCell>
+                                        
+                                            <Link to={`/resources/${resource.collection}/${row.key}/edit`} className='cursor-pointer' style={{ marginRight: '10px' }}>
+                                                <IconButton
+                                                    onClick={() => this.setState({
+                                                        deleting: row
+                                                    })}
+                                                    className='cursor-pointer'
+                                                    iconProps={{
+                                                        icon: 'Edit',
+                                                        color: 'negative'
+                                                    }}
+                                                />
+                                            </Link>
+                                            <IconButton
+                                                onClick={() => this.setState({
+                                                    deleting: row
+                                                })}
+                                                className='cursor-pointer'
+                                                iconProps={{
+                                                    icon: 'Delete',
+                                                    color: 'negative'
+                                                }}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </>
+                        )}
+                    </TableBody>
+                </Table>
+                <div className="flex mt-5 flex-wrap flex-col md:flex-row items-center justify-between">
+                    <>
+                        <div className="flex items-center">
+                            <Select
+                                name="per-page"
+                                id="per-page"
+                                defaultValue={perPage}
+                                onChange={(event) =>
                                     this.setState(
                                         {
-                                            page: selected + 1,
+                                            perPage: event.target.value,
                                             loading: true,
                                         },
                                         () => this.fetch()
                                     )
                                 }
-                                previousLinkClassName="page-link"
-                                previousClassName="page-item"
-                                previousLabel={
-                                    <Fragment>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="icon"
-                                            width={24}
-                                            height={24}
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={2}
-                                            stroke="currentColor"
-                                            fill="none"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
+                            >
+                                {resource.perPageOptions.map(
+                                    (perPageOption) => (
+                                        <Option
+                                            key={perPageOption}
+                                            value={perPageOption}
                                         >
-                                            <path
-                                                stroke="none"
-                                                d="M0 0h24v24H0z"
-                                            />
-                                            <polyline points="15 6 9 12 15 18" />
-                                        </svg>
-                                        prev
-                                    </Fragment>
-                                }
-                                nextLabel={
-                                    <Fragment>
-                                        next{' '}
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="icon"
-                                            width={24}
-                                            height={24}
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={2}
-                                            stroke="currentColor"
-                                            fill="none"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path
-                                                stroke="none"
-                                                d="M0 0h24v24H0z"
-                                            />
-                                            <polyline points="9 6 15 12 9 18" />
-                                        </svg>
-                                    </Fragment>
-                                }
-                                pageClassName="page-item"
-                                pageLinkClassName="page-link"
-                                nextLinkClassName="page-link"
-                                nextClassName="page-item"
-                                breakLabel="..."
-                                containerClassName="pagination m-0 mt-1 mt-md-0"
-                                activeClassName="active"
-                            />
-                        </>
-                    }
-                    title={
-                        <div className="d-flex justify-content-between align-items-center">
-                            <Checkbox />
+                                            {perPageOption} / page
+                                        </Option>
+                                    )
+                                )}
+                            </Select>
                         </div>
-                    }
-                >
-                    {loading ? (
-                        <div className="d-flex justify-content-center align-items-center py-5">
-                            <div className="spinner-border" role="status"></div>
-                        </div>
-                    ) : (
-                        <Table
-                            responsive
-                            className="card-table table-vcenter text-nowrap"
-                            headerItems={[
-                                {
-                                    content: null,
-                                },
-                                ...this.getTableColumns(),
-                            ]}
-                            bodyItems={[
-                                ...this.getTableData()
-                            ]}
+
+                        <Paragraph>
+                            Showing <span>{perPage * (page - 1)}</span> to{' '}
+                            <span>
+                                {parseInt(perPage * (page - 1) + perPage)}
+                            </span>{' '}
+                            of <span>{total}</span> entries
+                        </Paragraph>
+
+                        <Paginator
+                            forcePage={page - 1}
+                            pageCount={pageCount}
+                            onPageChange={({ selected }) =>
+                                this.setState(
+                                    {
+                                        page: selected + 1,
+                                        loading: true,
+                                    },
+                                    () => this.fetch()
+                                )
+                            }
+                            previousLinkClassName="flex items-center page-link"
+                            previousClassName="page-item"
+                            previousLabel={
+                                <Paragraph style={{ display: 'flex' }}>
+                                    <ArrowIcon className="mt-1 transform rotate-90" />
+                                    Prev
+                                </Paragraph>
+                            }
+                            nextLabel={
+                                <Paragraph style={{ display: 'flex' }}>
+                                    Next{' '}
+                                    <ArrowIcon className="mt-1 transform -rotate-90" />
+                                </Paragraph>
+                            }
+                            pageClassName="page-item"
+                            pageLinkClassName="flex items-center page-link"
+                            nextLinkClassName="flex items-center page-link"
+                            nextClassName="page-item"
+                            breakLabel="..."
+                            containerClassName="pagination flex items-center justify-center"
+                            activeClassName="active"
                         />
-                    )}
-                </Card>
+                    </>
+                </div>
+
+                <ModalConfirm
+                    intent='negative'
+                    isShown={!!deleting}
+                    title='Delete resource'
+                    confirmLabel='Delete'
+                    onCancel={() => this.setState({
+                        deleting: null
+                    })}
+                    onConfirm={console.log}
+                >
+                    <Paragraph>
+                        Are you sure you want to delete this resource ?
+                    </Paragraph>
+                </ModalConfirm>
             </Fragment>
         )
     }

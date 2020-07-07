@@ -1,8 +1,10 @@
 import React from 'react'
 import { mustBeNotAuthenticated } from 'store/auth'
-import { Button } from 'office-ui-fabric-react/lib/Button'
-import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox'
-import { TextField } from 'office-ui-fabric-react/lib/TextField'
+import {
+    TextField,
+    Button,
+    CheckboxField,
+} from '@contentful/forma-36-react-components'
 
 class LoginPage extends React.Component {
     state = {
@@ -63,19 +65,23 @@ class LoginPage extends React.Component {
                     <div className="border-t-2 border-blue-primary bg-white shadow-md py-8 px-8">
                         <form onSubmit={this.login} action="">
                             <TextField
-                                label="Email"
+                                labelText="Email"
+                                name="email"
+                                id="email"
                                 value={this.state.email}
                                 placeholder="john@doe.com"
-                                errorMessage={this.state.errors.email}
+                                validationMessage={this.state.errors.email}
                                 onChange={(event) =>
                                     this.setState({ email: event.target.value })
                                 }
                             />
                             <TextField
                                 type="password"
-                                label="Password"
+                                labelText="Password"
+                                name="password"
+                                id="password"
                                 className="mt-4"
-                                errorMessage={this.state.errors.password}
+                                validationMessage={this.state.errors.password}
                                 value={this.state.password}
                                 onChange={(event) =>
                                     this.setState({
@@ -85,20 +91,23 @@ class LoginPage extends React.Component {
                             />
 
                             <div className="mt-8 flex justify-between items-center">
-                                <Checkbox
+                                <CheckboxField
                                     onChange={(event) =>
                                         this.setState({
                                             rememberMe: event.target.checked,
                                         })
                                     }
-                                    value={this.state.rememberMe}
-                                    label="Remember me"
+                                    checked={this.state.rememberMe}
+                                    labelText="Remember me"
+                                    id="rememberMe"
+                                    name="rememberMe"
                                 />
 
                                 <Button
-                                    disabled={this.state.isLoading}
                                     type="submit"
-                                    primary
+                                    buttonType="primary"
+                                    disabled={this.state.isLoading}
+                                    loading={this.state.isLoading}
                                 >
                                     Sign in
                                 </Button>

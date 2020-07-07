@@ -15,6 +15,7 @@ export const flamingo = (
 export const Resource = BaseResource
 
 export { ID } from './fields/ID'
+export { Link } from './fields/Link'
 export { Text } from './fields/Text'
 export { Field } from './fields/Field'
 export { HasOne } from './fields/HasOne'

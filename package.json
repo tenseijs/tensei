@@ -36,6 +36,7 @@
         "client:build": "NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "dependencies": {
+        "@contentful/forma-36-react-components": "^3.42.0",
         "@fluentui/react": "^7.117.3",
         "@popperjs/core": "^2.4.2",
         "@types/bcryptjs": "^2.4.2",
@@ -76,6 +77,8 @@
         "react-paginate": "^6.3.2",
         "react-popper": "^2.2.3",
         "react-router-dom": "^5.2.0",
+        "react-text-truncate": "^0.16.0",
+        "react-truncate": "^2.4.0",
         "readline-sync": "^1.4.10",
         "tabler-react": "^1.30.1"
     }

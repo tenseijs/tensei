@@ -30,8 +30,6 @@ class IndexResourceController extends Controller {
             resource.parseQueryParams(request.query)
         )
 
-        console.log(filters)
-
         return response.json(data)
     }
 }

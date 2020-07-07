@@ -40,7 +40,7 @@ class Repository {
             .collection(collectionName)
             .find(query)
             .limit(params.perPage)
-            .skip(params.perPage * params.page - 1)
+            .skip(params.perPage * (params.page - 1))
         const total = await builder.count()
 
         return {

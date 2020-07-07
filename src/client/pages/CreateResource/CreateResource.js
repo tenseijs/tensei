@@ -1,11 +1,12 @@
 import React from 'react'
 import { withResources } from 'store/resources'
-import { Text } from 'office-ui-fabric-react/lib/Text'
+
 import {
-    DefaultButton,
-    PrimaryButton,
-    IconButton,
-} from 'office-ui-fabric-react/lib/Button'
+    Button,
+    Heading,
+    Subheading,
+    Paragraph,
+} from '@contentful/forma-36-react-components'
 
 class CreateResource extends React.Component {
     state = this.defaultState()
@@ -76,10 +77,13 @@ class CreateResource extends React.Component {
 
     getDefaultEditingFormState = () => {}
 
-    resetForm = () =>
+    resetForm = () => {
+        const [form, errors] = this.getDefaultFormState()
         this.setState({
-            form: this.getDefaultFormState(),
+            form,
+            errors,
         })
+    }
 
     getDefaultCreationFormState = () => {
         const form = {}
@@ -137,6 +141,10 @@ class CreateResource extends React.Component {
         [arrayParentResourceField, resourceFieldIndex] = []
     ) => {
         const Component = Flamingo.fieldComponents[resourceField.component]
+
+        if (!Component) {
+            return null
+        }
 
         const { errors, form } = this.state
 
@@ -273,17 +281,19 @@ class CreateResource extends React.Component {
     renderObjectField = (field) => {
         return (
             <div key={field.inputName} className="w-full flex flex-wrap mt-10">
-                <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                    <Text variant="large">{field.name}</Text>
-                    <Text variant="medium" className="opacity-75">
+                <div className="w-full md:w-1/3 flex flex-col mb-5 md:mb-0">
+                    <Subheading>{field.name}</Subheading>
+                    <Paragraph>
                         {field.description || `Provide the ${field.inputName}`}
-                    </Text>
+                    </Paragraph>
                 </div>
 
-                <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                    {field.fields.map((childField) =>
-                        this.renderResourceField(childField, field)
-                    )}
+                <div className="w-full md:w-2/3">
+                    <div className="w-full md:w-5/6 bg-gray-lightest p-6 mb-3">
+                        {field.fields.map((childField) =>
+                            this.renderResourceField(childField, field)
+                        )}
+                    </div>
                 </div>
             </div>
         )
@@ -324,21 +334,22 @@ class CreateResource extends React.Component {
         return (
             <React.Fragment>
                 <header className="flex flex-wrap items-center justify-between">
-                    <Text variant="xLarge">
+                    <Heading className="mb-0">
                         Create {resource.name.toLowerCase()}
-                    </Text>
+                    </Heading>
 
-                    <div className="w-full md:w-auto mt-4 md:mt-0">
-                        <DefaultButton
-                            onClick={this.resetForm}
+                    <div className="">
+                        <Button
+                            buttonType="muted"
                             className="mr-3"
+                            onClick={this.resetForm}
                         >
                             Reset
-                        </DefaultButton>
+                        </Button>
 
-                        <PrimaryButton onClick={this.submit}>
-                            <Text>Create {resource.name}</Text>
-                        </PrimaryButton>
+                        <Button onClick={this.submit}>
+                            Create {resource.name.toLowerCase()}
+                        </Button>
                     </div>
                 </header>
 
@@ -346,21 +357,22 @@ class CreateResource extends React.Component {
                     <React.Fragment>
                         {this.getResourceFields().length > 0 ? (
                             <div className="w-full flex flex-wrap mt-10">
-                                <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                                    <Text variant="large">{resource.name}</Text>
-                                    <Text
-                                        variant="medium"
-                                        className="opacity-75"
-                                    >
+                                <div className="w-full md:w-1/3 flex flex-col mb-5 md:mb-0">
+                                    <Subheading variant="large">
+                                        {resource.name}
+                                    </Subheading>
+                                    <Paragraph>
                                         Put in information about the new{' '}
                                         {resource.name.toLowerCase()}
-                                    </Text>
+                                    </Paragraph>
                                 </div>
 
-                                <div className="w-full md:w-2/4 bg-white shadow px-6 py-6">
-                                    {this.getResourceFields().map((field) =>
-                                        this.renderResourceField(field)
-                                    )}
+                                <div className="w-full md:w-2/3">
+                                    <div className="w-full md:w-5/6 bg-gray-lightest p-6 mb-3">
+                                        {this.getResourceFields().map((field) =>
+                                            this.renderResourceField(field)
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ) : null}
@@ -375,48 +387,42 @@ class CreateResource extends React.Component {
                                     key={field.inputName}
                                     className="w-full flex flex-wrap mt-10"
                                 >
-                                    <div className="w-full md:w-1/4 flex flex-col mb-5 md:mb-0">
-                                        <Text variant="large">
-                                            {field.name}
-                                        </Text>
-                                        <Text
-                                            variant="medium"
-                                            className="opacity-75"
-                                        >
+                                    <div className="w-full md:w-1/3 flex flex-col mb-5 md:mb-0">
+                                        <Subheading>{field.name}</Subheading>
+                                        <Paragraph>
                                             {field.description ||
                                                 `Provide the ${field.inputName}`}
-                                        </Text>
+                                        </Paragraph>
                                     </div>
 
-                                    <div className="w-full md:w-2/4">
-                                        {form[field.inputName].map(
-                                            (formField, formIndex) => (
-                                                <div
-                                                    className="mb-5"
-                                                    key={`${field.inputName}-${formIndex}`}
-                                                >
-                                                    <div className="w-full flex justify-between mb-2 items-center">
-                                                        <h3 className="mb-3">
-                                                            {field.singleName}{' '}
-                                                            {formIndex + 1}
-                                                        </h3>
+                                    <div className="w-full md:w-2/3">
+                                        <div className="w-full md:w-5/6">
+                                            {form[field.inputName].map(
+                                                (formField, formIndex) => (
+                                                    <div
+                                                        className="mb-5 bg-gray-lightest p-6 mb-3"
+                                                        key={`${field.inputName}-${formIndex}`}
+                                                    >
+                                                        <div className="w-full flex mb-2 justify-between items-center">
+                                                            <h3 className="text-blue-darkest font-bold">
+                                                                {
+                                                                    field.singleName
+                                                                }{' '}
+                                                                {formIndex + 1}
+                                                            </h3>
 
-                                                        <IconButton
-                                                            onClick={() =>
-                                                                this.removeObjectArrayItem(
-                                                                    field,
-                                                                    formIndex
-                                                                )
-                                                            }
-                                                            iconProps={{
-                                                                iconName:
-                                                                    'ChromeClose',
-                                                            }}
-                                                        >
-                                                            Remove
-                                                        </IconButton>
-                                                    </div>
-                                                    <div className="bg-white shadow p-6">
+                                                            <Button
+                                                                buttonType="naked"
+                                                                onClick={() =>
+                                                                    this.removeObjectArrayItem(
+                                                                        field,
+                                                                        formIndex
+                                                                    )
+                                                                }
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </div>
                                                         {field.fields.map(
                                                             (
                                                                 childField,
@@ -432,21 +438,21 @@ class CreateResource extends React.Component {
                                                                 )
                                                         )}
                                                     </div>
-                                                </div>
-                                            )
-                                        )}
-                                        <div className="w-full flex justify-end mt-3">
-                                            <PrimaryButton
-                                                className="mr-2"
-                                                onClick={() =>
-                                                    this.addObjectArrayItem(
-                                                        field
-                                                    )
-                                                }
-                                            >
-                                                Add new{' '}
-                                                {field.singleName.toLowerCase()}
-                                            </PrimaryButton>
+                                                )
+                                            )}
+                                            <div className="w-full flex justify-end mt-3">
+                                                <Button
+                                                    size="small"
+                                                    onClick={() =>
+                                                        this.addObjectArrayItem(
+                                                            field
+                                                        )
+                                                    }
+                                                >
+                                                    Add new{' '}
+                                                    {field.singleName.toLowerCase()}
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

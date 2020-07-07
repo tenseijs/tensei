@@ -3,6 +3,10 @@ import Axios from 'axios'
 import TextField from './fields/Text'
 import DateField from './fields/Date'
 import HasManyField from './fields/HasMany'
+import LinkField from './index-fields/Link'
+import DateIndexField from './index-fields/Date'
+
+import TextIndexField from './index-fields/Text'
 
 class Flamingo {
     state = (() => {
@@ -28,6 +32,16 @@ class Flamingo {
         DateField,
         TextField,
         HasManyField,
+        LinkField: TextField,
+        NumberField: TextField,
+    }
+
+    indexFieldComponents = {
+        TextField: TextIndexField,
+        IDField: TextIndexField,
+        NumberField: TextField,
+        LinkField,
+        DateField: DateIndexField,
     }
 }
 

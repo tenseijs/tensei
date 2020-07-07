@@ -121,6 +121,8 @@ export class FlamingoServiceProvider
 
     public registerAuthRoutes() {
         this.router.post('/api/login', LoginController.store)
+
+        this.router.post('/api/logout', LoginController.logout)
     }
 
     public async registerResources() {

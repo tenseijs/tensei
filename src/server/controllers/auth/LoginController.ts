@@ -3,6 +3,17 @@ import Bcrypt from 'bcryptjs'
 import { validateAll } from 'indicative/validator'
 
 class LoginController {
+    public logout = async (
+        request: Express.Request,
+        response: Express.Response
+    ) => {
+        request.session!.destroy(() => {
+            response.status(200).json({
+                message: 'Logout successful.',
+            })
+        })
+    }
+
     public store = async (
         request: Express.Request,
         response: Express.Response
