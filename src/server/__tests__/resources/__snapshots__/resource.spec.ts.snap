@@ -3,6 +3,7 @@
 exports[`Resource class correctly serializes all fields passed to resource 1`] = `
 Object {
   "collection": "shopping-carts",
+  "defaultPerPage": 10,
   "displayInNavigation": true,
   "fields": Array [
     Object {
@@ -64,6 +65,7 @@ Object {
 exports[`Resource class serialises multiple word resources correctly 1`] = `
 Object {
   "collection": "post-author-labels",
+  "defaultPerPage": 10,
   "displayInNavigation": true,
   "fields": Array [],
   "group": "All",
