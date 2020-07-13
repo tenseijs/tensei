@@ -2,8 +2,10 @@ import cn from 'classnames'
 import Paginator from 'react-paginate'
 import { Link } from 'react-router-dom'
 import React, { Fragment } from 'react'
+
 import { withResources } from 'store/resources'
 import ArrowIcon from 'components/ArrowIcon'
+import Filters from 'components/Filters'
 import {
     ModalConfirm,
     Option,
@@ -20,6 +22,7 @@ import {
     SkeletonRow,
     Checkbox,
     Paragraph,
+    Dropdown,
 } from '@contentful/forma-36-react-components'
 
 class ResourceIndex extends React.Component {
@@ -32,12 +35,39 @@ class ResourceIndex extends React.Component {
             showingSettings: false,
             loading: true,
             data: [],
-            showFilter: false,
+            filters: [],
+            showingFilters: false,
             filters: [
                 {
-                    property: '',
+                    field: '',
                     operator: '',
                     value: '',
+                },
+            ],
+            operators: [
+                {
+                    label: 'Is equal to',
+                    value: 'eq',
+                },
+                {
+                    label: 'Is not equal to',
+                    value: 'ne',
+                },
+                {
+                    label: 'Is greater than',
+                    value: 'gt',
+                },
+                {
+                    label: 'Is less than',
+                    value: 'lt',
+                },
+                {
+                    label: 'Is greater than or equal to',
+                    value: 'gte',
+                },
+                {
+                    label: 'Is less than or equal to',
+                    value: 'lte',
                 },
             ],
             page: 1,
@@ -45,7 +75,7 @@ class ResourceIndex extends React.Component {
             total: 0,
             pageCount: 1,
             selected: [],
-            deleting: null
+            deleting: null,
         }
     }
 
@@ -59,6 +89,19 @@ class ResourceIndex extends React.Component {
         this.props.history.push(
             `${this.props.location.pathname}?page=${this.state.page}&perPage=${this.state.perPage}`
         )
+    }
+
+    addFilter = () => {
+        this.setState({
+            filters: [
+                ...this.state.filters,
+                {
+                    field: '',
+                    value: '',
+                    operator: '',
+                },
+            ],
+        })
     }
 
     fetch = () => {
@@ -162,12 +205,15 @@ class ResourceIndex extends React.Component {
             resource,
             loading,
             data,
+            filters,
+            operators,
             deleting,
             page,
             perPage,
             total,
             pageCount,
             selected,
+            showingFilters,
         } = this.state
 
         const selectAllChecked =
@@ -182,9 +228,43 @@ class ResourceIndex extends React.Component {
                         placeholder={`Type to search for ${resource.label.toLowerCase()}`}
                     />
 
-                    <Link to={`/resources/${resource.collection}/new`}>
-                        <Button>Add {resource.name.toLowerCase()}</Button>
-                    </Link>
+                    <div>
+                        <Dropdown
+                            isOpen={showingFilters}
+                            onClose={() =>
+                                this.setState({
+                                    showingFilters: !showingFilters,
+                                })
+                            }
+                            toggleElement={
+                                <Button
+                                    buttonType="muted"
+                                    icon="Filter"
+                                    onClick={() =>
+                                        this.setState({
+                                            showingFilters: !showingFilters,
+                                        })
+                                    }
+                                >
+                                    Filters
+                                </Button>
+                            }
+                        >
+                            <Filters
+                                filters={filters}
+                                operators={operators}
+                                addFilter={this.addFilter}
+                                removeFilter={this.removeFilter}
+                                fields={this.getTableColumns()}
+                            />
+                        </Dropdown>
+                        <Link
+                            className="ml-3"
+                            to={`/resources/${resource.param}/new`}
+                        >
+                            <Button>Add {resource.name.toLowerCase()}</Button>
+                        </Link>
+                    </div>
                 </div>
 
                 <Table>
@@ -247,40 +327,47 @@ class ResourceIndex extends React.Component {
                                             <TableCell
                                                 onClick={() => {
                                                     this.props.history.push(
-                                                        `/resources/${resource.collection}/${row.key}`
+                                                        `/resources/${resource.param}/${row.key}`
                                                     )
                                                 }}
                                                 key={`${row.key}-cell-${index}`}
                                             >
                                                 <Link
-                                                    to={`/resources/${resource.collection}/${row.key}`}
+                                                    to={`/resources/${resource.param}/${row.key}`}
                                                 >
                                                     {cell.content}
                                                 </Link>
                                             </TableCell>
                                         ))}
                                         <TableCell>
-                                        
-                                            <Link to={`/resources/${resource.collection}/${row.key}/edit`} className='cursor-pointer' style={{ marginRight: '10px' }}>
+                                            <Link
+                                                to={`/resources/${resource.param}/${row.key}/edit`}
+                                                className="cursor-pointer"
+                                                style={{ marginRight: '10px' }}
+                                            >
                                                 <IconButton
-                                                    onClick={() => this.setState({
-                                                        deleting: row
-                                                    })}
-                                                    className='cursor-pointer'
+                                                    onClick={() =>
+                                                        this.setState({
+                                                            deleting: row,
+                                                        })
+                                                    }
+                                                    className="cursor-pointer"
                                                     iconProps={{
                                                         icon: 'Edit',
-                                                        color: 'negative'
+                                                        color: 'negative',
                                                     }}
                                                 />
                                             </Link>
                                             <IconButton
-                                                onClick={() => this.setState({
-                                                    deleting: row
-                                                })}
-                                                className='cursor-pointer'
+                                                onClick={() =>
+                                                    this.setState({
+                                                        deleting: row,
+                                                    })
+                                                }
+                                                className="cursor-pointer"
                                                 iconProps={{
                                                     icon: 'Delete',
-                                                    color: 'negative'
+                                                    color: 'negative',
                                                 }}
                                             />
                                         </TableCell>
@@ -366,13 +453,15 @@ class ResourceIndex extends React.Component {
                 </div>
 
                 <ModalConfirm
-                    intent='negative'
+                    intent="negative"
                     isShown={!!deleting}
-                    title='Delete resource'
-                    confirmLabel='Delete'
-                    onCancel={() => this.setState({
-                        deleting: null
-                    })}
+                    title="Delete resource"
+                    confirmLabel="Delete"
+                    onCancel={() =>
+                        this.setState({
+                            deleting: null,
+                        })
+                    }
                     onConfirm={console.log}
                 >
                     <Paragraph>

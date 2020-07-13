@@ -3,7 +3,7 @@ import React from 'react'
 const ArrowIcon = ({ className }) => {
     return (
         <svg
-            data-testid='ArrowIcon'
+            data-testid="ArrowIcon"
             className={`w-4 h-4 ${className}`}
             fill="none"
             strokeLinecap="round"

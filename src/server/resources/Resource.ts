@@ -1,4 +1,5 @@
 import Pluralize from 'pluralize'
+import { ObjectID } from 'mongodb'
 import { validateAll } from 'indicative/validator'
 import Repository from 'server/database/Repository'
 import { paramCase, capitalCase } from 'change-case'
@@ -38,8 +39,34 @@ export class Resource {
      * database row or collection
      * item
      */
-    public model(model: {}) {
+    public model(model: any) {
         this.$model = model
+
+        // when setting the model, we need to remove all fields sent in the request body
+        // that are not part of the fields in this resource
+        // remove the primary key from the model too.
+        let filteredModel: any = {}
+
+        // this.fields().map(field => field.serialize()).forEach(field => {
+        //     if (! ['HasOneField', 'HasManyEmbeddedField'].includes(field.component) && model[field.inputName]) {
+        //         filteredModel[field.inputName] = model[field.inputName]
+        //     }
+
+        //     if (field.component === 'HasOneField') {
+        //         field.fields
+        //             .forEach((childField: any) => {
+        //                 filteredModel = {
+        //                     ...filteredModel,
+        //                     [field.inputName]: {
+        //                         ...(filteredModel[field.inputName] || {}),
+        //                         [childField.inputName]: model[field.inputName][childField.inputName]
+        //                     }
+        //                 }
+        //             })
+        //     }
+        // })
+
+        console.log('FINAL FILTERED MODEL', filteredModel)
 
         return this
     }
@@ -180,6 +207,32 @@ export class Resource {
 
     public findAll = (query = {}, params: any) => {
         return this.$db.findAll(this.collection(), query, params)
+    }
+
+    public findOneById = (id: string) => {
+        let parsedId: string|ObjectID = id.toString()
+        // if id is mongodb object id, parse it
+        // if id is string, parse it to string
+
+        const primaryKeyField = this.fields().find(
+            (field) => field.databaseField === this.primaryKey()
+        )
+
+        if (primaryKeyField && primaryKeyField.objectId) {
+            try {
+                parsedId = new ObjectID(id)
+            } catch (error) {}
+        }
+
+        return this.$db.findOne(
+            this.collection(),
+            parsedId,
+            primaryKeyField ? primaryKeyField.databaseField : this.primaryKey()
+        )
+    }
+
+    public update = (payload: any) => {
+        
     }
 
     /**

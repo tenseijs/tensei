@@ -66,7 +66,8 @@ class Controller {
 
     validate = async (
         data: any,
-        resource: Resource
+        resource: Resource,
+        creationRules: boolean = true
     ): Promise<
         [
             boolean,
@@ -83,7 +84,7 @@ class Controller {
         ]
     > => {
         try {
-            const validationRules = this.getValidationRules(resource)
+            const validationRules = this.getValidationRules(resource, creationRules)
 
             await validateAll(
                 data,

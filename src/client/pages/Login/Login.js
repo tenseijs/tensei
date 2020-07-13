@@ -68,6 +68,9 @@ class LoginPage extends React.Component {
                                 labelText="Email"
                                 name="email"
                                 id="email"
+                                textInputProps={{
+                                    type: 'email',
+                                }}
                                 value={this.state.email}
                                 placeholder="john@doe.com"
                                 validationMessage={this.state.errors.email}
@@ -76,7 +79,9 @@ class LoginPage extends React.Component {
                                 }
                             />
                             <TextField
-                                type="password"
+                                textInputProps={{
+                                    type: 'password',
+                                }}
                                 labelText="Password"
                                 name="password"
                                 id="password"

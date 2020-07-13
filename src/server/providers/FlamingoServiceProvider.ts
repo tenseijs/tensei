@@ -17,6 +17,8 @@ import LoginController from '../controllers/auth/LoginController'
 import DatabaseRepository from '../database/Repository'
 import IndexResourceController from '../controllers/resources/IndexResourceController'
 import CreateResourceController from '../controllers/resources/CreateResourceController'
+import FindResourceController from '../controllers/resources/FindResourceController'
+import UpdateResourceController from '../controllers/resources/UpdateResourceController'
 
 export class FlamingoServiceProvider
     implements FlamingoServiceProviderInterface {
@@ -113,9 +115,19 @@ export class FlamingoServiceProvider
             CreateResourceController.store
         )
 
+        this.router.put(
+            `/api/resources/:resource`,
+            UpdateResourceController.update
+        )
+
         this.router.get(
             `/api/resources/:resource`,
             IndexResourceController.index
+        )
+
+        this.router.get(
+            `/api/resources/:resource/:resourceId`,
+            FindResourceController.show
         )
     }
 

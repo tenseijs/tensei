@@ -1,4 +1,4 @@
-import { Db } from 'mongodb'
+import { Db, ObjectID } from 'mongodb'
 
 class Repository {
     constructor(private $db: Db) {}
@@ -50,6 +50,17 @@ class Repository {
             data: await builder.toArray(),
             pageCount: Math.ceil(total / params.perPage),
         }
+    }
+
+    public findOne = async (
+        collectionName: string,
+        id: string|ObjectID,
+        primaryKey: string
+    ): Promise<any> => {
+        console.log('xxx----> ', collectionName, primaryKey, id)
+        return this.$db.collection(collectionName).findOne({
+            [primaryKey]: id,
+        })
     }
 }
 

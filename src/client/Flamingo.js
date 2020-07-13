@@ -1,4 +1,5 @@
 import Axios from 'axios'
+import { Notification } from '@contentful/forma-36-react-components'
 
 import TextField from './fields/Text'
 import DateField from './fields/Date'
@@ -23,6 +24,10 @@ class Flamingo {
             resources,
         }
     })()
+
+    library = {
+        Notification
+    }
 
     request = Axios.create({
         baseURL: '/api/',

@@ -64,7 +64,7 @@ describe('Resource class', () => {
             name: 'Post',
             fields: [],
             messages: {},
-            defaultPerPage: 10
+            defaultPerPage: 10,
         })
     })
 
@@ -82,7 +82,7 @@ describe('Resource class', () => {
             param: 'users',
             fields: [],
             messages: {},
-            defaultPerPage: 100
+            defaultPerPage: 100,
         })
     })
 
@@ -100,7 +100,7 @@ describe('Resource class', () => {
             name: 'PostAuthorLabel',
             fields: [],
             messages: {},
-            defaultPerPage: 10
+            defaultPerPage: 10,
         })
 
         expect(postAuthorLabel.serialize()).toMatchSnapshot()
@@ -161,7 +161,7 @@ describe('Resource class', () => {
                 },
             ],
             messages: {},
-            defaultPerPage: 10
+            defaultPerPage: 10,
         })
 
         expect(shoppingCart.serialize()).toMatchSnapshot()

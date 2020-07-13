@@ -32,13 +32,41 @@ class CreateResource extends React.Component {
         this.initializeForm()
     }
 
-    initializeForm = () => {
-        const [form, errors] = this.getDefaultFormState()
-        this.setState({
-            formInitialized: true,
-            form,
-            errors,
-        })
+    initializeForm = async () => {
+        const { editingState, resource } = this.state
+        const { resourceId } = this.props.match.params
+
+        if (editingState) {
+            Flamingo.request.get(
+                `resources/${resource.param}/${resourceId}`
+            )
+            
+            
+            .then(({ data }) => {
+                const [form, errors] = this.getDefaultFormState(data)
+            
+                this.setState({
+                    formInitialized: true,
+                    form,
+                    errors,
+                })
+            })
+            
+            .catch(() => {
+                Flamingo.library.Notification.error(`Could not find resource with ID. ${resourceId}`)
+    
+                this.props.history.push(`/resources/${resource.param}`)
+            })
+     
+        } else {
+            const [form, errors] = this.getDefaultFormState()
+
+            this.setState({
+                formInitialized: true,
+                form,
+                errors,
+            })
+        }
     }
 
     getUpdateFields = () =>
@@ -70,13 +98,6 @@ class CreateResource extends React.Component {
             : this.getCreationFields()
         ).filter((field) => field.component === 'HasManyEmbeddedField')
 
-    getDefaultFormState = () =>
-        this.state.editingState
-            ? this.getDefaultEditingFormState()
-            : this.getDefaultCreationFormState()
-
-    getDefaultEditingFormState = () => {}
-
     resetForm = () => {
         const [form, errors] = this.getDefaultFormState()
         this.setState({
@@ -85,40 +106,47 @@ class CreateResource extends React.Component {
         })
     }
 
-    getDefaultCreationFormState = () => {
+    getDefaultFormState = (model = {}) => {
         const form = {}
         const errors = {}
 
         this.getResourceFields().forEach((field) => {
-            form[field.inputName] = field.defaultValue
+            form[field.inputName] = model[field.inputName] || field.defaultValue
             errors[field.inputName] = null
         })
 
         this.getResourceObjectFields().forEach((objectField) => {
-            form[objectField.inputName] = form[objectField.inputName] || {}
+            form[objectField.inputName] = model[objectField.inputName] || form[objectField.inputName] || {}
             errors[objectField.inputName] = {}
 
-            objectField.fields.forEach((childField) => {
-                form[objectField.inputName][childField.inputName] =
-                    childField.defaultValue
-
-                errors[objectField.inputName][childField.inputName] = null
-            })
+            if (model[objectField.inputName]) {
+                form[objectField.inputName] = model[objectField.inputName]
+            } else {
+                objectField.fields.forEach((childField) => {
+                    form[objectField.inputName][childField.inputName] = [childField.inputName] || childField.defaultValue
+    
+                    errors[objectField.inputName][childField.inputName] = null
+                })
+            }
         })
 
         this.getResourceObjectArrayFields().forEach((field) => {
-            form[field.inputName] = form[field.inputName] || []
+            form[field.inputName] = model[field.inputName] || form[field.inputName] || []
             errors[field.inputName] = []
 
-            field.fields.forEach((childField) => {
-                form[field.inputName][0] = form[field.inputName][0] || {}
-                form[field.inputName][0][childField.inputName] =
-                    childField.defaultValue
-
-                errors[field.inputName][0] = errors[field.inputName][0] || {}
-
-                errors[field.inputName][0][childField.inputName] = null
-            })
+            if (model[field.inputName]) {
+                form[field.inputName] = model[field.inputName]
+            } else {
+                field.fields.forEach((childField) => {
+                    form[field.inputName][0] = form[field.inputName][0] || {}
+                    form[field.inputName][0][childField.inputName] =
+                        childField.defaultValue
+    
+                    errors[field.inputName][0] = errors[field.inputName][0] || {}
+    
+                    errors[field.inputName][0][childField.inputName] = null
+                })
+            }
         })
 
         return [form, errors]
@@ -227,10 +255,21 @@ class CreateResource extends React.Component {
             submitting: true,
         })
 
+        const { resource, editingState } = this.state
+
         Flamingo.request
-            .post(`resources/${this.state.resource.param}`, this.state.form)
-            .then(() => {})
+            [editingState ? 'put' : 'post'](`resources/${resource.param}`, {
+                ...this.state.form,
+                somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere'
+            })
+            .then(() => {
+                this.props.history.push(`/resources/${resource.param}`)
+
+                Flamingo.library.Notification.success(`Resource has been ${editingState ? 'updated' : 'created'}.`)
+            })
             .catch((error) => {
+                Flamingo.library.Notification.error(`Failed updating resource.`)
+
                 this.setState({
                     errors: error.response.data,
                 })
@@ -329,13 +368,13 @@ class CreateResource extends React.Component {
     }
 
     render() {
-        const { resource, formInitialized, form } = this.state
+        const { resource, formInitialized, form, editingState: editing } = this.state
 
         return (
             <React.Fragment>
                 <header className="flex flex-wrap items-center justify-between">
                     <Heading className="mb-0">
-                        Create {resource.name.toLowerCase()}
+                        {editing ? 'Update' : 'Create'} {resource.name.toLowerCase()}
                     </Heading>
 
                     <div className="">
@@ -348,7 +387,7 @@ class CreateResource extends React.Component {
                         </Button>
 
                         <Button onClick={this.submit}>
-                            Create {resource.name.toLowerCase()}
+                            {editing ? 'Update' : 'Create'} {resource.name.toLowerCase()}
                         </Button>
                     </div>
                 </header>

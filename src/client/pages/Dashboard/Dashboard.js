@@ -37,8 +37,8 @@ class DashboardPage extends React.Component {
                 open: true,
                 slug: 'resources',
                 items: this.props.resources.map((resource) => ({
-                    slug: resource.collection,
-                    to: `/resources/${resource.collection}`, // TODO: Add a resource slug to the backend.
+                    slug: resource.param,
+                    to: `/resources/${resource.param}`,
                     label: resource.label,
                 })),
             },
@@ -48,10 +48,9 @@ class DashboardPage extends React.Component {
     logout = () => {
         console.log(this.props)
 
-        Flamingo.request.post('logout')
-            .then(() => {
-                window.location.href = '/auth/login'
-            })
+        Flamingo.request.post('logout').then(() => {
+            window.location.href = '/auth/login'
+        })
     }
 
     toggleAccountMenu = () => {
@@ -179,6 +178,10 @@ class DashboardPage extends React.Component {
                             />
                             <Route
                                 path="/resources/:resource/new"
+                                component={CreateResource}
+                            />
+                            <Route
+                                path="/resources/:resource/:resourceId/edit"
                                 component={CreateResource}
                             />
                             <div className="w-full flex items-center justify-center py-3 mt-24">
