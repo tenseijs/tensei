@@ -28,6 +28,30 @@ class Repository {
         }
     }
 
+    public updateOne = async (
+        collectionName: string,
+        data: {
+            [key: string]: any
+        },
+        id: string | ObjectID,
+        primaryKey: string
+    ): Promise<[boolean, any]> => {
+        try {
+            const result = await this.$db.collection(collectionName).updateOne(
+                {
+                    [primaryKey]: id,
+                },
+                {
+                    $set: data
+                }
+            )
+
+            return [true, result]
+        } catch (errors) {
+            return [false, errors]
+        }
+    }
+
     public findAll = async (
         collectionName: string,
         query = {},
@@ -54,11 +78,20 @@ class Repository {
 
     public findOne = async (
         collectionName: string,
-        id: string|ObjectID,
+        id: string | ObjectID,
         primaryKey: string
     ): Promise<any> => {
-        console.log('xxx----> ', collectionName, primaryKey, id)
         return this.$db.collection(collectionName).findOne({
+            [primaryKey]: id,
+        })
+    }
+
+    public deleteOne = async (
+        collectionName: string,
+        id: string | ObjectID,
+        primaryKey: string
+    ): Promise<any> => {
+        return this.$db.collection(collectionName).deleteOne({
             [primaryKey]: id,
         })
     }

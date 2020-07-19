@@ -14,6 +14,7 @@ class CreateResource extends React.Component {
     defaultState() {
         return {
             form: {},
+            model: {},
             submitting: false,
             formInitialized: false,
             resource: this.findResource(),
@@ -37,27 +38,27 @@ class CreateResource extends React.Component {
         const { resourceId } = this.props.match.params
 
         if (editingState) {
-            Flamingo.request.get(
-                `resources/${resource.param}/${resourceId}`
-            )
-            
-            
-            .then(({ data }) => {
-                const [form, errors] = this.getDefaultFormState(data)
-            
-                this.setState({
-                    formInitialized: true,
-                    form,
-                    errors,
+            Flamingo.request
+                .get(`resources/${resource.param}/${resourceId}`)
+
+                .then(({ data }) => {
+                    const [form, errors] = this.getDefaultFormState(data)
+
+                    this.setState({
+                        formInitialized: true,
+                        form,
+                        errors,
+                        model: data
+                    })
                 })
-            })
-            
-            .catch(() => {
-                Flamingo.library.Notification.error(`Could not find resource with ID. ${resourceId}`)
-    
-                this.props.history.push(`/resources/${resource.param}`)
-            })
-     
+
+                .catch(() => {
+                    Flamingo.library.Notification.error(
+                        `Could not find resource with ID. ${resourceId}`
+                    )
+
+                    this.props.history.push(`/resources/${resource.param}`)
+                })
         } else {
             const [form, errors] = this.getDefaultFormState()
 
@@ -99,7 +100,7 @@ class CreateResource extends React.Component {
         ).filter((field) => field.component === 'HasManyEmbeddedField')
 
     resetForm = () => {
-        const [form, errors] = this.getDefaultFormState()
+        const [form, errors] = this.getDefaultFormState(this.state.model)
         this.setState({
             form,
             errors,
@@ -116,22 +117,27 @@ class CreateResource extends React.Component {
         })
 
         this.getResourceObjectFields().forEach((objectField) => {
-            form[objectField.inputName] = model[objectField.inputName] || form[objectField.inputName] || {}
+            form[objectField.inputName] =
+                model[objectField.inputName] ||
+                form[objectField.inputName] ||
+                {}
             errors[objectField.inputName] = {}
 
             if (model[objectField.inputName]) {
                 form[objectField.inputName] = model[objectField.inputName]
             } else {
                 objectField.fields.forEach((childField) => {
-                    form[objectField.inputName][childField.inputName] = [childField.inputName] || childField.defaultValue
-    
+                    form[objectField.inputName][childField.inputName] =
+                        [childField.inputName] || childField.defaultValue
+
                     errors[objectField.inputName][childField.inputName] = null
                 })
             }
         })
 
         this.getResourceObjectArrayFields().forEach((field) => {
-            form[field.inputName] = model[field.inputName] || form[field.inputName] || []
+            form[field.inputName] =
+                model[field.inputName] || form[field.inputName] || []
             errors[field.inputName] = []
 
             if (model[field.inputName]) {
@@ -141,9 +147,10 @@ class CreateResource extends React.Component {
                     form[field.inputName][0] = form[field.inputName][0] || {}
                     form[field.inputName][0][childField.inputName] =
                         childField.defaultValue
-    
-                    errors[field.inputName][0] = errors[field.inputName][0] || {}
-    
+
+                    errors[field.inputName][0] =
+                        errors[field.inputName][0] || {}
+
                     errors[field.inputName][0][childField.inputName] = null
                 })
             }
@@ -257,15 +264,19 @@ class CreateResource extends React.Component {
 
         const { resource, editingState } = this.state
 
-        Flamingo.request
-            [editingState ? 'put' : 'post'](`resources/${resource.param}`, {
+        Flamingo.request[editingState ? 'put' : 'post'](
+            `resources/${resource.param}/${editingState ? this.props.match.params.resourceId : ''}`,
+            {
                 ...this.state.form,
-                somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere'
-            })
+                somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere',
+            }
+        )
             .then(() => {
                 this.props.history.push(`/resources/${resource.param}`)
 
-                Flamingo.library.Notification.success(`Resource has been ${editingState ? 'updated' : 'created'}.`)
+                Flamingo.library.Notification.success(
+                    `Resource has been ${editingState ? 'updated' : 'created'}.`
+                )
             })
             .catch((error) => {
                 Flamingo.library.Notification.error(`Failed updating resource.`)
@@ -368,13 +379,19 @@ class CreateResource extends React.Component {
     }
 
     render() {
-        const { resource, formInitialized, form, editingState: editing } = this.state
+        const {
+            resource,
+            formInitialized,
+            form,
+            editingState: editing,
+        } = this.state
 
         return (
             <React.Fragment>
                 <header className="flex flex-wrap items-center justify-between">
                     <Heading className="mb-0">
-                        {editing ? 'Update' : 'Create'} {resource.name.toLowerCase()}
+                        {editing ? 'Update' : 'Create'}{' '}
+                        {resource.name.toLowerCase()}
                     </Heading>
 
                     <div className="">
@@ -387,7 +404,8 @@ class CreateResource extends React.Component {
                         </Button>
 
                         <Button onClick={this.submit}>
-                            {editing ? 'Update' : 'Create'} {resource.name.toLowerCase()}
+                            {editing ? 'Update' : 'Create'}{' '}
+                            {resource.name.toLowerCase()}
                         </Button>
                     </div>
                 </header>

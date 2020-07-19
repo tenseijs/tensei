@@ -1,8 +1,8 @@
 import Express from 'express'
 import Controller from '../Controller'
 
-class FindResourceController extends Controller {
-    public show = async (
+class DeleteResourceController extends Controller {
+    public destroy = async (
         request: Express.Request,
         response: Express.Response
     ) => {
@@ -17,14 +17,16 @@ class FindResourceController extends Controller {
             })
         }
 
-        const resourceInstance = await resource.findOneById(
-            request.params.resourceId
-        )
+        const model = await resource.destroy(request.params.resourceId)
 
-        return response
-            .status(resourceInstance ? 200 : 404)
-            .json(resourceInstance)
+        if (! model) {
+            return response.status(404).json({
+                message: `Resource with ID ${request.params.resourceId} not found.`
+            })
+        }
+
+        return response.status(204).json({})
     }
 }
 
-export default new FindResourceController()
+export default new DeleteResourceController()

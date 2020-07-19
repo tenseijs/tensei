@@ -9,6 +9,12 @@ export class HasOne extends Field {
     public component = 'HasOneField'
 
     /**
+     * This will be used for json validation
+     *
+     */
+    protected jsonType: string = 'object'
+
+    /**
      *
      * This defines a list of all fields in this object.
      * It is also an array of fields.

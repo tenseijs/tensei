@@ -37,7 +37,8 @@
         "copy:index-mustache": "cp src/server/index.mustache build/server/index.mustache",
         "client:watch": "NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
         "client:build": "NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "example:dev": "cd example && npm run dev"
+        "example:dev": "cd example && npm run dev",
+        "watch": "concurrently \"npm:server:watch\" \"npm:client:watch\" \"npm:example:dev\""
     },
     "dependencies": {
         "@contentful/forma-36-react-components": "^3.42.0",
@@ -60,12 +61,14 @@
         "@types/readline-sync": "^1.4.3",
         "@uifabric/fluent-theme": "^7.1.94",
         "@uifabric/icons": "^7.3.48",
+        "ajv": "^6.12.3",
         "axios": "^0.19.2",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",
         "change-case": "^4.1.1",
         "classnames": "^2.2.6",
         "commander": "^5.1.0",
+        "concurrently": "^5.2.0",
         "connect-mongo": "^3.2.0",
         "consola": "^2.12.2",
         "date-fns": "^2.14.0",

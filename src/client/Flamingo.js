@@ -26,7 +26,7 @@ class Flamingo {
     })()
 
     library = {
-        Notification
+        Notification,
     }
 
     request = Axios.create({

@@ -1,15 +1,15 @@
 {
-  "name": "flamingo-test-app",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "faker": "^4.1.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.4"
-  },
-  "scripts": {
-    "dev": "nodemon index.js"
-  }
+    "name": "flamingo-test-app",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "dependencies": {
+        "faker": "^4.1.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.4"
+    },
+    "scripts": {
+        "dev": "nodemon index.js"
+    }
 }

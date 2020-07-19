@@ -76,6 +76,7 @@ class ResourceIndex extends React.Component {
             pageCount: 1,
             selected: [],
             deleting: null,
+            deleteLoading: false
         }
     }
 
@@ -200,6 +201,39 @@ class ResourceIndex extends React.Component {
         })
     }
 
+    deleteResource = () => {
+        this.setState({
+            deleteLoading: true
+        })
+
+        const { resource, deleting } = this.state
+
+        const resourceId = deleting.key
+
+        Flamingo.request.delete(`resources/${resource.param}/${resourceId}`)
+            .then(() => {
+                this.setState({
+                    deleteLoading: false,
+                    deleting: null,
+                    loading: true
+                }, () => this.fetch())
+
+                Flamingo.library.Notification.success(
+                    `Resource has been deleted.`
+                )
+            })
+            .catch(() => {
+                this.setState({
+                    deleteLoading: false,
+                    deleting: null
+                })
+
+                Flamingo.library.Notification.error(
+                    `Could not delete resource with ID ${resourceId}.`
+                )
+            })
+    }
+
     render() {
         const {
             resource,
@@ -214,10 +248,16 @@ class ResourceIndex extends React.Component {
             pageCount,
             selected,
             showingFilters,
+            deleteLoading
         } = this.state
 
         const selectAllChecked =
             selected.length === data.length && data.length > 0
+
+        const tableColumns = this.getTableColumns()
+
+        const showingFrom = perPage * (page - 1)
+        const showingOnPage = parseInt(showingFrom + perPage)
 
         return (
             <Fragment>
@@ -255,7 +295,7 @@ class ResourceIndex extends React.Component {
                                 operators={operators}
                                 addFilter={this.addFilter}
                                 removeFilter={this.removeFilter}
-                                fields={this.getTableColumns()}
+                                fields={tableColumns}
                             />
                         </Dropdown>
                         <Link
@@ -276,7 +316,7 @@ class ResourceIndex extends React.Component {
                                     onChange={this.handleSelectAllClicked}
                                 />
                             </TableCell>
-                            {this.getTableColumns().map((column) => (
+                            {tableColumns.map((column) => (
                                 <TableCell key={column.inputName}>
                                     {column.name}
                                 </TableCell>
@@ -286,7 +326,7 @@ class ResourceIndex extends React.Component {
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <SkeletonRow rowCount={10} columnCount={4} />
+                            <SkeletonRow rowCount={10} />
                         ) : (
                             <>
                                 {this.getTableData().map((row) => (
@@ -408,9 +448,9 @@ class ResourceIndex extends React.Component {
                         </div>
 
                         <Paragraph>
-                            Showing <span>{perPage * (page - 1)}</span> to{' '}
+                            Showing <span>{showingFrom}</span> to{' '}
                             <span>
-                                {parseInt(perPage * (page - 1) + perPage)}
+                                {showingOnPage > total ? total : showingOnPage}
                             </span>{' '}
                             of <span>{total}</span> entries
                         </Paragraph>
@@ -462,7 +502,8 @@ class ResourceIndex extends React.Component {
                             deleting: null,
                         })
                     }
-                    onConfirm={console.log}
+                    isConfirmLoading={deleteLoading}
+                    onConfirm={this.deleteResource}
                 >
                     <Paragraph>
                         Are you sure you want to delete this resource ?
