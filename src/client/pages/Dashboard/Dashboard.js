@@ -46,8 +46,6 @@ class DashboardPage extends React.Component {
     }
 
     logout = () => {
-        console.log(this.props)
-
         Flamingo.request.post('logout').then(() => {
             window.location.href = '/auth/login'
         })
@@ -169,7 +167,7 @@ class DashboardPage extends React.Component {
                     <div className="border-r border-gray-lighter h-full bg-gray-lightest w-full md:w-18-percent">
                         {this.renderGroups()}
                     </div>
-                    <div className="w-full md:w-auto flex-grow h-full overflow-scroll">
+                    <div className="w-full md:w-82-percent flex-grow h-full overflow-scroll">
                         <div className="py-4 px-3 pt-8 pb-12 md:px-12">
                             <Route
                                 exact

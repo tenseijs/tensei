@@ -15,10 +15,11 @@ import ClientController from '../controllers/ClientController'
 import LoginController from '../controllers/auth/LoginController'
 
 import DatabaseRepository from '../database/Repository'
+import FindResourceController from '../controllers/resources/FindResourceController'
 import IndexResourceController from '../controllers/resources/IndexResourceController'
 import CreateResourceController from '../controllers/resources/CreateResourceController'
-import FindResourceController from '../controllers/resources/FindResourceController'
 import UpdateResourceController from '../controllers/resources/UpdateResourceController'
+import DeleteResourceController from '../controllers/resources/DeleteResourceController'
 
 export class FlamingoServiceProvider
     implements FlamingoServiceProviderInterface {
@@ -116,7 +117,7 @@ export class FlamingoServiceProvider
         )
 
         this.router.put(
-            `/api/resources/:resource`,
+            `/api/resources/:resource/:resourceId`,
             UpdateResourceController.update
         )
 
@@ -128,6 +129,11 @@ export class FlamingoServiceProvider
         this.router.get(
             `/api/resources/:resource/:resourceId`,
             FindResourceController.show
+        )
+
+        this.router.delete(
+            `/api/resources/:resource/:resourceId`,
+            DeleteResourceController.destroy
         )
     }
 

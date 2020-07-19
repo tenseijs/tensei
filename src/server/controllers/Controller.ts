@@ -84,7 +84,10 @@ class Controller {
         ]
     > => {
         try {
-            const validationRules = this.getValidationRules(resource, creationRules)
+            const validationRules = this.getValidationRules(
+                resource,
+                creationRules
+            )
 
             await validateAll(
                 data,

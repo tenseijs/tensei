@@ -29,9 +29,19 @@ class UpdateResourceController extends Controller {
 
         // const resourceInstance = await resource.findOneById(request.params.resourceId)
 
-        resource.model(request.body)
+        const model = await resource
+            .model(request.body)
+            .update(request.body, request.params.resourceId)
+        
+        if (! model) {
+            return response.status(404).json({
+                message: `Resource with ID ${request.params.resourceId} not found.`
+            })
+        }
 
-        return response.status({} ? 200 : 404).json({})
+        // Check if update was successful.
+
+        return response.json(model)
     }
 }
 
