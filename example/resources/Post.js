@@ -6,7 +6,7 @@ const {
     DateTime,
     BigInteger,
     Integer,
-    Textarea
+    Textarea,
 } = require('@flamingo/core')
 
 class Post extends Resource {

@@ -2,7 +2,7 @@ import DateField from './Date'
 
 export class DateTime extends DateField {
     /**
-     * 
+     *
      * This would match the knex method name
      * on the create builder.
      */

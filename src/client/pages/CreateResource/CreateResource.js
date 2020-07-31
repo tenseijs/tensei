@@ -48,7 +48,7 @@ class CreateResource extends React.Component {
                         formInitialized: true,
                         form,
                         errors,
-                        model: data
+                        model: data,
                     })
                 })
 
@@ -265,7 +265,9 @@ class CreateResource extends React.Component {
         const { resource, editingState } = this.state
 
         Flamingo.request[editingState ? 'put' : 'post'](
-            `resources/${resource.param}/${editingState ? this.props.match.params.resourceId : ''}`,
+            `resources/${resource.param}/${
+                editingState ? this.props.match.params.resourceId : ''
+            }`,
             {
                 ...this.state.form,
                 somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere',

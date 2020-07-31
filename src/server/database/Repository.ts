@@ -44,7 +44,7 @@ class Repository {
                     [primaryKey]: id,
                 },
                 {
-                    $set: data
+                    $set: data,
                 }
             )
 

@@ -32,10 +32,10 @@ class UpdateResourceController extends Controller {
         const model = await resource
             .model(request.body)
             .update(request.body, request.params.resourceId)
-        
-        if (! model) {
+
+        if (!model) {
             return response.status(404).json({
-                message: `Resource with ID ${request.params.resourceId} not found.`
+                message: `Resource with ID ${request.params.resourceId} not found.`,
             })
         }
 

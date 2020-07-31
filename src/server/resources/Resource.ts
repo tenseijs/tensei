@@ -163,7 +163,7 @@ export class Resource {
     public serializeWithPrivate() {
         return {
             ...this.serialize(),
-            fields: this.fields().map((field) => field.serializeWithPrivate())
+            fields: this.fields().map((field) => field.serializeWithPrivate()),
         }
     }
 
@@ -264,7 +264,7 @@ export class Resource {
 
         return {
             parsedId,
-            primaryKeyField
+            primaryKeyField,
         }
     }
 

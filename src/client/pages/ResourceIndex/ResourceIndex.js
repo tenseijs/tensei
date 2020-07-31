@@ -76,7 +76,7 @@ class ResourceIndex extends React.Component {
             pageCount: 1,
             selected: [],
             deleting: null,
-            deleteLoading: false
+            deleteLoading: false,
         }
     }
 
@@ -203,20 +203,24 @@ class ResourceIndex extends React.Component {
 
     deleteResource = () => {
         this.setState({
-            deleteLoading: true
+            deleteLoading: true,
         })
 
         const { resource, deleting } = this.state
 
         const resourceId = deleting.key
 
-        Flamingo.request.delete(`resources/${resource.param}/${resourceId}`)
+        Flamingo.request
+            .delete(`resources/${resource.param}/${resourceId}`)
             .then(() => {
-                this.setState({
-                    deleteLoading: false,
-                    deleting: null,
-                    loading: true
-                }, () => this.fetch())
+                this.setState(
+                    {
+                        deleteLoading: false,
+                        deleting: null,
+                        loading: true,
+                    },
+                    () => this.fetch()
+                )
 
                 Flamingo.library.Notification.success(
                     `Resource has been deleted.`
@@ -225,7 +229,7 @@ class ResourceIndex extends React.Component {
             .catch(() => {
                 this.setState({
                     deleteLoading: false,
-                    deleting: null
+                    deleting: null,
                 })
 
                 Flamingo.library.Notification.error(
@@ -248,7 +252,7 @@ class ResourceIndex extends React.Component {
             pageCount,
             selected,
             showingFilters,
-            deleteLoading
+            deleteLoading,
         } = this.state
 
         const selectAllChecked =

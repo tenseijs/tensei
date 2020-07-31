@@ -52,13 +52,12 @@ export class FlamingoServiceProvider
 
         this.db = await this.establishDatabaseConnection()
 
-        
         await this.registerResources()
 
         const knexDb = new SqlDatabaseRepository()
 
         await knexDb.performDatabaseSchemaSync(this.resources as any)
-        
+
         this.registerMiddleware()
 
         await this.registerRoutes()

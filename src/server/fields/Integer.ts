@@ -4,7 +4,7 @@ export class Integer extends Number {
     protected isUnsigned: boolean = false
 
     /**
-     * 
+     *
      * This would match the knex method name
      * on the create builder.
      */
@@ -60,7 +60,7 @@ export class Integer extends Number {
         return {
             ...super.serialize(),
 
-            isUnsigned: this.isUnsigned
+            isUnsigned: this.isUnsigned,
         }
     }
 }

@@ -44,7 +44,7 @@ export class Field {
      */
     public name: string
 
-    protected sqlDatabaseFieldType: string|undefined = undefined
+    protected sqlDatabaseFieldType: string | undefined = undefined
 
     /**
      *
@@ -309,7 +309,7 @@ export class Field {
         return this
     }
 
-        /**
+    /**
      *
      * Make this field sortable
      *
@@ -401,7 +401,7 @@ export class Field {
             ...this.serialize(),
             fieldName: this.constructor.name,
             databaseField: this.databaseField,
-            sqlDatabaseFieldType: this.sqlDatabaseFieldType
+            sqlDatabaseFieldType: this.sqlDatabaseFieldType,
         }
     }
 

@@ -5,7 +5,7 @@ import Text from '../fields/Text'
 import Resource from '../resources/Resource'
 
 class SqlRepository {
-    private $db: Knex|null = null
+    private $db: Knex | null = null
 
     public establishDatabaseConnection = async () => {
         this.$db = Knex({
@@ -14,10 +14,10 @@ class SqlRepository {
                 host: '127.0.0.1',
                 user: 'root',
                 password: '',
-                database: 'flmg'
+                database: 'flmg',
             },
             useNullAsDefault: true,
-            debug: true
+            debug: true,
         })
     }
 
@@ -33,46 +33,65 @@ class SqlRepository {
             schemaTableExists = false
         }
 
-        if (! schemaTableExists) {
+        if (!schemaTableExists) {
             const results = await knex.transaction(async (trx) => {
                 for (let index = 0; index < resources.length; index++) {
                     const resource = resources[index]
 
-                    if (! await trx.schema.hasTable(resource.table())) {
-                        await trx.schema.createTable(resource.table(), t => {
-                            resource.serializeWithPrivate().fields.forEach(field => {
-                                const knexMethodName = field.sqlDatabaseFieldType
+                    const tableExists = await trx.schema.hasTable(
+                        resource.table()
+                    )
 
-                                // @ts-ignore
-                                if (t[knexMethodName]) {
+                    if (!tableExists) {
+                        await trx.schema.createTable(resource.table(), (t) => {
+                            resource
+                                .serializeWithPrivate()
+                                .fields.forEach((field) => {
+                                    const knexMethodName =
+                                        field.sqlDatabaseFieldType
+
                                     // @ts-ignore
-                                    let method: ColumnBuilder = t[knexMethodName](field.databaseField)
+                                    if (t[knexMethodName]) {
+                                        // @ts-ignore
+                                        let method: ColumnBuilder = t[
+                                            knexMethodName
+                                        ](field.databaseField)
 
-                                    if (field.defaultValue && ! ['datetime', 'date', 'time'].includes(knexMethodName)) {
-                                        method.defaultTo(field.defaultValue)
+                                        if (
+                                            field.defaultValue &&
+                                            ![
+                                                'datetime',
+                                                'date',
+                                                'time',
+                                            ].includes(knexMethodName)
+                                        ) {
+                                            method.defaultTo(field.defaultValue)
+                                        }
+
+                                        if (
+                                            knexMethodName === 'datetime' &&
+                                            field.defaultToNow
+                                        ) {
+                                            method.defaultTo(trx.fn.now())
+                                        }
+
+                                        if (field.isUnsigned) {
+                                            method.unsigned()
+                                        }
+
+                                        if (field.isUnique) {
+                                            method.unique()
+                                        }
+
+                                        if (field.isNullable === true) {
+                                            method.nullable()
+                                        } else {
+                                            method.notNullable()
+                                        }
                                     }
+                                })
 
-                                    if (knexMethodName === 'datetime' && field.defaultToNow) {
-                                        method.defaultTo(trx.fn.now())
-                                    }
-
-                                    if (field.isUnsigned) {
-                                        method.unsigned()
-                                    }
-
-                                    if (field.isUnique) {
-                                        method.unique()
-                                    }
-
-                                    if (field.isNullable === true) {
-                                        method.nullable()
-                                    } else {
-                                        method.notNullable()
-                                    }
-                                }
-                            })
-
-                            if (! resource.noTimeStamps()) {
+                            if (!resource.noTimeStamps()) {
                                 t.timestamps()
                             }
                         })
@@ -86,9 +105,11 @@ class SqlRepository {
 
     private getDatabaseSchema = async () => {
         try {
-            const schemaTableExists = await this.$db?.schema.hasTable('db_schema')
+            const schemaTableExists = await this.$db?.schema.hasTable(
+                'db_schema'
+            )
 
-            if (! schemaTableExists) {
+            if (!schemaTableExists) {
                 return null
             }
 
