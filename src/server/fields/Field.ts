@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { camelCase, paramCase } from 'change-case'
+import { snakeCase } from 'change-case'
 
 interface Constructor<M> {
     new (...args: any[]): M
@@ -43,6 +43,8 @@ export class Field {
      * field labels etc
      */
     public name: string
+
+    protected sqlDatabaseFieldType: string|undefined = undefined
 
     /**
      *
@@ -95,6 +97,10 @@ export class Field {
      */
     public helpText: string = ''
 
+    public isNullable: boolean = true
+
+    public isUnique: boolean = false
+
     /**
      *
      * Adds database sorting by this field. Will show up
@@ -121,7 +127,7 @@ export class Field {
     public constructor(name: string, databaseField?: string) {
         this.name = name
 
-        this.databaseField = databaseField || camelCase(this.name)
+        this.databaseField = databaseField || snakeCase(this.name)
     }
 
     /**
@@ -303,6 +309,28 @@ export class Field {
         return this
     }
 
+        /**
+     *
+     * Make this field sortable
+     *
+     */
+    public unique<T extends Field>(this: T): T {
+        this.isUnique = true
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field nullable
+     *
+     */
+    public notNullable<T extends Field>(this: T): T {
+        this.isNullable = false
+
+        return this
+    }
+
     /**
      *
      * Define the description. This would be a help text
@@ -368,6 +396,15 @@ export class Field {
         return this
     }
 
+    public serializeWithPrivate() {
+        return {
+            ...this.serialize(),
+            fieldName: this.constructor.name,
+            databaseField: this.databaseField,
+            sqlDatabaseFieldType: this.sqlDatabaseFieldType
+        }
+    }
+
     /**
      *
      * Serializes the field for data to be sent
@@ -382,6 +419,8 @@ export class Field {
         description: string
         rules: Array<string>
         defaultValue: string
+        isNullable: boolean
+        isUnique: boolean
         showOnIndex: boolean
         showOnDetail: boolean
         showOnUpdate: boolean
@@ -396,7 +435,9 @@ export class Field {
             name: this.name,
             component: this.component,
             description: this.helpText,
+            isNullable: this.isNullable,
             isSortable: this.isSortable,
+            isUnique: this.isUnique,
             attributes: this.attributes,
             rules: this.validationRules,
             inputName: this.databaseField,

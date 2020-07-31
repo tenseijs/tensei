@@ -35,8 +35,6 @@ class ShoppingCart extends Resource {
             ID.make().asObjectId(),
             Text.make('Name', 'first_name')
                 .sortable()
-                .prefix('ox')
-                .suffix('ox')
                 .default('beans')
                 .htmlAttributes({
                     required: true,

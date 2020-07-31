@@ -7,6 +7,8 @@ class Repository {
         return this.$db.collection('administrators')
     }
 
+    public performDatabaseSchemaSync = (resources: Array<any>) => {}
+
     /**
      * Insert a new record into the database
      * collection specified

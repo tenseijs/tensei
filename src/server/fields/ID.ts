@@ -22,6 +22,8 @@ export class ID extends Field {
      */
     public objectId: boolean = true
 
+    protected sqlDatabaseFieldType: string = 'increments'
+
     /**
      * When a new ID field is created, by default,
      * we'll call the exceptOnForms() method.
@@ -30,7 +32,7 @@ export class ID extends Field {
      * and update forms.
      */
     public constructor(name: string, databaseField?: string) {
-        super(name, databaseField || '_id')
+        super(name, databaseField || 'id')
 
         this.exceptOnForms()
     }
@@ -67,7 +69,7 @@ export class ID extends Field {
         name?: string,
         databaseField?: string
     ): T {
-        return new this(name || 'ID', databaseField || '_id')
+        return new this(name || 'ID', databaseField || 'id')
     }
 
     /**

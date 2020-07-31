@@ -7,7 +7,7 @@ export class DateField extends Field {
      * Defines which day should be the first day of the week.
      *
      */
-    private dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 0
+    protected dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 0
 
     /**
      *
@@ -17,7 +17,13 @@ export class DateField extends Field {
      *
      * https://date-fns.org/v2.14.0/docs/format
      */
-    private dateFormat: string = 'MM/dd/yyyy'
+    protected dateFormat: string = 'MM/dd/yyyy'
+
+    protected pickerFormat: string = 'MM/dd/yyyy'
+
+    protected sqlDatabaseFieldType: string = 'date'
+
+    protected shouldDefaultToNow: boolean = false
 
     /**
      *
@@ -68,13 +74,20 @@ export class DateField extends Field {
         return this
     }
 
+    public defaultToNow() {
+        this.shouldDefaultToNow = true
+
+        return this
+    }
+
     public serialize() {
         return {
             ...super.serialize(),
 
-            firstDayOfWeek: this.dayOfWeek,
-
             format: this.dateFormat,
+            firstDayOfWeek: this.dayOfWeek,
+            defaultToNow: this.shouldDefaultToNow,
+            pickerFormat: this.pickerFormat || this.dateFormat
         }
     }
 }

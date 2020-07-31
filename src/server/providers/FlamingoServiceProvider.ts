@@ -15,6 +15,7 @@ import ClientController from '../controllers/ClientController'
 import LoginController from '../controllers/auth/LoginController'
 
 import DatabaseRepository from '../database/Repository'
+import SqlDatabaseRepository from '../database/SqlRepository'
 import FindResourceController from '../controllers/resources/FindResourceController'
 import IndexResourceController from '../controllers/resources/IndexResourceController'
 import CreateResourceController from '../controllers/resources/CreateResourceController'
@@ -51,8 +52,13 @@ export class FlamingoServiceProvider
 
         this.db = await this.establishDatabaseConnection()
 
+        
         await this.registerResources()
 
+        const knexDb = new SqlDatabaseRepository()
+
+        await knexDb.performDatabaseSchemaSync(this.resources as any)
+        
         this.registerMiddleware()
 
         await this.registerRoutes()

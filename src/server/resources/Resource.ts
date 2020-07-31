@@ -2,7 +2,8 @@ import Pluralize from 'pluralize'
 import { ObjectID } from 'mongodb'
 import { validateAll } from 'indicative/validator'
 import Repository from 'server/database/Repository'
-import { paramCase, capitalCase } from 'change-case'
+import { paramCase, capitalCase, snakeCase } from 'change-case'
+
 import { ValidationError } from '../controllers/Controller'
 
 interface QueryParam {
@@ -52,10 +53,19 @@ export class Resource {
     /**
      * This is the collection this resource will connect to
      * By default, it is the plural of the lower
-     * case of the collection name.
+     * case of the resource name.
      */
     public collection(): string {
         return Pluralize(paramCase(this.name()))
+    }
+
+    /**
+     * This is the table this resource will connect to
+     * By default, it is the plural of the lower
+     * case of the resource name.
+     */
+    public table(): string {
+        return Pluralize(snakeCase(this.name()))
     }
 
     /**
@@ -146,6 +156,17 @@ export class Resource {
         return {}
     }
 
+    public noTimeStamps() {
+        return false
+    }
+
+    public serializeWithPrivate() {
+        return {
+            ...this.serialize(),
+            fields: this.fields().map((field) => field.serializeWithPrivate())
+        }
+    }
+
     /**
      * Serialize the resource to be sent to
      * the frontend
@@ -156,6 +177,7 @@ export class Resource {
         label: string
         group: string
         param: string
+        table: string
         primaryKey: string
         collection: string
         fields: Array<any>
@@ -169,6 +191,7 @@ export class Resource {
             label: this.label(),
             group: this.group(),
             param: this.param(),
+            table: this.table(),
             messages: this.messages(),
             primaryKey: this.primaryKey(),
             collection: this.collection(),
