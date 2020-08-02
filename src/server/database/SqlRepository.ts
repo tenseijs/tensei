@@ -105,13 +105,6 @@ class SqlRepository {
                 table.dropUnique(matchingDatabaseField.name)
             }
 
-            if (matchingDatabaseField.isForeign && ! field.isForeign) {
-                // TODO: Find a way to handle foreign key constraints.
-                // The challenge is migrating the tables in the correct order.
-
-                //  table.dropForeign(matchingDatabaseField.name)
-            }
-
             if (matchingDatabaseField.hasIndex && ! field.isSearchable)  {
                 table.dropIndex(matchingDatabaseField.name)
             }
@@ -127,20 +120,6 @@ class SqlRepository {
         ) {
             method.defaultTo(field.defaultValue)
         }
-
-        // TODO: Handle foreign keys
-        // if (field.isForeign) {
-        //     if (field.fieldName === 'BelongsTo') {
-
-        //         const relatedResource = resources.find(r => r.name() === field.name)
-
-        //         if (relatedResource && ! (matchingDatabaseField || {}).isForeign) {
-        //             table.foreign(field.databaseField)
-        //                 .references(relatedResource.primaryKey())
-        //                 .inTable(relatedResource.table())
-        //         }
-        //     }
-        // }
 
         if (
             knexMethodName === 'datetime' &&
