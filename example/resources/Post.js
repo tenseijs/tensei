@@ -9,7 +9,7 @@ const {
     Textarea,
     BelongsTo,
     Select,
-    HasMany
+    HasMany,
 } = require('@flamingo/core')
 
 class Post extends Resource {
@@ -28,9 +28,7 @@ class Post extends Resource {
         return [
             ID.make(), // TODO: Make this hidden from the user. until we're ready to support custom primary keys, this would not be shown to the user.
             DateTime.make('Scheduled for').defaultToNow().notNullable(),
-            BigInteger.make('Views')
-                .searchable()
-                .notNullable(),
+            BigInteger.make('Views').searchable().notNullable(),
             Integer.make('Av. CPV').notNullable(),
             Text.make('Title')
                 .sortable()
@@ -42,20 +40,27 @@ class Post extends Resource {
                 .firstDayOfWeek(4)
                 .rules('required', 'date'),
             BelongsTo.make('User').notNullable(),
-            Select.make('Category').options([{
-                label: 'Javascript',
-                value: 'javascript'
-            }, {
-                label: 'Angular',
-                value: 'angular'
-            }, {
-                label: 'Mysql',
-                value: 'mysql'
-            }, {
-                label: 'Postgresql',
-                value: 'pg'
-            }]).notNullable(),
-            HasMany.make('Comment')
+            Select.make('Category')
+                .options([
+                    {
+                        label: 'Javascript',
+                        value: 'javascript',
+                    },
+                    {
+                        label: 'Angular',
+                        value: 'angular',
+                    },
+                    {
+                        label: 'Mysql',
+                        value: 'mysql',
+                    },
+                    {
+                        label: 'Postgresql',
+                        value: 'pg',
+                    },
+                ])
+                .notNullable(),
+            HasMany.make('Comment'),
             // HasOne.make('Billing Address')
             //     .fields([
             //         Text.make('Country')

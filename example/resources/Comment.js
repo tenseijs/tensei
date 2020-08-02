@@ -1,10 +1,4 @@
-const {
-    Resource,
-    ID,
-    Text,
-    Textarea,
-    BelongsTo,
-} = require('@flamingo/core')
+const { Resource, ID, Text, Textarea, BelongsTo } = require('@flamingo/core')
 
 class Comment extends Resource {
     fields() {
@@ -12,7 +6,7 @@ class Comment extends Resource {
             ID.make(),
             Text.make('Title'),
             Textarea.make('Body'),
-            BelongsTo.make('Post')
+            BelongsTo.make('Post'),
         ]
     }
 }

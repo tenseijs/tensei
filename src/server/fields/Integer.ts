@@ -69,7 +69,7 @@ export class Integer extends Number {
             ...super.serialize(),
 
             isUnsigned: this.isUnsigned,
-            isForeign: this.isForeign
+            isForeign: this.isForeign,
         }
     }
 }

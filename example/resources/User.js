@@ -12,10 +12,9 @@ class User extends Resource {
         return [
             ID.make(),
             Text.make('Email').unique().notNullable(),
-            BigInteger.make('Followers')
-                .notNullable(),
+            BigInteger.make('Followers').notNullable(),
             Textarea.make('Bio'),
-            HasOne.make('Post')
+            HasOne.make('Post'),
         ]
     }
 }

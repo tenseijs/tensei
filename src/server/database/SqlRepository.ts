@@ -1,4 +1,8 @@
-import Knex, { CreateTableBuilder, ColumnBuilder, AlterTableBuilder } from 'knex'
+import Knex, {
+    CreateTableBuilder,
+    ColumnBuilder,
+    AlterTableBuilder,
+} from 'knex'
 
 import Resource from '../resources/Resource'
 
@@ -27,18 +31,30 @@ class SqlRepository {
 
                 const tableExists = schema ? schema[resource.table()] : false
 
-                await trx.schema[tableExists ? 'alterTable' : 'createTable'](resource.table(), (t) => {
-                    // if column exists on schema, but cannot be found here on fields,
-                    // then it should be dropped
+                await trx.schema[tableExists ? 'alterTable' : 'createTable'](
+                    resource.table(),
+                    (t) => {
+                        // if column exists on schema, but cannot be found here on fields,
+                        // then it should be dropped
 
-                    resource
-                        .serializeWithPrivate()
-                        .fields.forEach((field) => this.handleFieldUpdates(trx, t, schema, field, resource, resources))
+                        resource
+                            .serializeWithPrivate()
+                            .fields.forEach((field) =>
+                                this.handleFieldUpdates(
+                                    trx,
+                                    t,
+                                    schema,
+                                    field,
+                                    resource,
+                                    resources
+                                )
+                            )
 
-                    if (!resource.noTimeStamps() && !tableExists) {
-                        t.timestamps(true, true)
+                        if (!resource.noTimeStamps() && !tableExists) {
+                            t.timestamps(true, true)
+                        }
                     }
-                })
+                )
             }
         })
     }
@@ -48,8 +64,14 @@ class SqlRepository {
             // TODO: Make sure this works for all supported databases. not just mysql.
             return this.parseMysqlDatabaseSchema(
                 ...(await Promise.all([
-                    this.$db!('information_schema.columns').where('table_schema', 'flmg'),
-                    this.$db!('information_schema.key_column_usage').where('table_schema', 'flmg'),
+                    this.$db!('information_schema.columns').where(
+                        'table_schema',
+                        'flmg'
+                    ),
+                    this.$db!('information_schema.key_column_usage').where(
+                        'table_schema',
+                        'flmg'
+                    ),
                 ]))
             )
         } catch (errors) {
@@ -57,28 +79,37 @@ class SqlRepository {
         }
     }
 
-    private handleFieldUpdates = (trx: Knex.Transaction, table: CreateTableBuilder|AlterTableBuilder, schema: any = null, field: any = null, resource: Resource, resources: Resource[]) => {
+    private handleFieldUpdates = (
+        trx: Knex.Transaction,
+        table: CreateTableBuilder | AlterTableBuilder,
+        schema: any = null,
+        field: any = null,
+        resource: Resource,
+        resources: Resource[]
+    ) => {
         const knexMethodName = field.sqlDatabaseFieldType
         const tableExists = schema ? schema[resource.table()] : false
 
         // @ts-ignore
-        if (! table[knexMethodName]) {
-            console.warn(`The field ${field.name} is making use of an invalid database method ${field.sqlDatabaseFieldType}. Make sure this method is supported by knex.`)
+        if (!table[knexMethodName]) {
+            console.warn(
+                `The field ${field.name} is making use of an invalid database method ${field.sqlDatabaseFieldType}. Make sure this method is supported by knex.`
+            )
             return
         }
 
-        const matchingDatabaseField = tableExists ? schema[resource.table()][field.databaseField] : null
+        const matchingDatabaseField = tableExists
+            ? schema[resource.table()][field.databaseField]
+            : null
 
         // first let's handle all indexes. this includes primary keys, unique keys and search indexes
         // next, let's handle
         if (['increments', 'bigIncrements'].includes(knexMethodName)) {
-            if (! tableExists) {
+            if (!tableExists) {
                 // @ts-ignore
-                table[
-                    knexMethodName
-                ](field.databaseField)
+                table[knexMethodName](field.databaseField)
             }
-    
+
             return
         }
 
@@ -87,44 +118,34 @@ class SqlRepository {
         if (knexMethodName === 'enu') {
             methodArguments = [
                 ...methodArguments,
-                field.selectOptions.map((option: {
-                    label: string,
-                    value: string
-                }) => option.value)
+                field.selectOptions.map(
+                    (option: { label: string; value: string }) => option.value
+                ),
             ]
         }
 
         // @ts-ignore
-        let method: ColumnBuilder = table[
-            knexMethodName
-        ](...methodArguments)
+        let method: ColumnBuilder = table[knexMethodName](...methodArguments)
 
         // if old was unique, and new is not unique, drop unique
         if (matchingDatabaseField) {
-            if (matchingDatabaseField.isUnique && ! field.isUnique) {
+            if (matchingDatabaseField.isUnique && !field.isUnique) {
                 table.dropUnique(matchingDatabaseField.name)
             }
 
-            if (matchingDatabaseField.hasIndex && ! field.isSearchable)  {
+            if (matchingDatabaseField.hasIndex && !field.isSearchable) {
                 table.dropIndex(matchingDatabaseField.name)
             }
         }
 
         if (
             field.defaultValue &&
-            ![
-                'datetime',
-                'date',
-                'time',
-            ].includes(knexMethodName)
+            !['datetime', 'date', 'time'].includes(knexMethodName)
         ) {
             method.defaultTo(field.defaultValue)
         }
 
-        if (
-            knexMethodName === 'datetime' &&
-            field.defaultToNow
-        ) {
+        if (knexMethodName === 'datetime' && field.defaultToNow) {
             method.defaultTo(trx.fn.now())
         }
 
@@ -132,11 +153,11 @@ class SqlRepository {
             method.unsigned()
         }
 
-        if (field.isSearchable && ! (matchingDatabaseField || {}).hasIndex) {
+        if (field.isSearchable && !(matchingDatabaseField || {}).hasIndex) {
             table.index(field.databaseField)
         }
 
-        if (field.isUnique && ! (matchingDatabaseField || {}).isUnique) {
+        if (field.isUnique && !(matchingDatabaseField || {}).isUnique) {
             method.unique()
         }
 
@@ -153,26 +174,34 @@ class SqlRepository {
         }
     }
 
-    private parseMysqlDatabaseSchema = (schema: Array<any>, keyColumnData: Array<any> = []) => {
+    private parseMysqlDatabaseSchema = (
+        schema: Array<any>,
+        keyColumnData: Array<any> = []
+    ) => {
         let tables: {
             [key: string]: {
                 [key: string]: {}
             }
         } = {}
 
-        schema.forEach(column => {
+        schema.forEach((column) => {
             let fieldType = column.DATA_TYPE
 
-            let foreignReference = keyColumnData.find(columnData => column.COLUMN_NAME === columnData.COLUMN_NAME)
+            let foreignReference = keyColumnData.find(
+                (columnData) => column.COLUMN_NAME === columnData.COLUMN_NAME
+            )
 
-            const isForeign = !!(foreignReference?.REFERENCED_COLUMN_NAME && foreignReference?.REFERENCED_TABLE_NAME)
+            const isForeign = !!(
+                foreignReference?.REFERENCED_COLUMN_NAME &&
+                foreignReference?.REFERENCED_TABLE_NAME
+            )
 
             tables[column.TABLE_NAME] = {
                 ...(tables[column.TABLE_NAME] || {}),
                 [column.COLUMN_NAME]: {
                     fieldType,
                     isForeign,
-                    hasIndex: ! isForeign && column.COLUMN_KEY === 'MUL',
+                    hasIndex: !isForeign && column.COLUMN_KEY === 'MUL',
                     name: column.COLUMN_NAME,
                     refTableName: foreignReference?.REFERENCED_TABLE_NAME,
                     refColumnName: foreignReference?.REFERENCED_COLUMN_NAME,
@@ -182,7 +211,7 @@ class SqlRepository {
                     numericPrecision: column.NUMERIC_PRECISION,
                     autoIncrements: !!column.EXTRA.match(/auto_increment/),
                     unsigned: !!column.COLUMN_TYPE.match(/unsigned/),
-                }
+                },
             }
         })
 
