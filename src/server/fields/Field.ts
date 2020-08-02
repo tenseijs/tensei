@@ -109,6 +109,8 @@ export class Field {
      */
     public isSortable: boolean = false
 
+    public isSearchable: boolean = false
+
     /**
      *
      * Set the default value of this
@@ -311,6 +313,18 @@ export class Field {
 
     /**
      *
+     * Make this field searchable. will also index
+     * this field in the database.
+     *
+     */
+    public searchable<T extends Field>(this: T): T {
+        this.isSearchable = true
+
+        return this
+    }
+
+    /**
+     *
      * Make this field sortable
      *
      */
@@ -421,6 +435,7 @@ export class Field {
         defaultValue: string
         isNullable: boolean
         isUnique: boolean
+        isSearchable: boolean
         showOnIndex: boolean
         showOnDetail: boolean
         showOnUpdate: boolean
@@ -438,6 +453,7 @@ export class Field {
             isNullable: this.isNullable,
             isSortable: this.isSortable,
             isUnique: this.isUnique,
+            isSearchable: this.isSearchable,
             attributes: this.attributes,
             rules: this.validationRules,
             inputName: this.databaseField,

@@ -7,6 +7,9 @@ const {
     BigInteger,
     Integer,
     Textarea,
+    BelongsTo,
+    Select,
+    HasMany
 } = require('@flamingo/core')
 
 class Post extends Resource {
@@ -23,17 +26,36 @@ class Post extends Resource {
 
     fields() {
         return [
-            ID.make(),
-            DateTime.make('Scheduled for').defaultToNow(),
-            BigInteger.make('Views').notNullable(),
-            Integer.make('Av. CPV').unsigned().unique(),
+            ID.make(), // TODO: Make this hidden from the user. until we're ready to support custom primary keys, this would not be shown to the user.
+            DateTime.make('Scheduled for').defaultToNow().notNullable(),
+            BigInteger.make('Views')
+                .searchable()
+                .notNullable(),
+            Integer.make('Av. CPV').notNullable(),
             Text.make('Title')
                 .sortable()
+                .searchable()
                 .rules('required', 'string', 'min:36', 'max:200'),
+            Text.make('Description'),
             Textarea.make('Content'),
             DateField.make('Published at')
                 .firstDayOfWeek(4)
                 .rules('required', 'date'),
+            BelongsTo.make('User').notNullable(),
+            Select.make('Category').options([{
+                label: 'Javascript',
+                value: 'javascript'
+            }, {
+                label: 'Angular',
+                value: 'angular'
+            }, {
+                label: 'Mysql',
+                value: 'mysql'
+            }, {
+                label: 'Postgresql',
+                value: 'pg'
+            }]).notNullable(),
+            HasMany.make('Comment')
             // HasOne.make('Billing Address')
             //     .fields([
             //         Text.make('Country')

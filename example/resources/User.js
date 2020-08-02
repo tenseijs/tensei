@@ -1,8 +1,22 @@
-const { Resource, ID } = require('@flamingo/core')
+const {
+    Resource,
+    ID,
+    Text,
+    BigInteger,
+    Textarea,
+    HasOne,
+} = require('@flamingo/core')
 
 class User extends Resource {
     fields() {
-        return [ID.make()]
+        return [
+            ID.make(),
+            Text.make('Email').unique().notNullable(),
+            BigInteger.make('Followers')
+                .notNullable(),
+            Textarea.make('Bio'),
+            HasOne.make('Post')
+        ]
     }
 }
 

@@ -39,9 +39,9 @@ class Flamingo {
 
         await this.$serviceProvider.register()
 
-        this.$serviceProvider.launchServer((config) => {
-            Consola.success('Server started on port', config.port)
-        })
+        // this.$serviceProvider.launchServer((config) => {
+        //     Consola.success('Server started on port', config.port)
+        // })
     }
 
     public registerAssetsRoutes() {

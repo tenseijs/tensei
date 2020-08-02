@@ -75,7 +75,7 @@ export class Resource {
      * the primary key is used to identify them.
      */
     public primaryKey(): string {
-        return '_id'
+        return 'id'
     }
 
     /**

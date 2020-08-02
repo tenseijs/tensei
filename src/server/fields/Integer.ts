@@ -10,6 +10,8 @@ export class Integer extends Number {
      */
     protected sqlDatabaseFieldType: string = 'integer'
 
+    public isForeign: boolean = false
+
     /**
      * Set the min value for this number field.
      * Will be the min on the number in
@@ -40,6 +42,12 @@ export class Integer extends Number {
         return this
     }
 
+    public foreign() {
+        this.isForeign = true
+
+        return this
+    }
+
     /**
      *
      * Make this field sortable
@@ -61,6 +69,7 @@ export class Integer extends Number {
             ...super.serialize(),
 
             isUnsigned: this.isUnsigned,
+            isForeign: this.isForeign
         }
     }
 }
