@@ -86,4 +86,7 @@ export class ID extends Field {
     }
 }
 
+export const id = (name: string, databaseField?: string) =>
+    ID.make(name, databaseField)
+
 export default ID

@@ -1,5 +1,5 @@
 import Field from '../fields/Field'
-import Resource from '../resources/Resource'
+import Resource from '../resources/ResourceManager'
 import { validateAll } from 'indicative/validator'
 
 export interface ValidationError {
@@ -84,16 +84,16 @@ class Controller {
         ]
     > => {
         try {
-            const validationRules = this.getValidationRules(
-                resource,
-                creationRules
-            )
+            // const validationRules = this.getValidationRules(
+            //     resource,
+            //     creationRules
+            // )
 
-            await validateAll(
-                data,
-                validationRules,
-                resource.serialize().messages
-            )
+            // await validateAll(
+            //     data,
+            //     validationRules,
+            //     resource.serialize().messages
+            // )
 
             return [false, null]
         } catch (errors) {

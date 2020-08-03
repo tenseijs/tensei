@@ -1,8 +1,13 @@
-declare namespace Express {
-    export interface Request {
-        scripts: Array<any>
-        styles: Array<any>
-        db: any
-        resources: Array<any>
+import Resource from './resources/Resource'
+
+declare global {
+    namespace Express {
+        export interface Request {
+            scripts: Array<any>
+            styles: Array<any>
+            db: any
+            resources: Resource[]
+        }
     }
 }
+

@@ -11,7 +11,7 @@ describe('The flamingo service provider', () => {
         process.env.DATABASE_URI = TEST_DATABASE_URI
         process.env.SESSION_SECRET = TEST_SESSION_SECRET
 
-        const instance = new FlamingoProvider(__dirname)
+        const instance = new FlamingoProvider()
 
         instance.registerEnvironmentVariables()
 
@@ -23,17 +23,14 @@ describe('The flamingo service provider', () => {
     })
 
     it('instantiates the service provider with all properties', () => {
-        const instance = new FlamingoProvider(__dirname)
+        const instance = new FlamingoProvider()
 
-        expect(instance.$root).toBe(__dirname)
+        // expect(instance.$root).toBe()
     })
 
     it('can correctly load all resources', () => {
         const instance = new FlamingoProvider(
-            Path.resolve(process.env.PWD!, 'src/server/__tests__/mocks')
         )
-
-        instance.registerResources()
 
         expect(instance.resources).toHaveLength(3)
 
@@ -48,7 +45,6 @@ describe('The flamingo service provider', () => {
 
     it('correctly establishes a database connection', async () => {
         const instance = new FlamingoProvider(
-            Path.resolve(process.env.PWD!, 'src/server/__tests__/mocks')
         )
 
         const TEST_DATABASE_URI = 'mongodb://localhost/flamingo-testdb'

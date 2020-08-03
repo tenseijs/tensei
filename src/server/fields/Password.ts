@@ -15,4 +15,7 @@ export class Password extends Text {
     }
 }
 
+export const password = (name: string, databaseField?: string) =>
+    Password.make(name, databaseField)
+
 export default Password

@@ -26,4 +26,7 @@ export class BelongsTo extends Integer {
     }
 }
 
+export const belongsTo = (name: string, databaseField?: string) =>
+    BelongsTo.make(name, databaseField)
+
 export default BelongsTo

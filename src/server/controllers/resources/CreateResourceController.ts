@@ -26,11 +26,11 @@ class CreateResourceController extends Controller {
             return response.status(422).json(errors)
         }
 
-        const [createdSuccessfully, data] = await resource
-            .model(request.body)
-            .create()
+        // const [createdSuccessfully, data] = await resource
+        //     .model(request.body)
+        //     .create()
 
-        response.status(createdSuccessfully ? 201 : 400).json(data)
+        // response.status(createdSuccessfully ? 201 : 400).json(data)
     }
 }
 

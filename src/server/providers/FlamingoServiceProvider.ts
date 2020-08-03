@@ -8,9 +8,8 @@ import ConnectMongo from 'connect-mongo'
 import ExpressSession from 'express-session'
 import {
     Config,
-    Resource,
-    FlamingoServiceProviderInterface,
 } from './../typings/interfaces'
+import Resource from '../resources/Resource'
 import ClientController from '../controllers/ClientController'
 import LoginController from '../controllers/auth/LoginController'
 
@@ -22,8 +21,7 @@ import CreateResourceController from '../controllers/resources/CreateResourceCon
 import UpdateResourceController from '../controllers/resources/UpdateResourceController'
 import DeleteResourceController from '../controllers/resources/DeleteResourceController'
 
-export class FlamingoServiceProvider
-    implements FlamingoServiceProviderInterface {
+export class FlamingoServiceProvider {
     public app: Express.Application = Express()
 
     public client: Mongodb.MongoClient | null = null
@@ -36,7 +34,6 @@ export class FlamingoServiceProvider
 
     public config: Config | null = null
 
-    constructor(public readonly $root: string) {}
     /**
      *
      * Get the path to where the resources are saved.
@@ -52,8 +49,6 @@ export class FlamingoServiceProvider
 
         this.db = await this.establishDatabaseConnection()
 
-        await this.registerResources()
-
         const knexDb = new SqlDatabaseRepository()
 
         await knexDb.performDatabaseSchemaSync(this.resources as any)
@@ -64,9 +59,9 @@ export class FlamingoServiceProvider
     }
 
     public registerEnvironmentVariables() {
-        Dotenv.config({
-            path: Path.resolve(this.$root, '.env'),
-        })
+        // Dotenv.config({
+        //     path: Path.resolve(this.$root, '.env'),
+        // })
 
         this.registerConfig()
     }
@@ -148,20 +143,10 @@ export class FlamingoServiceProvider
         this.router.post('/api/logout', LoginController.logout)
     }
 
-    public async registerResources() {
-        const resourcesPath = this.resourcesIn(this.$root)
+    public registerResources(resources: Resource[]) {
+        this.resources = resources
 
-        this.resources = Fs.readdirSync(resourcesPath)
-
-            .filter((file) => file.substring(file.length - 3) === '.js')
-
-            .map((file) => {
-                const Resource = require(Path.resolve(resourcesPath, file))
-
-                return Resource.default
-                    ? new Resource.default(this.db)
-                    : new Resource(this.db)
-            })
+        return this
     }
 
     public async establishDatabaseConnection() {

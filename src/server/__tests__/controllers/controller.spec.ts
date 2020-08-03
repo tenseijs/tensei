@@ -3,9 +3,7 @@ import Controller from '../../controllers/Controller'
 import Repository from '../../database/Repository'
 
 test('can get validation rules from resource correctly', async () => {
-    const rules = new Controller().getValidationRules(
-        new Article({} as Repository)
-    )
+    const rules = new Controller().getValidationRules(new Article())
 
     expect(rules).toMatchInlineSnapshot(`
         Object {
@@ -20,7 +18,7 @@ test('can validate data correctly for a resource', async () => {
         {
             publishedAt: 'WRONG-DATE-FORMAT',
         },
-        new Article({} as Repository)
+        new Article()
     )
 
     expect(validationFailed).toBe(true)

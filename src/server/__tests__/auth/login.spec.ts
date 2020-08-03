@@ -8,7 +8,6 @@ describe('The login endpoint', () => {
 
     const setup = async () => {
         let instance = new FlamingoServiceProvider(
-            Path.resolve(__dirname, '..', '..')
         )
 
         await instance.register()

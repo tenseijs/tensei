@@ -13,4 +13,7 @@ export class Link extends Text {
     }
 }
 
+export const link = (name: string, databaseField?: string) =>
+    Link.make(name, databaseField)
+
 export default Link

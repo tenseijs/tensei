@@ -9,4 +9,7 @@ export class HasOne extends Integer {
     public component = 'HasOneField'
 }
 
+export const hasOne = (name: string, databaseField?: string) =>
+    HasOne.make(name, databaseField)
+
 export default HasOne

@@ -16,4 +16,7 @@ export class DateTime extends DateField {
     public component = 'DateTimeField'
 }
 
+export const dateTime = (name: string, databaseField?: string) =>
+    DateTime.make(name, databaseField)
+
 export default DateTime

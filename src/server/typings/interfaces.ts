@@ -32,6 +32,4 @@ export interface Asset {
     path: string
 }
 
-export interface Resource {}
-
 export interface DatabaseRepository {}

@@ -1,7 +1,7 @@
 import ID from '../../../fields/ID'
 import Text from '../../../fields/Text'
 import DateField from '../../../fields/Date'
-import Resource from '../../../resources/Resource'
+import Resource from '../../../resources/ResourceManager'
 
 class Article extends Resource {
     messages() {

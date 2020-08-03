@@ -9,4 +9,7 @@ export class BigInteger extends Integer {
     protected sqlDatabaseFieldType: string = 'bigInteger'
 }
 
+export const bigInteger = (name: string, databaseField?: string) =>
+    BigInteger.make(name, databaseField)
+
 export default BigInteger

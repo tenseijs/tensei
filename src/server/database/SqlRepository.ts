@@ -4,7 +4,7 @@ import Knex, {
     AlterTableBuilder,
 } from 'knex'
 
-import Resource from '../resources/Resource'
+import Resource from '../resources/ResourceManager'
 
 class SqlRepository {
     private $db: Knex | null = null

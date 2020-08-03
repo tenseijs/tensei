@@ -1,65 +1,97 @@
 import Path from 'path'
 import Consola from 'consola'
-import Express from 'express'
-import { FlamingoServiceProviderInterface, Asset } from './typings/interfaces'
-import FlamingoServiceProvider from './providers/FlamingoServiceProvider'
+import BodyParser from 'body-parser'
+import ExpressSession from 'express-session'
+import Express, { Application } from 'express'
+import { Asset } from './typings/interfaces'
+import Resource from './resources/ResourceManager'
+
+interface FlamingoEnv {
+    port: string|number
+    sessionSecret: string
+    databaseUrl: string
+}
+
+interface FlamingoConfig {
+    resources: Resource[],
+    app: Application,
+    scripts: Asset[],
+    styles: Asset[],
+    env: FlamingoEnv
+}
 
 class Flamingo {
-    private $serviceProvider: FlamingoServiceProviderInterface
-
-    public scripts: Asset[] = [
-        {
+    private config: FlamingoConfig = {
+        resources: [],
+        app: Express(),
+        scripts: [{
             name: 'flamingo.js',
             path: Path.join(__dirname, '..', 'client', 'index.js'),
-        },
-    ]
-
-    public styles: Asset[] = [
-        {
+        }],
+        styles: [{
             name: 'flamingo.css',
             path: Path.join(__dirname, '..', 'client', 'index.css'),
-        },
-    ]
-
-    /**
-     * A service provider is a class used to define all configurations
-     * for flamingo. Routes, Cards, Resources, Authorization etc
-     *
-     * @param $serviceProvider FlamingoServiceProviderInterface
-     */
-    constructor(
-        public $root: string,
-        Provider: typeof FlamingoServiceProvider = FlamingoServiceProvider
-    ) {
-        this.$serviceProvider = new Provider($root)
+        }],
+        env: {
+            port: process.env.PORT || 1377,
+            sessionSecret: process.env.SESSION_SECRET || 'test-session-secret',
+            databaseUrl: process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg'
+        }
     }
 
     public async start() {
         this.registerAssetsRoutes()
 
-        await this.$serviceProvider.register()
+        // await this.$serviceProvider.register()
 
-        // this.$serviceProvider.launchServer((config) => {
-        //     Consola.success('Server started on port', config.port)
-        // })
+        this.config.app.listen(this.config.env.port, () => {
+            Consola.success('Server started on port')
+        })
     }
 
-    public registerAssetsRoutes() {
-        this.$serviceProvider.app.use(
+    public registerMiddleware() {
+        this.config.app.use(BodyParser.json())
+
+        const Store = require('connect-session-knex')(ExpressSession)
+
+        this.config.app.use(
             (
                 request: Express.Request,
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
-                request.scripts = this.scripts
-                request.styles = this.styles
+                request.resources = this.config.resources
 
                 next()
             }
         )
 
-        this.scripts.concat(this.styles).forEach((asset) => {
-            this.$serviceProvider.app.get(
+        this.config.app.use(
+            ExpressSession({
+                secret: this.config.env.sessionSecret,
+                store: new Store({}),
+                resave: false,
+                saveUninitialized: false,
+            })
+        )
+    }
+
+    public registerAssetsRoutes() {
+        this.config.app.use(
+            (
+                request: Express.Request,
+                response: Express.Response,
+                next: Express.NextFunction
+            ) => {
+                request.scripts = this.config.scripts
+                request.styles = this.config.styles
+
+                next()
+            }
+        )
+
+        this.config.scripts.forEach((asset) => {
+            this.config.app.get(
                 `/${asset.name}`,
                 (request: Express.Request, response: Express.Response) =>
                     response.sendFile(asset.path)
@@ -67,17 +99,24 @@ class Flamingo {
         })
     }
 
-    public script(script: Asset) {
-        this.scripts = [...this.scripts, script]
+    private setValue(key: keyof FlamingoConfig, value: any) {
+        this.config = {
+            ...this.config,
+            [key]: value
+        }
 
         return this
     }
 
-    public style(style: Asset) {
-        this.styles = [...this.styles, style]
+    public resources(resources: Array<Resource>) {
+        this.setValue('resources', resources)
 
         return this
     }
+}
+
+export const flamingo = () => {
+    return new Flamingo()
 }
 
 export default Flamingo
