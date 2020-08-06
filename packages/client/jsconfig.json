@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "pages": ["./pages"],
+            "store": ["./store"],
+            "helpers": ["./helpers"],
+            "components": ["./components"]
+        }
+    }
+}

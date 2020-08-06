@@ -1,0 +1,72 @@
+{
+    "name": "@flamingo/core",
+    "version": "0.0.0",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "types": "./build/typings/index.d.ts",
+    "bin": {
+        "flamingo": "build/cli/index.js"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.11.1",
+        "@babel/preset-env": "^7.11.0",
+        "@babel/preset-typescript": "^7.10.4",
+        "@types/bcryptjs": "^2.4.2",
+        "@types/body-parser": "^1.19.0",
+        "@types/classnames": "^2.2.10",
+        "@types/commander": "^2.12.2",
+        "@types/date-fns": "^2.6.0",
+        "@types/express": "^4.17.6",
+        "@types/express-session": "^1.17.0",
+        "@types/faker": "^4.1.12",
+        "@types/jest": "^25.2.3",
+        "@types/mustache": "^4.0.1",
+        "@types/pluralize": "^0.0.29",
+        "@types/supertest": "^2.0.9",
+        "babel-jest": "^26.2.2",
+        "faker": "^4.1.0",
+        "jest": "^26.0.1",
+        "supertest": "^4.0.2",
+        "typescript": "^3.9.5"
+    },
+    "scripts": {
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "build": "tsc --p tsconfig.json && yarn copy:files",
+        "dev": "tsc --watch --p tsconfig.json",
+        "test": "jest --verbose",
+        "copy:files": "cp index.mustache build/index.mustache"
+    },
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.19.0",
+        "change-case": "^4.1.1",
+        "classnames": "^2.2.6",
+        "commander": "^5.1.0",
+        "consola": "^2.12.2",
+        "date-fns": "^2.14.0",
+        "express": "^4.17.1",
+        "express-session": "^1.17.1",
+        "indicative": "^7.4.4",
+        "knex": "^0.21.2",
+        "mustache": "^4.0.1",
+        "mysql": "^2.18.1",
+        "numeral": "^2.0.6",
+        "pluralize": "^8.0.0",
+        "readline-sync": "^1.4.10",
+        "sqlite3": "^5.0.0",
+        "throttle-debounce": "^2.2.1"
+    },
+    "config": {
+        "commitizen": {
+            "path": "cz-conventional-changelog"
+        }
+    },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

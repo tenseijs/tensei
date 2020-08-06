@@ -1,0 +1,56 @@
+{
+    "name": "@flamingo/client",
+    "version": "0.0.1",
+    "main": "./build/server/index.js",
+    "license": "MIT",
+    "types": "./build/typings/index.d.ts",
+    "bin": {
+        "flamingo": "build/cli/index.js"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.11.1",
+        "@babel/preset-env": "^7.11.0",
+        "@babel/preset-react": "^7.10.4",
+        "@babel/preset-typescript": "^7.10.4",
+        "@testing-library/jest-dom": "^5.11.0",
+        "@testing-library/react": "^10.4.4",
+        "@testing-library/user-event": "^12.0.11",
+        "@types/jest": "^25.2.3",
+        "babel-jest": "^26.2.2",
+        "jest": "^26.0.1",
+        "lerna": "^3.22.1",
+        "parcel-bundler": "^1.12.4",
+        "prettier": "^2.0.5",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1",
+        "react-paginate": "^6.3.2",
+        "supertest": "^4.0.2",
+        "tailwindcss": "^1.4.6",
+        "ts-loader": "^7.0.5",
+        "typescript": "^3.9.5"
+    },
+    "scripts": {
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "test": "jest --verbose",
+        "dev:css": "NODE_ENV=development yarn build:css",
+        "build:css": "tailwind build css/index.css -o css/index.output.css",
+        "dev": "yarn dev:css && parcel watch index.js --no-autoinstall -d './../core/build/client'",
+        "build": "NODE_ENV=production yarn build:css && parcel build index.js --no-source-maps -d './../core/build/client'"
+    },
+    "dependencies": {
+        "@contentful/forma-36-react-components": "^3.42.0",
+        "@popperjs/core": "^2.4.2",
+        "@types/classnames": "^2.2.10",
+        "@types/date-fns": "^2.6.0",
+        "@types/react": "^16.9.35",
+        "@types/react-dom": "^16.9.8",
+        "axios": "^0.19.2",
+        "classnames": "^2.2.6",
+        "date-fns": "^2.14.0",
+        "pluralize": "^8.0.0",
+        "react-popper": "^2.2.3",
+        "react-router-dom": "^5.2.0",
+        "throttle-debounce": "^2.2.1"
+    },
+    "private": true
+}

@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`returns a 200 and success message when correct credentials are passed 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`returns a 422 if user does not exist in database 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "These credentials do not match our records.",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`validates login data and returns error messages with a 422 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "The email is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "password",
+      "message": "The password is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
