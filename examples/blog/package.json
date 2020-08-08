@@ -10,7 +10,7 @@
         "nodemon": "^2.0.4"
     },
     "scripts": {
-        "watch": "nodemon index.js"
+        "watch": "nodemon --watch ../../node_modules index.js"
     },
     "private": true
 }

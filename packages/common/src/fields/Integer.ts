@@ -10,6 +10,8 @@ export class Integer extends Number {
      */
     protected sqlDatabaseFieldType: string = 'integer'
 
+    public component: string = `${this.constructor.name}Field`
+
     public isForeign: boolean = false
 
     /**

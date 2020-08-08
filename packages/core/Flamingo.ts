@@ -2,8 +2,10 @@ import Path from 'path'
 import BodyParser from 'body-parser'
 import ExpressSession from 'express-session'
 import Express, { Application } from 'express'
+import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
 import AuthController from './controllers/auth/AuthController'
+import IndexResourceController from './controllers/resources/IndexResourceController'
 
 import {
     text,
@@ -14,6 +16,7 @@ import {
     SupportedDatabases,
     DatabaseRepositoryInterface,
 } from '@flamingo/common'
+import CreateResourceController from './controllers/resources/CreateResourceController'
 
 class Flamingo {
     public app: Application = Express()
@@ -21,7 +24,7 @@ class Flamingo {
     private toolsBooted: boolean = false
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
-    private databaseRepository: DatabaseRepositoryInterface|null = null
+    private databaseRepository: DatabaseRepositoryInterface | null = null
 
     private config: FlamingoConfig = {
         resources: [],
@@ -126,8 +129,6 @@ class Flamingo {
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
-        const Store = require('connect-session-knex')(ExpressSession)
-
         this.app.use(
             (
                 request: Express.Request,
@@ -144,6 +145,8 @@ class Flamingo {
                 next()
             }
         )
+
+        const Store = require('connect-session-knex')(ExpressSession)
 
         this.app.use(
             ExpressSession({
@@ -165,13 +168,54 @@ class Flamingo {
         // The administration dashboard
         this.app.get(
             `/${this.config.dashboardPath}(/*)?`,
-            ClientController.index
+            this.asyncHandler(ClientController.index)
         )
 
-        this.app.post(this.getApiPath('login'), AuthController.login)
-        this.app.post(this.getApiPath('register'), AuthController.register)
+        this.app.post(
+            this.getApiPath('login'),
+            this.asyncHandler(AuthController.login)
+        )
+        this.app.post(
+            this.getApiPath('register'),
+            this.asyncHandler(AuthController.register)
+        )
 
-        this.app.post(this.getApiPath('logout'), AuthController.logout)
+        this.app.post(
+            this.getApiPath('logout'),
+            this.asyncHandler(AuthController.logout)
+        )
+
+        this.app.get(
+            this.getApiPath(`resources/:resource`),
+            this.asyncHandler(IndexResourceController.index)
+        )
+        this.app.post(
+            this.getApiPath(`resources/:resource`),
+            this.asyncHandler(CreateResourceController.store)
+        )
+
+        this.app.use(
+            (
+                error: any,
+                request: Express.Request,
+                response: Express.Response,
+                next: Express.NextFunction
+            ) => {
+                if (Array.isArray(error)) {
+                    return response.status(422).json({
+                        message: 'Validation failed.',
+                        errors: error,
+                    })
+                }
+
+                console.log(error)
+
+                response.status(500).json({
+                    message: 'Internal server error.',
+                    error,
+                })
+            }
+        )
     }
 
     public registerAssetsRoutes() {
@@ -193,10 +237,26 @@ class Flamingo {
         this.config.scripts.concat(this.config.styles).forEach((asset) => {
             this.app.get(
                 `/${asset.name}`,
-                (request: Express.Request, response: Express.Response) =>
-                    response.sendFile(asset.path)
+                this.asyncHandler(
+                    (request: Express.Request, response: Express.Response) =>
+                        response.sendFile(asset.path)
+                )
             )
         })
+
+        if (process.env.NODE_ENV !== 'production') {
+            this.app.get(`/index.css.map`, (request: Express.Request, response: Express.Response) => response.sendFile(
+                Path.resolve(__dirname, 'client', 'index.css.map')
+            ))
+
+            this.app.get(`/index.js.map`, (request: Express.Request, response: Express.Response) => response.sendFile(
+                Path.resolve(__dirname, 'client', 'index.js.map')
+            ))
+        }
+    }
+
+    public asyncHandler(handler: Express.Handler) {
+        return AsyncHandler(handler)
     }
 
     private setValue(key: keyof FlamingoConfig, value: any) {

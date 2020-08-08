@@ -6,31 +6,13 @@ class CreateResourceController extends Controller {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const resource = this.findResource(
+        const model = await request.resourceManager.create(
+            request,
             request.params.resource,
-            request.resources
+            request.body
         )
 
-        if (!resource) {
-            return response.status(400).json({
-                message: 'Resource not found.',
-            })
-        }
-
-        const [validationFailed, errors] = await this.validate(
-            request.body,
-            resource
-        )
-
-        if (validationFailed) {
-            return response.status(422).json(errors)
-        }
-
-        // const [createdSuccessfully, data] = await resource
-        //     .model(request.body)
-        //     .create()
-
-        // response.status(createdSuccessfully ? 201 : 400).json(data)
+        return response.json(model)
     }
 }
 

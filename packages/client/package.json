@@ -23,6 +23,7 @@
         "prettier": "^2.0.5",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
+        "react-flatpickr": "^3.10.4",
         "react-paginate": "^6.3.2",
         "supertest": "^4.0.2",
         "tailwindcss": "^1.4.6",

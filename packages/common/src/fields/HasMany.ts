@@ -1,5 +1,6 @@
 import Integer from './Integer'
 import { snakeCase } from 'change-case'
+import Pluralize from 'pluralize'
 
 export class HasMany extends Integer {
     /**
@@ -11,16 +12,16 @@ export class HasMany extends Integer {
 
     protected sqlDatabaseFieldType: string = 'undefined'
 
+    protected isRelationshipField: boolean = true
+
     /**
      * When a new date string is initialized, it defaults the
      * date to today's date.
      */
-    constructor(name: string, databaseField?: string) {
-        super(name, databaseField || snakeCase(`${name}_id`))
+    constructor(name: string) {
+        super(name, Pluralize(snakeCase(name)))
 
-        this.foreign()
-
-        this.unsigned()
+        this.rules('array')
 
         this.hideFromIndex()
     }

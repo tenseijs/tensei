@@ -7,6 +7,15 @@ export class BigInteger extends Integer {
      * on the create builder.
      */
     protected sqlDatabaseFieldType: string = 'bigInteger'
+
+    protected isRelationshipField: boolean = true
+
+    /**
+     *
+     * This is a short name for the frontend component that
+     * will be mounted for this field.
+     */
+    public component: string = `${this.constructor.name}Field`
 }
 
 export const bigInteger = (name: string, databaseField?: string) =>

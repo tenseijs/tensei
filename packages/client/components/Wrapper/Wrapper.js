@@ -11,7 +11,8 @@ class Wrapper extends React.Component {
         user: window.Flamingo.state.user,
         resources: window.Flamingo.state.resources,
         appConfig: window.Flamingo.state.appConfig,
-        shouldShowRegistrationScreen: window.Flamingo.state.shouldShowRegistrationScreen
+        shouldShowRegistrationScreen:
+            window.Flamingo.state.shouldShowRegistrationScreen,
     }
 
     setUser = (user) => {
@@ -24,16 +25,27 @@ class Wrapper extends React.Component {
         const { user, shouldShowRegistrationScreen, resources } = this.state
         return (
             <BrowserRouter>
-                <Auth.Provider value={[user, this.setUser, shouldShowRegistrationScreen]}>
+                <Auth.Provider
+                    value={[user, this.setUser, shouldShowRegistrationScreen]}
+                >
                     <Resources.Provider
                         value={{
                             resources,
                         }}
                     >
-                        <Route path={Flamingo.getPath('')} component={DashboardPage} />
-                        <Route path={Flamingo.getPath('auth/login')} component={LoginPage} />
+                        <Route
+                            path={Flamingo.getPath('')}
+                            component={DashboardPage}
+                        />
+                        <Route
+                            path={Flamingo.getPath('auth/login')}
+                            component={LoginPage}
+                        />
                         {shouldShowRegistrationScreen ? (
-                            <Route path={Flamingo.getPath('auth/register')} component={RegisterPage} />
+                            <Route
+                                path={Flamingo.getPath('auth/register')}
+                                component={RegisterPage}
+                            />
                         ) : null}
                     </Resources.Provider>
                 </Auth.Provider>

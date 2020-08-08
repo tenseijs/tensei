@@ -20,7 +20,14 @@ class Text extends React.Component {
                 name={field.inputName}
                 labelText={field.name}
                 textInputProps={{
-                    type: field.component === 'NumberField' ? 'number' : 'text',
+                    type: [
+                        'NumberField',
+                        'IntegerField',
+                        'BigIntegerField',
+                    ].includes(field.component)
+                        ? 'number'
+                        : 'text',
+                    ...field.attributes,
                 }}
                 validationMessage={errorMessage}
                 description={field.description}

@@ -71,7 +71,7 @@ class ResourceIndex extends React.Component {
                 },
             ],
             page: 1,
-            perPage: resource.defaultPerPage,
+            perPage: resource.perPageOptions[0] || 10,
             total: 0,
             pageCount: 1,
             selected: [],
@@ -111,7 +111,7 @@ class ResourceIndex extends React.Component {
         this.pushParamsToUrl()
 
         Flamingo.request
-            .get(`resources/${resource.param}?perPage=${perPage}&page=${page}`)
+            .get(`resources/${resource.slug}?perPage=${perPage}&page=${page}`)
             .then(({ data }) => {
                 this.setState({
                     data: data.data,
@@ -122,7 +122,15 @@ class ResourceIndex extends React.Component {
                     pageCount: data.pageCount,
                 })
             })
-            .catch(console.log)
+            .catch((error) => {
+                this.setState({
+                    loading: false,
+                })
+
+                Flamingo.library.Notification.error(
+                    `There might be a problem with your query parameters.`
+                )
+            })
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -139,7 +147,7 @@ class ResourceIndex extends React.Component {
 
     findResource() {
         return this.props.resources.find(
-            (resource) => resource.param === this.props.match.params.resource
+            (resource) => resource.slug === this.props.match.params.resource
         )
     }
 
@@ -211,7 +219,7 @@ class ResourceIndex extends React.Component {
         const resourceId = deleting.key
 
         Flamingo.request
-            .delete(`resources/${resource.param}/${resourceId}`)
+            .delete(`resources/${resource.slug}/${resourceId}`)
             .then(() => {
                 this.setState(
                     {
@@ -304,7 +312,9 @@ class ResourceIndex extends React.Component {
                         </Dropdown>
                         <Link
                             className="ml-3"
-                            to={`/resources/${resource.param}/new`}
+                            to={Flamingo.getPath(
+                                `resources/${resource.slug}/new`
+                            )}
                         >
                             <Button>Add {resource.name.toLowerCase()}</Button>
                         </Link>
@@ -371,13 +381,17 @@ class ResourceIndex extends React.Component {
                                             <TableCell
                                                 onClick={() => {
                                                     this.props.history.push(
-                                                        `/resources/${resource.param}/${row.key}`
+                                                        Flamingo.getPath(
+                                                            `resources/${resource.slug}/${row.key}`
+                                                        )
                                                     )
                                                 }}
                                                 key={`${row.key}-cell-${index}`}
                                             >
                                                 <Link
-                                                    to={`/resources/${resource.param}/${row.key}`}
+                                                    to={Flamingo.getPath(
+                                                        `resources/${resource.slug}/${row.key}`
+                                                    )}
                                                 >
                                                     {cell.content}
                                                 </Link>
@@ -385,7 +399,7 @@ class ResourceIndex extends React.Component {
                                         ))}
                                         <TableCell>
                                             <Link
-                                                to={`/resources/${resource.param}/${row.key}/edit`}
+                                                to={`/resources/${resource.slug}/${row.key}/edit`}
                                                 className="cursor-pointer"
                                                 style={{ marginRight: '10px' }}
                                             >
@@ -442,7 +456,7 @@ class ResourceIndex extends React.Component {
                                     (perPageOption) => (
                                         <Option
                                             key={perPageOption}
-                                            value={perPageOption}
+                                            value={perPageOption.toString()}
                                         >
                                             {perPageOption} / page
                                         </Option>

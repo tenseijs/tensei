@@ -25,7 +25,7 @@ class CreateResource extends React.Component {
 
     findResource() {
         return this.props.resources.find(
-            (resource) => resource.param === this.props.match.params.resource
+            (resource) => resource.slug === this.props.match.params.resource
         )
     }
 
@@ -33,13 +33,13 @@ class CreateResource extends React.Component {
         this.initializeForm()
     }
 
-    initializeForm = async () => {
+    initializeForm = () => {
         const { editingState, resource } = this.state
         const { resourceId } = this.props.match.params
 
         if (editingState) {
             Flamingo.request
-                .get(`resources/${resource.param}/${resourceId}`)
+                .get(`resources/${resource.slug}/${resourceId}`)
 
                 .then(({ data }) => {
                     const [form, errors] = this.getDefaultFormState(data)
@@ -57,7 +57,9 @@ class CreateResource extends React.Component {
                         `Could not find resource with ID. ${resourceId}`
                     )
 
-                    this.props.history.push(`/resources/${resource.param}`)
+                    this.props.history.push(
+                        Flamingo.getPath(`resources/${resource.slug}`)
+                    )
                 })
         } else {
             const [form, errors] = this.getDefaultFormState()
@@ -114,6 +116,12 @@ class CreateResource extends React.Component {
         this.getResourceFields().forEach((field) => {
             form[field.inputName] = model[field.inputName] || field.defaultValue
             errors[field.inputName] = null
+
+            if (field.component === 'HasManyField') {
+                // TODO: Work on this during updates. Should be different.
+                form[field.inputName] = model[field.inputName] || []
+                errors[field.inputName] = null
+            }
         })
 
         this.getResourceObjectFields().forEach((objectField) => {
@@ -181,7 +189,7 @@ class CreateResource extends React.Component {
             return null
         }
 
-        const { errors, form } = this.state
+        const { errors, form, resource } = this.state
 
         let fieldValue = ''
         let errorMessage = null
@@ -248,6 +256,7 @@ class CreateResource extends React.Component {
             <div key={resourceField.inputName} className="mb-3">
                 <Component
                     value={fieldValue}
+                    resource={resource}
                     field={resourceField}
                     label={resourceField.name}
                     errorMessage={errorMessage}
@@ -265,7 +274,7 @@ class CreateResource extends React.Component {
         const { resource, editingState } = this.state
 
         Flamingo.request[editingState ? 'put' : 'post'](
-            `resources/${resource.param}/${
+            `resources/${resource.slug}/${
                 editingState ? this.props.match.params.resourceId : ''
             }`,
             {
@@ -274,19 +283,33 @@ class CreateResource extends React.Component {
             }
         )
             .then(() => {
-                this.props.history.push(`/resources/${resource.param}`)
+                this.props.history.push(
+                    Flamingo.getPath(`resources/${resource.slug}`)
+                )
 
                 Flamingo.library.Notification.success(
                     `Resource has been ${editingState ? 'updated' : 'created'}.`
                 )
             })
             .catch((error) => {
-                Flamingo.library.Notification.error(`Failed updating resource.`)
+                Flamingo.library.Notification.error(
+                    `Failed ${editingState ? 'updating' : 'creating'} resource.`
+                )
 
                 this.setState({
-                    errors: error.response.data,
+                    errors: this.formatErrors(error?.response?.data?.errors),
                 })
             })
+    }
+
+    formatErrors = (errors) => {
+        let formattedErrors = {}
+
+        errors.forEach((error) => {
+            formattedErrors[error.field] = error.message
+        })
+
+        return formattedErrors
     }
 
     handleFieldChange = (field, value) => {

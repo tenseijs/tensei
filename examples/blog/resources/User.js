@@ -1,23 +1,24 @@
 const {
-    dateTime,
-    integer,
     text,
-    textarea,
-    date,
-    belongsTo,
-    select,
     resource,
-    password
+    hasMany
 } = require('@flamingo/core')
 
 const User = resource('User')
 .fields([
-    text('Full name'),
+    text('Full name').searchable().rules('required'),
     text('Email')
         .unique()
-        .searchable(),
-    password('Password')
-    .notNullable()
+        .searchable().htmlAttributes({
+            type: 'email'
+        }).rules('required', 'max:32', 'email'),
+    text('Password').htmlAttributes({
+        type: 'password'
+    })
+    .rules('required', 'min:8', 'max:24')
+    .notNullable(),
+    hasMany('Post')
 ])
+.displayField('full_name')
 
 module.exports = User

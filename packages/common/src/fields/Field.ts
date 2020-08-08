@@ -23,7 +23,7 @@ export interface SerializedField {
     creationRules: string[]
     fieldName: string
     databaseField: string
-    sqlDatabaseFieldType: string|undefined
+    sqlDatabaseFieldType: string | undefined
     attributes: { [key: string]: string }
     selectOptions?: {
         label: string
@@ -31,6 +31,7 @@ export interface SerializedField {
     }[]
     defaultToNow?: boolean
     isUnsigned?: boolean
+    isRelationshipField: boolean
 }
 
 export class Field {
@@ -102,6 +103,8 @@ export class Field {
      *
      */
     public attributes: {} = {}
+
+    protected isRelationshipField: boolean = false
 
     /**
      *
@@ -464,6 +467,7 @@ export class Field {
             fieldName: this.constructor.name,
             databaseField: this.databaseField,
             sqlDatabaseFieldType: this.sqlDatabaseFieldType,
+            isRelationshipField: this.isRelationshipField,
         }
     }
 }

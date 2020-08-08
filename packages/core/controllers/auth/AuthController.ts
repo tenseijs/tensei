@@ -65,7 +65,10 @@ class AuthController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const [validationPassed, errors] = await this.validate(request.body, true)
+        const [validationPassed, errors] = await this.validate(
+            request.body,
+            true
+        )
 
         if (!validationPassed) {
             return response.status(422).json({
@@ -74,22 +77,26 @@ class AuthController {
             })
         }
 
-        const user = await request.resourceManager.create(request, request.administratorResource, {
-            name: request.body.name,
-            email: request.body.email,
-            password: request.body.password
-        })
+        const user = await request.resourceManager.create(
+            request,
+            request.administratorResource,
+            {
+                name: request.body.name,
+                email: request.body.email,
+                password: request.body.password,
+            }
+        )
 
         request.session!.user = user
 
         return response.json({
-            message: 'Registration and login successful.'
+            message: 'Registration and login successful.',
         })
     }
 
     public validate = async (data: AuthData, registration = false) => {
         let rules: {
-            [key: string]: string,
+            [key: string]: string
         } = {
             email: 'required|email',
             password: 'required|min:8',
@@ -100,15 +107,11 @@ class AuthController {
         }
 
         try {
-            await validateAll(
-                data,
-                rules,
-                {
-                    'email.required': 'The email is required.',
-                    'password.required': 'The password is required.',
-                    'name.required': 'The name is required.',
-                }
-            )
+            await validateAll(data, rules, {
+                'email.required': 'The email is required.',
+                'password.required': 'The password is required.',
+                'name.required': 'The name is required.',
+            })
 
             return [true, []]
         } catch (errors) {

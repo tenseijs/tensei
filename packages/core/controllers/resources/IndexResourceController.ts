@@ -6,6 +6,12 @@ class IndexResourceController extends Controller {
         request: Express.Request,
         response: Express.Response
     ) => {
+        const results = await request.resourceManager.findAll(
+            request,
+            request.params.resource
+        )
+
+        return response.json(results)
         // const resource = this.findResource(
         //     request.params.resource,
         //     request.resources

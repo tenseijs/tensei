@@ -11,6 +11,8 @@ export class BelongsTo extends Integer {
 
     protected sqlDatabaseFieldType: string = 'integer'
 
+    protected isRelationshipField: boolean = false
+
     /**
      * When a new date string is initialized, it defaults the
      * date to today's date.

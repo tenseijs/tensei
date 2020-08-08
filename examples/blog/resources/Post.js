@@ -12,13 +12,12 @@ const {
 module.exports = resource('Post')
     .displayInNavigation()
     .fields([
-        dateTime('Scheduled For'),
-        integer('Av. CPC'),
         text('Title')
             .sortable()
-            .searchable().unique(),
-        text('Description').searchable().sortable(),
-        textarea('Content'),
+            .searchable().unique().rules('required', 'max:24'),
+        text('Description').rules('required'),
+        textarea('Content').rules('required', 'max:200', 'min:12'),
+        integer('Av. CPC').rules('required'),
         select('Category').options([
             {
                 label: 'Javascript',
@@ -36,8 +35,10 @@ module.exports = resource('Post')
                 label: 'Postgresql',
                 value: 'pg',
             },
-        ]),
-        belongsTo('User').notNullable(),
-        date('Published At').notNullable().firstDayOfWeek(4),
+        ]).rules('required'),
+        belongsTo('User').notNullable().searchable().rules('required'),
+        date('Published At').notNullable().firstDayOfWeek(4).rules('required', 'date'),
+        dateTime('Scheduled For').rules('required', 'date'),
     ])
     .perPageOptions([25, 50, 100])
+    .displayField('title')

@@ -19,7 +19,15 @@ export const mustBeAuthenticated = (Component) => {
             {(value) => {
                 const [user, , shouldShowRegistrationScreen] = value
                 if (!user) {
-                    return <Redirect to={Flamingo.getPath(shouldShowRegistrationScreen ? 'auth/register' : 'auth/login')} />
+                    return (
+                        <Redirect
+                            to={Flamingo.getPath(
+                                shouldShowRegistrationScreen
+                                    ? 'auth/register'
+                                    : 'auth/login'
+                            )}
+                        />
+                    )
                 }
 
                 return <Component {...props} auth={value} />

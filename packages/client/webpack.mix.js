@@ -8,14 +8,13 @@ if (!mix.inProduction()) {
 }
 
 mix.options({
-  terser: {
-    extractComments: false,
-  }
+    terser: {
+        extractComments: false,
+    },
 })
 
-mix.react(
-    'index.js',
-    './../server/build/index.client.js'
+mix.react('index.js', './../server/build/index.client.js').postCss(
+    'index.css',
+    './../server/build/index.min.css',
+    [require('tailwindcss')]
 )
-
-.postCss('index.css', './../server/build/index.min.css', [require('tailwindcss')])

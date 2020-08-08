@@ -5,15 +5,22 @@ import Field, { SerializedField } from '../fields/Field'
 import Pluralize from 'pluralize'
 import { snakeCase, paramCase } from 'change-case'
 
+interface ValidationMessages {
+    [key: string]: string
+}
+
 interface ResourceData {
     name: string
     table: string
     group: string
     slug: string
     label: string
+    valueField: string
+    displayField: string
     noTimeStamps: boolean
     perPageOptions: number[]
     displayInNavigation: boolean
+    validationMessages: ValidationMessages
 }
 
 interface ResourceDataWithFields extends ResourceData {
@@ -30,9 +37,9 @@ export class Resource<ResourceType = {}> {
     private $models: ResourceType[] = []
 
     public hooks: {
-        beforeCreate: HookFunction,
-        beforeUpdate: HookFunction,
-        afterCreate: HookFunction,
+        beforeCreate: HookFunction
+        beforeUpdate: HookFunction
+        afterCreate: HookFunction
         afterUpdate: HookFunction
     } = {
         beforeCreate: (payload, request) => {
@@ -66,9 +73,21 @@ export class Resource<ResourceType = {}> {
         slug: '',
         label: '',
         group: 'default',
-        perPageOptions: [],
+        displayField: 'id',
+        valueField: 'id',
+        noTimeStamps: false,
+        validationMessages: {
+            required: 'The {{ field }} is required.',
+            email: 'The {{ field }} must be a valid email address.',
+        },
         displayInNavigation: true,
-        noTimeStamps: false
+        perPageOptions: [10, 25, 50],
+    }
+
+    public displayField(displayField: string) {
+        this.setValue('displayField', displayField)
+
+        return this
     }
 
     public model($model: ResourceType) {
@@ -87,7 +106,7 @@ export class Resource<ResourceType = {}> {
         this.setValue('fields', [
             // We'll set the primary key here. We're not ready to allow custom primary keys yet.
             id('ID'),
-            ...fields
+            ...fields,
         ])
 
         return this
@@ -124,6 +143,12 @@ export class Resource<ResourceType = {}> {
         return this
     }
 
+    public validationMessages(validationMessages: ValidationMessages) {
+        this.setValue('validationMessages', validationMessages)
+
+        return this
+    }
+
     public group(groupName: string) {
         this.setValue('group', groupName)
 
@@ -145,14 +170,14 @@ export class Resource<ResourceType = {}> {
     public serialize(): SerializedResource {
         return {
             ...this.data,
-            fields: this.data.fields.map(field => field.serialize())
+            fields: this.data.fields.map((field) => field.serialize()),
         }
     }
 
     public beforeCreate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeCreate: hook
+            beforeCreate: hook,
         }
 
         return this
@@ -161,7 +186,7 @@ export class Resource<ResourceType = {}> {
     public beforeUpdate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeUpdate: hook
+            beforeUpdate: hook,
         }
 
         return this
@@ -170,7 +195,7 @@ export class Resource<ResourceType = {}> {
     public afterCreate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterCreate: hook
+            afterCreate: hook,
         }
 
         return this
@@ -179,12 +204,11 @@ export class Resource<ResourceType = {}> {
     public afterUpdate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterUpdate: hook
+            afterUpdate: hook,
         }
 
         return this
     }
-
 }
 
 export const resource = (name: string, tableName?: string) =>

@@ -33,7 +33,7 @@ test('returns a 422 if user does not exist in database', async () => {
     const response = await client.post('/api/login').send({
         email: 'hey@unknown-user.io',
         password: 'password',
-        rememberMe: true
+        rememberMe: true,
     })
 
     expect(response.status).toBe(422)
@@ -54,19 +54,19 @@ test('returns a 200 and success message when correct credentials are passed', as
     const user = {
         password: 'password',
         name: Faker.name.findName(),
-        email: Faker.internet.exampleEmail()
+        email: Faker.internet.exampleEmail(),
     }
 
     await knex('administrators').insert({
         name: user.name,
         email: user.email,
-        password: Bcrypt.hashSync(user.password)
+        password: Bcrypt.hashSync(user.password),
     })
 
     const response = await client.post('/api/login').send({
         email: user.email,
         password: user.password,
-        rememberMe: true
+        rememberMe: true,
     })
 
     expect(response.status).toBe(200)

@@ -1,19 +1,22 @@
 {
-  "name": "@flamingo/common",
-  "version": "0.0.0",
-  "main": "./build/index.js",
-  "license": "MIT",
-  "types": "./build/index.d.ts",
-  "devDependencies": {
-    "typescript": "^3.9.7"
-  },
-  "scripts": {
-    "build": "tsc --p tsconfig.json",
-    "dev": "tsc --watch --p tsconfig.json"
-  },
-  "dependencies": {
-    "@types/pluralize": "^0.0.29",
-    "change-case": "^4.1.1",
-    "pluralize": "^8.0.0"
-  }
+    "name": "@flamingo/common",
+    "version": "0.0.0",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "types": "./build/index.d.ts",
+    "devDependencies": {
+        "prettier": "^2.0.5",
+        "typescript": "^3.9.7"
+    },
+    "scripts": {
+        "build": "tsc --p tsconfig.json",
+        "dev": "tsc --watch --p tsconfig.json",
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'"
+    },
+    "dependencies": {
+        "@types/pluralize": "^0.0.29",
+        "change-case": "^4.1.1",
+        "indicative": "^7.4.4",
+        "pluralize": "^8.0.0"
+    }
 }

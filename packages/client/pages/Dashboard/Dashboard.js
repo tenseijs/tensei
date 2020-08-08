@@ -36,11 +36,13 @@ class DashboardPage extends React.Component {
                 name: 'Resources',
                 open: true,
                 slug: 'resources',
-                items: this.props.resources.filter(resource => resource.displayInNavigation).map((resource) => ({
-                    slug: resource.slug,
-                    to: Flamingo.getPath(`resources/${resource.slug}`),
-                    label: resource.label,
-                })),
+                items: this.props.resources
+                    .filter((resource) => resource.displayInNavigation)
+                    .map((resource) => ({
+                        slug: resource.slug,
+                        to: Flamingo.getPath(`resources/${resource.slug}`),
+                        label: resource.label,
+                    })),
             },
         ],
     }
@@ -171,15 +173,19 @@ class DashboardPage extends React.Component {
                         <div className="py-4 px-3 pt-8 pb-12 md:px-12">
                             <Route
                                 exact
-                                path="/resources/:resource"
+                                path={Flamingo.getPath('resources/:resource')}
                                 component={ResourceIndex}
                             />
                             <Route
-                                path="/resources/:resource/new"
+                                path={Flamingo.getPath(
+                                    'resources/:resource/new'
+                                )}
                                 component={CreateResource}
                             />
                             <Route
-                                path="/resources/:resource/:resourceId/edit"
+                                path={Flamingo.getPath(
+                                    'resources/:resource/:resourceId/edit'
+                                )}
                                 component={CreateResource}
                             />
                             <div className="w-full flex items-center justify-center py-3 mt-24">

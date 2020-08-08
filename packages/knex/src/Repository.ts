@@ -4,7 +4,7 @@ import Knex, {
     AlterTableBuilder,
 } from 'knex'
 
-import { DatabaseRepositoryInterface, User, SerializedResource, SerializedField, FlamingoConfig, Resource } from '@flamingo/common'
+import { DatabaseRepositoryInterface, User, SerializedResource, SerializedField, FlamingoConfig, Resource, FetchAllRequestQuery, DataPayload } from '@flamingo/common'
 
 export class SqlRepository implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
@@ -36,6 +36,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             connection,
             useNullAsDefault: true,
             client: config.env.database,
+            debug: true
         }
 
         this.establishDatabaseConnection()
@@ -256,9 +257,55 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             .then(([count]) => parseInt(count["count(*)"] as string))
     }
 
-    public create = (resource: Resource, payload: {}) => {
-        return this.$db!(resource.data.table)
-            .insert(payload)
-            .returning('*')
+    public create = async (resource: Resource, payload: DataPayload) => {
+        const modelId = (await this.$db!(resource.data.table).insert(payload))[0]
+
+        return this.findOneById(resource, modelId)
+    }
+
+    public updateManyByIds = async (resource: Resource, ids: number[], valuesToUpdate: {}) => {
+        return this.$db!(resource.data.table).whereIn('id', ids).update(valuesToUpdate)
+    }
+
+    public findAllByIds = async (resource: Resource, ids: number[], fields?: FetchAllRequestQuery['fields']) => {
+        return this.$db!.select(fields || '*').from(resource.data.table).whereIn('id', ids)
+    }
+
+    public findOneById = async (resource: Resource, id: number, fields?: FetchAllRequestQuery['fields']) => {
+        return (await this.$db!.select(fields || '*').from(resource.data.table).where('id', id).limit(1))[0] || null
+    }
+
+    public findOneByField = async (resource: Resource, field: string, value: string, fields?: FetchAllRequestQuery['fields']) => {
+        return (await this.$db!.select(fields || '*').from(resource.data.table).where(field, value).limit(1))[0] || null
+    }
+
+    public findAll = async (resource: Resource, query: FetchAllRequestQuery) => {
+        const getBuilder = () => {
+            let builder = this.$db!(resource.data.table)
+
+            if (query.search) {
+                const searchableFields = resource.data.fields.filter(field => field.isSearchable)
+    
+                searchableFields.forEach((field, index) => {
+                    builder[index === 0 ? 'where' : 'orWhere'](field.databaseField, 'like', `%${query.search.toLowerCase()}%`)
+                })
+            }
+
+            return builder
+        }
+
+        const countResult = await getBuilder().count()
+
+        const total = parseInt(countResult[0]["count(*)"] as string)
+
+        return {
+            total,
+            page: query.page,
+            data: await getBuilder()
+                .limit(query.perPage)
+                .offset((query.page - 1) * query.perPage).select(query.fields || '*'),
+            perPage: query.perPage,
+            pageCount: Math.ceil(total / query.perPage)
+        }
     }
 }
