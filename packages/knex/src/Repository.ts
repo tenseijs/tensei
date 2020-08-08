@@ -267,11 +267,23 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         return this.$db!(resource.data.table).whereIn('id', ids).update(valuesToUpdate)
     }
 
+    public deleteById = async (resource: Resource, id: number|string) => {
+        const result = await this.$db!(resource.data.table).where('id', id).limit(1).delete()
+
+        if (result === 0) {
+            throw [{
+                message: `${resource.data.name} resource with id ${id} was not found.`
+            }]
+        }
+
+        return result
+    }
+
     public findAllByIds = async (resource: Resource, ids: number[], fields?: FetchAllRequestQuery['fields']) => {
         return this.$db!.select(fields || '*').from(resource.data.table).whereIn('id', ids)
     }
 
-    public findOneById = async (resource: Resource, id: number, fields?: FetchAllRequestQuery['fields']) => {
+    public findOneById = async (resource: Resource, id: number|string, fields?: FetchAllRequestQuery['fields']) => {
         return (await this.$db!.select(fields || '*').from(resource.data.table).where('id', id).limit(1))[0] || null
     }
 

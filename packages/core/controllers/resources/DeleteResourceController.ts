@@ -6,22 +6,9 @@ class DeleteResourceController extends Controller {
         request: Express.Request,
         response: Express.Response
     ) => {
-        // const resource = this.findResource(
-        //     request.params.resource,
-        //     request.resources
-        // )
-        // if (!resource) {
-        //     return response.status(400).json({
-        //         message: 'Resource not found.',
-        //     })
-        // }
-        // const model = await resource.destroy(request.params.resourceId)
-        // if (!model) {
-        //     return response.status(404).json({
-        //         message: `Resource with ID ${request.params.resourceId} not found.`,
-        //     })
-        // }
-        // return response.status(204).json({})
+        await request.resourceManager.deleteById(request, request.params.resource, request.params.resourceId)
+
+        return response.status(204).json({})
     }
 }
 

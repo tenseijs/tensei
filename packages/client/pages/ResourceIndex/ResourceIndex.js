@@ -168,7 +168,7 @@ class ResourceIndex extends React.Component {
 
     getTableData = () => {
         return this.state.data.map((row) => ({
-            key: row[this.state.resource.primaryKey],
+            key: row.id,
             cells: [
                 ...this.getTableColumns().map((column) => {
                     const Component =
@@ -399,7 +399,7 @@ class ResourceIndex extends React.Component {
                                         ))}
                                         <TableCell>
                                             <Link
-                                                to={`/resources/${resource.slug}/${row.key}/edit`}
+                                                to={Flamingo.getPath(`resources/${resource.slug}/${row.key}/edit`)}
                                                 className="cursor-pointer"
                                                 style={{ marginRight: '10px' }}
                                             >

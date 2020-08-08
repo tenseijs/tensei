@@ -17,6 +17,9 @@ import {
     DatabaseRepositoryInterface,
 } from '@flamingo/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
+import DeleteResourceController from './controllers/resources/DeleteResourceController'
+import FindResourceController from './controllers/resources/FindResourceController'
+import UpdateResourceController from './controllers/resources/UpdateResourceController'
 
 class Flamingo {
     public app: Application = Express()
@@ -189,9 +192,25 @@ class Flamingo {
             this.getApiPath(`resources/:resource`),
             this.asyncHandler(IndexResourceController.index)
         )
+
+        this.app.get(
+            this.getApiPath(`resources/:resource/:resourceId`),
+            this.asyncHandler(FindResourceController.show)
+        )
+
+        this.app.put(
+            this.getApiPath(`resources/:resource/:resourceId`),
+            this.asyncHandler(UpdateResourceController.update)
+        )
+
         this.app.post(
             this.getApiPath(`resources/:resource`),
             this.asyncHandler(CreateResourceController.store)
+        )
+
+        this.app.delete(
+            this.getApiPath(`resources/:resource/:resourceId`),
+            this.asyncHandler(DeleteResourceController.destroy)
         )
 
         this.app.use(

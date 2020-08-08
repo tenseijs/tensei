@@ -9,7 +9,7 @@ module.exports =
 
 resource('Comment')
 .fields([
-    text('Title'),
-    textarea('Body'),
+    text('Title').rules('required'),
+    textarea('Body').rules('required'),
     belongsTo('Post')
 ])

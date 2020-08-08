@@ -24,7 +24,7 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     ) => Promise<Model[]>
     abstract findOneById: (
         resource: Resource,
-        id: number,
+        id: number|string,
         fields?: string[]
     ) => Promise<Model | null>
     abstract findOneByField: (
@@ -38,4 +38,8 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
         ids: number[],
         valuesToUpdate: {}
     ) => Promise<number>
+    abstract deleteById: (
+        resource: Resource,
+        id: number|string
+    ) => Promise<any>
 }

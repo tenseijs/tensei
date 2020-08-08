@@ -26,6 +26,12 @@ export class ResourceManager {
         return resource
     }
 
+    public async deleteById(request: Request, resourceSlugOrResource: string | Resource, id: number|string) {
+        const resource = this.findResource(resourceSlugOrResource)
+
+        await this.db.deleteById(resource, id)
+    }
+
     public async create(
         request: Request,
         resourceSlugOrResource: string | Resource,
@@ -42,15 +48,7 @@ export class ResourceManager {
 
         const model = await this.db.create(resource, parsedPayload)
 
-        // create relational fields.
         await this.createRelationalFields(resource, payload, model)
-        // if hasMany relationship
-        // check if the request data has the hasMany Ids
-        // if it does, then call the update method on the db
-        // and update the records with the id of the newly created
-        // database record.
-
-        console.log('----->_______________________________', model)
 
         return model
     }
@@ -145,6 +143,16 @@ export class ResourceManager {
             fields,
             search,
         })
+    }
+
+    public async findOneById(
+        request: Request,
+        resourceSlugOrResource: string | Resource,
+        id: number|string
+    ) {
+        const resource = this.findResource(resourceSlugOrResource)
+
+        return this.db.findOneById(resource, id)
     }
 
     getValidationRules = (resource: Resource, creationRules = true) => {

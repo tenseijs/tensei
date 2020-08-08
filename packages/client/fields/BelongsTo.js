@@ -44,12 +44,22 @@ class BelongsTo extends React.Component {
                 ].join(',')}&search=${query || ''}`
             )
             .then(({ data }) => {
+                let selectedOption = null
+
+                const options = data.data.map((option) => ({
+                    label: option[relatedResource.displayField],
+                    value: option[relatedResource.valueField],
+                }))
+
+                if (this.props.value) {
+                    selectedOption = options.find(option => option.value === this.props.value) || null
+                }
+
                 this.setState({
                     isLoading: false,
-                    options: data.data.map((option) => ({
-                        label: option[relatedResource.displayField],
-                        value: option[relatedResource.valueField],
-                    })),
+                    options,
+                    selectedOption,
+                    textValue: selectedOption ? selectedOption.label : ''
                 })
             })
     }
@@ -142,6 +152,7 @@ class BelongsTo extends React.Component {
                         onChange={(event) => onFieldChange(event.target.value)}
                         value={value}
                     >
+                        <Option value=''>None</Option>
                         {options.map((option) => (
                             <Option key={option.value} value={option.value}>
                                 {option.label}
