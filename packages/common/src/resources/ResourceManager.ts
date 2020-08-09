@@ -53,6 +53,24 @@ export class ResourceManager {
         return model
     }
 
+    public async update(
+        request: Request,
+        resourceSlugOrResource: string | Resource,
+        id: number|string,
+        payload: DataPayload
+    ) {
+        const resource = this.findResource(resourceSlugOrResource)
+
+        const validatedPayload = await this.validate(payload, resource)
+
+        const parsedPayload = resource.hooks.beforeUpdate(
+            validatedPayload,
+            request
+        )
+
+        const updated = await this.db.updateManyByIds(resource, [id], parsedPayload)
+    }
+
     public async createRelationalFields(
         resource: Resource,
         payload: DataPayload,

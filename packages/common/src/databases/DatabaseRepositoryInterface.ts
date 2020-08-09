@@ -35,7 +35,12 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     ) => Promise<Model | null>
     abstract updateManyByIds: (
         resource: Resource,
-        ids: number[],
+        ids: (number|string)[],
+        valuesToUpdate: {}
+    ) => Promise<number>
+    abstract updateOneById: (
+        resource: Resource,
+        id: number|string,
         valuesToUpdate: {}
     ) => Promise<number>
     abstract deleteById: (
