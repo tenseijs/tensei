@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Test the dashboard page should match snapshot 1`] = `
+exports[`Test the Login page should match snapshot 1`] = `
 <DocumentFragment>
   <div
     class="w-full bg-gray-100 h-screen"
