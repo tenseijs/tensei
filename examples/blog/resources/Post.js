@@ -35,7 +35,7 @@ module.exports = resource('Post')
                 label: 'Postgresql',
                 value: 'pg',
             },
-        ]).rules('required'),
+        ]).rules('required').searchable(),
         belongsTo('User').notNullable().searchable().rules('required'),
         date('Published At').notNullable().firstDayOfWeek(4).rules('required', 'date'),
         dateTime('Scheduled For').rules('required', 'date'),

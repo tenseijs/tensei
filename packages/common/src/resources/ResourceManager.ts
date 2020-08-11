@@ -26,7 +26,11 @@ export class ResourceManager {
         return resource
     }
 
-    public async deleteById(request: Request, resourceSlugOrResource: string | Resource, id: number|string) {
+    public async deleteById(
+        request: Request,
+        resourceSlugOrResource: string | Resource,
+        id: number | string
+    ) {
         const resource = this.findResource(resourceSlugOrResource)
 
         await this.db.deleteById(resource, id)
@@ -56,19 +60,91 @@ export class ResourceManager {
     public async update(
         request: Request,
         resourceSlugOrResource: string | Resource,
-        id: number|string,
+        id: number | string,
         payload: DataPayload
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        const validatedPayload = await this.validate(payload, resource)
+        const validatedPayload = await this.validate(
+            payload,
+            resource,
+            false,
+            id
+        )
 
         const parsedPayload = resource.hooks.beforeUpdate(
             validatedPayload,
             request
         )
 
-        const updated = await this.db.updateManyByIds(resource, [id], parsedPayload)
+        await this.db.updateManyByIds(resource, [id as number], parsedPayload)
+
+        await this.updateRelationshipFields(resource, payload, id)
+    }
+
+    public async updateRelationshipFields(
+        resource: Resource,
+        payload: DataPayload,
+        modelId: string | number
+    ) {
+        const {
+            relationshipFieldsPayload,
+        } = this.breakFieldsIntoRelationshipsAndNonRelationships(
+            this.getResourceFieldsFromPayload(payload, resource),
+            resource
+        )
+
+        const relationshipFields = resource
+            .serialize()
+            .fields.filter((field) => field.isRelationshipField)
+
+        for (let index = 0; index < relationshipFields.length; index++) {
+            const field = relationshipFields[index]
+            const relatedResource = this.resources.find(
+                (relatedResource) => relatedResource.data.name === field.name
+            )
+
+            if (!relatedResource) {
+                throw [
+                    {
+                        message: `The related resource ${field.name} was not found.`,
+                    },
+                ]
+            }
+
+            if (field.component === 'HasManyField') {
+                // first we'll set all related belongs to values to null on the related resource
+                const relatedBelongsToField = relatedResource.data.fields.find(
+                    (field) =>
+                        field.component === 'BelongsToField' &&
+                        field.name === resource.data.name
+                )
+
+                if (!relatedBelongsToField) {
+                    throw [
+                        {
+                            message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`,
+                        },
+                    ]
+                }
+
+                // go to posts table, find all related posts and update the user_id field to be the null
+                await this.db.updateManyWhere(
+                    relatedResource,
+                    { [relatedBelongsToField.databaseField]: modelId },
+                    { [relatedBelongsToField.databaseField]: null }
+                )
+
+                // finally, go to posts table, find all related posts (new ones from request body) and update the user_id field to be modelId
+                await this.db.updateManyByIds(
+                    relatedResource,
+                    relationshipFieldsPayload[field.inputName],
+                    {
+                        [relatedBelongsToField.databaseField]: modelId,
+                    }
+                )
+            }
+        }
     }
 
     public async createRelationalFields(
@@ -93,39 +169,78 @@ export class ResourceManager {
                 (relatedResource) => relatedResource.data.name === field.name
             )
 
-            if (! relatedResource) {
-                throw [{
-                    message: `The related resource ${field.name} was not found.`
-                }]
+            if (!relatedResource) {
+                throw [
+                    {
+                        message: `The related resource ${field.name} was not found.`,
+                    },
+                ]
             }
 
             if (field.component === 'HasManyField') {
-                const relatedBelongsToField = relatedResource.data.fields.find(field => field.component === 'BelongsToField' && field.name === resource.data.name)
+                const relatedBelongsToField = relatedResource.data.fields.find(
+                    (field) =>
+                        field.component === 'BelongsToField' &&
+                        field.name === resource.data.name
+                )
 
-                if (! relatedBelongsToField) {
-                    throw [{
-                        message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`
-                    }]
+                if (!relatedBelongsToField) {
+                    throw [
+                        {
+                            message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`,
+                        },
+                    ]
                 }
                 const valuesToUpdate: DataPayload = {
-                    [relatedBelongsToField.databaseField]: model.id
+                    [relatedBelongsToField.databaseField]: model.id,
                 }
 
                 // go to posts table, find all related posts and update the user_id field to be the model.id
-                this.db.updateManyByIds(relatedResource, relationshipFieldsPayload[field.inputName], valuesToUpdate)
+                this.db.updateManyByIds(
+                    relatedResource,
+                    relationshipFieldsPayload[field.inputName],
+                    valuesToUpdate
+                )
             }
         }
     }
 
     public async validateRequestQuery(
-        { perPage, page, fields, search }: Request['query'],
+        {
+            perPage,
+            page,
+            fields,
+            search,
+            noPagination = 'false',
+            ...rest
+        }: Request['query'],
         resource: Resource
     ) {
+        let whereQueries: Array<{
+            field: string
+            value: string
+        }> = []
+
+        Object.keys(rest).forEach((queryParam) => {
+            if (queryParam.match(/where_/i) && rest[queryParam]) {
+                whereQueries.push({
+                    field: queryParam.split('where_')[1],
+                    value: rest[queryParam] as string,
+                })
+            }
+        })
+
+        const validFields = resource.data.fields.map(
+            (field) => field.databaseField
+        )
+
         const parsedQuery = await validateAll(
             {
                 perPage,
                 page,
                 search,
+                noPagination,
+                whereQueries,
                 fields: (fields as string)?.split(','),
             },
             {
@@ -133,9 +248,11 @@ export class ResourceManager {
                 page: 'number',
                 fields: 'array',
                 search: 'string',
-                'fields.*':
-                    'in:' +
-                    resource.data.fields.map((field) => field.databaseField),
+                whereQueries: 'array',
+                'whereQueries.*.field': 'required|string,in:' + validFields,
+                'whereQueries.*.value': 'required|string,',
+                noPagination: 'string,in:true,false',
+                'fields.*': 'in:' + validFields,
             }
         )
 
@@ -153,6 +270,8 @@ export class ResourceManager {
             page,
             fields,
             search,
+            whereQueries,
+            noPagination,
         } = await this.validateRequestQuery(request.query, resource)
 
         return this.db.findAll(resource, {
@@ -160,13 +279,15 @@ export class ResourceManager {
             page: page || 1,
             fields,
             search,
+            whereQueries,
+            noPagination,
         })
     }
 
     public async findOneById(
         request: Request,
         resourceSlugOrResource: string | Resource,
-        id: number|string
+        id: number | string
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
@@ -174,7 +295,11 @@ export class ResourceManager {
     }
 
     getValidationRules = (resource: Resource, creationRules = true) => {
-        const { fields } = resource.data
+        const fields = resource.data.fields.filter((field) =>
+            creationRules
+                ? field.showHideField.showOnCreation
+                : field.showHideField.showOnUpdate
+        )
 
         const rules: {
             [key: string]: string
@@ -248,7 +373,8 @@ export class ResourceManager {
     validate = async (
         payload: DataPayload,
         resource: Resource,
-        creationRules: boolean = true
+        creationRules: boolean = true,
+        modelId?: string | number
     ): Promise<DataPayload> => {
         const {
             relationshipFieldsPayload,
@@ -269,13 +395,23 @@ export class ResourceManager {
             resource
         )
 
-        await this.validateUniqueFields(nonRelationshipFieldsPayload, resource)
+        await this.validateUniqueFields(
+            nonRelationshipFieldsPayload,
+            resource,
+            creationRules,
+            modelId
+        )
 
         // then we need to validate all unique fields.
         return parsedPayload
     }
 
-    validateUniqueFields = async (payload: DataPayload, resource: Resource) => {
+    validateUniqueFields = async (
+        payload: DataPayload,
+        resource: Resource,
+        creationRules = true,
+        modelId?: string | number
+    ) => {
         const uniqueFields = resource
             .serialize()
             .fields.filter(
@@ -285,12 +421,24 @@ export class ResourceManager {
         for (let index = 0; index < uniqueFields.length; index++) {
             const field = uniqueFields[index]
 
-            const exists = await this.db.findOneByField(
-                resource,
-                field.databaseField,
-                payload[field.inputName],
-                ['id']
-            )
+            let exists: null | {} = null
+
+            if (creationRules) {
+                exists = await this.db.findOneByField(
+                    resource,
+                    field.databaseField,
+                    payload[field.inputName],
+                    ['id']
+                )
+            } else {
+                exists = await this.db.findOneByFieldExcludingOne(
+                    resource,
+                    field.databaseField,
+                    payload[field.inputName],
+                    modelId!,
+                    ['id']
+                )
+            }
 
             if (exists) {
                 throw [

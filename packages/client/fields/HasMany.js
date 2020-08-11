@@ -1,8 +1,9 @@
 import React from 'react'
 import { debounce } from 'throttle-debounce'
 import { withResources } from '~/store/resources'
-import { Pill } from '@contentful/forma-36-react-components'
+import { Pill, TextLink } from '@contentful/forma-36-react-components'
 import Autocomplete from '~/components/Autocomplete'
+import { Link } from 'react-router-dom'
 
 class HasMany extends React.Component {
     state = {
@@ -23,8 +24,43 @@ class HasMany extends React.Component {
             {
                 relatedResource: this.findRelatedResource(),
             },
-            () => this.fetchOptions()
+            () => {
+                this.fetchOptions()
+
+                if (this.props.editingState) {
+                    this.fetchSelectedOptions()
+                }
+            }
         )
+    }
+
+    fetchSelectedOptions = () => {
+        const { relatedResource } = this.state
+        const { resource, resourceId } = this.props
+        const relatedBelongsToField = relatedResource.fields.find(
+            (field) =>
+                field.component === 'BelongsToField' &&
+                field.name === resource.name
+        )
+
+        Flamingo.request
+            .get(
+                `resources/${relatedResource.slug}?fields=${[
+                    relatedResource.displayField,
+                    relatedResource.valueField,
+                    // TODO: Make the perPage here customizable.
+                ].join(',')}&perPage=20&where_${
+                    relatedBelongsToField.inputName
+                }=${resourceId}`
+            )
+            .then(({ data }) => {
+                this.setState({
+                    selectedOptions: data.data.map((option) => ({
+                        label: option[relatedResource.displayField],
+                        value: option[relatedResource.valueField],
+                    })),
+                })
+            })
     }
 
     fetchOptions = (query) => {
@@ -95,13 +131,8 @@ class HasMany extends React.Component {
     }
 
     render() {
-        const { field, errorMessage } = this.props
-        const {
-            options,
-            isLoading,
-            relatedResource,
-            selectedOptions,
-        } = this.state
+        const { field, errorMessage, resource, resourceId } = this.props
+        const { isLoading, relatedResource, selectedOptions } = this.state
 
         return (
             <div className="TextField">
@@ -135,16 +166,33 @@ class HasMany extends React.Component {
                 </Autocomplete>
 
                 {selectedOptions.length > 0 ? (
-                    <div className="flex flex-wrap mt-4">
-                        {selectedOptions.map((option) => (
-                            <Pill
-                                className="mr-2 mt-2"
-                                key={option.value}
-                                onClose={() => this.removeOption(option)}
-                                label={option.label}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className="flex flex-wrap mt-4">
+                            {selectedOptions.map((option) => (
+                                <Pill
+                                    className="mr-2 mt-2"
+                                    key={option.value}
+                                    onClose={() => this.removeOption(option)}
+                                    label={option.label}
+                                />
+                            ))}
+                        </div>
+                        {/* TODO: Make 20 customizable. Probably use the defaultPerPage of the resource */}
+                        {selectedOptions.length > 20 ? (
+                            <TextLink className="mt-2">
+                                <Link
+                                    to={Flamingo.getPath(
+                                        `resources/${resource.slug}/${resourceId}`
+                                    )}
+                                >
+                                    View all{' '}
+                                    {relatedResource
+                                        ? relatedResource.label.toLowerCase()
+                                        : null}
+                                </Link>
+                            </TextLink>
+                        ) : null}
+                    </>
                 ) : null}
             </div>
         )

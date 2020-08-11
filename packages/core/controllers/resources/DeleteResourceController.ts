@@ -6,7 +6,11 @@ class DeleteResourceController extends Controller {
         request: Express.Request,
         response: Express.Response
     ) => {
-        await request.resourceManager.deleteById(request, request.params.resource, request.params.resourceId)
+        await request.resourceManager.deleteById(
+            request,
+            request.params.resource,
+            request.params.resourceId
+        )
 
         return response.status(204).json({})
     }

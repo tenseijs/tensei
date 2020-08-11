@@ -24,6 +24,7 @@ import {
     Paragraph,
     Dropdown,
 } from '@contentful/forma-36-react-components'
+import { debounce } from 'throttle-debounce'
 
 class ResourceIndex extends React.Component {
     state = this.defaultState()
@@ -77,6 +78,7 @@ class ResourceIndex extends React.Component {
             selected: [],
             deleting: null,
             deleteLoading: false,
+            search: '',
         }
     }
 
@@ -88,7 +90,7 @@ class ResourceIndex extends React.Component {
 
     pushParamsToUrl = () => {
         this.props.history.push(
-            `${this.props.location.pathname}?page=${this.state.page}&perPage=${this.state.perPage}`
+            `${this.props.location.pathname}?page=${this.state.page}&perPage=${this.state.perPage}&search=${this.state.search}`
         )
     }
 
@@ -106,12 +108,16 @@ class ResourceIndex extends React.Component {
     }
 
     fetch = () => {
-        const { resource, perPage, page } = this.state
+        const { resource, perPage, page, search } = this.state
 
         this.pushParamsToUrl()
 
         Flamingo.request
-            .get(`resources/${resource.slug}?perPage=${perPage}&page=${page}`)
+            .get(
+                `resources/${
+                    resource.slug
+                }?perPage=${perPage}&page=${page}&search=${search || ''}`
+            )
             .then(({ data }) => {
                 this.setState({
                     data: data.data,
@@ -195,10 +201,6 @@ class ResourceIndex extends React.Component {
         })
     }
 
-    addNewLine = () => {}
-
-    removeLine = () => {}
-
     handleSelectAllClicked = (event) => {
         this.setState({
             selected: event.target.checked
@@ -208,6 +210,16 @@ class ResourceIndex extends React.Component {
                 : [],
         })
     }
+
+    onSearchChange = debounce(500, (search) => {
+        this.setState(
+            {
+                isLoading: true,
+                search,
+            },
+            () => this.fetch()
+        )
+    })
 
     deleteResource = () => {
         this.setState({
@@ -259,6 +271,7 @@ class ResourceIndex extends React.Component {
             total,
             pageCount,
             selected,
+            search,
             showingFilters,
             deleteLoading,
         } = this.state
@@ -277,6 +290,10 @@ class ResourceIndex extends React.Component {
                 <div className="flex justify-between my-5">
                     <TextInput
                         width="large"
+                        value={search}
+                        onChange={(event) =>
+                            this.onSearchChange(event.target.value)
+                        }
                         placeholder={`Type to search for ${resource.label.toLowerCase()}`}
                     />
 
@@ -399,7 +416,9 @@ class ResourceIndex extends React.Component {
                                         ))}
                                         <TableCell>
                                             <Link
-                                                to={Flamingo.getPath(`resources/${resource.slug}/${row.key}/edit`)}
+                                                to={Flamingo.getPath(
+                                                    `resources/${resource.slug}/${row.key}/edit`
+                                                )}
                                                 className="cursor-pointer"
                                                 style={{ marginRight: '10px' }}
                                             >

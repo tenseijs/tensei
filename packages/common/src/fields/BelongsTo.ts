@@ -1,3 +1,4 @@
+import Field from './Field'
 import Integer from './Integer'
 import { snakeCase } from 'change-case'
 
@@ -25,6 +26,19 @@ export class BelongsTo extends Integer {
         this.unsigned()
 
         this.hideFromIndex()
+    }
+
+    /**
+     *
+     * Make this field nullable
+     *
+     */
+    public notNullable<T extends Field>(this: T): T {
+        console.warn(
+            `BelongsTo relationships can not be set to notNullable(). We recommend adding a required validation rule instead.`
+        )
+
+        return this
     }
 }
 

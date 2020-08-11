@@ -45,10 +45,10 @@ class CreateResource extends React.Component {
                     const [form, errors] = this.getDefaultFormState(data)
 
                     this.setState({
-                        formInitialized: true,
                         form,
                         errors,
                         model: data,
+                        formInitialized: true,
                     })
                 })
 
@@ -189,7 +189,7 @@ class CreateResource extends React.Component {
             return null
         }
 
-        const { errors, form, resource } = this.state
+        const { errors, form, resource, editingState } = this.state
 
         let fieldValue = ''
         let errorMessage = null
@@ -259,8 +259,10 @@ class CreateResource extends React.Component {
                     resource={resource}
                     field={resourceField}
                     label={resourceField.name}
+                    editingState={editingState}
                     errorMessage={errorMessage}
                     onFieldChange={onFieldChange}
+                    resourceId={this.props.match.params.resourceId}
                 />
             </div>
         )

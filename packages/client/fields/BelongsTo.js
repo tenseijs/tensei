@@ -1,12 +1,7 @@
 import React from 'react'
 import { debounce } from 'throttle-debounce'
 import { withResources } from '~/store/resources'
-import {
-    Select,
-    Option,
-    TextInput,
-    IconButton,
-} from '@contentful/forma-36-react-components'
+import { Select, Option } from '@contentful/forma-36-react-components'
 import Autocomplete from '~/components/Autocomplete'
 
 class BelongsTo extends React.Component {
@@ -52,14 +47,17 @@ class BelongsTo extends React.Component {
                 }))
 
                 if (this.props.value) {
-                    selectedOption = options.find(option => option.value === this.props.value) || null
+                    selectedOption =
+                        options.find(
+                            (option) => option.value === this.props.value
+                        ) || null
                 }
 
                 this.setState({
                     isLoading: false,
                     options,
                     selectedOption,
-                    textValue: selectedOption ? selectedOption.label : ''
+                    textValue: selectedOption ? selectedOption.label : '',
                 })
             })
     }
@@ -152,7 +150,7 @@ class BelongsTo extends React.Component {
                         onChange={(event) => onFieldChange(event.target.value)}
                         value={value}
                     >
-                        <Option value=''>None</Option>
+                        <Option value="">None</Option>
                         {options.map((option) => (
                             <Option key={option.value} value={option.value}>
                                 {option.label}

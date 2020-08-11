@@ -1,15 +1,16 @@
 {
-  "name": "@flamingo/knex",
-  "version": "0.0.0",
-  "main": "./build/index.js",
-  "license": "MIT",
-  "types": "./build/index.d.ts",
-  "dependencies": {
-    "connect-session-knex": "^1.7.3",
-    "knex": "^0.21.2"
-  },
-  "scripts": {
-    "build": "tsc --p tsconfig.json",
-    "dev": "tsc --watch --p tsconfig.json"
-  }
+    "name": "@flamingo/knex",
+    "version": "0.0.0",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "types": "./build/index.d.ts",
+    "dependencies": {
+        "connect-session-knex": "^1.7.3",
+        "knex": "^0.21.2"
+    },
+    "scripts": {
+        "build": "tsc --p tsconfig.json",
+        "dev": "tsc --watch --p tsconfig.json",
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'"
+    }
 }

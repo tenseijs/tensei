@@ -4,7 +4,15 @@ import Knex, {
     AlterTableBuilder,
 } from 'knex'
 
-import { DatabaseRepositoryInterface, User, SerializedResource, SerializedField, FlamingoConfig, Resource, FetchAllRequestQuery, DataPayload } from '@flamingo/common'
+import {
+    DatabaseRepositoryInterface,
+    SerializedResource,
+    SerializedField,
+    FlamingoConfig,
+    Resource,
+    FetchAllRequestQuery,
+    DataPayload,
+} from '@flamingo/common'
 
 export class SqlRepository implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
@@ -16,7 +24,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     public static databases = ['mysql', 'pg']
 
     public establishDatabaseConnection = () => {
-        if (! this.connectionEstablished) {
+        if (!this.connectionEstablished) {
             this.$db = Knex(this.config)
         }
 
@@ -28,7 +36,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         if (config.env.database === 'sqlite3') {
             connection = {
-                filename: config.env.databaseUrl!
+                filename: config.env.databaseUrl!,
             }
         }
 
@@ -36,17 +44,21 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             connection,
             useNullAsDefault: true,
             client: config.env.database,
-            debug: true
+            debug: true,
         }
 
         this.establishDatabaseConnection()
 
-        await this.performDatabaseSchemaSync(config.resources.map(resource => resource.serialize()))
+        await this.performDatabaseSchemaSync(
+            config.resources.map((resource) => resource.serialize())
+        )
 
         return this.$db
     }
 
-    public performDatabaseSchemaSync = async (resources: SerializedResource[] = []) => {
+    public performDatabaseSchemaSync = async (
+        resources: SerializedResource[] = []
+    ) => {
         const knex = this.$db!
 
         const schema = await this.getDatabaseSchema()
@@ -63,17 +75,16 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                         // if column exists on schema, but cannot be found here on fields,
                         // then it should be dropped
 
-                        resource
-                            .fields.forEach((field) =>
-                                this.handleFieldUpdates(
-                                    trx,
-                                    t,
-                                    schema,
-                                    field,
-                                    resource,
-                                    resources
-                                )
+                        resource.fields.forEach((field) =>
+                            this.handleFieldUpdates(
+                                trx,
+                                t,
+                                schema,
+                                field,
+                                resource,
+                                resources
                             )
+                        )
 
                         if (!resource.noTimeStamps && !tableExists) {
                             t.timestamps(true, true)
@@ -127,14 +138,24 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             ? schema[resource.table][field.databaseField]
             : null
 
-        const columnHasIndex = matchingDatabaseField ? matchingDatabaseField.indexes.find((index: any) => {
-            // TODO: If we allow custom index names in future, we'll check for the custom name here.
-            return index.INDEX_NAME === `${resource.table}_${field.databaseField}_index`
-        }) : false
+        const columnHasIndex = matchingDatabaseField
+            ? matchingDatabaseField.indexes.find((index: any) => {
+                  // TODO: If we allow custom index names in future, we'll check for the custom name here.
+                  return (
+                      index.INDEX_NAME ===
+                      `${resource.table}_${field.databaseField}_index`
+                  )
+              })
+            : false
 
-        const columnIsUnique = matchingDatabaseField ? matchingDatabaseField.indexes.find((index: any) => {
-            return index.INDEX_NAME === `${resource.table}_${field.databaseField}_unique`
-        }) : false
+        const columnIsUnique = matchingDatabaseField
+            ? matchingDatabaseField.indexes.find((index: any) => {
+                  return (
+                      index.INDEX_NAME ===
+                      `${resource.table}_${field.databaseField}_unique`
+                  )
+              })
+            : false
 
         // first let's handle all indexes. this includes primary keys, unique keys and search indexes
         // next, let's handle
@@ -150,13 +171,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         let methodArguments: any[] = [field.databaseField]
 
         if (knexMethodName === 'enu') {
-            const selectOptions = (field.selectOptions!).map(
+            const selectOptions = field.selectOptions!.map(
                 (option: { label: string; value: string }) => option.value
             )
-            methodArguments = [
-                field.databaseField,
-                selectOptions,
-            ]
+            methodArguments = [field.databaseField, selectOptions]
         }
 
         // @ts-ignore
@@ -209,7 +227,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
     private parseMysqlDatabaseSchema = (
         schema: any[],
-        schemaStatistics: any[] = [],
+        schemaStatistics: any[] = []
     ) => {
         let tables: {
             [key: string]: {
@@ -220,9 +238,11 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         schema.forEach((column) => {
             let fieldType = column.DATA_TYPE
 
-            let indexes = schemaStatistics.filter(
-                (columnData) => column.COLUMN_NAME === columnData.COLUMN_NAME
-            ) || []
+            let indexes =
+                schemaStatistics.filter(
+                    (columnData) =>
+                        column.COLUMN_NAME === columnData.COLUMN_NAME
+                ) || []
 
             tables[column.TABLE_NAME] = {
                 ...(tables[column.TABLE_NAME] || {}),
@@ -244,7 +264,8 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public findUserByEmail = async (email: string) => {
-        return this.$db!('administrators').where('email', email)
+        return this.$db!('administrators')
+            .where('email', email)
             .limit(1)
             .then(([administrator]) => {
                 return administrator || null
@@ -254,70 +275,160 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     public getAdministratorsCount = async () => {
         return this.$db!('administrators')
             .count()
-            .then(([count]) => parseInt(count["count(*)"] as string))
+            .then(([count]) => parseInt(count['count(*)'] as string))
     }
 
     public create = async (resource: Resource, payload: DataPayload) => {
-        const modelId = (await this.$db!(resource.data.table).insert(payload))[0]
+        const modelId = (
+            await this.$db!(resource.data.table).insert(payload)
+        )[0]
 
         return this.findOneById(resource, modelId)
     }
 
-    public updateManyByIds = async (resource: Resource, ids: number[], valuesToUpdate: {}) => {
-        return this.$db!(resource.data.table).whereIn('id', ids).update(valuesToUpdate)
+    public updateManyByIds = async (
+        resource: Resource,
+        ids: number[],
+        valuesToUpdate: {}
+    ) => {
+        return this.$db!(resource.data.table)
+            .whereIn('id', ids)
+            .update(valuesToUpdate)
     }
 
-    public deleteById = async (resource: Resource, id: number|string) => {
-        const result = await this.$db!(resource.data.table).where('id', id).limit(1).delete()
+    public updateManyWhere = async (
+        resource: Resource,
+        whereClause: {},
+        valuesToUpdate: {}
+    ) => {
+        return this.$db!(resource.data.table)
+            .where(whereClause)
+            .update(valuesToUpdate)
+    }
+
+    public deleteById = async (resource: Resource, id: number | string) => {
+        const result = await this.$db!(resource.data.table)
+            .where('id', id)
+            .limit(1)
+            .delete()
 
         if (result === 0) {
-            throw [{
-                message: `${resource.data.name} resource with id ${id} was not found.`
-            }]
+            throw [
+                {
+                    message: `${resource.data.name} resource with id ${id} was not found.`,
+                },
+            ]
         }
 
         return result
     }
 
-    public findAllByIds = async (resource: Resource, ids: number[], fields?: FetchAllRequestQuery['fields']) => {
-        return this.$db!.select(fields || '*').from(resource.data.table).whereIn('id', ids)
+    public findAllByIds = async (
+        resource: Resource,
+        ids: number[],
+        fields?: FetchAllRequestQuery['fields']
+    ) => {
+        return this.$db!.select(fields || '*')
+            .from(resource.data.table)
+            .whereIn('id', ids)
     }
 
-    public findOneById = async (resource: Resource, id: number|string, fields?: FetchAllRequestQuery['fields']) => {
-        return (await this.$db!.select(fields || '*').from(resource.data.table).where('id', id).limit(1))[0] || null
+    public findOneById = async (
+        resource: Resource,
+        id: number | string,
+        fields?: FetchAllRequestQuery['fields']
+    ) => {
+        return (
+            (
+                await this.$db!.select(fields || '*')
+                    .from(resource.data.table)
+                    .where('id', id)
+                    .limit(1)
+            )[0] || null
+        )
     }
 
-    public findOneByField = async (resource: Resource, field: string, value: string, fields?: FetchAllRequestQuery['fields']) => {
-        return (await this.$db!.select(fields || '*').from(resource.data.table).where(field, value).limit(1))[0] || null
+    public findOneByField = async (
+        resource: Resource,
+        field: string,
+        value: string,
+        fields?: FetchAllRequestQuery['fields']
+    ) => {
+        return (
+            (
+                await this.$db!.select(fields || '*')
+                    .from(resource.data.table)
+                    .where(field, value)
+                    .limit(1)
+            )[0] || null
+        )
     }
 
-    public findAll = async (resource: Resource, query: FetchAllRequestQuery) => {
+    public findOneByFieldExcludingOne = async (
+        resource: Resource,
+        field: string,
+        value: string,
+        excludeId: string | number,
+        fields?: FetchAllRequestQuery['fields']
+    ) => {
+        return (
+            (
+                await this.$db!.select(fields || '*')
+                    .from(resource.data.table)
+                    .where(field, value)
+                    .whereNot(`id`, excludeId)
+                    .limit(1)
+            )[0] || null
+        )
+    }
+
+    public findAll = async (
+        resource: Resource,
+        query: FetchAllRequestQuery
+    ) => {
         const getBuilder = () => {
             let builder = this.$db!(resource.data.table)
 
             if (query.search) {
-                const searchableFields = resource.data.fields.filter(field => field.isSearchable)
-    
+                const searchableFields = resource.data.fields.filter(
+                    (field) => field.isSearchable
+                )
+
                 searchableFields.forEach((field, index) => {
-                    builder[index === 0 ? 'where' : 'orWhere'](field.databaseField, 'like', `%${query.search.toLowerCase()}%`)
+                    builder[index === 0 ? 'where' : 'orWhere'](
+                        field.databaseField,
+                        'like',
+                        `%${query.search.toLowerCase()}%`
+                    )
                 })
             }
+
+            query.whereQueries?.forEach((whereQuery) => {
+                builder.where(whereQuery.field, whereQuery.value)
+            })
 
             return builder
         }
 
         const countResult = await getBuilder().count()
 
-        const total = parseInt(countResult[0]["count(*)"] as string)
+        const total = parseInt(countResult[0]['count(*)'] as string)
+
+        const data = getBuilder()
+
+        if (query.noPagination === 'false') {
+            data.limit(query.perPage).offset((query.page - 1) * query.perPage)
+        }
 
         return {
             total,
-            page: query.page,
-            data: await getBuilder()
-                .limit(query.perPage)
-                .offset((query.page - 1) * query.perPage).select(query.fields || '*'),
-            perPage: query.perPage,
-            pageCount: Math.ceil(total / query.perPage)
+            page: query.noPagination === 'true' ? 1 : query.page,
+            data: await data.select(query.fields || '*'),
+            perPage: query.noPagination === 'true' ? null : query.perPage,
+            pageCount:
+                query.noPagination === 'true'
+                    ? 1
+                    : Math.ceil(total / query.perPage),
         }
     }
 }

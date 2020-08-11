@@ -6,7 +6,16 @@ class UpdateResourceController extends Controller {
         request: Express.Request,
         response: Express.Response
     ) => {
-        return response.json({})
+        await request.resourceManager.update(
+            request,
+            request.params.resource,
+            request.params.resourceId,
+            request.body
+        )
+
+        return response.json({
+            message: 'Resource has been updated.',
+        })
     }
 }
 

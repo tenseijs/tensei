@@ -264,13 +264,21 @@ class Flamingo {
         })
 
         if (process.env.NODE_ENV !== 'production') {
-            this.app.get(`/index.css.map`, (request: Express.Request, response: Express.Response) => response.sendFile(
-                Path.resolve(__dirname, 'client', 'index.css.map')
-            ))
+            this.app.get(
+                `/index.css.map`,
+                (request: Express.Request, response: Express.Response) =>
+                    response.sendFile(
+                        Path.resolve(__dirname, 'client', 'index.css.map')
+                    )
+            )
 
-            this.app.get(`/index.js.map`, (request: Express.Request, response: Express.Response) => response.sendFile(
-                Path.resolve(__dirname, 'client', 'index.js.map')
-            ))
+            this.app.get(
+                `/index.js.map`,
+                (request: Express.Request, response: Express.Response) =>
+                    response.sendFile(
+                        Path.resolve(__dirname, 'client', 'index.js.map')
+                    )
+            )
         }
     }
 

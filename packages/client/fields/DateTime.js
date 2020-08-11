@@ -17,7 +17,7 @@ class DateTimeField extends React.Component {
                     options={{
                         enableTime: field.component === 'DateTimeField',
                     }}
-                    className='TextInput__input'
+                    className="TextInput__input"
                     onChange={([date]) => onFieldChange(date)}
                     value={new Date()}
                 ></Flatpickr>

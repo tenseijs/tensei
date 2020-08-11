@@ -1,17 +1,27 @@
 import { Request } from 'express'
 import { Resource } from '../resources/Resource'
 
+enum noPagination {
+    true = 'true',
+    false = 'false',
+}
+
 export interface FetchAllRequestQuery {
     perPage: number
     page: number
     fields: string[]
     search: string
+    noPagination: noPagination
+    whereQueries: Array<{
+        field: string
+        value: string
+    }>
 }
 
 export interface FetchAllResults<Model = {}> {
     data: Model[]
     total: number
-    perPage: number
+    perPage: number | null
     pageCount: number
     page: number
 }

@@ -14,7 +14,7 @@ const User = resource('User')
         }).rules('required', 'max:32', 'email'),
     text('Password').htmlAttributes({
         type: 'password'
-    })
+    }).hideWhenUpdating().hideFromIndex()
     .rules('required', 'min:8', 'max:24')
     .notNullable(),
     hasMany('Post')

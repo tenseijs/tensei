@@ -24,7 +24,7 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     ) => Promise<Model[]>
     abstract findOneById: (
         resource: Resource,
-        id: number|string,
+        id: number | string,
         fields?: string[]
     ) => Promise<Model | null>
     abstract findOneByField: (
@@ -33,18 +33,32 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
         value: string,
         fields?: string[]
     ) => Promise<Model | null>
+    abstract findOneByFieldExcludingOne: (
+        resource: Resource,
+        field: string,
+        value: string,
+        excludeId: string | number,
+        fields?: string[]
+    ) => Promise<Model | null>
     abstract updateManyByIds: (
         resource: Resource,
-        ids: (number|string)[],
+        ids: number[],
         valuesToUpdate: {}
     ) => Promise<number>
-    abstract updateOneById: (
-        resource: Resource,
-        id: number|string,
-        valuesToUpdate: {}
-    ) => Promise<number>
+    // abstract updateOneById: (
+    //     resource: Resource,
+    //     id: number|string,
+    //     valuesToUpdate: {}
+    // ) => Promise<number>
     abstract deleteById: (
         resource: Resource,
-        id: number|string
+        id: number | string
+    ) => Promise<any>
+    abstract updateManyWhere: (
+        resource: Resource,
+        whereClause: {
+            [key: string]: string | number
+        },
+        valuesToUpdate: {}
     ) => Promise<any>
 }

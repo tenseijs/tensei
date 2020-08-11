@@ -7,8 +7,6 @@ export interface ValidationError {
     field: string
 }
 
-class Controller {
-
-}
+class Controller {}
 
 export default Controller
