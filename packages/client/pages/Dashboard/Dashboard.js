@@ -81,7 +81,7 @@ class DashboardPage extends React.Component {
                     <Fragment key={group.slug}>
                         <header
                             onClick={() => this.toggleGroup(group)}
-                            className="flex items-center border-b border-gray-lightest-100 p-3 cursor-pointer hover:bg-gray-lightest-100 transition duration-75 w-full cursor-pointer uppercase text-blue-darkest-200 font-bold text-xs"
+                            className="flex items-center border-b border-gray-lightest-100 p-3 cursor-pointer hover:bg-gray-lightest-100 transition duration-75 w-full uppercase text-blue-darkest-200 font-bold text-xs"
                         >
                             <ArrowIcon
                                 className={cn(
@@ -130,6 +130,7 @@ class DashboardPage extends React.Component {
                             isAutoalignmentEnabled={true}
                             toggleElement={
                                 <div
+                                    data-testid="dashboard-header-dropdown"
                                     onClick={this.toggleAccountMenu}
                                     className={cn(
                                         'shadow-account-menu cursor-pointer px-5 h-topbar flex items-center justify-center',
@@ -148,12 +149,15 @@ class DashboardPage extends React.Component {
                                 </div>
                             }
                         >
-                            <DropdownList>
+                            <DropdownList data-testid="dashboard-header-dropdown-list">
                                 <DropdownListItem onClick={console.log}>
                                     Account settings
                                 </DropdownListItem>
                             </DropdownList>
-                            <DropdownList border="top">
+                            <DropdownList
+                                border="top"
+                                data-testid="dashboard-header-dropdown-list"
+                            >
                                 <DropdownListItem onClick={this.logout}>
                                     Logout
                                 </DropdownListItem>

@@ -81,6 +81,7 @@ class ResourceIndex extends React.Component {
     }
 
     componentDidMount() {
+        console.log('mounted in courrect')
         this.fetch()
 
         this.pushParamsToUrl()
@@ -399,7 +400,9 @@ class ResourceIndex extends React.Component {
                                         ))}
                                         <TableCell>
                                             <Link
-                                                to={Flamingo.getPath(`resources/${resource.slug}/${row.key}/edit`)}
+                                                to={Flamingo.getPath(
+                                                    `resources/${resource.slug}/${row.key}/edit`
+                                                )}
                                                 className="cursor-pointer"
                                                 style={{ marginRight: '10px' }}
                                             >
