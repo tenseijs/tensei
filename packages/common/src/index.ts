@@ -16,6 +16,7 @@ export { bigInteger, BigInteger } from './fields/BigInteger'
 
 export { Field, SerializedField } from './fields/Field'
 
+export { Tool, tool, ToolSetupConfig } from './tools/Tool'
 export { ResourceManager } from './resources/ResourceManager'
 export { resource, Resource, SerializedResource } from './resources/Resource'
 export { DatabaseRepositoryInterface } from './databases/DatabaseRepositoryInterface'

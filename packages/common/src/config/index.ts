@@ -1,4 +1,5 @@
 import { Request } from 'express'
+import { Tool } from '../tools/Tool'
 import { Resource } from '../resources/Resource'
 
 enum noPagination {
@@ -37,7 +38,9 @@ export type HookFunction = (
 ) => DataPayload
 
 export interface Asset {
+    /* This will be the url this asset will be served from. For example, app-tool.js */
     name: string
+    /* This is the absolute path to the file. This will be used to serve the asset. */
     path: string
 }
 
@@ -51,6 +54,7 @@ export interface Env {
 }
 
 export interface FlamingoConfig {
+    tools: Tool[],
     resources: Resource[]
     scripts: Asset[]
     styles: Asset[]

@@ -1,5 +1,6 @@
 import Path from 'path'
 import BodyParser from 'body-parser'
+import { paramCase } from 'change-case'
 import ExpressSession from 'express-session'
 import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
@@ -9,6 +10,8 @@ import IndexResourceController from './controllers/resources/IndexResourceContro
 
 import {
     text,
+    Tool,
+    Asset,
     resource,
     Resource,
     FlamingoConfig,
@@ -20,10 +23,14 @@ import CreateResourceController from './controllers/resources/CreateResourceCont
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
+import { extend } from 'indicative/validator'
 
 class Flamingo {
     public app: Application = Express()
     public databaseClient: any = null
+    public extensions: {
+      [key: string]: any  
+    } = {}
     private toolsBooted: boolean = false
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
@@ -31,6 +38,7 @@ class Flamingo {
 
     private config: FlamingoConfig = {
         resources: [],
+        tools: [],
         adminTable: 'administrators',
         dashboardPath: 'flamingo',
         apiPath: 'api',
@@ -62,6 +70,8 @@ class Flamingo {
 
         await this.registerDatabase()
 
+        await this.registerTools()
+
         // Please do not change this order. Super important so bugs are not introduced.
         this.registerMiddleware()
         this.registerAssetsRoutes()
@@ -78,6 +88,42 @@ class Flamingo {
                 `App listening on port http://localhost:${this.config.env.port}`
             )
         })
+
+        return this
+    }
+
+    public async registerTools() {
+        for (let index = 0; index < this.config.tools.length; index++) {
+            const tool = this.config.tools[index];
+            
+            const extension = await tool.data.setup({
+                app: this.app,
+                style: (name: Asset['name'], path: Asset['path']) => {
+                    this.config.styles = [
+                        ...this.config.styles,
+                        {
+                            name,
+                            path
+                        }
+                    ]
+                },
+                script: (name: Asset['name'], path: Asset['path']) => {
+                    this.config.scripts = [
+                        ...this.config.scripts,
+                        {
+                            name,
+                            path
+                        }
+                    ]
+                },
+                resources: this.config.resources
+            })
+
+            this.extensions = {
+                ...this.extensions,
+                [paramCase(tool.name)]: extension
+            }
+        }
 
         return this
     }
@@ -317,6 +363,12 @@ class Flamingo {
                     password: Bcrypt.hashSync(payload.password),
                 }
             })
+    }
+
+    public tools(tools: Tool[]) {
+        this.config.tools = tools
+
+        return this
     }
 }
 
