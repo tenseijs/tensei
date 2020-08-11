@@ -83,6 +83,7 @@ class ResourceIndex extends React.Component {
     }
 
     componentDidMount() {
+        console.log('mounted in courrect')
         this.fetch()
 
         this.pushParamsToUrl()

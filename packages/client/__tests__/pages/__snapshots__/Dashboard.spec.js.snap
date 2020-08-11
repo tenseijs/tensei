@@ -1,0 +1,134 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test the dashboard page should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="w-full"
+  >
+    <div
+      class="w-full h-topbar bg-blue-darkest flex items-center text-white justify-between"
+    >
+      <span />
+      <span />
+      <div>
+        <div
+          class="Dropdown__Dropdown___nAsJ-"
+          data-test-id="cf-ui-dropdown"
+          position="bottom-left"
+        >
+          <div
+            aria-expanded="false"
+            aria-haspopup="menu"
+            class="shadow-account-menu cursor-pointer px-5 h-topbar flex items-center justify-center bg-blue-darkest-200 hover:bg-blue-darkest-300"
+            data-testid="dashboard-header-dropdown"
+          >
+            <img
+              alt=""
+              class="w-8 h-8 rounded-full"
+              src="https://avatars.githubusercontent.com/u/19477966?v=3"
+            />
+            <svg
+              class="w-4 h-4 ml-3 text-white w-4 h-4"
+              data-testid="ArrowIcon"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="w-full flex flex-wrap"
+      style="height: calc(100vh - 4.375rem);"
+    >
+      <div
+        class="border-r border-gray-lighter h-full bg-gray-lightest w-full md:w-18-percent"
+      >
+        <header
+          class="flex items-center border-b border-gray-lightest-100 p-3 cursor-pointer hover:bg-gray-lightest-100 transition duration-75 w-full uppercase text-blue-darkest-200 font-bold text-xs"
+        >
+          <svg
+            class="w-4 h-4 mr-3 transition duration-75 transform text-blue-darkest"
+            data-testid="ArrowIcon"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+          Dashboard
+        </header>
+        <a
+          href="/resources/string"
+        >
+          <div
+            class="w-full py-3 pl-10 pr-3 text-sm cursor-pointer hover:bg-gray-lightest-200 transition duration-75"
+          >
+            Home
+          </div>
+        </a>
+        <header
+          class="flex items-center border-b border-gray-lightest-100 p-3 cursor-pointer hover:bg-gray-lightest-100 transition duration-75 w-full uppercase text-blue-darkest-200 font-bold text-xs"
+        >
+          <svg
+            class="w-4 h-4 mr-3 transition duration-75 transform text-blue-darkest"
+            data-testid="ArrowIcon"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+          Resources
+        </header>
+        <a
+          href="/resources/string"
+        >
+          <div
+            class="w-full py-3 pl-10 pr-3 text-sm cursor-pointer hover:bg-gray-lightest-200 transition duration-75"
+          >
+            Posts
+          </div>
+        </a>
+      </div>
+      <div
+        class="w-full md:w-82-percent flex-grow h-full overflow-scroll"
+      >
+        <div
+          class="py-4 px-3 pt-8 pb-12 md:px-12"
+        >
+          <div
+            class="w-full flex items-center justify-center py-3 mt-24"
+          >
+            <p
+              class="Paragraph__Paragraph___2aO-9"
+              data-test-id="cf-ui-paragraph"
+              variant="small"
+            >
+              © Flamingo Admin 2020
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
