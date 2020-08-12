@@ -8,6 +8,13 @@ import FlamingoMock from '~/testSetup/Flamingo'
 import ResourceIndex from '~/pages/ResourceIndex'
 
 const history = createMemoryHistory({ initialEntries: ['/resources/posts'] })
+const match = { params: { resource: 'posts' } }
+const props = {
+    match,
+    resources,
+    history: { push: jest.fn() },
+    location: { pathname: 'resource/posts' },
+}
 
 describe('Test the resource index page', () => {
     beforeEach(() => {
@@ -44,14 +51,6 @@ describe('Test the resource index page', () => {
     })
     afterEach(cleanup)
     test('resource index page should match snapshot', () => {
-        const match = { params: { resource: 'posts' } }
-        const props = {
-            match,
-            resources,
-            history: { push: jest.fn() },
-            location,
-        }
-
         const { asFragment } = render(
             <Router history={history}>
                 <ResourceIndex {...props} />
@@ -60,15 +59,14 @@ describe('Test the resource index page', () => {
         expect(asFragment()).toMatchSnapshot()
     })
     test('should load posts data and display on table', () => {
-        const match = { params: { resource: 'posts' } }
-        const props = { match, resources, history: { push: jest.fn() } }
-
-        const {} = render(
+        const { debug } = render(
             <Router history={history}>
                 <ResourceIndex {...props} />
             </Router>
         )
+        debug()
 
         expect(window.Flamingo.request.get).toHaveBeenCalled()
     })
+    test('should be able to edit a post from the post table', () => {})
 })
