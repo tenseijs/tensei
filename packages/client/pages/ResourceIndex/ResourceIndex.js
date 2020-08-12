@@ -477,7 +477,7 @@ class ResourceIndex extends React.Component {
 
                         <Paginator
                             forcePage={page - 1}
-                            pageCount={pageCount}
+                            pageCount={5}
                             onPageChange={({ selected }) =>
                                 this.setState(
                                     {
@@ -488,17 +488,17 @@ class ResourceIndex extends React.Component {
                                 )
                             }
                             previousLinkClassName="flex items-center page-link outline-none"
-                            previousClassName="page-item px-4"
+                            previousClassName="page-item px-4 border-t border-b border-l h-full flex items-center"
                             previousLabel={'Previous'}
                             nextLabel={'Next'}
-                            pageClassName="page-item border-gray-lightest-200 border-l border-r-0 px-4 h-full w-10 flex justify-center bg-white hover:bg-gray-lightest-200"
+                            pageClassName="page-item border-gray-lightest-200 border-l border-t border-b border-r-0 px-4 h-full w-10 flex justify-center bg-white hover:bg-gray-lightest-200 hover:text-gray-900"
                             pageLinkClassName="flex items-center page-link outline-none"
                             nextLinkClassName="flex items-center page-link outline-none"
-                            nextClassName="page-item px-4 border-l h-full flex items-center"
+                            nextClassName="page-item px-4 border h-full flex items-center"
                             breakLabel="..."
                             breakClassName="page-item border-gray-lightest-200 border-l px-4 py-2"
-                            containerClassName="pagination flex items-center border-gray-lightest-200 justify-center bg-white-100 border rounded-sm h-10"
-                            activeClassName="active bg-blue-primary text-white border-0"
+                            containerClassName="pagination flex items-center border-gray-lightest-200 justify-center bg-white-100 rounded-sm h-10"
+                            activeClassName="active bg-blue-primary text-white border-none"
                         />
                     </>
                 </div>
