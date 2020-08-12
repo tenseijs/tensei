@@ -1,78 +1,50 @@
 import React from 'react'
-import {
-    render,
-    fireEvent,
-    cleanup,
-    getAllByTestId,
-} from '@testing-library/react'
+import { cleanup, render, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { createMemoryHistory } from 'history'
-import { MemoryRouter } from 'react-router-dom'
-import Auth from '~/store/auth'
-import Resources from '~/store/resources'
+import setupPage from '~/testSetup/setupPage'
+import { resources } from '~/testSetup/data'
+import FlamingoMock from '~/testSetup/Flamingo'
 import CreateResource from '~/pages/CreateResource'
+import Dashboard from '~/pages/Dashboard'
 
-const history = createMemoryHistory()
-
-const resources = [
-    {
-        collection: 'posts',
-        defaultPerPage: 1,
-        displayInNavigation: true,
-        fields: [],
-        group: 'All',
-        label: 'Posts',
-        slug: 'posts',
-        messages: {
-            'title.required': 'The title field is required.',
-            'publishedAt.required': 'The published at field is required.',
-        },
-        name: 'Post',
-        param: 'posts',
-        perPageOptions: (3)[(1, 3, 5)],
-        primaryKey: '_id',
-    },
-]
-
-const user = {
-    email: 'dodo@email.com',
-    firstName: 'dozie',
-    lastName: 'nwoga',
-    password: '$2a$10$d.IeGxbRR4kc1ZxE7u0LSuHMrX9aMlUrbLgLoxqEcVI9I2CyntgV.',
-    _id: '5f0d62b4e2fab0431e1d35cf',
-}
-
-const setupCreateResource = (
-    props = {
-        resources,
-    }
-) =>
-    render(
-        <MemoryRouter
-            initialIndex={0}
-            initialEntries={['/resources/posts/new']}
-        >
-            <Auth.Provider value={[user, () => jest.fn()]}>
-                <Resources.Provider
-                    value={{
-                        resources: resources,
-                    }}
-                >
-                    <CreateResource {...props} location={history.location} />
-                </Resources.Provider>
-            </Auth.Provider>
-        </MemoryRouter>
-    )
-
-describe('Test the dashboard page', () => {
+describe('Test the create resource page', () => {
     beforeEach(() => {
-        window.Flamingo = {
-            getPath: jest.fn(() => 'string'),
-        }
+        window.Flamingo = FlamingoMock
     })
     afterEach(cleanup)
     test('create resource page should match snapshot', () => {
-        const { asFragment } = setupCreateResource()
+        const match = { params: { resource: 'posts' } }
+        const props = { match, resources }
+        const { asFragment } = render(<CreateResource {...props} />)
         expect(asFragment()).toMatchSnapshot()
+    })
+    test('can create a resource i.e post', () => {
+        const match = { params: { resource: 'posts' } }
+        const props = { match, resources, history: { push: jest.fn() } }
+
+        window.Flamingo = {
+            ...FlamingoMock,
+            request: { post: jest.fn(() => Promise.resolve(true)) },
+        }
+        const { debug, getByTestId, getAllByText, getByLabelText } = render(
+            <CreateResource {...props} />
+        )
+        expect(getByTestId('resource-title')).toBeInTheDocument()
+        expect(getAllByText(/Create post/i)).toHaveLength(2)
+
+        const nameField = getByLabelText('name')
+        const descriptionField = getByLabelText('description')
+        const contentField = getByLabelText('content')
+        const submitBtn = getByTestId('submit-button')
+
+        fireEvent.change(nameField, { target: { value: 'new post' } })
+        fireEvent.change(descriptionField, {
+            target: { value: 'new description' },
+        })
+        fireEvent.change(contentField, { target: { value: 'fresh content' } })
+
+        fireEvent.click(submitBtn)
+
+        expect(window.Flamingo.request.post).toHaveBeenCalled()
     })
 })

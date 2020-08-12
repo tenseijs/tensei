@@ -83,7 +83,6 @@ class ResourceIndex extends React.Component {
     }
 
     componentDidMount() {
-        console.log('mounted in courrect')
         this.fetch()
 
         this.pushParamsToUrl()
@@ -505,27 +504,18 @@ class ResourceIndex extends React.Component {
                                     () => this.fetch()
                                 )
                             }
-                            previousLinkClassName="flex items-center page-link"
-                            previousClassName="page-item"
-                            previousLabel={
-                                <Paragraph style={{ display: 'flex' }}>
-                                    <ArrowIcon className="mt-1 transform rotate-90" />
-                                    Prev
-                                </Paragraph>
-                            }
-                            nextLabel={
-                                <Paragraph style={{ display: 'flex' }}>
-                                    Next{' '}
-                                    <ArrowIcon className="mt-1 transform -rotate-90" />
-                                </Paragraph>
-                            }
-                            pageClassName="page-item"
-                            pageLinkClassName="flex items-center page-link"
-                            nextLinkClassName="flex items-center page-link"
-                            nextClassName="page-item"
+                            previousLinkClassName="flex items-center page-link outline-none"
+                            previousClassName="page-item px-4"
+                            previousLabel={'Previous'}
+                            nextLabel={'Next'}
+                            pageClassName="page-item border-gray-lightest-200 border-l border-r-0 px-4 h-full w-10 flex justify-center bg-white hover:bg-gray-lightest-200"
+                            pageLinkClassName="flex items-center page-link outline-none"
+                            nextLinkClassName="flex items-center page-link outline-none"
+                            nextClassName="page-item px-4 border-l h-full flex items-center"
                             breakLabel="..."
-                            containerClassName="pagination flex items-center justify-center"
-                            activeClassName="active"
+                            breakClassName="page-item border-gray-lightest-200 border-l px-4 py-2"
+                            containerClassName="pagination flex items-center border-gray-lightest-200 justify-center bg-white-100 border rounded-sm h-10"
+                            activeClassName="active bg-blue-primary text-white border-0"
                         />
                     </>
                 </div>
