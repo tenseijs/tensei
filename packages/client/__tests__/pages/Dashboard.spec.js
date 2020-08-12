@@ -94,6 +94,6 @@ describe('Test the dashboard page', () => {
             Dashboard
         )
         fireEvent.click(await getByText('Posts'))
-        debug()
+        // debug()
     })
 })

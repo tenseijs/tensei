@@ -414,7 +414,7 @@ class CreateResource extends React.Component {
         return (
             <React.Fragment>
                 <header className="flex flex-wrap items-center justify-between">
-                    <Heading className="mb-0">
+                    <Heading className="mb-0" data-testid="resource-title">
                         {editing ? 'Update' : 'Create'}{' '}
                         {resource.name.toLowerCase()}
                     </Heading>
@@ -428,7 +428,10 @@ class CreateResource extends React.Component {
                             Reset
                         </Button>
 
-                        <Button onClick={this.submit}>
+                        <Button
+                            onClick={this.submit}
+                            data-testid="submit-button"
+                        >
                             {editing ? 'Update' : 'Create'}{' '}
                             {resource.name.toLowerCase()}
                         </Button>
