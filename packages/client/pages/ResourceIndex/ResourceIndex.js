@@ -494,7 +494,7 @@ class ResourceIndex extends React.Component {
 
                         <Paginator
                             forcePage={page - 1}
-                            pageCount={5}
+                            pageCount={pageCount}
                             onPageChange={({ selected }) =>
                                 this.setState(
                                     {
