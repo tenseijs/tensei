@@ -6,13 +6,14 @@ import Knex, {
 
 import {
     DatabaseRepositoryInterface,
+    User,
     SerializedResource,
     SerializedField,
     FlamingoConfig,
     Resource,
-    FetchAllRequestQuery,
     DataPayload,
 } from '@flamingo/common'
+import { FetchAllRequestQuery } from '@flamingo/common/src/config'
 
 export class SqlRepository implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
