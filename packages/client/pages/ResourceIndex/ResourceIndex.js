@@ -508,7 +508,7 @@ class ResourceIndex extends React.Component {
                             previousClassName="page-item px-4 border-t border-b border-l h-full flex items-center"
                             previousLabel={'Previous'}
                             nextLabel={'Next'}
-                            pageClassName="page-item border-gray-lightest-200 border-l border-t border-b border-r-0 px-4 h-full w-10 flex justify-center bg-white hover:bg-gray-lightest-200 hover:text-gray-900"
+                            pageClassName="cursor-pointer page-item border-gray-lightest-200 border-l border-t border-b border-r-0 px-4 h-full w-10 flex justify-center bg-white transition duration-150 ease-in-out hover:bg-gray-lightest-200"
                             pageLinkClassName="flex items-center page-link outline-none"
                             nextLinkClassName="flex items-center page-link outline-none"
                             nextClassName="page-item px-4 border h-full flex items-center"

@@ -20,5 +20,6 @@ const User = resource('User')
     hasMany('Post')
 ])
 .displayField('full_name')
+.perPageOptions([2, 5, 10])
 
 module.exports = User
