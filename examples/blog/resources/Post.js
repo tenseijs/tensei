@@ -2,12 +2,12 @@ const {
     dateTime,
     integer,
     text,
-    textarea,
     date,
     belongsTo,
     select,
     resource,
 } = require('@flamingo/core')
+const { trix } = require('@flamingo/trix')
 
 module.exports = resource('Post')
     .displayInNavigation()
@@ -16,8 +16,8 @@ module.exports = resource('Post')
             .sortable()
             .searchable().unique().rules('required', 'max:24'),
         text('Description').rules('required'),
-        textarea('Content').rules('required', 'max:200', 'min:12'),
-        integer('Av. CPC').rules('required'),
+        trix('Content').rules('required', 'max:2000', 'min:12').hideFromIndex(),
+        integer('Av. CPC').rules('required').hideFromDetail(),
         select('Category').options([
             {
                 label: 'Javascript',
@@ -37,7 +37,7 @@ module.exports = resource('Post')
             },
         ]).rules('required').searchable(),
         belongsTo('User').notNullable().searchable().rules('required'),
-        date('Published At').notNullable().firstDayOfWeek(4).rules('required', 'date'),
+        date('Published At').notNullable().firstDayOfWeek(4).rules('required', 'date').format('do MMM yyyy, hh:mm a'),
         dateTime('Scheduled For').rules('required', 'date'),
     ])
     .perPageOptions([25, 50, 100])

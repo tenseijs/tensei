@@ -8,6 +8,7 @@ import { Route, BrowserRouter } from 'react-router-dom'
 
 class Wrapper extends React.Component {
     state = {
+        booted: false,
         user: window.Flamingo.state.user,
         resources: window.Flamingo.state.resources,
         appConfig: window.Flamingo.state.appConfig,
@@ -21,8 +22,17 @@ class Wrapper extends React.Component {
         })
     }
 
+    componentDidMount() {
+        Flamingo.setWrapperState = this.setState.bind(this)
+    }
+
     render() {
-        const { user, shouldShowRegistrationScreen, resources } = this.state
+        const { user, shouldShowRegistrationScreen, resources, booted } = this.state
+
+        if (! booted) {
+            return false
+        }
+
         return (
             <BrowserRouter>
                 <Auth.Provider

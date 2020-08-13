@@ -54,7 +54,7 @@ export interface Env {
 }
 
 export interface FlamingoConfig {
-    tools: Tool[],
+    tools: Tool[]
     resources: Resource[]
     scripts: Asset[]
     styles: Asset[]

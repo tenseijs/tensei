@@ -51,6 +51,7 @@
         "pluralize": "^8.0.0",
         "react-popper": "^2.2.3",
         "react-router-dom": "^5.2.0",
+        "store": "^2.0.12",
         "throttle-debounce": "^2.2.1"
     },
     "private": true

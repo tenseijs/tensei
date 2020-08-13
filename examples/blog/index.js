@@ -1,9 +1,7 @@
-const Path = require('path')
-const stripe = require('./tools/stripe')
 const { flamingo } = require('@flamingo/core')
 const { graphql } = require('@flamingo/graphql')
+const { trixTool } = require('@flamingo/trix')
 
-// process.env.DATABASE_URL = Path.resolve(__dirname, 'db.sqlite')
 process.env.DATABASE = 'mysql'
 
 flamingo()
@@ -14,7 +12,8 @@ flamingo()
     require('./resources/Comment'),
 ])
 .tools([
-    graphql()
+    graphql(),
+    trixTool()
 ])
 .register()
 .then(({ app }) => {

@@ -4,3 +4,4 @@ images/
 fonts/
 tabler/
 coverage/
+**/.cache

@@ -1,0 +1,22 @@
+{
+    "name": "@flamingo/trix",
+    "version": "0.0.0",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "types": "./build/index.d.ts",
+    "scripts": {
+        "build": "tsc --p tsconfig.json",
+        "dev": "tsc --watch --p tsconfig.json",
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "dev:client": "parcel watch src/client/index.js --no-autoinstall --bundle-node-modules -d 'build/client'",
+        "build:client": "NODE_ENV=production parcel build src/client/index.js --no-source-maps --bundle-node-modules -d 'build/client'"
+    },
+    "devDependencies": {
+        "parcel-bundler": "^1.12.4",
+        "react": "^16.13.1",
+        "typescript": "^3.9.7"
+    },
+    "dependencies": {
+        "trix": "^1.2.4"
+    }
+}

@@ -29,7 +29,7 @@ class Flamingo {
     public app: Application = Express()
     public databaseClient: any = null
     public extensions: {
-      [key: string]: any  
+        [key: string]: any
     } = {}
     private toolsBooted: boolean = false
     private databaseBooted: boolean = false
@@ -94,8 +94,8 @@ class Flamingo {
 
     public async registerTools() {
         for (let index = 0; index < this.config.tools.length; index++) {
-            const tool = this.config.tools[index];
-            
+            const tool = this.config.tools[index]
+
             const extension = await tool.data.setup({
                 app: this.app,
                 style: (name: Asset['name'], path: Asset['path']) => {
@@ -103,8 +103,8 @@ class Flamingo {
                         ...this.config.styles,
                         {
                             name,
-                            path
-                        }
+                            path,
+                        },
                     ]
                 },
                 script: (name: Asset['name'], path: Asset['path']) => {
@@ -112,16 +112,16 @@ class Flamingo {
                         ...this.config.scripts,
                         {
                             name,
-                            path
-                        }
+                            path,
+                        },
                     ]
                 },
-                resources: this.config.resources
+                resources: this.config.resources,
             })
 
             this.extensions = {
                 ...this.extensions,
-                [paramCase(tool.name)]: extension
+                [paramCase(tool.name)]: extension,
             }
         }
 
@@ -273,7 +273,11 @@ class Flamingo {
                     })
                 }
 
-                console.log(error)
+                if (error.status === 404) {
+                    return response.status(404).json({
+                        message: error.message,
+                    })
+                }
 
                 response.status(500).json({
                     message: 'Internal server error.',
@@ -348,6 +352,8 @@ class Flamingo {
     }
 
     private administratorResource() {
+        const Bcrypt = require('bcryptjs')
+
         return resource('Administrator')
             .hideFromNavigation()
             .fields([
@@ -355,14 +361,14 @@ class Flamingo {
                 text('Email').unique().searchable(),
                 text('Password'),
             ])
-            .beforeCreate((payload) => {
-                const Bcrypt = require('bcryptjs')
-
-                return {
-                    ...payload,
-                    password: Bcrypt.hashSync(payload.password),
-                }
-            })
+            .beforeCreate((payload) => ({
+                ...payload,
+                password: Bcrypt.hashSync(payload.password),
+            }))
+            .beforeUpdate((payload) => ({
+                ...payload,
+                password: Bcrypt.hashSync(payload.password),
+            }))
     }
 
     public tools(tools: Tool[]) {

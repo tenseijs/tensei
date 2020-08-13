@@ -1,6 +1,6 @@
 import cn from 'classnames'
 import React, { Fragment } from 'react'
-import { Link, Route } from 'react-router-dom'
+import { Link, Route, Switch } from 'react-router-dom'
 import {
     Dropdown,
     DropdownList,
@@ -8,6 +8,7 @@ import {
     Paragraph,
 } from '@contentful/forma-36-react-components'
 
+import ShowResource from '~/pages/ShowResource'
 import ResourceIndex from '~/pages/ResourceIndex'
 import CreateResource from '~/pages/CreateResource'
 
@@ -171,23 +172,33 @@ class DashboardPage extends React.Component {
                     </div>
                     <div className="w-full md:w-82-percent flex-grow h-full overflow-scroll">
                         <div className="py-4 px-3 pt-8 pb-12 md:px-12">
-                            <Route
-                                exact
-                                path={Flamingo.getPath('resources/:resource')}
-                                component={ResourceIndex}
-                            />
-                            <Route
-                                path={Flamingo.getPath(
-                                    'resources/:resource/new'
-                                )}
-                                component={CreateResource}
-                            />
-                            <Route
-                                path={Flamingo.getPath(
-                                    'resources/:resource/:resourceId/edit'
-                                )}
-                                component={CreateResource}
-                            />
+                            <Switch>
+                                <Route
+                                    exact
+                                    path={Flamingo.getPath('resources/:resource')}
+                                    component={ResourceIndex}
+                                />
+                                <Route
+                                    path={Flamingo.getPath(
+                                        'resources/:resource/new'
+                                    )}
+                                    exact
+                                    component={CreateResource}
+                                />
+                                <Route
+                                    path={Flamingo.getPath(
+                                        'resources/:resource/:resourceId'
+                                    )}
+                                    exact
+                                    component={ShowResource}
+                                />
+                                <Route
+                                    path={Flamingo.getPath(
+                                        'resources/:resource/:resourceId/edit'
+                                    )}
+                                    component={CreateResource}
+                                />
+                            </Switch>
                             <div className="w-full flex items-center justify-center py-3 mt-24">
                                 <Paragraph variant="small">
                                     © Flamingo Admin {new Date().getFullYear()}

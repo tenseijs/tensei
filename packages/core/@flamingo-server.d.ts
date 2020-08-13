@@ -1,4 +1,5 @@
 import {
+    Asset,
     Resource,
     FlamingoConfig,
     ResourceManager,
@@ -8,8 +9,8 @@ import {
 declare global {
     namespace Express {
         export interface Request {
-            scripts: Array<any>
-            styles: Array<any>
+            scripts: Asset[]
+            styles: Asset[]
             db: DatabaseRepositoryInterface
             resources: Resource[]
             appConfig: FlamingoConfig

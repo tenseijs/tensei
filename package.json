@@ -21,8 +21,8 @@
         "commitizen": {
             "path": "cz-conventional-changelog"
         }
-        },
-        "husky": {
+    },
+    "husky": {
         "hooks": {
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
@@ -34,7 +34,7 @@
         "examples/*"
       ],
       "nohoist": [
-          "**/laravel-mix"
+          "**/react-trix-editor"
       ]
     }
 }

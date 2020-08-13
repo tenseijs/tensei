@@ -9,6 +9,8 @@ import DateTimeField from './fields/DateTime'
 import TextareaField from './fields/Textarea'
 import BelongsToField from './fields/BelongsTo'
 import DateIndexField from './index-fields/Date'
+import TextareaDetailField from './detail-fields/TextareaField'
+import BelongsToDetailField from './detail-fields/BelongsToField'
 
 import TextIndexField from './index-fields/Text'
 
@@ -41,13 +43,15 @@ class Flamingo {
         Notification,
     }
 
-    getPath = (path) => {
-        return `/${this.state.appConfig.dashboardPath}/${path}`
-    }
+    setWrapperState = () => {}
+
+    getPath = (path) => `/${this.state.appConfig.dashboardPath}/${path}`
 
     request = Axios.create({
         baseURL: '/api/',
     })
+
+    bootingCallbacks = []
 
     fieldComponents = {
         TextField,
@@ -68,6 +72,65 @@ class Flamingo {
         IDField: TextIndexField,
         NumberField: TextField,
         DateField: DateIndexField,
+    }
+
+    detailFieldComponents = {
+        LinkField,
+        IDField: TextIndexField,
+        TextField: TextIndexField,
+        SelectField: TextIndexField,
+        NumberField: TextIndexField,
+        IntegerField: TextIndexField,
+        DateField: DateIndexField,
+        DateTimeField: DateIndexField,
+        TextareaField: TextareaDetailField,
+        BelongsToField: BelongsToDetailField,
+    }
+
+    booting = (boot) => {
+        this.bootingCallbacks = [
+            ...this.bootingCallbacks,
+            boot.bind(this)
+        ]
+
+        return this
+    }
+
+    field = (key, Component) => {
+        this.fieldComponents = {
+            ...this.fieldComponents,
+            [key]: Component
+        }
+
+        return this
+    }
+
+    detailField = (key, Component) => {
+        this.detailFieldComponents = {
+            ...this.detailFieldComponents,
+            [key]: Component
+        }
+
+        return this
+    }
+
+    indexField = (key, Component) => {
+        this.indexFieldComponents = {
+            ...this.indexFieldComponents,
+            [key]: Component
+        }
+
+        return this
+    }
+
+    boot = () => {
+        this.bootingCallbacks.forEach(bootCallback => {
+            bootCallback()
+        })
+
+        this.setWrapperState({
+            booted: true
+        })
     }
 }
 

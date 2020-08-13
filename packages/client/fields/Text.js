@@ -8,13 +8,11 @@ class Text extends React.Component {
             onFieldChange,
             field,
             errorMessage,
-            ...rest
         } = this.props
 
         return (
             <TextField
-                {...rest}
-                value={value.toString()}
+                value={(value || '').toString()}
                 id={field.inputName}
                 name={field.inputName}
                 name={field.inputName}

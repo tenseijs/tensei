@@ -1,7 +1,7 @@
 import { graphqlHTTP } from 'express-graphql'
 import { tool, Resource } from '@flamingo/common'
 import { GraphQLSchema, GraphQLObjectType } from 'graphql'
-import GraphqlPlayground, {} from 'graphql-playground-middleware-express'
+import GraphqlPlayground from 'graphql-playground-middleware-express'
 
 export interface GraphQlToolConfig {
     graphiql?: boolean
@@ -13,41 +13,46 @@ const generateSchemaFromResources = (resources: Resource[]) => {
         [key: string]: any
     } = {}
 
-    resources.forEach(resource => {
-        fields[resource.data.slug] = {
-            
-        }
+    resources.forEach((resource) => {
+        fields[resource.data.slug] = {}
     })
 
     return new GraphQLSchema({
         query: new GraphQLObjectType({
             name: 'RootQueryType',
-            fields
-        })
+            fields,
+        }),
     })
 }
 
-export const graphql = (customConfig?: GraphQlToolConfig) => tool('Graph QL').setup(async ({ app, resources }) => {
-    const defaultConfig = {
-        graphiql: true,
-        graphqlPath: '/graphql'
-    }
+export const graphql = (customConfig?: GraphQlToolConfig) =>
+    tool('Graph QL').setup(async ({ app, resources }) => {
+        const defaultConfig = {
+            graphiql: true,
+            graphqlPath: '/graphql',
+        }
 
-    const config = {
-        ...defaultConfig,
-        ...customConfig
-    }
+        const config = {
+            ...defaultConfig,
+            ...customConfig,
+        }
 
-    const schema = generateSchemaFromResources(resources)
+        const schema = generateSchemaFromResources(resources)
 
-    app.post(config.graphqlPath, graphqlHTTP({
-        schema,
-        graphiql: false
-    }))
+        app.post(
+            config.graphqlPath,
+            graphqlHTTP({
+                schema,
+                graphiql: false,
+            })
+        )
 
-    app.get(config.graphqlPath, GraphqlPlayground({
-        endpoint: config.graphqlPath,
-    }))
+        app.get(
+            config.graphqlPath,
+            GraphqlPlayground({
+                endpoint: config.graphqlPath,
+            })
+        )
 
-    return {}
-})
+        return {}
+    })

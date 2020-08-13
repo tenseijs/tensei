@@ -291,7 +291,21 @@ export class ResourceManager {
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        return this.db.findOneById(resource, id)
+        const { fields } = await this.validateRequestQuery(
+            request.query,
+            resource
+        )
+
+        const model = await this.db.findOneById(resource, id, fields)
+
+        if (!model) {
+            throw {
+                message: `Could not find a resource with id ${id}`,
+                status: 404,
+            }
+        }
+
+        return model
     }
 
     getValidationRules = (resource: Resource, creationRules = true) => {

@@ -18,7 +18,7 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build": "tsc --p tsconfig.json && yarn copy:files",
+        "build": "tsc --p tsconfig.json",
         "dev": "tsc --watch --p tsconfig.json",
         "test": "jest --verbose"
     },

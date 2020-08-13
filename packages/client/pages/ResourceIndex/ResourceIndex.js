@@ -139,7 +139,7 @@ class ResourceIndex extends React.Component {
             })
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (
             prevProps.match.params.resource !== this.props.match.params.resource
         ) {

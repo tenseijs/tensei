@@ -13,7 +13,7 @@ export type ToolSetupFunction = (config: ToolSetupConfig) => Promise<any>
 
 export class Tool {
     public data = {
-        setup: (config: ToolSetupConfig) => Promise.resolve()
+        setup: (config: ToolSetupConfig) => Promise.resolve(),
     }
 
     constructor(public name: string) {}
@@ -21,7 +21,7 @@ export class Tool {
     public setup(setupFunction: ToolSetupFunction) {
         this.data = {
             ...this.data,
-            setup: setupFunction
+            setup: setupFunction,
         }
 
         return this

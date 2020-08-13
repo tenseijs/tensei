@@ -8,12 +8,10 @@ class Select extends React.Component {
             onFieldChange,
             field,
             errorMessage,
-            ...rest
         } = this.props
 
         return (
             <SelectField
-                {...rest}
                 value={value}
                 id={field.inputName}
                 name={field.inputName}
