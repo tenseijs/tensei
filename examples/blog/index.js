@@ -2,6 +2,7 @@ const { flamingo } = require('@flamingo/core')
 const { graphql } = require('@flamingo/graphql')
 const { trixTool } = require('@flamingo/trix')
 
+process.env.DATABASE_URL = 'mysql://dozic:password@localhost:3306/flmg'
 process.env.DATABASE = 'mysql'
 
 flamingo()
