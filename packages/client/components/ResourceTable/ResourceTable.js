@@ -37,6 +37,7 @@ class ResourceTable extends React.Component {
             total,
             deleting,
             deleteLoading,
+            operators,
         } = this.props
         const selectAllChecked =
             selected.length === data.length && data.length > 0
@@ -74,21 +75,19 @@ class ResourceTable extends React.Component {
                         >
                             <Filters
                                 filters={this.props.filters}
-                                operators={this.props.operators}
+                                operators={operators}
                                 addFilter={this.props.addFilter}
                                 removeFilter={this.props.removeFilter}
-                                fields={this.props.tableColumns}
+                                fields={tableColumns}
                             />
                         </Dropdown>
                         <Link
                             className="ml-3"
                             to={Flamingo.getPath(
-                                `resources/${this.props.resource.slug}/new`
+                                `resources/${resource.slug}/new`
                             )}
                         >
-                            <Button>
-                                Add {this.props.resource.name.toLowerCase()}
-                            </Button>
+                            <Button>Add {resource.name.toLowerCase()}</Button>
                         </Link>
                     </div>
                 </div>
