@@ -24,66 +24,20 @@ import {
     Dropdown,
 } from '@contentful/forma-36-react-components'
 
-class ResourceSetup extends React.Component {
-    state = {
-        title: this.props.title,
-        resource: this.props.resource,
-        showingFilters: false,
-        data: this.props.data,
-        operators: [
-            {
-                label: 'Is equal to',
-                value: 'eq',
-            },
-            {
-                label: 'Is not equal to',
-                value: 'ne',
-            },
-            {
-                label: 'Is greater than',
-                value: 'gt',
-            },
-            {
-                label: 'Is less than',
-                value: 'lt',
-            },
-            {
-                label: 'Is greater than or equal to',
-                value: 'gte',
-            },
-            {
-                label: 'Is less than or equal to',
-                value: 'lte',
-            },
-        ],
-        page: this.props.page,
-        perPage: this.props.resource.perPageOptions[0] || 10,
-        total: this.props.total,
-        pageCount: this.props.pageCount,
-        selected: [],
-        deleting: null,
-        deleteLoading: false,
-        search: '',
-    }
-
+class ResourceTable extends React.Component {
     render() {
         const {
-            resource,
-            loading,
-            data,
-            filters,
-            operators,
-            deleting,
-            page,
-            perPage,
-            total,
-            pageCount,
             selected,
+            data,
+            perPage,
+            page,
             search,
             showingFilters,
+            resource,
+            total,
+            deleting,
             deleteLoading,
-        } = this.state
-
+        } = this.props
         const selectAllChecked =
             selected.length === data.length && data.length > 0
 
@@ -93,7 +47,7 @@ class ResourceSetup extends React.Component {
         const showingOnPage = parseInt(showingFrom + perPage)
         return (
             <Fragment>
-                <Heading>{resource.label}</Heading>
+                <Heading>{this.props.resource.label}</Heading>
                 <div className="flex justify-between my-5">
                     <TextInput
                         width="large"
@@ -101,34 +55,26 @@ class ResourceSetup extends React.Component {
                         onChange={(event) =>
                             this.props.onSearchChange(event.target.value)
                         }
-                        placeholder={`Type to search for ${resource.label.toLowerCase()}`}
+                        placeholder={`Type to search for ${this.props.resource.label.toLowerCase()}`}
                     />
 
                     <div>
                         <Dropdown
                             isOpen={showingFilters}
-                            onClose={() =>
-                                this.setState({
-                                    showingFilters: !showingFilters,
-                                })
-                            }
+                            onClose={this.props.toggleShowFilters}
                             toggleElement={
                                 <Button
                                     buttonType="muted"
                                     icon="Filter"
-                                    onClick={() =>
-                                        this.setState({
-                                            showingFilters: !showingFilters,
-                                        })
-                                    }
+                                    onClick={this.props.toggleShowFilters}
                                 >
                                     Filters
                                 </Button>
                             }
                         >
                             <Filters
-                                filters={filters}
-                                operators={operators}
+                                filters={this.props.filters}
+                                operators={this.props.operators}
                                 addFilter={this.props.addFilter}
                                 removeFilter={this.props.removeFilter}
                                 fields={this.props.tableColumns}
@@ -221,10 +167,8 @@ class ResourceSetup extends React.Component {
                                             >
                                                 <IconButton
                                                     onClick={() =>
-                                                        this.props.setParentState(
-                                                            {
-                                                                deleting: row,
-                                                            }
+                                                        this.props.handleDeleteRow(
+                                                            row
                                                         )
                                                     }
                                                     className="cursor-pointer"
@@ -237,9 +181,9 @@ class ResourceSetup extends React.Component {
                                             </Link>
                                             <IconButton
                                                 onClick={() =>
-                                                    this.props.setParentState({
-                                                        deleting: row,
-                                                    })
+                                                    this.props.handleDeleteRow(
+                                                        row
+                                                    )
                                                 }
                                                 className="cursor-pointer"
                                                 iconProps={{
@@ -263,13 +207,7 @@ class ResourceSetup extends React.Component {
                                 id="per-page"
                                 defaultValue={perPage}
                                 onChange={(event) =>
-                                    this.props.setParentState(
-                                        {
-                                            perPage: event.target.value,
-                                            loading: true,
-                                        },
-                                        () => this.props.fetch()
-                                    )
+                                    this.props.handleSelectChange(event)
                                 }
                             >
                                 {resource.perPageOptions.map(
@@ -296,21 +234,13 @@ class ResourceSetup extends React.Component {
                         <Paginator
                             forcePage={page - 1}
                             pageCount={10}
-                            onPageChange={({ selected }) =>
-                                this.props.setParentState(
-                                    {
-                                        page: selected + 1,
-                                        loading: true,
-                                    },
-                                    () => this.props.fetch()
-                                )
-                            }
+                            onPageChange={this.props.handlePaginatorChange}
                             previousLinkClassName="flex items-center page-link outline-none"
                             previousClassName="page-item px-4 border-t border-b border-l h-full flex items-center transition duration-150 ease-in-out hover:bg-gray-lightest-200"
                             previousLabel={'Previous'}
                             nextLabel={'Next'}
-                            pageClassName="cursor-pointer page-item border-gray-lightest-200 border-l border-t border-b border-r-0 px-4 h-full w-10 flex justify-center bg-white transition duration-150 ease-in-out hover:bg-gray-lightest-200"
-                            pageLinkClassName="flex items-center page-link outline-none cursor-default"
+                            pageClassName="cursor-pointer page-item border-gray-lightest-200 border-l border-t border-b items-center border-r-0 h-full w-10 flex justify-center bg-white transition duration-150 ease-in-out hover:bg-gray-lightest-200"
+                            pageLinkClassName="page-link outline-none cursor-default flex items-center justify-center w-full h-full"
                             nextLinkClassName="flex items-center page-link outline-none"
                             nextClassName="page-item px-4 border h-full flex items-center transition duration-150 ease-in-out hover:bg-gray-lightest-200"
                             breakLabel="..."
@@ -326,11 +256,7 @@ class ResourceSetup extends React.Component {
                     isShown={!!deleting}
                     title="Delete resource"
                     confirmLabel="Delete"
-                    onCancel={() =>
-                        this.props.setParentState({
-                            deleting: null,
-                        })
-                    }
+                    onCancel={this.props.handleModalCancel}
                     isConfirmLoading={deleteLoading}
                     onConfirm={this.props.deleteResource}
                 >
@@ -343,4 +269,4 @@ class ResourceSetup extends React.Component {
     }
 }
 
-export default ResourceSetup
+export default ResourceTable

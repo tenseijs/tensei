@@ -2,7 +2,7 @@ import React from 'react'
 
 import { withResources } from '~/store/resources'
 import { debounce } from 'throttle-debounce'
-import ResourceSetup from '~/components/ResourceSetup/ResourceSetup'
+import ResourceTable from '~/components/ResourceTable/ResourceTable'
 
 class ResourceIndex extends React.Component {
     state = this.defaultState()
@@ -150,6 +150,12 @@ class ResourceIndex extends React.Component {
         })
     }
 
+    handleDeleteRow = (row) => {
+        this.setState({
+            deleting: row,
+        })
+    }
+
     handlePaginatorChange = ({ selected }) => {
         return this.setState(
             {
@@ -209,6 +215,22 @@ class ResourceIndex extends React.Component {
         )
     })
 
+    handleSelectChange = (event) => {
+        return this.setState(
+            {
+                perPage: event.target.value,
+                loading: true,
+            },
+            () => this.fetch()
+        )
+    }
+
+    toggleShowFilters = () => {
+        this.setState({
+            showingFilters: !this.state.showingFilters,
+        })
+    }
+
     deleteResource = () => {
         this.setState({
             deleteLoading: true,
@@ -246,20 +268,30 @@ class ResourceIndex extends React.Component {
             })
     }
 
+    handleModalCancel = () => {
+        return this.setState({
+            deleting: null,
+        })
+    }
+
     render() {
         return (
-            <ResourceSetup
+            <ResourceTable
                 {...this.state}
                 history={this.props.history}
                 deleteResource={this.deleteResource}
                 onSearchChange={this.onSearchChange}
                 handleSelectAllClicked={this.handleSelectAllClicked}
                 handleCheckboxChange={this.handleCheckboxChange}
+                handlePaginatorChange={this.handlePaginatorChange}
                 fetch={this.fetch}
                 addFilter={this.addFilter}
                 getTableData={this.getTableData}
                 getTableColumns={this.getTableColumns}
-                setParentState={this.setState.bind(this)}
+                handleDeleteRow={this.handleDeleteRow}
+                handleModalCancel={this.handleModalCancel}
+                handleSelectChange={this.handleSelectChange}
+                toggleShowFilters={this.toggleShowFilters}
             />
         )
     }
