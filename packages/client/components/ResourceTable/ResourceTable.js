@@ -30,6 +30,7 @@ class ResourceTable extends React.Component {
             selected,
             data,
             perPage,
+            pageCount,
             page,
             search,
             showingFilters,
@@ -38,6 +39,7 @@ class ResourceTable extends React.Component {
             deleting,
             deleteLoading,
             operators,
+            loading,
         } = this.props
         const selectAllChecked =
             selected.length === data.length && data.length > 0
@@ -110,7 +112,7 @@ class ResourceTable extends React.Component {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {this.props.loading ? (
+                        {loading ? (
                             <SkeletonRow rowCount={10} />
                         ) : (
                             <>
@@ -232,7 +234,7 @@ class ResourceTable extends React.Component {
 
                         <Paginator
                             forcePage={page - 1}
-                            pageCount={10}
+                            pageCount={pageCount}
                             onPageChange={this.props.handlePaginatorChange}
                             previousLinkClassName="flex items-center page-link outline-none"
                             previousClassName="page-item px-4 border-t border-b border-l h-full flex items-center transition duration-150 ease-in-out hover:bg-gray-lightest-200"
