@@ -74,6 +74,7 @@ class Flamingo {
         IDField: TextIndexField,
         NumberField: TextField,
         DateField: DateIndexField,
+        DateTimeField: DateIndexField,
     }
 
     detailFieldComponents = {

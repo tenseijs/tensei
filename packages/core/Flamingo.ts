@@ -249,6 +249,11 @@ class Flamingo {
             this.asyncHandler(UpdateResourceController.update)
         )
 
+        this.app.patch(
+            this.getApiPath(`resources/:resource/:resourceId`),
+            this.asyncHandler(UpdateResourceController.update)
+        )
+
         this.app.post(
             this.getApiPath(`resources/:resource`),
             this.asyncHandler(CreateResourceController.store)
@@ -278,6 +283,8 @@ class Flamingo {
                         message: error.message,
                     })
                 }
+
+                console.error(error)
 
                 response.status(500).json({
                     message: 'Internal server error.',

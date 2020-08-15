@@ -3,6 +3,8 @@ import Knex, {
     ColumnBuilder,
     AlterTableBuilder,
 } from 'knex'
+import Pluralize from 'pluralize'
+import Bookshelf from 'bookshelf'
 import { snakeCase } from 'change-case'
 
 import {
@@ -20,6 +22,8 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
 
     private config: Knex.Config = {}
+
+    private bookshelfModels: any[] = []
 
     private resources: FlamingoConfig['resources'] = []
 
@@ -59,7 +63,68 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             config.resources.map((resource) => resource.serialize())
         )
 
+        await this.bootBookshelfModels()
+
         return this.$db
+    }
+
+    private getResourceBookshelfModel = (resource: Resource) => {
+        return this.bookshelfModels.find(
+            (model) => model.resourceName === resource.data.name
+        )
+    }
+
+    private bootBookshelfModels = async () => {
+        const bookshelfInstance = Bookshelf(this.$db!)
+
+        const bookshelfModels = this.resources.map((resource) => {
+            const model: any = {
+                tableName: resource.data.table,
+                hasTimestamps: !resource.data.noTimeStamps,
+            }
+
+            resource.data.fields.forEach((field) => {
+                const relatedResource = this.resources.find(
+                    (relatedResource) =>
+                        field.name === relatedResource.data.name
+                )
+
+                if (!relatedResource) {
+                    return
+                }
+
+                if (field.component === 'BelongsToField') {
+                    model[
+                        relatedResource.data.name.toLowerCase()
+                    ] = function () {
+                        return this.belongsTo(relatedResource.data.name)
+                    }
+                }
+
+                if (field.component === 'HasManyField') {
+                    model[relatedResource.data.slug] = function () {
+                        return this.hasMany(relatedResource.data.name)
+                    }
+                }
+
+                if (field.component === 'BelongsToManyField') {
+                    model[relatedResource.data.slug] = function () {
+                        return this.belongsToMany(relatedResource.data.name)
+                    }
+                }
+            })
+
+            const modelInstance = bookshelfInstance.model(
+                resource.data.name,
+                model
+            )
+
+            modelInstance.resourceName = resource.data.name
+
+            return modelInstance
+        })
+
+        this.bookshelfModels = bookshelfModels
     }
 
     public handleBelongsToManyField = async (
@@ -98,8 +163,8 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 }
 
                 const tableName = [
-                    snakeCase(relatedResource.name),
-                    snakeCase(resource.name),
+                    Pluralize(snakeCase(relatedResource.name)),
+                    Pluralize(snakeCase(resource.name)),
                 ]
                     .sort()
                     .join('_')
@@ -375,12 +440,145 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             .then(([count]) => parseInt(count['count(*)'] as string))
     }
 
-    public create = async (resource: Resource, payload: DataPayload) => {
-        const modelId = (
-            await this.$db!(resource.data.table).insert(payload)
-        )[0]
+    public create = async (
+        resource: Resource,
+        payload: DataPayload,
+        relationshipPayload: DataPayload
+    ) => {
+        const Model = this.getResourceBookshelfModel(resource)
 
-        return this.findOneById(resource, modelId)
+        const result = await Model.forge(payload).save()
+
+        const relationshipFields = resource
+            .serialize()
+            .fields.filter((field) => field.isRelationshipField)
+
+        await Promise.all(
+            relationshipFields.map((field) => {
+                const relatedResource = this.resources.find(
+                    (relatedResource) =>
+                        relatedResource.data.name === field.name
+                )
+
+                if (!relatedResource) {
+                    return Promise.resolve()
+                }
+
+                if (
+                    field.component === 'BelongsToManyField' &&
+                    relationshipPayload[field.databaseField]
+                ) {
+                    const builder = new Model({
+                        id: result.id,
+                    })
+
+                    return builder[field.databaseField](
+                        relatedResource.data.slug
+                    ).attach(relationshipPayload[field.databaseField])
+                }
+
+                return Promise.resolve()
+            })
+        )
+
+        return result
+    }
+
+    public update = async (
+        resource: Resource,
+        id: number | string,
+        payload: DataPayload = {},
+        relationshipPayload: DataPayload = {},
+        patch = true
+    ) => {
+        const Model = this.getResourceBookshelfModel(resource)
+
+        const result = await Model.forge({
+            id,
+        }).save(payload, {
+            patch,
+            autoRefresh: true,
+        })
+
+        const relationshipFields = resource
+            .serialize()
+            .fields.filter((field) => field.isRelationshipField)
+
+        await Promise.all(
+            relationshipFields.map((field) => {
+                const relatedResource = this.resources.find(
+                    (relatedResource) =>
+                        relatedResource.data.name === field.name
+                )
+
+                if (!relatedResource) {
+                    return Promise.resolve()
+                }
+
+                const RelatedModel = this.getResourceBookshelfModel(
+                    relatedResource
+                )
+
+                if (
+                    field.component === 'BelongsToManyField' &&
+                    relationshipPayload[field.databaseField]
+                ) {
+                    const builder = new Model({
+                        id: result.id,
+                    })
+
+                    return (async () => {
+                        await builder[field.databaseField](
+                            relatedResource.data.slug
+                        ).detach()
+
+                        await builder[field.databaseField](
+                            relatedResource.data.slug
+                        ).attach(relationshipPayload[field.databaseField])
+                    })()
+                }
+
+                if (
+                    field.component === 'HasManyField' &&
+                    relationshipPayload[field.databaseField]
+                ) {
+                    const relatedBelongsToField = relatedResource.data.fields.find(
+                        (field) =>
+                            field.component === 'BelongsToField' &&
+                            field.name === resource.data.name
+                    )
+
+                    if (!relatedBelongsToField) {
+                        console.warn(
+                            `You must define the corresponding BelongsTo relationship for the ${resource.data.name}.`
+                        )
+                        return
+                    }
+
+                    return (async function () {
+                        await RelatedModel.query()
+                            .where(relatedBelongsToField.databaseField, id)
+                            .update({
+                                [relatedBelongsToField.databaseField]: null,
+                            })
+
+                        await RelatedModel.query()
+                            .whereIn(
+                                'id',
+                                relationshipPayload[field.databaseField]
+                            )
+                            .update({
+                                [relatedBelongsToField.databaseField]:
+                                    result.id,
+                            })
+                    })()
+                }
+
+                return Promise.resolve()
+            })
+        )
+
+        return result
     }
 
     public updateManyByIds = async (
@@ -434,23 +632,15 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         resource: Resource,
         id: number | string,
         fields?: FetchAllRequestQuery['fields'],
-        withRelationships?: string[]
+        withRelated: string[] = []
     ) => {
-        let result =
-            (
-                await this.$db!.select(fields || '*')
-                    .from(resource.data.table)
-                    .where('id', id)
-                    .limit(1)
-            )[0] || null
+        const Model = this.getResourceBookshelfModel(resource)
 
-        if (withRelationships && result) {
-            result = await this.populateRelationships(
-                result,
-                withRelationships,
-                resource
-            )
-        }
+        let result = await new Model({ id }).fetch({
+            require: false,
+            columns: fields,
+            withRelated,
+        })
 
         return result
     }
@@ -493,8 +683,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         resource: Resource,
         query: FetchAllRequestQuery
     ) => {
+        const Model = this.getResourceBookshelfModel(resource)
+
         const getBuilder = () => {
-            let builder = this.$db!(resource.data.table)
+            const builder = new Model()
 
             if (query.search) {
                 const searchableFields = resource.data.fields.filter(
@@ -502,11 +694,13 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 )
 
                 searchableFields.forEach((field, index) => {
-                    builder[index === 0 ? 'where' : 'orWhere'](
-                        field.databaseField,
-                        'like',
-                        `%${query.search.toLowerCase()}%`
-                    )
+                    builder.query(function (qb: any) {
+                        qb[index === 0 ? 'where' : 'orWhere'](
+                            field.databaseField,
+                            'LIKE',
+                            `%${query.search.toLowerCase()}%`
+                        )
+                    })
                 })
             }
 
@@ -517,153 +711,23 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             return builder
         }
 
-        const countResult = await getBuilder().count()
-
-        const total = parseInt(countResult[0]['count(*)'] as string)
+        const count = await getBuilder().count()
 
         const data = getBuilder()
 
-        if (query.noPagination === 'false') {
-            data.limit(query.perPage).offset((query.page - 1) * query.perPage)
-        }
-
-        let results = await data.select(query.fields || '*')
-
-        if (query.withRelationships) {
-            results = await this.populateRelationships(
-                results,
-                query.withRelationships,
-                resource
-            )
-        }
+        let results = await data.fetchAll({
+            columns: query.fields,
+        })
 
         return {
-            total,
-            page: query.noPagination === 'true' ? 1 : query.page,
+            total: count,
             data: results,
+            page: query.noPagination === 'true' ? 1 : query.page,
             perPage: query.noPagination === 'true' ? null : query.perPage,
             pageCount:
                 query.noPagination === 'true'
                     ? 1
-                    : Math.ceil(total / query.perPage),
+                    : Math.ceil(count / query.perPage),
         }
-    }
-
-    public async populateRelationships(
-        result: any,
-        withRelationships: string[],
-        resource: Resource
-    ) {
-        for (let index = 0; index < withRelationships.length; index++) {
-            const relatedResourceSlug = withRelationships[index]
-
-            const relatedResource = this.resources.find(
-                (relatedResource) =>
-                    relatedResource.data.slug === relatedResourceSlug
-            )
-
-            if (!relatedResource) {
-                throw [
-                    {
-                        message: `A resource with slug ${relatedResourceSlug} was not found.`,
-                    },
-                ]
-            }
-
-            const resourceField = resource.data.fields.find(
-                (field) => field.name === relatedResource.data.name
-            )
-            const relatedResourceField = relatedResource.data.fields.find(
-                (field) => field.name === resource.data.name
-            )
-
-            if (!resourceField || !relatedResourceField) {
-                throw [
-                    {
-                        message: `Related resource fields were not found for the relationship ${relatedResourceSlug}.`,
-                    },
-                ]
-            }
-
-            if (resourceField.component === 'BelongsToManyField') {
-                // if belongs to many field, then we need to errrm.
-                // first, get the pivot table name
-                const pivotTableName = [
-                    snakeCase(resource.data.name),
-                    snakeCase(relatedResource.data.name),
-                ]
-                    .sort()
-                    .join('_')
-
-                // second, get the resourceId field name and the relatedResourceId field name
-                const resourceIdFieldName = `${snakeCase(
-                    resource.data.name
-                )}_id`
-                const relatedResourceIdFieldName = `${snakeCase(
-                    relatedResource.data.name
-                )}_id`
-                // third, fetch all pivot table rows where resource_id = result.id
-                const pivotResource = {
-                    data: {
-                        table: pivotTableName,
-                        fields: [
-                            {
-                                isSearchable: false,
-                                databaseField: resourceIdFieldName,
-                            },
-                            {
-                                isSearchable: false,
-                                databaseField: relatedResourceIdFieldName,
-                            },
-                        ],
-                    },
-                } as Resource
-
-                if (Array.isArray(result)) {
-                    const pivotTableRows = await this.findAll(pivotResource, {
-                        whereQueries: [
-                            {
-                                field: resourceIdFieldName,
-                                value: result.map(row => row.id),
-                                whereType: 'whereIn'
-                            },
-                        ],
-                        page: 1,
-                        perPage: relatedResource.data.perPageOptions[0] || 10,
-                        fields: [resourceIdFieldName, relatedResourceIdFieldName],
-                    } as FetchAllRequestQuery)
-                } else {
-                    const pivotTableRows = await this.findAll(pivotResource, {
-                        whereQueries: [
-                            {
-                                field: resourceIdFieldName,
-                                value: result.id,
-                            },
-                        ],
-                        page: 1,
-                        perPage: relatedResource.data.perPageOptions[0] || 10,
-                        fields: [resourceIdFieldName, relatedResourceIdFieldName],
-                    } as FetchAllRequestQuery)
-                    // fourth, create an array of all relatedResourceIds from the pivot
-                    pivotTableRows.data = pivotTableRows.data.map(
-                        (row) => row[relatedResourceIdFieldName]
-                    )
-                    // fifth, use the findAllByIds method to get all related resources
-                    const rows = await this.findAllByIds(
-                        relatedResource,
-                        pivotTableRows.data
-                    )
-    
-                    pivotTableRows.data.forEach((row, index) => {
-                        pivotTableRows.data[index] = rows[index]
-                    })
-    
-                    // finally, attach the found rows to the result.
-                    result[relatedResourceSlug] = pivotTableRows
-                }
-            }
-        }
-
-        return result
     }
 }

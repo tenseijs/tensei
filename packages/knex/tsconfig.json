@@ -11,5 +11,6 @@
         "forceConsistentCasingInFileNames": true,
         "types": ["@types/jest"]
     },
-    "exclude": ["__tests__", "build"]
+    "exclude": ["__tests__", "build"],
+    "include": ["bookshelf.d.ts", "src"]
 }

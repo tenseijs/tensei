@@ -4,6 +4,7 @@ import {
     User,
     FetchAllResults,
     FetchAllRequestQuery,
+    DataPayload,
 } from '../config'
 
 export abstract class DatabaseRepositoryInterface<Model = {}> {
@@ -12,11 +13,22 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     abstract establishDatabaseConnection: () => void
     abstract findUserByEmail: (email: string) => Promise<User | null>
     abstract getAdministratorsCount: () => Promise<number>
-    abstract create: (resource: Resource, payload: {}) => Promise<Model>
+    abstract create: (
+        resource: Resource,
+        payload: DataPayload,
+        relationshipPayload: DataPayload
+    ) => Promise<Model>
+    abstract update: (
+        resource: Resource,
+        id: number | string,
+        payload: DataPayload,
+        relationshipPayload: DataPayload,
+        patch: boolean
+    ) => Promise<Model>
     abstract findAll: (
         resource: Resource,
         query: FetchAllRequestQuery
-    ) => Promise<FetchAllResults|Model[]>
+    ) => Promise<FetchAllResults | Model[]>
     abstract findAllByIds: (
         resource: Resource,
         ids: number[],

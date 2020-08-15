@@ -112,11 +112,17 @@ class ResourceIndex extends React.Component {
 
         this.pushParamsToUrl()
 
+        const fields = this.getShowOnIndexColumns().map(
+            (field) => field.inputName
+        )
+
         Flamingo.request
             .get(
                 `resources/${
                     resource.slug
-                }?per_page=${perPage}&page=${page}&search=${search || ''}`
+                }?per_page=${perPage}&page=${page}&search=${
+                    search || ''
+                }&fields=${fields}`
             )
             .then(({ data }) => {
                 this.setState({

@@ -12,3 +12,4 @@ resource('Tag')
     textarea('Description'),
     belongsToMany('Post')
 ])
+.displayField('name')

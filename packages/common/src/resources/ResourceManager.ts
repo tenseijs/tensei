@@ -43,14 +43,18 @@ export class ResourceManager {
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        const validatedPayload = await this.validate(payload, resource)
-
-        const parsedPayload = resource.hooks.beforeCreate(
-            validatedPayload,
-            request
+        let { parsedPayload, relationshipFieldsPayload } = await this.validate(
+            payload,
+            resource
         )
 
-        const model = await this.db.create(resource, parsedPayload)
+        parsedPayload = resource.hooks.beforeCreate(parsedPayload, request)
+
+        const model = await this.db.create(
+            resource,
+            parsedPayload,
+            relationshipFieldsPayload
+        )
 
         await this.createRelationalFields(resource, payload, model)
 
@@ -61,25 +65,27 @@ export class ResourceManager {
         request: Request,
         resourceSlugOrResource: string | Resource,
         id: number | string,
-        payload: DataPayload
+        payload: DataPayload,
+        patch = true
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        const validatedPayload = await this.validate(
+        let { parsedPayload, relationshipFieldsPayload } = await this.validate(
             payload,
             resource,
             false,
             id
         )
 
-        const parsedPayload = resource.hooks.beforeUpdate(
-            validatedPayload,
-            request
+        parsedPayload = resource.hooks.beforeUpdate(parsedPayload, request)
+
+        return this.db.update(
+            resource,
+            id,
+            parsedPayload,
+            relationshipFieldsPayload,
+            patch
         )
-
-        await this.db.updateManyByIds(resource, [id as number], parsedPayload)
-
-        await this.updateRelationshipFields(resource, payload, id)
     }
 
     public async updateRelationshipFields(
@@ -231,9 +237,10 @@ export class ResourceManager {
             }
         })
 
-        const validFields = resource.data.fields.map(
-            (field) => field.databaseField
-        )
+        const validFields = resource
+            .serialize()
+            .fields.filter((field) => !field.isRelationshipField)
+            .map((field) => field.databaseField)
 
         const relationshipFields = resource
             .serialize()
@@ -261,7 +268,7 @@ export class ResourceManager {
                 'fields.*': 'in:' + validFields.join(','),
                 'whereQueries.*.value': 'required|string,',
                 'whereQueries.*.field':
-                    'required|string,in:' + validFields.join(','),
+                    'required|string|in:' + validFields.join(','),
                 'withRelationships.*': 'in:' + relationshipFields.join(','),
             }
         )
@@ -434,7 +441,10 @@ export class ResourceManager {
         )
 
         // then we need to validate all unique fields.
-        return parsedPayload
+        return {
+            parsedPayload,
+            relationshipFieldsPayload,
+        }
     }
 
     validateUniqueFields = async (

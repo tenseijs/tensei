@@ -39,7 +39,7 @@ module.exports = resource('Post')
         ]).rules('required').searchable(),
         belongsTo('User').searchable().rules('required'),
         date('Published At').notNullable().firstDayOfWeek(4).rules('required', 'date').format('do MMM yyyy, hh:mm a'),
-        dateTime('Scheduled For').rules('required', 'date'),
+        dateTime('Scheduled For').rules('required', 'date').format('do MMM yyyy, hh:mm a'),
         belongsToMany('Tag')
     ])
     .perPageOptions([25, 50, 100])

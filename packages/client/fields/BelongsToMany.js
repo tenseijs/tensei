@@ -38,9 +38,22 @@ class HasMany extends React.Component {
         const { relatedResource } = this.state
         const { resource, resourceId } = this.props
 
-        Flamingo.request.get(
-            `resources/${resource.slug}/${resourceId}?per_page=20&with=${relatedResource.slug}`
-        )
+        Flamingo.request
+            .get(
+                `resources/${resource.slug}/${resourceId}?per_page=20&with=${relatedResource.slug}`
+            )
+            .then(({ data }) => {
+                if (data[relatedResource.slug]) {
+                    this.setState({
+                        selectedOptions: data[relatedResource.slug].map(
+                            (option) => ({
+                                label: option[relatedResource.displayField],
+                                value: option[relatedResource.valueField],
+                            })
+                        ),
+                    })
+                }
+            })
     }
 
     fetchOptions = (query) => {
@@ -118,7 +131,7 @@ class HasMany extends React.Component {
             <div className="TextField">
                 <div className="TextField__label-wrapper">
                     <label className="FormLabel" htmlFor={field.inputName}>
-                        {field.name}
+                        {relatedResource?.label}
                     </label>
                 </div>
 

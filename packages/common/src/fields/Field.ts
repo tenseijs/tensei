@@ -1,4 +1,5 @@
 import { snakeCase } from 'change-case'
+import Pluralize from 'pluralize'
 
 interface Constructor<M> {
     new (...args: any[]): M

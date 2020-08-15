@@ -15,7 +15,7 @@ export interface FetchAllRequestQuery {
     noPagination: noPagination
     whereQueries: Array<{
         field: string
-        value: string|string[]|number[]
+        value: string | string[] | number[]
         whereType?: 'where' | 'whereIn'
     }>
     withRelationships: string[]
