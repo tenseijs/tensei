@@ -27,9 +27,14 @@ class Wrapper extends React.Component {
     }
 
     render() {
-        const { user, shouldShowRegistrationScreen, resources, booted } = this.state
+        const {
+            user,
+            shouldShowRegistrationScreen,
+            resources,
+            booted,
+        } = this.state
 
-        if (! booted) {
+        if (!booted) {
             return false
         }
 

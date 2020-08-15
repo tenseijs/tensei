@@ -72,7 +72,7 @@ describe('Test the dashboard page', () => {
     })
     test('can navigate to a resource i.e Post resource', async () => {
         window.Flamingo = {
-            getPath: jest.fn(() => '/resources/posts?page=1&perPage=25'),
+            getPath: jest.fn(() => '/resources/posts?page=1&per_page=25'),
             request: {
                 get: jest.fn().mockResolvedValue({
                     response: {

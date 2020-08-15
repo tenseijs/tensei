@@ -9,6 +9,7 @@ import DateTimeField from './fields/DateTime'
 import TextareaField from './fields/Textarea'
 import BelongsToField from './fields/BelongsTo'
 import DateIndexField from './index-fields/Date'
+import BelongsToManyField from './fields/BelongsToMany'
 import TextareaDetailField from './detail-fields/TextareaField'
 import BelongsToDetailField from './detail-fields/BelongsToField'
 
@@ -60,6 +61,7 @@ class Flamingo {
         DateTimeField,
         TextareaField,
         BelongsToField,
+        BelongsToManyField,
         LinkField: TextField,
         NumberField: TextField,
         IntegerField: TextField,
@@ -88,10 +90,7 @@ class Flamingo {
     }
 
     booting = (boot) => {
-        this.bootingCallbacks = [
-            ...this.bootingCallbacks,
-            boot.bind(this)
-        ]
+        this.bootingCallbacks = [...this.bootingCallbacks, boot.bind(this)]
 
         return this
     }
@@ -99,7 +98,7 @@ class Flamingo {
     field = (key, Component) => {
         this.fieldComponents = {
             ...this.fieldComponents,
-            [key]: Component
+            [key]: Component,
         }
 
         return this
@@ -108,7 +107,7 @@ class Flamingo {
     detailField = (key, Component) => {
         this.detailFieldComponents = {
             ...this.detailFieldComponents,
-            [key]: Component
+            [key]: Component,
         }
 
         return this
@@ -117,19 +116,19 @@ class Flamingo {
     indexField = (key, Component) => {
         this.indexFieldComponents = {
             ...this.indexFieldComponents,
-            [key]: Component
+            [key]: Component,
         }
 
         return this
     }
 
     boot = () => {
-        this.bootingCallbacks.forEach(bootCallback => {
+        this.bootingCallbacks.forEach((bootCallback) => {
             bootCallback()
         })
 
         this.setWrapperState({
-            booted: true
+            booted: true,
         })
     }
 }

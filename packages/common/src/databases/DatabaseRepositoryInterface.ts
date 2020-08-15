@@ -16,7 +16,7 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     abstract findAll: (
         resource: Resource,
         query: FetchAllRequestQuery
-    ) => Promise<FetchAllResults>
+    ) => Promise<FetchAllResults|Model[]>
     abstract findAllByIds: (
         resource: Resource,
         ids: number[],
@@ -25,7 +25,8 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     abstract findOneById: (
         resource: Resource,
         id: number | string,
-        fields?: string[]
+        fields?: string[],
+        withRelationships?: string[]
     ) => Promise<Model | null>
     abstract findOneByField: (
         resource: Resource,

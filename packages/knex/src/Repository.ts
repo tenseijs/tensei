@@ -3,6 +3,7 @@ import Knex, {
     ColumnBuilder,
     AlterTableBuilder,
 } from 'knex'
+import { snakeCase } from 'change-case'
 
 import {
     DatabaseRepositoryInterface,
@@ -19,6 +20,8 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
 
     private config: Knex.Config = {}
+
+    private resources: FlamingoConfig['resources'] = []
 
     private connectionEstablished: boolean = false
 
@@ -45,8 +48,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             connection,
             useNullAsDefault: true,
             client: config.env.database,
-            debug: true,
+            debug: false,
         }
+
+        this.resources = config.resources
 
         this.establishDatabaseConnection()
 
@@ -55,6 +60,91 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         )
 
         return this.$db
+    }
+
+    public handleBelongsToManyField = async (
+        trx: Knex.Transaction,
+        resources: SerializedResource[],
+        resource: SerializedResource,
+        schema: any
+    ) => {
+        const belongsToManyFields = resource.fields.filter(
+            (field) => field.component === 'BelongsToManyField'
+        )
+
+        for (let index = 0; index < belongsToManyFields.length; index++) {
+            const field = belongsToManyFields[index]
+            // If field === belongsToMany
+            // First, get the related belongsToMany resource.
+            // Second, Get the default table name.
+            // This would be the alphabetically sorted singular names of each resource separated by _. For example, User, Role => role_user, Post, Tag => post_tag
+            // Third, check if the table already exists
+            // If it doesn't, create it.
+            // Else, update it.
+            // Fourth, create four new fields in this table:
+            // role_id, user_id, created_at, updated_at, and other custom fields in the pivot table
+
+            if (field.component === 'BelongsToManyField') {
+                const relatedResource = resources.find(
+                    (relatedResource) => field.name === relatedResource.name
+                )
+
+                if (!relatedResource) {
+                    console.warn(
+                        `The BelongsToMany relationship is pointing to a resource called ${field.name} which does not exist.`
+                    )
+
+                    return
+                }
+
+                const tableName = [
+                    snakeCase(relatedResource.name),
+                    snakeCase(resource.name),
+                ]
+                    .sort()
+                    .join('_')
+
+                const resourceColumnName = `${snakeCase(resource.name)}_id`
+                const relatedResourceColumnName = `${snakeCase(
+                    relatedResource.name
+                )}_id`
+
+                const tableExists = schema ? schema[tableName] : false
+
+                const resourceColumnExists = tableExists
+                    ? schema[tableName][resourceColumnName]
+                    : false
+                const relatedResourceColumnExists = tableExists
+                    ? schema[tableName][relatedResourceColumnName]
+                    : false
+
+                await trx.schema[tableExists ? 'alterTable' : 'createTable'](
+                    tableName,
+                    (t) => {
+                        if (!tableExists) {
+                            t.increments()
+                        }
+
+                        let resourceMethod = t.integer(resourceColumnName)
+                        let relatedResourceMethod = t.integer(
+                            relatedResourceColumnName
+                        )
+
+                        if (resourceColumnExists) {
+                            resourceMethod.alter()
+                        }
+
+                        if (relatedResourceColumnExists) {
+                            relatedResourceMethod.alter()
+                        }
+
+                        if (!tableExists) {
+                            t.timestamps()
+                        }
+                    }
+                )
+            }
+        }
     }
 
     public performDatabaseSchemaSync = async (
@@ -70,14 +160,20 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
                 const tableExists = schema ? schema[resource.table] : false
 
+                this.handleBelongsToManyField(trx, resources, resource, schema)
+
                 await trx.schema[tableExists ? 'alterTable' : 'createTable'](
                     resource.table,
                     (t) => {
                         // if column exists on schema, but cannot be found here on fields,
                         // then it should be dropped
 
-                        resource.fields.forEach((field) =>
-                            this.handleFieldUpdates(
+                        resource.fields.forEach((field) => {
+                            if (field.component === 'HasManyField') {
+                                return
+                            }
+
+                            return this.handleFieldUpdates(
                                 trx,
                                 t,
                                 schema,
@@ -85,7 +181,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                                 resource,
                                 resources
                             )
-                        )
+                        })
 
                         if (!resource.noTimeStamps && !tableExists) {
                             t.timestamps(true, true)
@@ -128,7 +224,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         const tableExists = schema ? schema[resource.table] : false
 
         // @ts-ignore
-        if (!table[knexMethodName]) {
+        if (!table[knexMethodName] && table[knexMethodName] !== 'undefined') {
             console.warn(
                 `The field ${field.name} is making use of an invalid database method ${field.sqlDatabaseFieldType}. Make sure this method is supported by knex.`
             )
@@ -337,16 +433,26 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     public findOneById = async (
         resource: Resource,
         id: number | string,
-        fields?: FetchAllRequestQuery['fields']
+        fields?: FetchAllRequestQuery['fields'],
+        withRelationships?: string[]
     ) => {
-        return (
+        let result =
             (
                 await this.$db!.select(fields || '*')
                     .from(resource.data.table)
                     .where('id', id)
                     .limit(1)
             )[0] || null
-        )
+
+        if (withRelationships && result) {
+            result = await this.populateRelationships(
+                result,
+                withRelationships,
+                resource
+            )
+        }
+
+        return result
     }
 
     public findOneByField = async (
@@ -421,15 +527,143 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             data.limit(query.perPage).offset((query.page - 1) * query.perPage)
         }
 
+        let results = await data.select(query.fields || '*')
+
+        if (query.withRelationships) {
+            results = await this.populateRelationships(
+                results,
+                query.withRelationships,
+                resource
+            )
+        }
+
         return {
             total,
             page: query.noPagination === 'true' ? 1 : query.page,
-            data: await data.select(query.fields || '*'),
+            data: results,
             perPage: query.noPagination === 'true' ? null : query.perPage,
             pageCount:
                 query.noPagination === 'true'
                     ? 1
                     : Math.ceil(total / query.perPage),
         }
+    }
+
+    public async populateRelationships(
+        result: any,
+        withRelationships: string[],
+        resource: Resource
+    ) {
+        for (let index = 0; index < withRelationships.length; index++) {
+            const relatedResourceSlug = withRelationships[index]
+
+            const relatedResource = this.resources.find(
+                (relatedResource) =>
+                    relatedResource.data.slug === relatedResourceSlug
+            )
+
+            if (!relatedResource) {
+                throw [
+                    {
+                        message: `A resource with slug ${relatedResourceSlug} was not found.`,
+                    },
+                ]
+            }
+
+            const resourceField = resource.data.fields.find(
+                (field) => field.name === relatedResource.data.name
+            )
+            const relatedResourceField = relatedResource.data.fields.find(
+                (field) => field.name === resource.data.name
+            )
+
+            if (!resourceField || !relatedResourceField) {
+                throw [
+                    {
+                        message: `Related resource fields were not found for the relationship ${relatedResourceSlug}.`,
+                    },
+                ]
+            }
+
+            if (resourceField.component === 'BelongsToManyField') {
+                // if belongs to many field, then we need to errrm.
+                // first, get the pivot table name
+                const pivotTableName = [
+                    snakeCase(resource.data.name),
+                    snakeCase(relatedResource.data.name),
+                ]
+                    .sort()
+                    .join('_')
+
+                // second, get the resourceId field name and the relatedResourceId field name
+                const resourceIdFieldName = `${snakeCase(
+                    resource.data.name
+                )}_id`
+                const relatedResourceIdFieldName = `${snakeCase(
+                    relatedResource.data.name
+                )}_id`
+                // third, fetch all pivot table rows where resource_id = result.id
+                const pivotResource = {
+                    data: {
+                        table: pivotTableName,
+                        fields: [
+                            {
+                                isSearchable: false,
+                                databaseField: resourceIdFieldName,
+                            },
+                            {
+                                isSearchable: false,
+                                databaseField: relatedResourceIdFieldName,
+                            },
+                        ],
+                    },
+                } as Resource
+
+                if (Array.isArray(result)) {
+                    const pivotTableRows = await this.findAll(pivotResource, {
+                        whereQueries: [
+                            {
+                                field: resourceIdFieldName,
+                                value: result.map(row => row.id),
+                                whereType: 'whereIn'
+                            },
+                        ],
+                        page: 1,
+                        perPage: relatedResource.data.perPageOptions[0] || 10,
+                        fields: [resourceIdFieldName, relatedResourceIdFieldName],
+                    } as FetchAllRequestQuery)
+                } else {
+                    const pivotTableRows = await this.findAll(pivotResource, {
+                        whereQueries: [
+                            {
+                                field: resourceIdFieldName,
+                                value: result.id,
+                            },
+                        ],
+                        page: 1,
+                        perPage: relatedResource.data.perPageOptions[0] || 10,
+                        fields: [resourceIdFieldName, relatedResourceIdFieldName],
+                    } as FetchAllRequestQuery)
+                    // fourth, create an array of all relatedResourceIds from the pivot
+                    pivotTableRows.data = pivotTableRows.data.map(
+                        (row) => row[relatedResourceIdFieldName]
+                    )
+                    // fifth, use the findAllByIds method to get all related resources
+                    const rows = await this.findAllByIds(
+                        relatedResource,
+                        pivotTableRows.data
+                    )
+    
+                    pivotTableRows.data.forEach((row, index) => {
+                        pivotTableRows.data[index] = rows[index]
+                    })
+    
+                    // finally, attach the found rows to the result.
+                    result[relatedResourceSlug] = pivotTableRows
+                }
+            }
+        }
+
+        return result
     }
 }

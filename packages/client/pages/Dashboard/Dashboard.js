@@ -179,7 +179,9 @@ class DashboardPage extends React.Component {
                             <Switch>
                                 <Route
                                     exact
-                                    path={Flamingo.getPath('resources/:resource')}
+                                    path={Flamingo.getPath(
+                                        'resources/:resource'
+                                    )}
                                     component={ResourceIndex}
                                 />
                                 <Route

@@ -207,11 +207,12 @@ export class ResourceManager {
 
     public async validateRequestQuery(
         {
-            perPage,
+            per_page: perPage,
             page,
             fields,
             search,
-            noPagination = 'false',
+            with: withRelationships,
+            no_pagination: noPagination = 'false',
             ...rest
         }: Request['query'],
         resource: Resource
@@ -234,6 +235,11 @@ export class ResourceManager {
             (field) => field.databaseField
         )
 
+        const relationshipFields = resource
+            .serialize()
+            .fields.filter((field) => field.isRelationshipField)
+            .map((field) => field.inputName)
+
         const parsedQuery = await validateAll(
             {
                 perPage,
@@ -242,6 +248,7 @@ export class ResourceManager {
                 noPagination,
                 whereQueries,
                 fields: (fields as string)?.split(','),
+                withRelationships: (withRelationships as string)?.split(','),
             },
             {
                 perPage: 'number',
@@ -249,10 +256,13 @@ export class ResourceManager {
                 fields: 'array',
                 search: 'string',
                 whereQueries: 'array',
-                'whereQueries.*.field': 'required|string,in:' + validFields,
-                'whereQueries.*.value': 'required|string,',
+                withRelationships: 'array',
                 noPagination: 'string,in:true,false',
-                'fields.*': 'in:' + validFields,
+                'fields.*': 'in:' + validFields.join(','),
+                'whereQueries.*.value': 'required|string,',
+                'whereQueries.*.field':
+                    'required|string,in:' + validFields.join(','),
+                'withRelationships.*': 'in:' + relationshipFields.join(','),
             }
         )
 
@@ -272,6 +282,7 @@ export class ResourceManager {
             search,
             whereQueries,
             noPagination,
+            withRelationships,
         } = await this.validateRequestQuery(request.query, resource)
 
         return this.db.findAll(resource, {
@@ -281,6 +292,7 @@ export class ResourceManager {
             search,
             whereQueries,
             noPagination,
+            withRelationships,
         })
     }
 
@@ -291,12 +303,17 @@ export class ResourceManager {
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        const { fields } = await this.validateRequestQuery(
+        const { fields, withRelationships } = await this.validateRequestQuery(
             request.query,
             resource
         )
 
-        const model = await this.db.findOneById(resource, id, fields)
+        const model = await this.db.findOneById(
+            resource,
+            id,
+            fields,
+            withRelationships
+        )
 
         if (!model) {
             throw {

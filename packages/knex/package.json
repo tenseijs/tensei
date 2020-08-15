@@ -5,6 +5,9 @@
     "license": "MIT",
     "types": "./build/index.d.ts",
     "dependencies": {
+        "@types/bookshelf": "^1.1.1",
+        "bookshelf": "^1.2.0",
+        "change-case": "^4.1.1",
         "connect-session-knex": "^1.7.3",
         "knex": "^0.21.2"
     },
@@ -12,5 +15,6 @@
         "build": "tsc --p tsconfig.json",
         "dev": "tsc --watch --p tsconfig.json",
         "prettier": "prettier --write './**/*.{js,json,ts,css}'"
-    }
+    },
+    "devDependencies": {}
 }

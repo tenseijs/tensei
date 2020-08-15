@@ -1,9 +1,9 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { debounce } from 'throttle-debounce'
 import { withResources } from '~/store/resources'
-import { Pill, TextLink } from '@contentful/forma-36-react-components'
 import Autocomplete from '~/components/Autocomplete'
-import { Link } from 'react-router-dom'
+import { Pill, TextLink } from '@contentful/forma-36-react-components'
 
 class HasMany extends React.Component {
     state = {
@@ -36,36 +36,11 @@ class HasMany extends React.Component {
 
     fetchSelectedOptions = () => {
         const { relatedResource } = this.state
-        const { resource, resourceId, field: fieldProp } = this.props
+        const { resource, resourceId } = this.props
 
-        const relatedBelongsToField = relatedResource.fields.find(
-            (field) =>
-                field.name === resource.name &&
-                field.component === 'BelongsToField'
+        Flamingo.request.get(
+            `resources/${resource.slug}/${resourceId}?per_page=20&with=${relatedResource.slug}`
         )
-
-        if (!relatedBelongsToField) {
-            return
-        }
-
-        Flamingo.request
-            .get(
-                `resources/${relatedResource.slug}?fields=${[
-                    relatedResource.displayField,
-                    relatedResource.valueField,
-                    // TODO: Make the perPage here customizable.
-                ].join(',')}&per_page=20&where_${
-                    relatedBelongsToField.inputName
-                }=${resourceId}`
-            )
-            .then(({ data }) => {
-                this.setState({
-                    selectedOptions: data.data.map((option) => ({
-                        label: option[relatedResource.displayField],
-                        value: option[relatedResource.valueField],
-                    })),
-                })
-            })
     }
 
     fetchOptions = (query) => {

@@ -88,7 +88,7 @@ class ShowResource extends React.Component {
 
     renderResourceField(field) {
         const { resource, loading, model } = this.state
-        if (loading || ! model) {
+        if (loading || !model) {
             return null
         }
 

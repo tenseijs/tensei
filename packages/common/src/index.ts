@@ -11,10 +11,10 @@ export { number, NumberField } from './fields/Number'
 export { dateTime, DateTime } from './fields/DateTime'
 export { password, Password } from './fields/Password'
 export { textarea, Textarea } from './fields/Textarea'
+export { Field, SerializedField } from './fields/Field'
 export { belongsTo, BelongsTo } from './fields/BelongsTo'
 export { bigInteger, BigInteger } from './fields/BigInteger'
-
-export { Field, SerializedField } from './fields/Field'
+export { belongsToMany, BelongsToMany } from './fields/BelongsToMany'
 
 export { Tool, tool, ToolSetupConfig } from './tools/Tool'
 export { ResourceManager } from './resources/ResourceManager'

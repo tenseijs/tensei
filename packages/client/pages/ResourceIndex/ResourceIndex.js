@@ -90,7 +90,7 @@ class ResourceIndex extends React.Component {
 
     pushParamsToUrl = () => {
         this.props.history.push(
-            `${this.props.location.pathname}?page=${this.state.page}&perPage=${this.state.perPage}&search=${this.state.search}`
+            `${this.props.location.pathname}?page=${this.state.page}&per_page=${this.state.perPage}&search=${this.state.search}`
         )
     }
 
@@ -116,7 +116,7 @@ class ResourceIndex extends React.Component {
             .get(
                 `resources/${
                     resource.slug
-                }?perPage=${perPage}&page=${page}&search=${search || ''}`
+                }?per_page=${perPage}&page=${page}&search=${search || ''}`
             )
             .then(({ data }) => {
                 this.setState({

@@ -6,6 +6,7 @@ const {
     belongsTo,
     select,
     resource,
+    belongsToMany
 } = require('@flamingo/core')
 const { trix } = require('@flamingo/trix')
 
@@ -39,6 +40,7 @@ module.exports = resource('Post')
         belongsTo('User').searchable().rules('required'),
         date('Published At').notNullable().firstDayOfWeek(4).rules('required', 'date').format('do MMM yyyy, hh:mm a'),
         dateTime('Scheduled For').rules('required', 'date'),
+        belongsToMany('Tag')
     ])
     .perPageOptions([25, 50, 100])
     .displayField('title')

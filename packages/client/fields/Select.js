@@ -3,12 +3,7 @@ import { SelectField, Option } from '@contentful/forma-36-react-components'
 
 class Select extends React.Component {
     render() {
-        const {
-            value,
-            onFieldChange,
-            field,
-            errorMessage,
-        } = this.props
+        const { value, onFieldChange, field, errorMessage } = this.props
 
         return (
             <SelectField

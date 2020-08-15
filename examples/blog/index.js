@@ -10,6 +10,7 @@ flamingo()
         require('./resources/Post'),
         require('./resources/User'),
         require('./resources/Comment'),
+        require('./resources/Tag')
     ])
     .tools([trixTool()])
     .register()
