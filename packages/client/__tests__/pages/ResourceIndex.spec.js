@@ -45,7 +45,7 @@ describe('Test the resource index page', () => {
                                 created_at: '2020-08-12T21:40:24.000Z',
                                 description:
                                     'this is the description for amapai',
-                                id: 1,
+                                id: 2,
                                 published_at: '2020-08-11T23:00:00.000Z',
                                 scheduled_for: '2020-08-11T23:00:00.000Z',
                                 title: 'Amapai',
@@ -79,7 +79,7 @@ describe('Test the resource index page', () => {
         expect(window.Flamingo.request.get).toHaveBeenCalled()
     })
     test('per page button changes the pers page value for the table', () => {})
-    test.only('can select a row on the resource table', async () => {
+    test('can select a row on the resource table', async () => {
         render(
             <Router history={history}>
                 <ResourceIndex {...props} />
@@ -88,7 +88,6 @@ describe('Test the resource index page', () => {
         await waitFor(() =>
             fireEvent.click(screen.getAllByTestId('table-row')[0])
         )
-        screen.debug()
     })
     test('can search for values on the resource table', async () => {
         render(
@@ -142,7 +141,7 @@ describe('Test the resource index page', () => {
             </Router>
         )
         await waitFor(() =>
-            expect(screen.queryAllByTestId('table-row')).toHaveLength(1)
+            expect(screen.queryAllByTestId('table-row')).toHaveLength(2)
         )
     })
     test('clicking on the delete icon should delete that specific row data', async () => {
@@ -151,7 +150,9 @@ describe('Test the resource index page', () => {
                 <ResourceIndex {...props} />
             </Router>
         )
-        fireEvent.click(await screen.findAllByTestId('delete-icon')[0])
+        await waitFor(() =>
+            fireEvent.click(screen.getAllByTestId('delete-icon')[0])
+        )
     })
     test('clicking on the filter button should open the filter dropdown', async () => {
         render(
