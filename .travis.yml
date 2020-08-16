@@ -12,8 +12,6 @@ node_js:
   - '14'
 
 before_script:
-    - npm install -g yarn
-    - yarn --version
     - mysql -u root -e "CREATE USER testuser"
     - mysql -u root -e "CREATE DATABASE testdb"
     - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO testuser"
