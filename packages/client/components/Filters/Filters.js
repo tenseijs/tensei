@@ -9,14 +9,19 @@ import {
 
 const Filters = ({ fields, operators, filters, addFilter }) => {
     return (
-        <div className="w-full px-5 py-6">
+        <div className="w-full px-5 py-6" data-testid="filter-box">
             <div className="overflow-scroll" style={{ maxHeight: '300px' }}>
                 {filters.map((filter, index) => (
                     <div key={index} className="w-full flex mb-3">
-                        <IconButton iconProps={{ icon: 'Delete' }} />
-                        <Select width="medium" className="mx-4">
+                        <IconButton iconProps={{ icon: 'Delete' }} label="" />
+                        <Select
+                            width="medium"
+                            className="mx-4"
+                            data-testid="select-filter-column"
+                        >
                             {fields.map((field) => (
                                 <Option
+                                    data-testid="filter-column-option"
                                     key={field.inputName}
                                     value={field.inputName}
                                 >
@@ -35,6 +40,7 @@ const Filters = ({ fields, operators, filters, addFilter }) => {
                         <TextInput width="medium" className="mr-4" />
                         <IconButton
                             onClick={addFilter}
+                            label=""
                             iconProps={{ icon: 'PlusCircle' }}
                         />
                     </div>
