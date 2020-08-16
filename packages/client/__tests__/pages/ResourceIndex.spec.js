@@ -170,4 +170,45 @@ describe('Test the resource index page', () => {
         expect(options[0].selected).toBeTruthy()
         expect(options[1].selected).toBeFalsy()
     })
+    test('The ResourceIndex page shows only fields with showOnIndex', async () => {
+        render(
+            <Router history={history}>
+                <ResourceIndex {...props} />
+            </Router>
+        )
+        expect(screen.getAllByTestId('table-head')).toHaveLength(3)
+    })
+    test('The select checkbox should check a row', async () => {
+        render(
+            <Router history={history}>
+                <ResourceIndex {...props} />
+            </Router>
+        )
+        const [checkBox1] = await waitFor(() =>
+            screen.getAllByTestId('row-checkbox')
+        )
+        expect(checkBox1).not.toBeChecked()
+        fireEvent.click(checkBox1)
+        expect(checkBox1).toBeChecked()
+    })
+    test.only('The select all checkbox should check all the resources on the page', async () => {
+        render(
+            <Router history={history}>
+                <ResourceIndex {...props} />
+            </Router>
+        )
+        const selectAllCheckBox = await waitFor(() =>
+            screen.getByTestId('selectall-checkbox')
+        )
+        const checkBoxes = await waitFor(() =>
+            screen.getAllByTestId('row-checkbox')
+        )
+        checkBoxes.map((checkbox) => {
+            expect(checkbox).not.toBeChecked()
+        })
+        fireEvent.click(selectAllCheckBox)
+        checkBoxes.map((checkbox) => {
+            expect(checkbox).toBeChecked()
+        })
+    })
 })

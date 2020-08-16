@@ -303,12 +303,16 @@ class ResourceTable extends React.Component {
                             <TableCell>
                                 <Checkbox
                                     checked={selectAllChecked}
-                                    onChange={this.handleSelectAllClicked}
                                     labelText={`Select all ${resource.label}`}
+                                    onChange={this.props.handleSelectAllClicked}
+                                    data-testid="selectall-checkbox"
                                 />
                             </TableCell>
                             {tableColumns.map((column) => (
-                                <TableCell key={column.inputName}>
+                                <TableCell
+                                    key={column.inputName}
+                                    data-testid="table-head"
+                                >
                                     {column.name}
                                 </TableCell>
                             ))}
@@ -337,6 +341,7 @@ class ResourceTable extends React.Component {
                                                 checked={selected.includes(
                                                     row.key
                                                 )}
+                                                data-testid="row-checkbox"
                                                 onChange={(e) =>
                                                     this.handleCheckboxChange(
                                                         e,
