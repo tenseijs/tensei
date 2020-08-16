@@ -1,7 +1,6 @@
 import Express from 'express'
-import Controller from '../Controller'
 
-class DeleteResourceController extends Controller {
+class DeleteResourceController {
     public destroy = async (
         request: Express.Request,
         response: Express.Response

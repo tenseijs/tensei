@@ -1,6 +1,7 @@
 import Express from 'express'
 import Bcrypt from 'bcryptjs'
 import { validateAll } from 'indicative/validator'
+import e from 'express'
 
 type AuthData = { email: string; password: string; name?: string }
 
@@ -65,6 +66,12 @@ class AuthController {
         request: Express.Request,
         response: Express.Response
     ) => {
+        if ((await request.db.getAdministratorsCount()) > 0) {
+            return response.status(422).json({
+                message: 'An administrator user already exists. Please use the administration management dashboard to add more users.',
+            })
+        }
+
         const [validationPassed, errors] = await this.validate(
             request.body,
             true

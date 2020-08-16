@@ -1,7 +1,6 @@
 import Express from 'express'
-import Controller from '../Controller'
 
-class FindResourceController extends Controller {
+class FindResourceController {
     public show = async (
         request: Express.Request,
         response: Express.Response

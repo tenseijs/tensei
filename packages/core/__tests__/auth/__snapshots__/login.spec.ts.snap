@@ -1,12 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`returns a 200 and success message when correct credentials are passed 1`] = `
+exports[`can login correctly with remember me 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`returns a 200, and creates a new session when correct credentials are passed 1`] = `
 Object {
   "message": "Login successful.",
 }
 `;
 
 exports[`returns a 422 if user does not exist in database 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "These credentials do not match our records.",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`returns a 422 if user password is wrong 1`] = `
 Object {
   "errors": Array [
     Object {

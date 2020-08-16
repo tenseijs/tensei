@@ -1,7 +1,6 @@
 import Express from 'express'
-import Controller from '../Controller'
 
-class CreateResourceController extends Controller {
+class CreateResourceController {
     public store = async (
         request: Express.Request,
         response: Express.Response

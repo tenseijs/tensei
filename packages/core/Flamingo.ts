@@ -23,7 +23,7 @@ import CreateResourceController from './controllers/resources/CreateResourceCont
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { extend } from 'indicative/validator'
+
 
 class Flamingo {
     public app: Application = Express()
@@ -40,7 +40,7 @@ class Flamingo {
         resources: [],
         tools: [],
         adminTable: 'administrators',
-        dashboardPath: 'flamingo',
+        dashboardPath: 'admin',
         apiPath: 'api',
         scripts: [
             {
@@ -78,16 +78,6 @@ class Flamingo {
         this.registerCoreRoutes()
 
         this.registeredApplication = true
-
-        return this
-    }
-
-    public start() {
-        this.app.listen(this.config.env.port, () => {
-            console.log(
-                `App listening on port http://localhost:${this.config.env.port}`
-            )
-        })
 
         return this
     }
@@ -135,10 +125,6 @@ class Flamingo {
     }
 
     public async registerDatabase() {
-        if (this.databaseBooted) {
-            return this
-        }
-
         // if database === mysql | sqlite | pg, we'll use the @flamingo/knex package, with either mysql, pg or sqlite3 package
         // We'll require('@flamingo/knex') and require('sqlite3') for example. If not found, we'll install.
         const { Repository } = require('@flamingo/knex')

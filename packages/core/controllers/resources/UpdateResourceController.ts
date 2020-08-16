@@ -1,7 +1,6 @@
 import Express from 'express'
-import Controller from '../Controller'
 
-class UpdateResourceController extends Controller {
+class UpdateResourceController {
     public update = async (
         request: Express.Request,
         response: Express.Response
