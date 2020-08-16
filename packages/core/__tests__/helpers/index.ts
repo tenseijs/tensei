@@ -12,7 +12,7 @@ type ConfigureSetup = (app: Flamingo) => Flamingo
 
 export const setup = async (configure?: ConfigureSetup) => {
     process.env.DATABASE = 'mysql'
-    process.env.DATABASE_URI = 'mysql://root@127.0.0.1/flamingotestdb'
+    process.env.DATABASE_URI = 'mysql://root@127.0.0.1/testdb'
 
     let instance = flamingo()
 
@@ -20,12 +20,7 @@ export const setup = async (configure?: ConfigureSetup) => {
         instance = configure(instance)
     }
 
-    instance = await instance.resources([
-        Post,
-        Tag,
-        User,
-        Comment
-    ]).register()
+    instance = await instance.resources([Post, Tag, User, Comment]).register()
 
     const knex: Knex = instance.databaseClient
 

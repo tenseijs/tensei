@@ -68,7 +68,8 @@ class AuthController {
     ) => {
         if ((await request.db.getAdministratorsCount()) > 0) {
             return response.status(422).json({
-                message: 'An administrator user already exists. Please use the administration management dashboard to add more users.',
+                message:
+                    'An administrator user already exists. Please use the administration management dashboard to add more users.',
             })
         }
 

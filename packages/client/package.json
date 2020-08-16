@@ -32,7 +32,7 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "test": "jest --verbose",
+        "test": "jest --verbose --runInBand",
         "dev:css": "NODE_ENV=development yarn build:css",
         "build:css": "tailwind build css/index.css -o css/index.output.css",
         "dev": "yarn dev:css && parcel watch index.js --no-autoinstall -d './../core/build/client'",

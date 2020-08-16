@@ -44,13 +44,12 @@ test('correctly creates an administrator user, logs in the user and returns a su
     const response = await client.post('/api/register').send({
         email: 'hey@admin.io',
         password: 'password',
-        name: 'Hey Admin io'
+        name: 'Hey Admin io',
     })
 
     expect(response.status).toBe(200)
     expect(response.body).toMatchSnapshot()
     expect(response.header['set-cookie']).toHaveLength(1)
-
 
     await cleanup(databaseClient)
 })

@@ -15,8 +15,12 @@ test('can configure custom dashboard path', async () => {
     const client = Supertest(instance.app)
 
     expect((await client.get(`/${CUSTOM_DASHBOARD_PATH}`)).status).not.toBe(404)
-    expect((await client.get(`/${CUSTOM_DASHBOARD_PATH}/auth/login`)).status).not.toBe(404)
-    expect((await client.get(`/${CUSTOM_DASHBOARD_PATH}/auth/register`)).status).not.toBe(404)
+    expect(
+        (await client.get(`/${CUSTOM_DASHBOARD_PATH}/auth/login`)).status
+    ).not.toBe(404)
+    expect(
+        (await client.get(`/${CUSTOM_DASHBOARD_PATH}/auth/register`)).status
+    ).not.toBe(404)
 })
 
 test('can configure custom api path', async () => {
@@ -29,8 +33,12 @@ test('can configure custom api path', async () => {
 
     const client = Supertest(app)
 
-    expect((await client.post(`/${CUSTOM_API_PATH}/login`)).status).not.toBe(404)
-    expect((await client.post(`/${CUSTOM_API_PATH}/register`)).status).not.toBe(404)
+    expect((await client.post(`/${CUSTOM_API_PATH}/login`)).status).not.toBe(
+        404
+    )
+    expect((await client.post(`/${CUSTOM_API_PATH}/register`)).status).not.toBe(
+        404
+    )
 
     cleanup(databaseClient)
 })
@@ -49,9 +57,21 @@ test('tools can correctly register custom stylesheets and scripts', async () => 
     const { app, databaseClient } = await setup((instance) => {
         instance.tools([
             tool('Graphql').setup(async ({ style, script }) => {
-                script('graphql.js', Path.resolve(__dirname, '..', 'helpers', 'assets', 'app.js'))
-                style('graphql.css', Path.resolve(__dirname, '..', 'helpers', 'assets', 'app.css'))
-            })
+                script(
+                    'graphql.js',
+                    Path.resolve(__dirname, '..', 'helpers', 'assets', 'app.js')
+                )
+                style(
+                    'graphql.css',
+                    Path.resolve(
+                        __dirname,
+                        '..',
+                        'helpers',
+                        'assets',
+                        'app.css'
+                    )
+                )
+            }),
         ])
 
         return instance
@@ -62,7 +82,9 @@ test('tools can correctly register custom stylesheets and scripts', async () => 
     const response = await client.get(`/admin`)
 
     expect(response.text).toMatch("<script src='/graphql.js'></script>")
-    expect(response.text).toMatch('<link media="all" href="/graphql.css" rel="stylesheet" />')
+    expect(response.text).toMatch(
+        '<link media="all" href="/graphql.css" rel="stylesheet" />'
+    )
 
     const js = await client.get('/graphql.js')
     const css = await client.get('/graphql.css')
@@ -72,7 +94,7 @@ test('tools can correctly register custom stylesheets and scripts', async () => 
 
     expect(js.text).toMatch('TEST_ASSET')
     expect(css.text).toMatch('TEST_ASSET')
-    
+
     cleanup(databaseClient)
 })
 
@@ -82,10 +104,12 @@ test('tools can correctly customise the express application', async () => {
     const { app, databaseClient } = await setup((instance) => {
         instance.tools([
             tool('Graphql').setup(async ({ app }) => {
-                app.post('/graphql', (req, res) => res.status(212).json({
-                    message: TEST_GRAPHQL_MESSAGE
-                }))
-            })
+                app.post('/graphql', (req, res) =>
+                    res.status(212).json({
+                        message: TEST_GRAPHQL_MESSAGE,
+                    })
+                )
+            }),
         ])
 
         return instance

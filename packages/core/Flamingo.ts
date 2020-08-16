@@ -24,7 +24,6 @@ import DeleteResourceController from './controllers/resources/DeleteResourceCont
 import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
 
-
 class Flamingo {
     public app: Application = Express()
     public databaseClient: any = null

@@ -64,7 +64,6 @@ describe('Test the resource index page', () => {
                 <ResourceIndex {...props} />
             </Router>
         )
-        debug()
 
         expect(window.Flamingo.request.get).toHaveBeenCalled()
     })

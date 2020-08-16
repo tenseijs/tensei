@@ -43,12 +43,18 @@ test('passes user to view if user is logged in', async () => {
 
     const admin = await createAdminUser(databaseClient)
 
-    const cookie = (await client.post('/api/login').send({
-        email: admin.email,
-        password: 'password'
-    })).header['set-cookie'][0].split('=')[1].split(';')[0]
+    const cookie = (
+        await client.post('/api/login').send({
+            email: admin.email,
+            password: 'password',
+        })
+    ).header['set-cookie'][0]
+        .split('=')[1]
+        .split(';')[0]
 
-    const response = await client.get(`/admin`).set('Cookie', [`connect.sid=${cookie};`])
+    const response = await client
+        .get(`/admin`)
+        .set('Cookie', [`connect.sid=${cookie};`])
 
     expect(response.status).toBe(200)
 
