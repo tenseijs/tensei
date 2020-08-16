@@ -73,3 +73,18 @@
 .border-none {
     border: 0 !important;
 }
+
+/* pagination styles */
+.pagination .disabled {
+    color: #d3dce0;
+    cursor: default !important;
+}
+.pagination .disabled:hover {
+    background-color: transparent;
+}
+.pagination-active {
+    cursor: default !important;
+}
+.pagination-active:hover {
+    background-color: #2e75d4;
+}
