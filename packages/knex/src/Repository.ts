@@ -686,7 +686,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         const Model = this.getResourceBookshelfModel(resource)
 
         const getBuilder = () => {
-            const builder = new Model()
+            const builder = Model.query()
 
             if (query.search) {
                 const searchableFields = resource.data.fields.filter(
@@ -694,13 +694,11 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 )
 
                 searchableFields.forEach((field, index) => {
-                    builder.query(function (qb: any) {
-                        qb[index === 0 ? 'where' : 'orWhere'](
-                            field.databaseField,
-                            'LIKE',
-                            `%${query.search.toLowerCase()}%`
-                        )
-                    })
+                    builder[index === 0 ? 'where' : 'orWhere'](
+                        field.databaseField,
+                        'like',
+                        `%${query.search.toLowerCase()}%`
+                    )
                 })
             }
 
@@ -715,19 +713,19 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         const data = getBuilder()
 
-        let results = await data.fetchAll({
-            columns: query.fields,
-        })
+        let results = await data
+            .select(query.fields || '*')
+            .limit(query.perPage)
+            .offset((query.page - 1) * query.perPage)
+
+        const total = count[0]['count(*)']
 
         return {
-            total: count,
+            total: count[0]['count(*)'],
             data: results,
-            page: query.noPagination === 'true' ? 1 : query.page,
-            perPage: query.noPagination === 'true' ? null : query.perPage,
-            pageCount:
-                query.noPagination === 'true'
-                    ? 1
-                    : Math.ceil(count / query.perPage),
+            page: query.page,
+            perPage: query.perPage,
+            pageCount: Math.ceil(total / query.perPage),
         }
     }
 }
