@@ -228,7 +228,6 @@ describe('Test the resource index page', () => {
         await waitFor(() =>
             fireEvent.click(screen.getAllByTestId('table-row')[0])
         )
-        screen.debug()
     })
     test('can search for values on the resource table', async () => {
         render(
@@ -282,7 +281,7 @@ describe('Test the resource index page', () => {
             </Router>
         )
         await waitFor(() =>
-            expect(screen.queryAllByTestId('table-row')).toHaveLength(1)
+            expect(screen.queryAllByTestId('table-row')).toHaveLength(2)
         )
     })
     test('clicking on the delete icon should delete that specific row data', async () => {
@@ -291,7 +290,9 @@ describe('Test the resource index page', () => {
                 <ResourceIndex {...props} />
             </Router>
         )
-        fireEvent.click(await screen.findAllByTestId('delete-icon')[0])
+        await waitFor(() =>
+            fireEvent.click(screen.getAllByTestId('delete-icon')[0])
+        )
     })
     test('clicking on the filter button should open the filter dropdown', async () => {
         render(

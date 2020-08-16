@@ -17,6 +17,7 @@ exports[`Test the resource index page resource index page should match snapshot 
       <input
         class="TextInput__TextInput__input___27vDB a11y__focus-border--default___60AXp"
         data-test-id="cf-ui-text-input"
+        data-testid="search-resource"
         placeholder="Type to search for posts"
         value=""
       />
@@ -32,6 +33,7 @@ exports[`Test the resource index page resource index page should match snapshot 
           aria-haspopup="menu"
           class="Button__Button___1ZfFj a11y__focus-border--default___60AXp Button__Button--muted___2Wair"
           data-test-id="cf-ui-button"
+          data-testid="filter-button"
           type="button"
         >
           <span
@@ -106,6 +108,7 @@ exports[`Test the resource index page resource index page should match snapshot 
           style="top: 0px;"
         >
           <input
+            aria-label=""
             class="ControlledInput__ControlledInput___2XK3j"
             data-test-id="ctf-ui-checkbox"
             data-testid="selectall-checkbox"
@@ -150,6 +153,7 @@ exports[`Test the resource index page resource index page should match snapshot 
     </thead>
     <tbody
       data-test-id="cf-ui-table-body"
+      data-testid="table-body"
     >
       <tr
         class="TableRow__TableRow___3kcNC"
