@@ -10,7 +10,14 @@ export class ResourceManager {
         private db: DatabaseRepositoryInterface
     ) {}
 
-    private findResource = (resourceSlug: string | Resource) => {
+    public findResource = (resourceSlug: string | Resource) => {
+        if (!resourceSlug) {
+            throw {
+                message: `Resource ${resourceSlug} not found.`,
+                status: 404,
+            }
+        }
+
         if (typeof resourceSlug !== 'string') {
             return resourceSlug
         }
@@ -20,7 +27,10 @@ export class ResourceManager {
         )
 
         if (!resource) {
-            throw new Error(`Resource ${resourceSlug} not found.`)
+            throw {
+                message: `Resource ${resourceSlug} not found.`,
+                status: 404,
+            }
         }
 
         return resource
@@ -301,6 +311,76 @@ export class ResourceManager {
             noPagination,
             withRelationships,
         })
+    }
+
+    public async findAllRelatedResource(
+        request: Request,
+        resourceId: string | number,
+        resourceSlugOrResource: string | Resource,
+        relatedResourceSlugOrResource: string | Resource
+    ) {
+        const resource = this.findResource(resourceSlugOrResource)
+        const relatedResource = this.findResource(relatedResourceSlugOrResource)
+
+        const relationField = resource.data.fields.find(
+            (field) => field.name === relatedResource.data.name
+        )
+
+        const {
+            perPage = 10,
+            page = 1,
+            whereQueries,
+            ...rest
+        } = await this.validateRequestQuery(request.query, relatedResource)
+
+        if (!relationField) {
+            throw {
+                status: 404,
+                message: `Related field not found between ${resource.data.name} and ${relatedResource.data.name}.`,
+            }
+        }
+
+        if (relationField.component === 'BelongsToManyField') {
+            return this.db.findAllBelongingToMany(
+                resource,
+                relatedResource,
+                resourceId,
+                {
+                    ...rest,
+                    perPage,
+                    page,
+                    whereQueries,
+                }
+            )
+        }
+
+        if (relationField.component === 'HasManyField') {
+            const belongsToField = relatedResource.data.fields.find(
+                (field) => field.name === resource.data.name
+            )
+
+            if (!belongsToField) {
+                throw {
+                    status: 404,
+                    message: `Related 'belongs to' field not found between ${resource.data.name} and ${relatedResource.data.name}.`,
+                }
+            }
+
+            return this.db.findAll(relatedResource, {
+                ...rest,
+                perPage,
+                page,
+                whereQueries: [
+                    ...whereQueries,
+                    {
+                        field: belongsToField.databaseField,
+                        value: resourceId,
+                    },
+                ],
+            })
+        }
+
+        return {}
     }
 
     public async findOneById(

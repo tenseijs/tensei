@@ -29,7 +29,7 @@ class DashboardPage extends React.Component {
                     {
                         slug: 'home',
                         label: 'Home',
-                        to: Flamingo.getPath(''),
+                        to: Flamingo.getPath('dashboard'),
                     },
                 ],
             },
@@ -101,9 +101,9 @@ class DashboardPage extends React.Component {
                                         className={cn(
                                             'w-full py-3 pl-10 pr-3 text-sm cursor-pointer hover:bg-gray-lightest-200 transition duration-75',
                                             {
-                                                'bg-gray-lightest-100':
-                                                    this.props.location
-                                                        .pathname === item.to,
+                                                'bg-gray-lightest-100': this.props.location.pathname.match(
+                                                    item.to
+                                                ),
                                             }
                                         )}
                                     >

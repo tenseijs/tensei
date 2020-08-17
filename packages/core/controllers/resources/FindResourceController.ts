@@ -19,6 +19,20 @@ class FindResourceController {
 
         return response.json(model)
     }
+
+    public showRelation = async (
+        request: Express.Request,
+        response: Express.Response
+    ) => {
+        return response.json(
+            await request.resourceManager.findAllRelatedResource(
+                request,
+                request.params.resourceId,
+                request.params.resource,
+                request.params.relatedResource
+            )
+        )
+    }
 }
 
 export default new FindResourceController()

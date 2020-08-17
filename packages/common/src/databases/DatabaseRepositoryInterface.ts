@@ -28,12 +28,18 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
     abstract findAll: (
         resource: Resource,
         query: FetchAllRequestQuery
-    ) => Promise<FetchAllResults | Model[]>
+    ) => Promise<FetchAllResults>
     abstract findAllByIds: (
         resource: Resource,
         ids: number[],
         fields?: string[]
     ) => Promise<Model[]>
+    abstract findAllBelongingToMany: (
+        resource: Resource,
+        relatedResource: Resource,
+        resourceId: number | string,
+        query: FetchAllRequestQuery
+    ) => Promise<FetchAllResults>
     abstract findOneById: (
         resource: Resource,
         id: number | string,

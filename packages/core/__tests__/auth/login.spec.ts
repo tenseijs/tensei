@@ -31,7 +31,7 @@ test('returns a 422 if user does not exist in database', async () => {
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
 
-    cleanup(databaseClient)
+    await cleanup(databaseClient)
 })
 
 test('returns a 422 if user password is wrong', async () => {
@@ -50,7 +50,7 @@ test('returns a 422 if user password is wrong', async () => {
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
 
-    cleanup(databaseClient)
+    await cleanup(databaseClient)
 })
 
 test('returns a 200, and creates a new session when correct credentials are passed', async () => {

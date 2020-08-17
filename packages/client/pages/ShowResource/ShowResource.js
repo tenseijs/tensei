@@ -102,11 +102,11 @@ class ShowResource extends React.Component {
 
         return (
             <Component
-                key={field.inputName}
-                value={fieldValue}
-                resource={resource}
                 field={field}
+                value={fieldValue}
                 label={field.name}
+                resource={resource}
+                key={field.inputName}
             />
         )
     }
@@ -123,6 +123,28 @@ class ShowResource extends React.Component {
         )
     }
 
+    getBelongsToManyFields() {}
+
+    renderRelationalFields() {
+        return this.getRelationalFields().map((field) => {
+            const Component = Flamingo.detailFieldComponents[field.component]
+
+            if (!Component) {
+                return null
+            }
+
+            return (
+                <div className="mt-10">
+                    <Component
+                        field={field}
+                        resourceId={this.props.match.params.resourceId}
+                        resource={this.state.resource}
+                    />
+                </div>
+            )
+        })
+    }
+
     render() {
         const { resource } = this.state
         const {
@@ -132,7 +154,6 @@ class ShowResource extends React.Component {
         } = this.props
 
         const fields = this.getNonRelationalFields()
-        const relationalFields = this.getRelationalFields()
 
         return (
             <Fragment>
@@ -179,6 +200,8 @@ class ShowResource extends React.Component {
                         </div>
                     ))}
                 </Card>
+
+                {this.renderRelationalFields()}
             </Fragment>
         )
     }

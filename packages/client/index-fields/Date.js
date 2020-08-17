@@ -5,6 +5,10 @@ class DateIndexField extends React.Component {
     render() {
         const { value, field, ...rest } = this.props
 
+        if (!value) {
+            return null
+        }
+
         return format(new Date(value), field.format)
     }
 }

@@ -33,7 +33,7 @@
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
         "build": "tsc --p tsconfig.json && yarn copy:files",
         "dev": "tsc --watch --p tsconfig.json",
-        "test": "jest --verbose --runInBand",
+        "test": "jest --verbose --runInBand --forceExit",
         "copy:files": "cp index.mustache build/index.mustache"
     },
     "dependencies": {

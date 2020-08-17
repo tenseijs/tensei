@@ -14,8 +14,6 @@ test('can fetch the index.html file on all subroutes of the dashboard page', asy
     expect(response.text).toMatch('window.Flamingo.boot()')
     expect(response.text).toMatch("shouldShowRegistrationScreen: 'true'")
 
-    expect(response.text).toMatchSnapshot()
-
     await cleanup(databaseClient)
 })
 
@@ -30,8 +28,6 @@ test('passes shouldShowRegistrationScreen: false option to client if an administ
 
     expect(response.status).toBe(200)
     expect(response.text).toMatch("shouldShowRegistrationScreen: 'false'")
-
-    expect(response.text).toMatchSnapshot()
 
     await cleanup(databaseClient)
 })

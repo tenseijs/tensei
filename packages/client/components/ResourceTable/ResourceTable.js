@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react'
 import cn from 'classnames'
 import Paginator from 'react-paginate'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
+import { debounce } from 'throttle-debounce'
 
-import ArrowIcon from '~/components/ArrowIcon'
 import Filters from '~/components/Filters'
 import {
     ModalConfirm,
@@ -25,6 +25,208 @@ import {
 } from '@contentful/forma-36-react-components'
 
 class ResourceTable extends React.Component {
+    state = this.defaultState()
+
+    defaultState() {
+        return {
+            data: [],
+            page: 1,
+            total: 0,
+            search: '',
+            pageCount: 1,
+            selected: [],
+            loading: true,
+            deleting: null,
+            deleteLoading: false,
+            perPage: this.props.resource.perPageOptions[0] || 10,
+        }
+    }
+
+    getShowOnIndexColumns = () =>
+        this.props.resource.fields.filter((field) => field.showOnIndex)
+
+    getTableColumns = () => this.getShowOnIndexColumns()
+
+    handleCheckboxChange = (event, row) => {
+        const primaryKey = row.key
+
+        this.setState({
+            selected: this.state.selected.includes(primaryKey)
+                ? this.state.selected.filter((key) => key !== primaryKey)
+                : [...this.state.selected, primaryKey],
+        })
+    }
+
+    handleDeleteRow = (row) => {
+        this.setState({
+            deleting: row,
+        })
+    }
+
+    handlePaginatorChange = ({ selected }) =>
+        this.setState(
+            {
+                page: selected + 1,
+                loading: true,
+            },
+            () => this.fetch()
+        )
+
+    getTableData = () => {
+        return this.state.data.map((row) => ({
+            key: row.id,
+            cells: [
+                ...this.getTableColumns().map((column) => {
+                    const Component =
+                        Flamingo.indexFieldComponents[column.component]
+
+                    return {
+                        content: Component ? (
+                            <Component
+                                field={column}
+                                value={row[column.inputName]}
+                            />
+                        ) : (
+                            row[column.inputName]
+                        ),
+                    }
+                }),
+            ],
+        }))
+    }
+
+    componentDidMount() {
+        this.fetch()
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.resource.slug !== prevProps.resource.slug) {
+            this.bootComponent()
+        }
+    }
+
+    bootComponent = () => {
+        this.setState(this.defaultState(), () => this.fetch())
+    }
+
+    fetch = () => {
+        const { resource, getEndpoint } = this.props
+        const { perPage, page, search } = this.state
+
+        const fields = this.getShowOnIndexColumns().map(
+            (field) => field.inputName
+        )
+
+        this.pushParamsToUrl()
+
+        const endpoint = getEndpoint || `resources/${resource.slug}`
+
+        Flamingo.request
+            .get(
+                `${endpoint}?per_page=${perPage}&page=${page}&search=${
+                    search || ''
+                }&fields=${fields}`
+            )
+            .then(({ data }) => {
+                this.setState({
+                    data: data.data,
+                    loading: false,
+                    page: data.page,
+                    total: data.total,
+                    perPage: data.perPage,
+                    pageCount: data.pageCount,
+                })
+            })
+            .catch((error) => {
+                this.setState({
+                    loading: false,
+                })
+
+                Flamingo.library.Notification.error(
+                    `There might be a problem with your query parameters.`
+                )
+            })
+    }
+
+    handleModalCancel = () => {
+        return this.setState({
+            deleting: null,
+        })
+    }
+
+    pushParamsToUrl = () => {
+        this.props.history.push(
+            `${this.props.location.pathname}?page=${this.state.page}&per_page=${this.state.perPage}&search=${this.state.search}`
+        )
+    }
+
+    handleSelectAllClicked = (event) => {
+        this.setState({
+            selected: event.target.checked
+                ? this.state.data.map(
+                      (row) => row[this.state.resource.primaryKey]
+                  )
+                : [],
+        })
+    }
+
+    onSearchChange = debounce(500, (search) => {
+        this.setState(
+            {
+                isLoading: true,
+                search,
+            },
+            () => this.fetch()
+        )
+    })
+
+    handleSelectChange = (event) => {
+        return this.setState(
+            {
+                perPage: event.target.value,
+                loading: true,
+            },
+            () => this.fetch()
+        )
+    }
+
+    deleteResource = () => {
+        this.setState({
+            deleteLoading: true,
+        })
+
+        const { resource, deleting } = this.state
+
+        const resourceId = deleting.key
+
+        Flamingo.request
+            .delete(`resources/${resource.slug}/${resourceId}`)
+            .then(() => {
+                this.setState(
+                    {
+                        deleteLoading: false,
+                        deleting: null,
+                        loading: true,
+                    },
+                    () => this.fetch()
+                )
+
+                Flamingo.library.Notification.success(
+                    `Resource has been deleted.`
+                )
+            })
+            .catch(() => {
+                this.setState({
+                    deleteLoading: false,
+                    deleting: null,
+                })
+
+                Flamingo.library.Notification.error(
+                    `Could not delete resource with ID ${resourceId}.`
+                )
+            })
+    }
+
     render() {
         const {
             selected,
@@ -33,56 +235,34 @@ class ResourceTable extends React.Component {
             pageCount,
             page,
             search,
-            showingFilters,
-            resource,
             total,
             deleting,
             deleteLoading,
-            operators,
             loading,
-        } = this.props
+        } = this.state
+        const { resource } = this.props
         const selectAllChecked =
             selected.length === data.length && data.length > 0
 
-        const tableColumns = this.props.getTableColumns()
+        const tableColumns = this.getTableColumns()
 
         const showingFrom = perPage * (page - 1)
         const showingOnPage = parseInt(showingFrom + perPage)
+
         return (
             <Fragment>
-                <Heading>{this.props.resource.label}</Heading>
+                <Heading>{resource.label}</Heading>
                 <div className="flex justify-between my-5">
                     <TextInput
                         width="large"
                         value={search}
                         onChange={(event) =>
-                            this.props.onSearchChange(event.target.value)
+                            this.onSearchChange(event.target.value)
                         }
-                        placeholder={`Type to search for ${this.props.resource.label.toLowerCase()}`}
+                        placeholder={`Type to search for ${resource.label.toLowerCase()}`}
                     />
 
                     <div>
-                        <Dropdown
-                            isOpen={showingFilters}
-                            onClose={this.props.toggleShowFilters}
-                            toggleElement={
-                                <Button
-                                    buttonType="muted"
-                                    icon="Filter"
-                                    onClick={this.props.toggleShowFilters}
-                                >
-                                    Filters
-                                </Button>
-                            }
-                        >
-                            <Filters
-                                filters={this.props.filters}
-                                operators={operators}
-                                addFilter={this.props.addFilter}
-                                removeFilter={this.props.removeFilter}
-                                fields={tableColumns}
-                            />
-                        </Dropdown>
                         <Link
                             className="ml-3"
                             to={Flamingo.getPath(
@@ -100,7 +280,7 @@ class ResourceTable extends React.Component {
                             <TableCell>
                                 <Checkbox
                                     checked={selectAllChecked}
-                                    onChange={this.props.handleSelectAllClicked}
+                                    onChange={this.handleSelectAllClicked}
                                 />
                             </TableCell>
                             {tableColumns.map((column) => (
@@ -116,7 +296,7 @@ class ResourceTable extends React.Component {
                             <SkeletonRow rowCount={10} />
                         ) : (
                             <>
-                                {this.props.getTableData().map((row) => (
+                                {this.getTableData().map((row) => (
                                     <TableRow
                                         className={cn('cursor-pointer', {
                                             'bg-blue-lightest': selected.includes(
@@ -131,7 +311,7 @@ class ResourceTable extends React.Component {
                                                     row.key
                                                 )}
                                                 onChange={(e) =>
-                                                    this.props.handleCheckboxChange(
+                                                    this.handleCheckboxChange(
                                                         e,
                                                         row
                                                     )
@@ -168,7 +348,7 @@ class ResourceTable extends React.Component {
                                             >
                                                 <IconButton
                                                     onClick={() =>
-                                                        this.props.handleDeleteRow(
+                                                        this.handleDeleteRow(
                                                             row
                                                         )
                                                     }
@@ -177,21 +357,19 @@ class ResourceTable extends React.Component {
                                                         icon: 'Edit',
                                                         color: 'negative',
                                                     }}
-                                                    label=""
+                                                    label={`Edit resource`}
                                                 />
                                             </Link>
                                             <IconButton
                                                 onClick={() =>
-                                                    this.props.handleDeleteRow(
-                                                        row
-                                                    )
+                                                    this.handleDeleteRow(row)
                                                 }
                                                 className="cursor-pointer"
                                                 iconProps={{
                                                     icon: 'Delete',
                                                     color: 'negative',
                                                 }}
-                                                label=""
+                                                label={`Delete resource`}
                                             />
                                         </TableCell>
                                     </TableRow>
@@ -208,7 +386,7 @@ class ResourceTable extends React.Component {
                                 id="per-page"
                                 defaultValue={perPage}
                                 onChange={(event) =>
-                                    this.props.handleSelectChange(event)
+                                    this.handleSelectChange(event)
                                 }
                             >
                                 {resource.perPageOptions.map(
@@ -235,7 +413,7 @@ class ResourceTable extends React.Component {
                         <Paginator
                             forcePage={page - 1}
                             pageCount={pageCount}
-                            onPageChange={this.props.handlePaginatorChange}
+                            onPageChange={this.handlePaginatorChange}
                             previousLinkClassName="flex items-center page-link outline-none"
                             previousClassName="page-item px-4 border-t border-b border-l h-full flex items-center transition duration-150 ease-in-out hover:bg-gray-lightest-200"
                             previousLabel={'Previous'}
@@ -257,12 +435,13 @@ class ResourceTable extends React.Component {
                     isShown={!!deleting}
                     title="Delete resource"
                     confirmLabel="Delete"
-                    onCancel={this.props.handleModalCancel}
+                    onCancel={this.handleModalCancel}
                     isConfirmLoading={deleteLoading}
-                    onConfirm={this.props.deleteResource}
+                    onConfirm={this.deleteResource}
                 >
                     <Paragraph>
-                        Are you sure you want to delete this resource ?
+                        Are you sure you want to delete this{' '}
+                        {resource.name.toLowerCase()}?
                     </Paragraph>
                 </ModalConfirm>
             </Fragment>
@@ -270,4 +449,4 @@ class ResourceTable extends React.Component {
     }
 }
 
-export default ResourceTable
+export default withRouter(ResourceTable)

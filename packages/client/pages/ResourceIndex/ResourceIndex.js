@@ -9,118 +9,16 @@ class ResourceIndex extends React.Component {
 
     defaultState() {
         const resource = this.findResource()
+
         return {
             resource,
-            showingSettings: false,
-            loading: true,
-            data: [],
-            filters: [],
-            showingFilters: false,
-            filters: [
-                {
-                    field: '',
-                    operator: '',
-                    value: '',
-                },
-            ],
-            operators: [
-                {
-                    label: 'Is equal to',
-                    value: 'eq',
-                },
-                {
-                    label: 'Is not equal to',
-                    value: 'ne',
-                },
-                {
-                    label: 'Is greater than',
-                    value: 'gt',
-                },
-                {
-                    label: 'Is less than',
-                    value: 'lt',
-                },
-                {
-                    label: 'Is greater than or equal to',
-                    value: 'gte',
-                },
-                {
-                    label: 'Is less than or equal to',
-                    value: 'lte',
-                },
-            ],
-            page: 1,
-            perPage: resource.perPageOptions[0] || 10,
-            total: 0,
-            pageCount: 1,
-            selected: [],
-            deleting: null,
-            deleteLoading: false,
-            search: '',
         }
-    }
-
-    componentDidMount() {
-        this.fetch()
-
-        this.pushParamsToUrl()
     }
 
     pushParamsToUrl = () => {
         this.props.history.push(
             `${this.props.location.pathname}?page=${this.state.page}&per_page=${this.state.perPage}&search=${this.state.search}`
         )
-    }
-
-    addFilter = () => {
-        this.setState({
-            filters: [
-                ...this.state.filters,
-                {
-                    field: '',
-                    value: '',
-                    operator: '',
-                },
-            ],
-        })
-    }
-
-    fetch = () => {
-        const { resource, perPage, page, search } = this.state
-
-        this.pushParamsToUrl()
-
-        const fields = this.getShowOnIndexColumns().map(
-            (field) => field.inputName
-        )
-
-        Flamingo.request
-            .get(
-                `resources/${
-                    resource.slug
-                }?per_page=${perPage}&page=${page}&search=${
-                    search || ''
-                }&fields=${fields}`
-            )
-            .then(({ data }) => {
-                this.setState({
-                    data: data.data,
-                    loading: false,
-                    page: data.page,
-                    total: data.total,
-                    perPage: data.perPage,
-                    pageCount: data.pageCount,
-                })
-            })
-            .catch((error) => {
-                this.setState({
-                    loading: false,
-                })
-
-                Flamingo.library.Notification.error(
-                    `There might be a problem with your query parameters.`
-                )
-            })
     }
 
     componentDidUpdate(prevProps) {
@@ -132,7 +30,7 @@ class ResourceIndex extends React.Component {
     }
 
     bootComponent = () => {
-        this.setState(this.defaultState(), () => this.componentDidMount())
+        this.setState(this.defaultState())
     }
 
     findResource() {
@@ -141,165 +39,8 @@ class ResourceIndex extends React.Component {
         )
     }
 
-    getShowOnIndexColumns = () =>
-        this.state.resource.fields.filter((field) => field.showOnIndex)
-
-    getTableColumns = () => this.getShowOnIndexColumns()
-
-    handleCheckboxChange = (event, row) => {
-        const primaryKey = row.key
-
-        this.setState({
-            selected: this.state.selected.includes(primaryKey)
-                ? this.state.selected.filter((key) => key !== primaryKey)
-                : [...this.state.selected, primaryKey],
-        })
-    }
-
-    handleDeleteRow = (row) => {
-        this.setState({
-            deleting: row,
-        })
-    }
-
-    handlePaginatorChange = ({ selected }) => {
-        return this.setState(
-            {
-                page: selected + 1,
-                loading: true,
-            },
-            () => this.fetch()
-        )
-    }
-
-    getTableData = () => {
-        return this.state.data.map((row) => ({
-            key: row.id,
-            cells: [
-                ...this.getTableColumns().map((column) => {
-                    const Component =
-                        Flamingo.indexFieldComponents[column.component]
-
-                    return {
-                        content: Component ? (
-                            <Component
-                                value={row[column.inputName]}
-                                field={column}
-                            />
-                        ) : (
-                            row[column.inputName]
-                        ),
-                    }
-                }),
-            ],
-        }))
-    }
-
-    showFilter = () => {
-        this.setState({
-            showFilter: !this.state.showFilter,
-        })
-    }
-
-    handleSelectAllClicked = (event) => {
-        this.setState({
-            selected: event.target.checked
-                ? this.state.data.map(
-                      (row) => row[this.state.resource.primaryKey]
-                  )
-                : [],
-        })
-    }
-
-    onSearchChange = debounce(500, (search) => {
-        this.setState(
-            {
-                isLoading: true,
-                search,
-            },
-            () => this.fetch()
-        )
-    })
-
-    handleSelectChange = (event) => {
-        return this.setState(
-            {
-                perPage: event.target.value,
-                loading: true,
-            },
-            () => this.fetch()
-        )
-    }
-
-    toggleShowFilters = () => {
-        this.setState({
-            showingFilters: !this.state.showingFilters,
-        })
-    }
-
-    deleteResource = () => {
-        this.setState({
-            deleteLoading: true,
-        })
-
-        const { resource, deleting } = this.state
-
-        const resourceId = deleting.key
-
-        Flamingo.request
-            .delete(`resources/${resource.slug}/${resourceId}`)
-            .then(() => {
-                this.setState(
-                    {
-                        deleteLoading: false,
-                        deleting: null,
-                        loading: true,
-                    },
-                    () => this.fetch()
-                )
-
-                Flamingo.library.Notification.success(
-                    `Resource has been deleted.`
-                )
-            })
-            .catch(() => {
-                this.setState({
-                    deleteLoading: false,
-                    deleting: null,
-                })
-
-                Flamingo.library.Notification.error(
-                    `Could not delete resource with ID ${resourceId}.`
-                )
-            })
-    }
-
-    handleModalCancel = () => {
-        return this.setState({
-            deleting: null,
-        })
-    }
-
     render() {
-        return (
-            <ResourceTable
-                {...this.state}
-                history={this.props.history}
-                deleteResource={this.deleteResource}
-                onSearchChange={this.onSearchChange}
-                handleSelectAllClicked={this.handleSelectAllClicked}
-                handleCheckboxChange={this.handleCheckboxChange}
-                handlePaginatorChange={this.handlePaginatorChange}
-                fetch={this.fetch}
-                addFilter={this.addFilter}
-                getTableData={this.getTableData}
-                getTableColumns={this.getTableColumns}
-                handleDeleteRow={this.handleDeleteRow}
-                handleModalCancel={this.handleModalCancel}
-                handleSelectChange={this.handleSelectChange}
-                toggleShowFilters={this.toggleShowFilters}
-            />
-        )
+        return <ResourceTable resource={this.state.resource} />
     }
 }
 

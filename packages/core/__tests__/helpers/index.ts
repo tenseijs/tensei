@@ -3,10 +3,7 @@ import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
 import Flamingo, { flamingo } from '../../Flamingo'
 
-import Tag from './resources/Tag'
-import Post from './resources/Post'
-import User from './resources/User'
-import Comment from './resources/Comment'
+import { Tag, Comment, User, Post } from './resources'
 
 type ConfigureSetup = (app: Flamingo) => Flamingo
 

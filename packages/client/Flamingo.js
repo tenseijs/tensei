@@ -10,8 +10,10 @@ import TextareaField from './fields/Textarea'
 import BelongsToField from './fields/BelongsTo'
 import DateIndexField from './index-fields/Date'
 import BelongsToManyField from './fields/BelongsToMany'
+import HasManyDetailField from './detail-fields/HasManyField'
 import TextareaDetailField from './detail-fields/TextareaField'
 import BelongsToDetailField from './detail-fields/BelongsToField'
+import BelongsToManyDetailField from './detail-fields/BelongsToManyField'
 
 import TextIndexField from './index-fields/Text'
 
@@ -81,13 +83,15 @@ class Flamingo {
         LinkField,
         IDField: TextIndexField,
         TextField: TextIndexField,
+        DateField: DateIndexField,
         SelectField: TextIndexField,
         NumberField: TextIndexField,
         IntegerField: TextIndexField,
-        DateField: DateIndexField,
         DateTimeField: DateIndexField,
+        HasManyField: HasManyDetailField,
         TextareaField: TextareaDetailField,
         BelongsToField: BelongsToDetailField,
+        BelongsToManyField: BelongsToManyDetailField,
     }
 
     booting = (boot) => {

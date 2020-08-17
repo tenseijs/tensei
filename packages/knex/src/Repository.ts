@@ -679,6 +679,92 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         )
     }
 
+    public findAllBelongingToMany = async (
+        resource: Resource,
+        relatedResource: Resource,
+        resourceId: string | number,
+        query: FetchAllRequestQuery
+    ) => {
+        const Model = this.getResourceBookshelfModel(resource)
+        const RelatedModel = this.getResourceBookshelfModel(relatedResource)
+
+        const getBuilder = (builder: any) => {
+            if (query.search) {
+                const searchableFields = relatedResource.data.fields.filter(
+                    (field) => field.isSearchable
+                )
+
+                builder.where((qb: any) => {
+                    searchableFields.forEach((field, index) => {
+                        qb[index === 0 ? 'where' : 'orWhere'](
+                            `${relatedResource.data.table}.${field.databaseField}`,
+                            'like',
+                            `%${query.search.toLowerCase()}%`
+                        )
+                    })
+                })
+            }
+
+            query.whereQueries?.forEach((whereQuery) => {
+                builder.where(whereQuery.field, whereQuery.value)
+            })
+
+            return builder
+        }
+
+        const resourceColumnName = `${snakeCase(resource.data.name)}_id`
+        const relatedResourceColumnName = `${snakeCase(
+            relatedResource.data.name
+        )}_id`
+
+        const tableName = [
+            Pluralize(snakeCase(relatedResource.data.name)),
+            Pluralize(snakeCase(resource.data.name)),
+        ]
+            .sort()
+            .join('_')
+
+        const count = (
+            await getBuilder(
+                this.$db!(relatedResource.data.table)
+                    .count()
+                    .innerJoin(
+                        tableName,
+                        `${tableName}.${relatedResourceColumnName}`,
+                        `${relatedResource.data.table}.id`
+                    )
+            ).andWhere(`${tableName}.${resourceColumnName}`, resourceId)
+        )[0]['count(*)']
+
+        const data = await Model.forge({
+            id: resourceId,
+        }).fetch({
+            withRelated: [
+                {
+                    [relatedResource.data.slug]: function (builder: any) {
+                        return getBuilder(builder)
+                            .select(
+                                query.fields.map(
+                                    (field) =>
+                                        `${relatedResource.data.table}.${field}`
+                                )
+                            )
+                            .limit(query.perPage)
+                            .offset((query.page - 1) * query.perPage)
+                    },
+                },
+            ],
+        })
+
+        return {
+            page: query.page,
+            perPage: query.perPage,
+            total: count as number,
+            pageCount: Math.ceil((count as number) / query.perPage),
+            data: data.relations[relatedResource.data.slug].models,
+        }
+    }
+
     public findAll = async (
         resource: Resource,
         query: FetchAllRequestQuery
@@ -693,12 +779,14 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     (field) => field.isSearchable
                 )
 
-                searchableFields.forEach((field, index) => {
-                    builder[index === 0 ? 'where' : 'orWhere'](
-                        field.databaseField,
-                        'like',
-                        `%${query.search.toLowerCase()}%`
-                    )
+                builder.where((qb: any) => {
+                    searchableFields.forEach((field, index) => {
+                        qb[index === 0 ? 'where' : 'orWhere'](
+                            field.databaseField,
+                            'like',
+                            `%${query.search.toLowerCase()}%`
+                        )
+                    })
                 })
             }
 
@@ -721,7 +809,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         const total = count[0]['count(*)']
 
         return {
-            total: count[0]['count(*)'],
+            total,
             data: results,
             page: query.page,
             perPage: query.perPage,

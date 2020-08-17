@@ -9,7 +9,7 @@ module.exports =
 resource('Tag')
 .fields([
     text('Name').rules('required').searchable(),
-    textarea('Description'),
+    textarea('Description').hideFromIndex(),
     belongsToMany('Post')
 ])
 .displayField('name')

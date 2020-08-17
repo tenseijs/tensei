@@ -51,6 +51,8 @@ test('cannot register dashboard after it has been registered', async () => {
     await instance.register()
 
     expect(spy).toHaveBeenCalledTimes(0)
+
+    await cleanup(instance.databaseClient)
 })
 
 test('tools can correctly register custom stylesheets and scripts', async () => {
@@ -95,7 +97,7 @@ test('tools can correctly register custom stylesheets and scripts', async () => 
     expect(js.text).toMatch('TEST_ASSET')
     expect(css.text).toMatch('TEST_ASSET')
 
-    cleanup(databaseClient)
+    await cleanup(databaseClient)
 })
 
 test('tools can correctly customise the express application', async () => {
@@ -122,5 +124,5 @@ test('tools can correctly customise the express application', async () => {
     expect(response.status).toBe(212)
     expect(response.body.message).toBe(TEST_GRAPHQL_MESSAGE)
 
-    cleanup(databaseClient)
+    await cleanup(databaseClient)
 })

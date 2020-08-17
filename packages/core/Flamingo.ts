@@ -229,6 +229,11 @@ class Flamingo {
             this.asyncHandler(FindResourceController.show)
         )
 
+        this.app.get(
+            this.getApiPath(`resources/:resource/:resourceId/:relatedResource`),
+            this.asyncHandler(FindResourceController.showRelation)
+        )
+
         this.app.put(
             this.getApiPath(`resources/:resource/:resourceId`),
             this.asyncHandler(UpdateResourceController.update)
