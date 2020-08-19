@@ -93,6 +93,8 @@ export class Action {
         handler: () => ({
             message: 'Action has been run.',
             variant: 'positive',
+            type: 'notification',
+            status: 200
         }),
     }
 
