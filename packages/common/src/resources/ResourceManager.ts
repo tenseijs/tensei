@@ -647,7 +647,7 @@ export class ResourceManager {
             }
         }
 
-        const models = await this.db.findAllByIds(resource, request.body.models)
+        const models = await this.db.findAllByIds(resource, request.body.models || [])
 
         const actionResource = createResourceFn(action.name).fields(
             action.data.fields
