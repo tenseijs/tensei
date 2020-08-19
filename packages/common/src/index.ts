@@ -18,6 +18,7 @@ export { belongsToMany, BelongsToMany } from './fields/BelongsToMany'
 
 export { Tool, tool, ToolSetupConfig } from './tools/Tool'
 export { ResourceManager } from './resources/ResourceManager'
+export { action, SerializedAction, Action } from './actions/Action'
 export { resource, Resource, SerializedResource } from './resources/Resource'
 export { DatabaseRepositoryInterface } from './databases/DatabaseRepositoryInterface'
 

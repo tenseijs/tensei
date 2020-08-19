@@ -8,6 +8,6 @@ module.exports = flamingo()
         require('./resources/Post'),
         require('./resources/User'),
         require('./resources/Comment'),
-        require('./resources/Tag')
+        require('./resources/Tag'),
     ])
     .tools([trixTool()])

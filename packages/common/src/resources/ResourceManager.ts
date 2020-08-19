@@ -1,8 +1,9 @@
 import { Request } from 'express'
-import { Resource } from './Resource'
+import { DataPayload } from '../config'
+import { Resource, resource as createResourceFn } from './Resource'
 import { validateAll } from 'indicative/validator'
-import { DataPayload, ValidationError } from '../config'
 import { DatabaseRepositoryInterface } from '../databases/DatabaseRepositoryInterface'
+import { ActionResponse } from '../actions/Action'
 
 export class ResourceManager {
     constructor(
@@ -626,5 +627,63 @@ export class ResourceManager {
                 }
             }
         }
+    }
+
+    runAction = async (
+        request: Request,
+        resourceSlug: string,
+        actionSlug: string
+    ): Promise<ActionResponse> => {
+        const resource = this.findResource(resourceSlug)
+
+        const action = resource.data.actions.find(
+            (action) => action.data.slug === actionSlug
+        )
+
+        if (!action) {
+            throw {
+                message: `Action ${actionSlug} is not defined on ${resourceSlug} resource.`,
+                status: 404,
+            }
+        }
+
+        const models = await this.db.findAllByIds(resource, request.body.models)
+
+        const actionResource = createResourceFn(action.name).fields(
+            action.data.fields
+        )
+
+        const { parsedPayload: payload } = await this.validate(
+            request.body.form || {},
+            actionResource
+        )
+
+        const response = await action.data.handler({
+            request,
+            models,
+            payload,
+            html: (html, status = 200) => ({
+                html,
+                type: 'html',
+                status,
+            }),
+            errors: (errors, status = 200) => ({
+                type: 'validation-errors',
+                errors,
+                status,
+            }),
+            notification: (notification, status = 200) => ({
+                ...notification,
+                type: 'notification',
+                status,
+            }),
+            push: (route, status = 200) => ({
+                type: 'push',
+                status,
+                route,
+            }),
+        })
+
+        return response
     }
 }

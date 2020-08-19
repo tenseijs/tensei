@@ -1,5 +1,6 @@
 import cn from 'classnames'
 import React, { Fragment } from 'react'
+import { Link } from 'react-router-dom'
 import {
     Heading,
     Button,
@@ -7,7 +8,7 @@ import {
     Paragraph,
 } from '@contentful/forma-36-react-components'
 import { withResources } from '~/store/resources'
-import { Link } from 'react-router-dom'
+import ActionsDropdown from '~/components/ActionsDropdown'
 
 class ShowResource extends React.Component {
     state = this.defaultState()
@@ -161,7 +162,13 @@ class ShowResource extends React.Component {
                     <Heading>{resource.name} details</Heading>
 
                     <div>
+                        <ActionsDropdown
+                            position="detail"
+                            resource={resource}
+                            selected={[resourceId]}
+                        />
                         <Link
+                            className="ml-2"
                             to={Flamingo.getPath(
                                 `resources/${resource.slug}/${resourceId}/edit`
                             )}

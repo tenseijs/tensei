@@ -6,6 +6,7 @@ import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
 import AuthController from './controllers/auth/AuthController'
+import RunActionController from './controllers/actions/RunActionController'
 import IndexResourceController from './controllers/resources/IndexResourceController'
 
 import {
@@ -247,6 +248,11 @@ class Flamingo {
         this.app.post(
             this.getApiPath(`resources/:resource`),
             this.asyncHandler(CreateResourceController.store)
+        )
+
+        this.app.post(
+            this.getApiPath(`resources/:resource/actions/:action`),
+            this.asyncHandler(RunActionController.run)
         )
 
         this.app.delete(

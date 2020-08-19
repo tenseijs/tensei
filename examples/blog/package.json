@@ -9,10 +9,12 @@
         "faker": "^4.1.0"
     },
     "devDependencies": {
-        "nodemon": "^2.0.4"
+        "nodemon": "^2.0.4",
+        "prettier": "^2.0.5"
     },
     "scripts": {
-        "watch": "nodemon --watch ../../node_modules index.js"
+        "watch": "nodemon --watch ../../node_modules index.js",
+        "prettier": "prettier --write './**/*.{js,json,css}'"
     },
     "private": true
 }

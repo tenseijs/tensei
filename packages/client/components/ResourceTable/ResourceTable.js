@@ -4,7 +4,6 @@ import Paginator from 'react-paginate'
 import { Link, withRouter } from 'react-router-dom'
 import { debounce } from 'throttle-debounce'
 
-import Filters from '~/components/Filters'
 import {
     ModalConfirm,
     Option,
@@ -21,8 +20,9 @@ import {
     SkeletonRow,
     Checkbox,
     Paragraph,
-    Dropdown,
 } from '@contentful/forma-36-react-components'
+
+import ActionsDropdown from '~/components/ActionsDropdown'
 
 class ResourceTable extends React.Component {
     state = this.defaultState()
@@ -163,9 +163,7 @@ class ResourceTable extends React.Component {
     handleSelectAllClicked = (event) => {
         this.setState({
             selected: event.target.checked
-                ? this.state.data.map(
-                      (row) => row[this.state.resource.primaryKey]
-                  )
+                ? this.state.data.map((row) => row.id)
                 : [],
         })
     }
@@ -249,6 +247,10 @@ class ResourceTable extends React.Component {
         const showingFrom = perPage * (page - 1)
         const showingOnPage = parseInt(showingFrom + perPage)
 
+        const showActionsOnTable =
+            resource.actions.filter((action) => action.showOnTableRow).length >
+            0
+
         return (
             <Fragment>
                 <Heading>{resource.label}</Heading>
@@ -263,6 +265,11 @@ class ResourceTable extends React.Component {
                     />
 
                     <div>
+                        <ActionsDropdown
+                            selected={selected}
+                            resource={resource}
+                            position="index"
+                        />
                         <Link
                             className="ml-3"
                             to={Flamingo.getPath(
@@ -289,6 +296,7 @@ class ResourceTable extends React.Component {
                                 </TableCell>
                             ))}
                             <TableCell />
+                            {showActionsOnTable ? <TableCell /> : null}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -338,6 +346,15 @@ class ResourceTable extends React.Component {
                                                 </Link>
                                             </TableCell>
                                         ))}
+                                        {showActionsOnTable ? (
+                                            <TableCell>
+                                                <ActionsDropdown
+                                                    resource={resource}
+                                                    position="table-row"
+                                                    selected={[row.key]}
+                                                />
+                                            </TableCell>
+                                        ) : null}
                                         <TableCell>
                                             <Link
                                                 to={Flamingo.getPath(

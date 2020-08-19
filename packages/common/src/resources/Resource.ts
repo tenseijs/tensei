@@ -4,6 +4,7 @@ import Field, { SerializedField } from '../fields/Field'
 
 import Pluralize from 'pluralize'
 import { snakeCase, paramCase } from 'change-case'
+import Action, { SerializedAction } from '../actions/Action'
 
 interface ValidationMessages {
     [key: string]: string
@@ -25,10 +26,12 @@ interface ResourceData {
 
 interface ResourceDataWithFields extends ResourceData {
     fields: Field[]
+    actions: Action[]
 }
 
 export interface SerializedResource extends ResourceData {
     fields: SerializedField[]
+    actions: SerializedAction[]
 }
 
 export class Resource<ResourceType = {}> {
@@ -68,6 +71,7 @@ export class Resource<ResourceType = {}> {
 
     public data: ResourceDataWithFields = {
         fields: [],
+        actions: [],
         table: '',
         name: '',
         slug: '',
@@ -108,6 +112,12 @@ export class Resource<ResourceType = {}> {
             id('ID'),
             ...fields,
         ])
+
+        return this
+    }
+
+    public actions(actions: Action[]) {
+        this.setValue('actions', actions)
 
         return this
     }
@@ -171,6 +181,7 @@ export class Resource<ResourceType = {}> {
         return {
             ...this.data,
             fields: this.data.fields.map((field) => field.serialize()),
+            actions: this.data.actions.map((action) => action.serialize()),
         }
     }
 

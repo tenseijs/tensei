@@ -54,17 +54,25 @@ class HasMany extends React.Component {
                     relatedResource.displayField,
                     relatedResource.valueField,
                     // TODO: Make the perPage here customizable.
-                ].join(',')}&per_page=20&where_${
-                    relatedBelongsToField.inputName
-                }=${resourceId}`
+                ].join(',')}&per_page=${
+                    relatedResource.perPageOptions[0]
+                }&where_${relatedBelongsToField.inputName}=${resourceId}`
             )
             .then(({ data }) => {
-                this.setState({
-                    selectedOptions: data.data.map((option) => ({
-                        label: option[relatedResource.displayField],
-                        value: option[relatedResource.valueField],
-                    })),
-                })
+                this.setState(
+                    {
+                        selectedOptions: data.data.map((option) => ({
+                            label: option[relatedResource.displayField],
+                            value: option[relatedResource.valueField],
+                        })),
+                    },
+                    () =>
+                        this.props.onFieldChange(
+                            this.state.selectedOptions.map(
+                                (option) => option.value
+                            )
+                        )
+                )
             })
     }
 
