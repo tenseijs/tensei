@@ -44,13 +44,20 @@ export default resource('Post')
             })
             .hideFromIndex()
             .confirmButtonText('Archive posts'),
-        action('Fix SEO')
-            .handle(({ push }) => push('/resources/posts/12', 202)),
-        action('Check status')
-            .handle(({ errors }) => errors([{
-                message: 'Custom validation message',
-                field: 'custom-field-name'
-            }], 422))
+        action('Fix SEO').handle(({ push }) =>
+            push('/resources/posts/12', 202)
+        ),
+        action('Check status').handle(({ errors }) =>
+            errors(
+                [
+                    {
+                        message: 'Custom validation message',
+                        field: 'custom-field-name',
+                    },
+                ],
+                422
+            )
+        ),
     ])
     .fields([
         text('Title')

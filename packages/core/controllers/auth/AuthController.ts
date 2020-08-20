@@ -55,7 +55,7 @@ class AuthController {
             return wrongCredentials()
         }
 
-        request.session!.user = user
+        request.session!.user = user.id
 
         response.status(200).json({
             message: 'Login successful.',
@@ -85,7 +85,7 @@ class AuthController {
             })
         }
 
-        const user = await request.resourceManager.create(
+        const userId = await request.resourceManager.createAdmin(
             request,
             request.administratorResource,
             {
@@ -95,7 +95,7 @@ class AuthController {
             }
         )
 
-        request.session!.user = user
+        request.session!.user = userId
 
         return response.json({
             message: 'Registration and login successful.',

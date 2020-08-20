@@ -16,7 +16,19 @@ export interface FetchAllRequestQuery {
     filters: Array<{
         field: string
         value: string
-        operator: 'equals' | 'contains' | 'not_equals' | 'null' | 'not_null' | 'gt' | 'gte' | 'lt' | 'lte' | 'matches' | 'in' | 'not_in'
+        operator:
+            | 'equals'
+            | 'contains'
+            | 'not_equals'
+            | 'null'
+            | 'not_null'
+            | 'gt'
+            | 'gte'
+            | 'lt'
+            | 'lte'
+            | 'matches'
+            | 'in'
+            | 'not_in'
     }>
     withRelationships: string[]
 }
@@ -29,15 +41,29 @@ export interface FetchAllResults<Model = {}> {
     page: number
 }
 
+export interface UserRole {
+    id: number
+    name: string
+    slug: string
+}
+
 export interface User {
+    id: number
+    name: string
     email: string
-    password: string
+    roles: UserRole[]
+    permissions: string[]
 }
 
 export type HookFunction = (
     payload: DataPayload,
     request: Request
 ) => DataPayload
+
+export type FieldHookFunction<FieldValueType = any> = (
+    value: FieldValueType,
+    request: Request
+) => FieldValueType
 
 export interface Asset {
     /* This will be the url this asset will be served from. For example, app-tool.js */
@@ -64,6 +90,9 @@ export interface FlamingoConfig {
     dashboardPath: string
     apiPath: string
     adminTable: string
+    resourcesMap: {
+        [key: string]: Resource
+    }
 }
 
 export interface DataPayload {

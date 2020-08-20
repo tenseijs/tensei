@@ -3,7 +3,7 @@ import { HookFunction } from '../config'
 import Field, { SerializedField } from '../fields/Field'
 
 import Pluralize from 'pluralize'
-import { snakeCase, paramCase } from 'change-case'
+import { snakeCase, paramCase, camelCase } from 'change-case'
 import Action, { SerializedAction } from '../actions/Action'
 
 interface ValidationMessages {
@@ -17,6 +17,7 @@ interface ResourceData {
     slug: string
     label: string
     valueField: string
+    camelCaseName: string
     displayField: string
     noTimeStamps: boolean
     perPageOptions: number[]
@@ -66,7 +67,12 @@ export class Resource<ResourceType = {}> {
         this.setValue('name', name)
         this.setValue('slug', Pluralize(paramCase(name)))
         this.setValue('label', Pluralize(name))
+        this.setValue('camelCaseName', camelCase(name))
         this.setValue('table', tableName || Pluralize(snakeCase(name)))
+    }
+
+    public Model = (): any => {
+        return null
     }
 
     public data: ResourceDataWithFields = {
@@ -80,6 +86,7 @@ export class Resource<ResourceType = {}> {
         displayField: 'id',
         valueField: 'id',
         noTimeStamps: false,
+        camelCaseName: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
             email: 'The {{ field }} must be a valid email address.',

@@ -50,12 +50,12 @@ class HasMany extends React.Component {
 
         Flamingo.request
             .get(
-                `resources/${relatedResource.slug}/${resourceId}/${relatedResource.slug}?fields=${[
+                `resources/${relatedResource.slug}/${resourceId}/${
+                    relatedResource.slug
+                }?fields=${[
                     relatedResource.displayField,
                     relatedResource.valueField,
-                ].join(',')}&per_page=${
-                    relatedResource.perPageOptions[0]
-                }`
+                ].join(',')}&per_page=${relatedResource.perPageOptions[0]}`
             )
             .then(({ data }) => {
                 this.setState(

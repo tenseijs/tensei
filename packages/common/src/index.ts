@@ -1,7 +1,6 @@
-import Resource from './resources/Resource'
-
 export { text, Text } from './fields/Text'
 export { link, Link } from './fields/Link'
+export { Json, json } from './fields/Json'
 export { date, DateField } from './fields/Date'
 export { hasOne, HasOne } from './fields/HasOne'
 export { select, Select } from './fields/Select'

@@ -1,11 +1,10 @@
 import Path from 'path'
 import BodyParser from 'body-parser'
-import { paramCase } from 'change-case'
 import ExpressSession from 'express-session'
-import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
 import AuthController from './controllers/auth/AuthController'
+import Express, { Request, Application, NextFunction } from 'express'
 import RunActionController from './controllers/actions/RunActionController'
 import IndexResourceController from './controllers/resources/IndexResourceController'
 
@@ -19,11 +18,13 @@ import {
     ResourceManager,
     SupportedDatabases,
     DatabaseRepositoryInterface,
+    belongsToMany,
 } from '@flamingo/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
+import { SetupFunctions } from '@flamingo/common/build/tools/Tool'
 
 class Flamingo {
     public app: Application = Express()
@@ -39,6 +40,7 @@ class Flamingo {
     private config: FlamingoConfig = {
         resources: [],
         tools: [],
+        resourcesMap: {},
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
@@ -67,51 +69,63 @@ class Flamingo {
         if (this.registeredApplication) {
             return this
         }
+        await this.callToolHook('setup')
 
+        await this.callToolHook('beforeDatabaseSetup')
         await this.registerDatabase()
-
-        await this.registerTools()
+        await this.callToolHook('afterDatabaseSetup')
 
         // Please do not change this order. Super important so bugs are not introduced.
+        await this.callToolHook('beforeMiddlewareSetup')
         this.registerMiddleware()
         this.registerAssetsRoutes()
+        await this.callToolHook('afterMiddlewareSetup')
+
+        await this.callToolHook('beforeCoreRoutesSetup')
         this.registerCoreRoutes()
+        await this.callToolHook('afterCoreRoutesSetup')
 
         this.registeredApplication = true
 
         return this
     }
 
-    public async registerTools() {
+    public getToolArguments() {
+        return {
+            app: this.app,
+            style: (name: Asset['name'], path: Asset['path']) => {
+                this.config.styles = [
+                    ...this.config.styles,
+                    {
+                        name,
+                        path,
+                    },
+                ]
+            },
+            script: (name: Asset['name'], path: Asset['path']) => {
+                this.config.scripts = [
+                    ...this.config.scripts,
+                    {
+                        name,
+                        path,
+                    },
+                ]
+            },
+            resources: this.config.resources,
+        }
+    }
+
+    public async callToolHook(hook: SetupFunctions) {
         for (let index = 0; index < this.config.tools.length; index++) {
             const tool = this.config.tools[index]
 
-            const extension = await tool.data.setup({
-                app: this.app,
-                style: (name: Asset['name'], path: Asset['path']) => {
-                    this.config.styles = [
-                        ...this.config.styles,
-                        {
-                            name,
-                            path,
-                        },
-                    ]
-                },
-                script: (name: Asset['name'], path: Asset['path']) => {
-                    this.config.scripts = [
-                        ...this.config.scripts,
-                        {
-                            name,
-                            path,
-                        },
-                    ]
-                },
-                resources: this.config.resources,
-            })
+            const extension = await tool.data[hook](this.getToolArguments())
 
-            this.extensions = {
-                ...this.extensions,
-                [paramCase(tool.name)]: extension,
+            if (hook === 'setup') {
+                this.extensions = {
+                    ...this.extensions,
+                    [tool.slug]: extension,
+                }
             }
         }
 
@@ -134,6 +148,8 @@ class Flamingo {
         )
 
         const client = await repository.setup(this.config)
+
+        this.resources(repository.setResourceModels(this.config.resources))
 
         this.databaseClient = client
         this.databaseRepository = repository
@@ -170,7 +186,7 @@ class Flamingo {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
-                request.resources = this.config.resources
+                request.resources = this.config.resourcesMap
                 request.administratorResource = this.administratorResource()
                 request.resourceManager = new ResourceManager(
                     this.config.resources,
@@ -193,10 +209,67 @@ class Flamingo {
                 saveUninitialized: false,
             })
         )
+
+        this.app.use(this.setAuthMiddleware)
     }
 
     private getApiPath = (path: string) => {
         return `/${this.config.apiPath}/${path}`
+    }
+
+    private authMiddleware = async (request: Express.Request, response: Express.Response, next: Express.NextFunction) => {
+        if (! request.admin) {
+            return response.status(401).json({
+                message: 'Unauthenticated.'
+            })
+        }
+
+        next()
+    }
+
+    private setAuthMiddleware = async (request: Express.Request, response: Express.Response, next: Express.NextFunction) => {
+        if (! request.session?.user) {
+            return next()
+        }
+
+        try {
+            const AdminModel = request.resources['administrators'].Model()
+    
+            const admin = (await (new AdminModel({
+                id: request.session?.user
+            })).fetch({
+                withRelated: ['administrator-roles.administrator-permissions']
+            })).toJSON()
+
+            if (! admin) {
+                throw {
+                    message: `Unauthenticated.`,
+                    status: 401
+                }
+            }
+
+            request.admin = {
+                name: admin.name,
+                email: admin.email,
+                id: admin.id as number,
+                roles: (admin['administrator-roles'] || []).map((role: any) => ({
+                    id: role.id,
+                    name: role.name,
+                    slug: role.slug
+                })),
+                permissions: admin['administrator-roles'].reduce((acc: [], role: any) => [
+                    ...acc,
+                    ...(role['administrator-permissions'] || []).map((permission: any) => permission.slug)
+                ], [])
+            }
+
+            next()
+        } catch (errors) {
+            throw {
+                message: `Unauthenticated.`,
+                status: 401
+            }
+        }
     }
 
     public registerCoreRoutes() {
@@ -208,6 +281,7 @@ class Flamingo {
 
         this.app.post(
             this.getApiPath('login'),
+            this.authMiddleware,
             this.asyncHandler(AuthController.login)
         )
         this.app.post(
@@ -222,41 +296,49 @@ class Flamingo {
 
         this.app.get(
             this.getApiPath(`resources/:resource`),
+            this.authMiddleware,
             this.asyncHandler(IndexResourceController.index)
         )
 
         this.app.get(
             this.getApiPath(`resources/:resource/:resourceId`),
+            this.authMiddleware,
             this.asyncHandler(FindResourceController.show)
         )
 
         this.app.get(
             this.getApiPath(`resources/:resource/:resourceId/:relatedResource`),
+            this.authMiddleware,
             this.asyncHandler(FindResourceController.showRelation)
         )
 
         this.app.put(
             this.getApiPath(`resources/:resource/:resourceId`),
+            this.authMiddleware,
             this.asyncHandler(UpdateResourceController.update)
         )
 
         this.app.patch(
             this.getApiPath(`resources/:resource/:resourceId`),
+            this.authMiddleware,
             this.asyncHandler(UpdateResourceController.update)
         )
 
         this.app.post(
             this.getApiPath(`resources/:resource`),
+            this.authMiddleware,
             this.asyncHandler(CreateResourceController.store)
         )
 
         this.app.post(
             this.getApiPath(`resources/:resource/actions/:action`),
+            this.authMiddleware,
             this.asyncHandler(RunActionController.run)
         )
 
         this.app.delete(
             this.getApiPath(`resources/:resource/:resourceId`),
+            this.authMiddleware,
             this.asyncHandler(DeleteResourceController.destroy)
         )
 
@@ -349,9 +431,60 @@ class Flamingo {
     }
 
     public resources(resources: Array<Resource>) {
-        this.setValue('resources', [this.administratorResource(), ...resources])
+        const updatedResources = [
+            ...this.config.resources,
+            this.administratorResource(),
+            this.roleResource(),
+            this.permissionResource(),
+            ...resources,
+        ]
+
+        const uniqueResources = Array.from(
+            new Set(updatedResources.map((resource) => resource.data.name))
+        )
+            .map((resourceName) =>
+                updatedResources.find(
+                    (resource) => resource.data.name === resourceName
+                )
+            )
+            .filter(Boolean) as Array<Resource>
+
+        this.setValue(
+            'resources',
+            uniqueResources
+        )
+
+        const resourcesMap: FlamingoConfig['resourcesMap'] = {}
+
+        uniqueResources.forEach(resource => {
+            resourcesMap[resource.data.slug] = resource
+        })
+
+        this.setValue('resourcesMap', resourcesMap)
 
         return this
+    }
+
+    private roleResource() {
+        return resource('Administrator Role')
+            .hideFromNavigation()
+            .fields([
+                text('Name').rules('required').unique(),
+                text('Slug').rules('required').unique(),
+
+                belongsToMany('Administrator'),
+                belongsToMany('Administrator Permission'),
+            ])
+    }
+
+    private permissionResource() {
+        return resource('Administrator Permission')
+            .hideFromNavigation()
+            .fields([
+                text('Name'),
+                text('Slug').rules('required').unique(),
+                belongsToMany('Administrator Role'),
+            ])
     }
 
     private administratorResource() {
@@ -362,7 +495,8 @@ class Flamingo {
             .fields([
                 text('Name'),
                 text('Email').unique().searchable(),
-                text('Password'),
+                text('Password').hidden(),
+                belongsToMany('Administrator Role'),
             ])
             .beforeCreate((payload) => ({
                 ...payload,

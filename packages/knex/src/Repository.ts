@@ -5,7 +5,7 @@ import Knex, {
 } from 'knex'
 import Pluralize from 'pluralize'
 import Bookshelf from 'bookshelf'
-import { snakeCase } from 'change-case'
+import { snakeCase, sentenceCase } from 'change-case'
 
 import {
     DatabaseRepositoryInterface,
@@ -66,8 +66,16 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         await this.bootBookshelfModels()
 
+        await this.setupRolesAndPermissions()
+
         return this.$db
     }
+
+    public setResourceModels = (resources: Resource[]) => resources.map((resource, index) => {
+        resource.Model = () => this.bookshelfModels[index]
+
+        return resource
+    })
 
     private getResourceBookshelfModel = (resource: Resource) => {
         return this.bookshelfModels.find(
@@ -75,11 +83,95 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         )
     }
 
+    private setupRolesAndPermissions = async () => {
+        const permissions: string[] = []
+
+        this.resources.forEach((resource) => {
+            ;['create', 'read', 'update', 'delete'].forEach((operation) => {
+                permissions.push(`${operation}:${resource.data.slug}`)
+                resource.data.fields.forEach((field) => {
+                    permissions.push(
+                        `${operation}:${resource.data.slug}:${field.databaseField}`
+                    )
+                })
+            })
+        })
+
+        const roleResource = this.resources.find(
+            (resource) => resource.data.name === 'Administrator Role'
+        )
+        const permissionResource = this.resources.find(
+            (resource) => resource.data.name === 'Administrator Permission'
+        )
+
+        if (!roleResource || !permissionResource) {
+            throw {
+                message: 'Role and Permission resources must be defined.',
+                status: 500,
+            }
+        }
+
+        const RoleModel = this.getResourceBookshelfModel(roleResource)
+        const PermissionModel = this.getResourceBookshelfModel(
+            permissionResource
+        )
+
+        // await PermissionModel.query().truncate()
+
+        // find all existing permissions
+        const existingPermissions = (
+            await PermissionModel.query().whereIn('slug', permissions)
+        ).map((permission: any) => permission.slug)
+
+        const newPermissionsToCreate = permissions.filter(
+            (permission) => !existingPermissions.includes(permission)
+        )
+
+        await PermissionModel.query().insert(
+            newPermissionsToCreate.map((permission) => ({
+                name: sentenceCase(permission.split(':').join(' ')),
+                slug: permission,
+            }))
+        )
+
+        let superAdminRole = (
+            await RoleModel.query().where('slug', 'super-admin').limit(1)
+        )[0]
+
+        if (!superAdminRole) {
+            await RoleModel.query().insert({
+                name: 'Super Admin',
+                slug: 'super-admin',
+            })
+
+            superAdminRole = (
+                await RoleModel.query().where('slug', 'super-admin').limit(1)
+            )[0]
+        }
+
+        const allPermissions = await PermissionModel.query()
+
+        await new RoleModel({
+            id: superAdminRole.id,
+        })
+            [permissionResource.data.slug]()
+            .detach()
+
+        await new RoleModel({
+            id: superAdminRole.id,
+        })
+            [permissionResource.data.slug]()
+            .attach(allPermissions.map((permission: any) => permission.id))
+    }
+
     private bootBookshelfModels = async () => {
         const bookshelfInstance = Bookshelf(this.$db!)
 
         const bookshelfModels = this.resources.map((resource) => {
+            const hiddenFields = resource.serialize().fields.filter(field => field.hidden).map(field => field.databaseField)
+
             const model: any = {
+                hidden: hiddenFields,
                 tableName: resource.data.table,
                 hasTimestamps: !resource.data.noTimeStamps,
             }
@@ -89,7 +181,6 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     (relatedResource) =>
                         field.name === relatedResource.data.name
                 )
-
                 if (!relatedResource) {
                     return
                 }
@@ -140,20 +231,26 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         for (let index = 0; index < belongsToManyFields.length; index++) {
             const field = belongsToManyFields[index]
-            // If field === belongsToMany
-            // First, get the related belongsToMany resource.
-            // Second, Get the default table name.
-            // This would be the alphabetically sorted singular names of each resource separated by _. For example, User, Role => role_user, Post, Tag => post_tag
-            // Third, check if the table already exists
-            // If it doesn't, create it.
-            // Else, update it.
-            // Fourth, create four new fields in this table:
-            // role_id, user_id, created_at, updated_at, and other custom fields in the pivot table
 
             if (field.component === 'BelongsToManyField') {
                 const relatedResource = resources.find(
                     (relatedResource) => field.name === relatedResource.name
                 )
+
+                const indexOfResource = resources.findIndex(
+                    (indexResource) => resource.name === indexResource.name
+                )
+
+                const indexOfRelatedResource = resources.findIndex(
+                    (relatedResource) => field.name === relatedResource.name
+                )
+
+                const migrationHasAlreadyBeenRunForRelatedField =
+                    indexOfResource < indexOfRelatedResource
+
+                if (migrationHasAlreadyBeenRunForRelatedField) {
+                    return
+                }
 
                 if (!relatedResource) {
                     console.warn(
@@ -236,6 +333,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
                         resource.fields.forEach((field) => {
                             if (field.component === 'HasManyField') {
+                                return
+                            }
+
+                            if (field.component === 'BelongsToManyField') {
                                 return
                             }
 
@@ -473,8 +574,8 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                         id: result.id,
                     })
 
-                    return builder[field.databaseField](
-                        relatedResource.data.slug
+                    return builder[relatedResource.data.slug](
+
                     ).attach(relationshipPayload[field.databaseField])
                 }
 
@@ -529,12 +630,12 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     })
 
                     return (async () => {
-                        await builder[field.databaseField](
-                            relatedResource.data.slug
+                        await builder[relatedResource.data.slug](
+
                         ).detach()
 
-                        await builder[field.databaseField](
-                            relatedResource.data.slug
+                        await builder[relatedResource.data.slug](
+
                         ).attach(relationshipPayload[field.databaseField])
                     })()
                 }
@@ -687,7 +788,6 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         query: FetchAllRequestQuery
     ) => {
         const Model = this.getResourceBookshelfModel(resource)
-        const RelatedModel = this.getResourceBookshelfModel(relatedResource)
 
         const getBuilder = (builder: any) => {
             if (query.search) {
@@ -764,8 +864,11 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         }
     }
 
-    public handleFilterQueries = (filters: FetchAllRequestQuery['filters'], builder: Knex): Knex => {
-        filters.forEach(filter => {
+    public handleFilterQueries = (
+        filters: FetchAllRequestQuery['filters'],
+        builder: Knex
+    ): Knex => {
+        filters.forEach((filter) => {
             if (filter.operator === 'null') {
                 builder.whereNull(filter.field)
 
@@ -778,43 +881,43 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 return
             }
 
-            if(filter.operator === 'gt') {
+            if (filter.operator === 'gt') {
                 builder.where(filter.field, '>', filter.value)
 
                 return
             }
 
-            if(filter.operator === 'gte') {
+            if (filter.operator === 'gte') {
                 builder.where(filter.field, '>=', filter.value)
 
                 return
             }
 
-            if(filter.operator === 'lt') {
+            if (filter.operator === 'lt') {
                 builder.where(filter.field, '<', filter.value)
 
                 return
             }
 
-            if(filter.operator === 'lte') {
+            if (filter.operator === 'lte') {
                 builder.where(filter.field, '<=', filter.value)
 
                 return
             }
 
-            if(filter.operator === 'contains') {
+            if (filter.operator === 'contains') {
                 builder.where(filter.field, 'like', `%${filter.value}%`)
 
                 return
             }
 
-            if(filter.operator === 'equals') {
+            if (filter.operator === 'equals') {
                 builder.where(filter.field, '=', filter.value)
 
                 return
             }
 
-            if(filter.operator === 'not_equals') {
+            if (filter.operator === 'not_equals') {
                 builder.whereNot(filter.field, '=', filter.value)
 
                 return

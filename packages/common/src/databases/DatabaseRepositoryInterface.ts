@@ -7,11 +7,12 @@ import {
     DataPayload,
 } from '../config'
 
-export abstract class DatabaseRepositoryInterface<Model = {}> {
+export abstract class DatabaseRepositoryInterface<Model = any> {
     static databases: string[]
     abstract setup: (config: FlamingoConfig) => Promise<any>
+    abstract setResourceModels: (resources: Resource[]) => Resource[]
     abstract establishDatabaseConnection: () => void
-    abstract findUserByEmail: (email: string) => Promise<User | null>
+    abstract findUserByEmail: (email: string) => Promise<Model | null>
     abstract getAdministratorsCount: () => Promise<number>
     abstract create: (
         resource: Resource,
@@ -64,11 +65,6 @@ export abstract class DatabaseRepositoryInterface<Model = {}> {
         ids: number[],
         valuesToUpdate: {}
     ) => Promise<number>
-    // abstract updateOneById: (
-    //     resource: Resource,
-    //     id: number|string,
-    //     valuesToUpdate: {}
-    // ) => Promise<number>
     abstract deleteById: (
         resource: Resource,
         id: number | string

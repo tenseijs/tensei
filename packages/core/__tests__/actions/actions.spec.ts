@@ -12,7 +12,9 @@ test('runs an action that returns html', async () => {
     const response = await client.post('/api/resources/posts/actions/archive')
 
     expect(response.status).toBe(201)
-    expect(response.body.html).toMatch(/SOME EXAMPLE HTML TO BE SET ON THE DOM/i)
+    expect(response.body.html).toMatch(
+        /SOME EXAMPLE HTML TO BE SET ON THE DOM/i
+    )
 
     await cleanup(databaseClient)
 })
@@ -22,7 +24,9 @@ test('validates an action with input fields', async () => {
 
     const client = Supertest(app)
 
-    const response = await client.post('/api/resources/posts/actions/publish-on')
+    const response = await client.post(
+        '/api/resources/posts/actions/publish-on'
+    )
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
@@ -48,7 +52,9 @@ test('runs an action with fields that returns an array of validation errors', as
 
     const client = Supertest(app)
 
-    const response = await client.post('/api/resources/posts/actions/check-status')
+    const response = await client.post(
+        '/api/resources/posts/actions/check-status'
+    )
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()

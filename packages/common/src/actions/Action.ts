@@ -94,7 +94,7 @@ export class Action {
             message: 'Action has been run.',
             variant: 'positive',
             type: 'notification',
-            status: 200
+            status: 200,
         }),
     }
 

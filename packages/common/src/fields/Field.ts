@@ -1,5 +1,5 @@
-import { snakeCase } from 'change-case'
-import Pluralize from 'pluralize'
+import { snakeCase, camelCase } from 'change-case'
+import { FieldHookFunction } from '../config'
 
 interface Constructor<M> {
     new (...args: any[]): M
@@ -22,7 +22,9 @@ export interface SerializedField {
     showOnCreation: boolean
     updateRules: string[]
     creationRules: string[]
+    hidden: boolean
     fieldName: string
+    camelCaseName: string
     databaseField: string
     sqlDatabaseFieldType: string | undefined
     attributes: { [key: string]: string }
@@ -67,6 +69,65 @@ export class Field {
         showOnCreation: true,
     }
 
+    public hooks: {
+        beforeCreate: FieldHookFunction
+        beforeUpdate: FieldHookFunction
+        afterCreate: FieldHookFunction
+        afterUpdate: FieldHookFunction
+    } = {
+        beforeCreate: (payload, request) => {
+            return payload
+        },
+
+        beforeUpdate: (payload, request) => {
+            return payload
+        },
+
+        afterCreate: (payload, request) => {
+            return payload
+        },
+
+        afterUpdate: (payload, request) => {
+            return payload
+        },
+    }
+
+    public beforeCreate(hook: FieldHookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            beforeCreate: hook,
+        }
+
+        return this
+    }
+
+    public beforeUpdate(hook: FieldHookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            beforeUpdate: hook,
+        }
+
+        return this
+    }
+
+    public afterCreate(hook: FieldHookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            afterCreate: hook,
+        }
+
+        return this
+    }
+
+    public afterUpdate(hook: FieldHookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            afterUpdate: hook,
+        }
+
+        return this
+    }
+
     /**
      *
      * The name of the field. Will be used to display table columns,
@@ -104,6 +165,13 @@ export class Field {
      *
      */
     public attributes: {} = {}
+
+    /**
+     * 
+     * This value set to true will hide this field completely
+     * from all query results.
+     */
+    public isHidden: boolean = false
 
     protected isRelationshipField: boolean = false
 
@@ -443,6 +511,16 @@ export class Field {
     }
 
     /**
+     * Set this field to be a hidden field. It won't show up
+     * in query results.
+     */
+    public hidden<T extends Field>(this: T): T {
+        this.isHidden = true
+
+        return this
+    }
+
+    /**
      *
      * Serializes the field for data to be sent
      * to the frontend
@@ -453,6 +531,7 @@ export class Field {
             ...this.showHideField,
 
             name: this.name,
+            hidden: this.isHidden,
             component: this.component,
             description: this.helpText,
             isNullable: this.isNullable,
@@ -463,6 +542,7 @@ export class Field {
             rules: this.validationRules,
             inputName: this.databaseField,
             defaultValue: this.defaultValue,
+            camelCaseName: camelCase(this.name),
             updateRules: this.updateValidationRules,
             creationRules: this.creationValidationRules,
             fieldName: this.constructor.name,

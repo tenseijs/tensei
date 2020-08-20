@@ -47,6 +47,39 @@ export class ResourceManager {
         await this.db.deleteById(resource, id)
     }
 
+    public async createAdmin(
+        request: Request,
+        resourceSlugOrResource: string | Resource,
+        payload: DataPayload
+    ) {
+        const resource = this.findResource(resourceSlugOrResource)
+
+        const roleResource = this.resources.find(resource => resource.data.slug === 'administrator-roles')
+
+        if (! roleResource) {
+            throw {
+                message: `The role resource must be registered.`,
+                status: 422
+            }
+        }
+
+        const superAdmin = await this.db.findOneByField(roleResource, 'slug', 'super-admin')
+
+        if (! superAdmin) {
+            throw {
+                message: `The super-admin role must be setup before creating an administrator user.`,
+                status: 422
+            }
+        }
+
+        const { id } = await this.create(request, resource, {
+            ...payload,
+            administrator_roles: [superAdmin.id]
+        })
+
+        return id
+    }
+
     public async create(
         request: Request,
         resourceSlugOrResource: string | Resource,
@@ -60,6 +93,19 @@ export class ResourceManager {
         )
 
         parsedPayload = resource.hooks.beforeCreate(parsedPayload, request)
+
+        resource.data.fields.forEach((field) => {
+            const serializedField = field.serialize()
+
+            const newValue = field.hooks.beforeCreate(
+                parsedPayload[serializedField.inputName],
+                request
+            )
+
+            if (newValue) {
+                parsedPayload[serializedField.inputName] = newValue
+            }
+        })
 
         const model = await this.db.create(
             resource,
@@ -89,6 +135,15 @@ export class ResourceManager {
         )
 
         parsedPayload = resource.hooks.beforeUpdate(parsedPayload, request)
+
+        resource.data.fields.forEach((field) => {
+            const serializedField = field.serialize()
+
+            parsedPayload[serializedField.inputName] = field.hooks.beforeUpdate(
+                parsedPayload[serializedField.inputName],
+                request
+            )
+        })
 
         return this.db.update(
             resource,
@@ -239,17 +294,28 @@ export class ResourceManager {
         if (typeof filter === 'object') {
             Object.keys(filter || {}).forEach((filterKey) => {
                 const [field, operator] = filterKey.split(':')
-    
+
                 filters.push({
                     field,
-                    operator: operator as any || 'equals',
-                    value: ((filter || {}) as any)[filterKey]
+                    operator: (operator as any) || 'equals',
+                    value: ((filter || {}) as any)[filterKey],
                 })
             })
         }
 
         const supportedOperators = [
-            'equals' , 'contains' , 'not_equals' , 'exists' , 'doesnt_exist' , 'null' , 'not_null' , 'gt' , 'gte' , 'lt' , 'lte' , 'matches'
+            'equals',
+            'contains',
+            'not_equals',
+            'exists',
+            'doesnt_exist',
+            'null',
+            'not_null',
+            'gt',
+            'gte',
+            'lt',
+            'lte',
+            'matches',
         ]
 
         const validFields = resource
@@ -281,11 +347,12 @@ export class ResourceManager {
                 noPagination: 'string,in:true,false',
                 'fields.*': 'in:' + validFields.join(','),
                 'withRelationships.*': 'in:' + relationshipFields.join(','),
-                'filters': 'array',
+                filters: 'array',
                 'filters.*.field':
                     'required|string|in:' + validFields.join(','),
                 'filters.*.value': 'required|string',
-                'filters.*.operator': 'required|string|in:' + supportedOperators.join(',')
+                'filters.*.operator':
+                    'required|string|in:' + supportedOperators.join(','),
             }
         )
 
@@ -355,7 +422,7 @@ export class ResourceManager {
                     ...rest,
                     perPage,
                     page,
-                    filters
+                    filters,
                 }
             )
         }
@@ -381,7 +448,7 @@ export class ResourceManager {
                     {
                         field: belongsToField.databaseField,
                         value: resourceId,
-                        operator: 'equals'
+                        operator: 'equals',
                     },
                 ],
             })
@@ -653,7 +720,10 @@ export class ResourceManager {
             }
         }
 
-        const models = await this.db.findAllByIds(resource, request.body.models || [])
+        const models = await this.db.findAllByIds(
+            resource,
+            request.body.models || []
+        )
 
         const actionResource = createResourceFn(action.name).fields(
             action.data.fields

@@ -1,4 +1,5 @@
 import {
+    User,
     Asset,
     Resource,
     FlamingoConfig,
@@ -12,10 +13,11 @@ declare global {
             scripts: Asset[]
             styles: Asset[]
             db: DatabaseRepositoryInterface
-            resources: Resource[]
             appConfig: FlamingoConfig
             administratorResource: Resource
             resourceManager: ResourceManager
+            resources: FlamingoConfig['resourcesMap']
+            admin: User
         }
     }
 }
