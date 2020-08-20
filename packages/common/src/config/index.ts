@@ -55,13 +55,15 @@ export interface User {
     permissions: string[]
 }
 
+export type AuthorizeFunction = (request: Request) => boolean | Promise<boolean>
+
 export type HookFunction = (
     payload: DataPayload,
     request: Request
 ) => DataPayload
 
 export type FieldHookFunction<FieldValueType = any> = (
-    value: FieldValueType,
+    payload: DataPayload,
     request: Request
 ) => FieldValueType
 

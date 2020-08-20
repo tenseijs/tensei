@@ -217,34 +217,46 @@ class Flamingo {
         return `/${this.config.apiPath}/${path}`
     }
 
-    private authMiddleware = async (request: Express.Request, response: Express.Response, next: Express.NextFunction) => {
-        if (! request.admin) {
+    private authMiddleware = async (
+        request: Express.Request,
+        response: Express.Response,
+        next: Express.NextFunction
+    ) => {
+        if (!request.admin) {
             return response.status(401).json({
-                message: 'Unauthenticated.'
+                message: 'Unauthenticated.',
             })
         }
 
         next()
     }
 
-    private setAuthMiddleware = async (request: Express.Request, response: Express.Response, next: Express.NextFunction) => {
-        if (! request.session?.user) {
+    private setAuthMiddleware = async (
+        request: Express.Request,
+        response: Express.Response,
+        next: Express.NextFunction
+    ) => {
+        if (!request.session?.user) {
             return next()
         }
 
         try {
             const AdminModel = request.resources['administrators'].Model()
-    
-            const admin = (await (new AdminModel({
-                id: request.session?.user
-            })).fetch({
-                withRelated: ['administrator-roles.administrator-permissions']
-            })).toJSON()
 
-            if (! admin) {
+            const admin = (
+                await new AdminModel({
+                    id: request.session?.user,
+                }).fetch({
+                    withRelated: [
+                        'administrator-roles.administrator-permissions',
+                    ],
+                })
+            ).toJSON()
+
+            if (!admin) {
                 throw {
                     message: `Unauthenticated.`,
-                    status: 401
+                    status: 401,
                 }
             }
 
@@ -252,22 +264,29 @@ class Flamingo {
                 name: admin.name,
                 email: admin.email,
                 id: admin.id as number,
-                roles: (admin['administrator-roles'] || []).map((role: any) => ({
-                    id: role.id,
-                    name: role.name,
-                    slug: role.slug
-                })),
-                permissions: admin['administrator-roles'].reduce((acc: [], role: any) => [
-                    ...acc,
-                    ...(role['administrator-permissions'] || []).map((permission: any) => permission.slug)
-                ], [])
+                roles: (admin['administrator-roles'] || []).map(
+                    (role: any) => ({
+                        id: role.id,
+                        name: role.name,
+                        slug: role.slug,
+                    })
+                ),
+                permissions: admin['administrator-roles'].reduce(
+                    (acc: [], role: any) => [
+                        ...acc,
+                        ...(role['administrator-permissions'] || []).map(
+                            (permission: any) => permission.slug
+                        ),
+                    ],
+                    []
+                ),
             }
 
             next()
         } catch (errors) {
             throw {
                 message: `Unauthenticated.`,
-                status: 401
+                status: 401,
             }
         }
     }
@@ -281,9 +300,9 @@ class Flamingo {
 
         this.app.post(
             this.getApiPath('login'),
-            this.authMiddleware,
             this.asyncHandler(AuthController.login)
         )
+
         this.app.post(
             this.getApiPath('register'),
             this.asyncHandler(AuthController.register)
@@ -449,14 +468,11 @@ class Flamingo {
             )
             .filter(Boolean) as Array<Resource>
 
-        this.setValue(
-            'resources',
-            uniqueResources
-        )
+        this.setValue('resources', uniqueResources)
 
         const resourcesMap: FlamingoConfig['resourcesMap'] = {}
 
-        uniqueResources.forEach(resource => {
+        uniqueResources.forEach((resource) => {
             resourcesMap[resource.data.slug] = resource
         })
 

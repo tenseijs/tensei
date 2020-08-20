@@ -1,4 +1,7 @@
 import React from 'react'
+import { Redirect } from 'react-router-dom'
+
+import { withAuth } from '~/store/auth'
 import { withResources } from '~/store/resources'
 
 import {
@@ -413,6 +416,14 @@ class CreateResource extends React.Component {
             editingState: editing,
         } = this.state
 
+        const authorizedToCreate = this.props.auth.authorizedToCreate(
+            resource.slug
+        )
+
+        if (!authorizedToCreate) {
+            return <Redirect to={Flamingo.getPath('')} />
+        }
+
         return (
             <React.Fragment>
                 <header className="flex flex-wrap items-center justify-between">
@@ -552,4 +563,4 @@ class CreateResource extends React.Component {
     }
 }
 
-export default withResources(CreateResource)
+export default withAuth(withResources(CreateResource))

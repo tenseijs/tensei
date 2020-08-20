@@ -71,11 +71,12 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         return this.$db
     }
 
-    public setResourceModels = (resources: Resource[]) => resources.map((resource, index) => {
-        resource.Model = () => this.bookshelfModels[index]
+    public setResourceModels = (resources: Resource[]) =>
+        resources.map((resource, index) => {
+            resource.Model = () => this.bookshelfModels[index]
 
-        return resource
-    })
+            return resource
+        })
 
     private getResourceBookshelfModel = (resource: Resource) => {
         return this.bookshelfModels.find(
@@ -115,8 +116,6 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         const PermissionModel = this.getResourceBookshelfModel(
             permissionResource
         )
-
-        // await PermissionModel.query().truncate()
 
         // find all existing permissions
         const existingPermissions = (
@@ -168,7 +167,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         const bookshelfInstance = Bookshelf(this.$db!)
 
         const bookshelfModels = this.resources.map((resource) => {
-            const hiddenFields = resource.serialize().fields.filter(field => field.hidden).map(field => field.databaseField)
+            const hiddenFields = resource
+                .serialize()
+                .fields.filter((field) => field.hidden)
+                .map((field) => field.databaseField)
 
             const model: any = {
                 hidden: hiddenFields,
@@ -574,9 +576,9 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                         id: result.id,
                     })
 
-                    return builder[relatedResource.data.slug](
-
-                    ).attach(relationshipPayload[field.databaseField])
+                    return builder[relatedResource.data.slug]().attach(
+                        relationshipPayload[field.databaseField]
+                    )
                 }
 
                 return Promise.resolve()
@@ -595,7 +597,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     ) => {
         const Model = this.getResourceBookshelfModel(resource)
 
-        const result = await Model.forge({
+        const result = await Model.where({
             id,
         }).save(payload, {
             patch,
@@ -630,13 +632,11 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     })
 
                     return (async () => {
-                        await builder[relatedResource.data.slug](
+                        await builder[relatedResource.data.slug]().detach()
 
-                        ).detach()
-
-                        await builder[relatedResource.data.slug](
-
-                        ).attach(relationshipPayload[field.databaseField])
+                        await builder[relatedResource.data.slug]().attach(
+                            relationshipPayload[field.databaseField]
+                        )
                     })()
                 }
 

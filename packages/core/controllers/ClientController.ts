@@ -22,11 +22,11 @@ class ClientController {
             Mustache.render(indexFileContent, {
                 styles: request.styles,
                 scripts: request.scripts,
-                user: request.admin
-                    ? JSON.stringify(request.admin)
-                    : null,
+                user: request.admin ? JSON.stringify(request.admin) : null,
                 resources: JSON.stringify(
-                    Object.keys(request.resources).map(key => request.resources[key].serialize())
+                    Object.keys(request.resources).map((key) =>
+                        request.resources[key].serialize()
+                    )
                 ),
                 appConfig: JSON.stringify({
                     dashboardPath: request.appConfig.dashboardPath,

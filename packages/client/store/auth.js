@@ -17,7 +17,8 @@ export const mustBeAuthenticated = (Component) => {
     const MustBeAuthComponent = (props) => (
         <Auth.Consumer>
             {(value) => {
-                const [user, , shouldShowRegistrationScreen] = value
+                const { user, shouldShowRegistrationScreen } = value
+
                 if (!user) {
                     return (
                         <Redirect
@@ -42,7 +43,9 @@ export const mustBeNotAuthenticated = (Component) => {
     const MustBeNotAuthComponent = (props) => (
         <Auth.Consumer>
             {(value) => {
-                if (value[0]) {
+                const { user } = value
+
+                if (user) {
                     return <Redirect to={Flamingo.getPath('')} />
                 }
 

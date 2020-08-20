@@ -22,6 +22,7 @@ import {
     Paragraph,
 } from '@contentful/forma-36-react-components'
 
+import { withAuth } from '~/store/auth'
 import ActionsDropdown from '~/components/ActionsDropdown'
 
 class ResourceTable extends React.Component {
@@ -251,6 +252,17 @@ class ResourceTable extends React.Component {
             resource.actions.filter((action) => action.showOnTableRow).length >
             0
 
+        const authorizedToCreate = this.props.auth.authorizedToCreate(
+            resource.slug
+        )
+
+        const authorizedToUpdate = this.props.auth.authorizedToUpdate(
+            resource.slug
+        )
+        const authorizedToDelete = this.props.auth.authorizedToDelete(
+            resource.slug
+        )
+
         return (
             <Fragment>
                 <Heading>{resource.label}</Heading>
@@ -266,18 +278,22 @@ class ResourceTable extends React.Component {
 
                     <div>
                         <ActionsDropdown
+                            position="index"
                             selected={selected}
                             resource={resource}
-                            position="index"
                         />
-                        <Link
-                            className="ml-3"
-                            to={Flamingo.getPath(
-                                `resources/${resource.slug}/new`
-                            )}
-                        >
-                            <Button>Add {resource.name.toLowerCase()}</Button>
-                        </Link>
+                        {authorizedToCreate ? (
+                            <Link
+                                className="ml-3"
+                                to={Flamingo.getPath(
+                                    `resources/${resource.slug}/new`
+                                )}
+                            >
+                                <Button>
+                                    Add {resource.name.toLowerCase()}
+                                </Button>
+                            </Link>
+                        ) : null}
                     </div>
                 </div>
 
@@ -295,7 +311,9 @@ class ResourceTable extends React.Component {
                                     {column.name}
                                 </TableCell>
                             ))}
-                            <TableCell />
+                            {authorizedToDelete || authorizedToUpdate ? (
+                                <TableCell />
+                            ) : null}
                             {showActionsOnTable ? <TableCell /> : null}
                         </TableRow>
                     </TableHead>
@@ -355,40 +373,52 @@ class ResourceTable extends React.Component {
                                                 />
                                             </TableCell>
                                         ) : null}
-                                        <TableCell>
-                                            <Link
-                                                to={Flamingo.getPath(
-                                                    `resources/${resource.slug}/${row.key}/edit`
-                                                )}
-                                                className="cursor-pointer"
-                                                style={{ marginRight: '10px' }}
-                                            >
-                                                <IconButton
-                                                    onClick={() =>
-                                                        this.handleDeleteRow(
-                                                            row
-                                                        )
-                                                    }
-                                                    className="cursor-pointer"
-                                                    iconProps={{
-                                                        icon: 'Edit',
-                                                        color: 'negative',
-                                                    }}
-                                                    label={`Edit resource`}
-                                                />
-                                            </Link>
-                                            <IconButton
-                                                onClick={() =>
-                                                    this.handleDeleteRow(row)
-                                                }
-                                                className="cursor-pointer"
-                                                iconProps={{
-                                                    icon: 'Delete',
-                                                    color: 'negative',
-                                                }}
-                                                label={`Delete resource`}
-                                            />
-                                        </TableCell>
+                                        {authorizedToUpdate ||
+                                        authorizedToDelete ? (
+                                            <TableCell>
+                                                {authorizedToUpdate ? (
+                                                    <Link
+                                                        to={Flamingo.getPath(
+                                                            `resources/${resource.slug}/${row.key}/edit`
+                                                        )}
+                                                        className="cursor-pointer"
+                                                        style={{
+                                                            marginRight: '10px',
+                                                        }}
+                                                    >
+                                                        <IconButton
+                                                            onClick={() =>
+                                                                this.handleDeleteRow(
+                                                                    row
+                                                                )
+                                                            }
+                                                            className="cursor-pointer"
+                                                            iconProps={{
+                                                                icon: 'Edit',
+                                                                color:
+                                                                    'negative',
+                                                            }}
+                                                            label={`Edit resource`}
+                                                        />
+                                                    </Link>
+                                                ) : null}
+                                                {authorizedToDelete ? (
+                                                    <IconButton
+                                                        onClick={() =>
+                                                            this.handleDeleteRow(
+                                                                row
+                                                            )
+                                                        }
+                                                        className="cursor-pointer"
+                                                        iconProps={{
+                                                            icon: 'Delete',
+                                                            color: 'negative',
+                                                        }}
+                                                        label={`Delete resource`}
+                                                    />
+                                                ) : null}
+                                            </TableCell>
+                                        ) : null}
                                     </TableRow>
                                 ))}
                             </>
@@ -466,4 +496,4 @@ class ResourceTable extends React.Component {
     }
 }
 
-export default withRouter(ResourceTable)
+export default withAuth(withRouter(ResourceTable))

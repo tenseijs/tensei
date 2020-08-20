@@ -12,6 +12,7 @@ class Wrapper extends React.Component {
         user: window.Flamingo.state.user,
         resources: window.Flamingo.state.resources,
         appConfig: window.Flamingo.state.appConfig,
+        permissions: window.Flamingo.state.permissions,
         shouldShowRegistrationScreen:
             window.Flamingo.state.shouldShowRegistrationScreen,
     }
@@ -29,19 +30,33 @@ class Wrapper extends React.Component {
     render() {
         const {
             user,
-            shouldShowRegistrationScreen,
-            resources,
             booted,
+            resources,
+            permissions,
+            shouldShowRegistrationScreen,
         } = this.state
 
         if (!booted) {
-            return false
+            return null
         }
 
         return (
             <BrowserRouter>
                 <Auth.Provider
-                    value={[user, this.setUser, shouldShowRegistrationScreen]}
+                    value={{
+                        user,
+                        permissions,
+                        setUser: this.setUser,
+                        shouldShowRegistrationScreen,
+                        authorizedToSee: (slug) =>
+                            user ? permissions[`read:${slug}`] : false,
+                        authorizedToCreate: (slug) =>
+                            user ? permissions[`create:${slug}`] : false,
+                        authorizedToUpdate: (slug) =>
+                            user ? permissions[`update:${slug}`] : false,
+                        authorizedToDelete: (slug) =>
+                            user ? permissions[`delete:${slug}`] : false,
+                    }}
                 >
                     <Resources.Provider
                         value={{

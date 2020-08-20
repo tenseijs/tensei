@@ -1,5 +1,5 @@
 import { id } from '../fields/ID'
-import { HookFunction } from '../config'
+import { HookFunction, AuthorizeFunction } from '../config'
 import Field, { SerializedField } from '../fields/Field'
 
 import Pluralize from 'pluralize'
@@ -39,6 +39,18 @@ export class Resource<ResourceType = {}> {
     private $model: ResourceType | null = null
 
     private $models: ResourceType[] = []
+
+    public authorizeCallbacks: {
+        authorizedToSee: AuthorizeFunction
+        authorizedToCreate: AuthorizeFunction
+        authorizedToUpdate: AuthorizeFunction
+        authorizedToDelete: AuthorizeFunction
+    } = {
+        authorizedToSee: (request) => true,
+        authorizedToCreate: (request) => true,
+        authorizedToUpdate: (request) => true,
+        authorizedToDelete: (request) => true,
+    }
 
     public hooks: {
         beforeCreate: HookFunction
@@ -93,6 +105,30 @@ export class Resource<ResourceType = {}> {
         },
         displayInNavigation: true,
         perPageOptions: [10, 25, 50],
+    }
+
+    public canSee(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToSee'] = authorizeFunction
+
+        return this
+    }
+
+    public canCreate(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToCreate'] = authorizeFunction
+
+        return this
+    }
+
+    public canUpdate(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToUpdate'] = authorizeFunction
+
+        return this
+    }
+
+    public canDelete(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToDelete'] = authorizeFunction
+
+        return this
     }
 
     public displayField(displayField: string) {

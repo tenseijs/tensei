@@ -54,27 +54,33 @@ export class ResourceManager {
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        const roleResource = this.resources.find(resource => resource.data.slug === 'administrator-roles')
+        const roleResource = this.resources.find(
+            (resource) => resource.data.slug === 'administrator-roles'
+        )
 
-        if (! roleResource) {
+        if (!roleResource) {
             throw {
                 message: `The role resource must be registered.`,
-                status: 422
+                status: 422,
             }
         }
 
-        const superAdmin = await this.db.findOneByField(roleResource, 'slug', 'super-admin')
+        const superAdmin = await this.db.findOneByField(
+            roleResource,
+            'slug',
+            'super-admin'
+        )
 
-        if (! superAdmin) {
+        if (!superAdmin) {
             throw {
                 message: `The super-admin role must be setup before creating an administrator user.`,
-                status: 422
+                status: 422,
             }
         }
 
         const { id } = await this.create(request, resource, {
             ...payload,
-            administrator_roles: [superAdmin.id]
+            administrator_roles: [superAdmin.id],
         })
 
         return id
@@ -94,18 +100,7 @@ export class ResourceManager {
 
         parsedPayload = resource.hooks.beforeCreate(parsedPayload, request)
 
-        resource.data.fields.forEach((field) => {
-            const serializedField = field.serialize()
-
-            const newValue = field.hooks.beforeCreate(
-                parsedPayload[serializedField.inputName],
-                request
-            )
-
-            if (newValue) {
-                parsedPayload[serializedField.inputName] = newValue
-            }
-        })
+        // TODO: Insert beforeCreate hook for fields here.
 
         const model = await this.db.create(
             resource,
@@ -136,14 +131,7 @@ export class ResourceManager {
 
         parsedPayload = resource.hooks.beforeUpdate(parsedPayload, request)
 
-        resource.data.fields.forEach((field) => {
-            const serializedField = field.serialize()
-
-            parsedPayload[serializedField.inputName] = field.hooks.beforeUpdate(
-                parsedPayload[serializedField.inputName],
-                request
-            )
-        })
+        // TODO: Add beforeUpdate hook for fields.
 
         return this.db.update(
             resource,

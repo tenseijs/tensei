@@ -22,6 +22,7 @@ class Flamingo {
         let user = null
         let resources = []
         let appConfig = {}
+        let permissions = {}
         let shouldShowRegistrationScreen = false
 
         try {
@@ -32,12 +33,17 @@ class Flamingo {
                 'true'
 
             user = JSON.parse(window.flamingoDefaultState.user || null)
+
+            user.permissions.forEach((permission) => {
+                permissions[permission] = true
+            })
         } catch (errors) {}
 
         return {
             user,
             resources,
             appConfig,
+            permissions,
             shouldShowRegistrationScreen,
         }
     })()

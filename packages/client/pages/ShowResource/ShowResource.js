@@ -7,6 +7,8 @@ import {
     Card,
     Paragraph,
 } from '@contentful/forma-36-react-components'
+
+import { withAuth } from '~/store/auth'
 import { withResources } from '~/store/resources'
 import ActionsDropdown from '~/components/ActionsDropdown'
 
@@ -156,6 +158,13 @@ class ShowResource extends React.Component {
 
         const fields = this.getNonRelationalFields()
 
+        const authorizedToUpdate = this.props.auth.authorizedToUpdate(
+            resource.slug
+        )
+        const authorizedToDelete = this.props.auth.authorizedToDelete(
+            resource.slug
+        )
+
         return (
             <Fragment>
                 <div className="flex justify-between mb-5">
@@ -167,17 +176,21 @@ class ShowResource extends React.Component {
                             resource={resource}
                             selected={[resourceId]}
                         />
-                        <Link
-                            className="ml-2"
-                            to={Flamingo.getPath(
-                                `resources/${resource.slug}/${resourceId}/edit`
-                            )}
-                        >
-                            <Button buttonType="primary">Edit</Button>
-                        </Link>
-                        <Button buttonType="negative" className="ml-2">
-                            Delete
-                        </Button>
+                        {authorizedToUpdate ? (
+                            <Link
+                                className="ml-2"
+                                to={Flamingo.getPath(
+                                    `resources/${resource.slug}/${resourceId}/edit`
+                                )}
+                            >
+                                <Button buttonType="primary">Edit</Button>
+                            </Link>
+                        ) : null}
+                        {authorizedToDelete ? (
+                            <Button buttonType="negative" className="ml-2">
+                                Delete
+                            </Button>
+                        ) : null}
                     </div>
                 </div>
 
@@ -214,4 +227,4 @@ class ShowResource extends React.Component {
     }
 }
 
-export default withResources(ShowResource)
+export default withAuth(withResources(ShowResource))

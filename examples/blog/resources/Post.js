@@ -17,11 +17,13 @@ module.exports = resource('Post')
     .actions([
         action('Publish on')
             .positive()
-            .handle(async ({ request, models, payload, notification }) => notification({
-                message: 'All articles have been published.',
-                variant: 'positive',
-                position: 'top',
-            }))
+            .handle(async ({ request, models, payload, notification }) =>
+                notification({
+                    message: 'All articles have been published.',
+                    variant: 'positive',
+                    position: 'top',
+                })
+            )
             .fields([
                 dateTime('Publish date').rules('required'),
                 textarea('Reason for publishing')
@@ -31,14 +33,16 @@ module.exports = resource('Post')
             ])
             .showOnTableRow(),
         action('Archive')
-            .handle(async ({ request, models, payoad, html }) => html(
-                `
+            .handle(async ({ request, models, payoad, html }) =>
+                html(
+                    `
                 <div className='w-full bg-gray-100'>
                     <p>SOME EXAMPLE HTML TO BE SET ON THE DOM</p>
                 </div>
             `,
-                201
-            ))
+                    201
+                )
+            )
             .hideFromIndex()
             .confirmButtonText('Archive posts'),
     ])

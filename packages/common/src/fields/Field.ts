@@ -1,5 +1,5 @@
 import { snakeCase, camelCase } from 'change-case'
-import { FieldHookFunction } from '../config'
+import { FieldHookFunction, AuthorizeFunction } from '../config'
 
 interface Constructor<M> {
     new (...args: any[]): M
@@ -67,6 +67,18 @@ export class Field {
          * form
          */
         showOnCreation: true,
+    }
+
+    public authorizeCallbacks: {
+        authorizedToSee: AuthorizeFunction
+        authorizedToCreate: AuthorizeFunction
+        authorizedToUpdate: AuthorizeFunction
+        authorizedToDelete: AuthorizeFunction
+    } = {
+        authorizedToSee: (request) => true,
+        authorizedToCreate: (request) => true,
+        authorizedToUpdate: (request) => true,
+        authorizedToDelete: (request) => true,
     }
 
     public hooks: {
@@ -167,7 +179,7 @@ export class Field {
     public attributes: {} = {}
 
     /**
-     * 
+     *
      * This value set to true will hide this field completely
      * from all query results.
      */
@@ -516,6 +528,30 @@ export class Field {
      */
     public hidden<T extends Field>(this: T): T {
         this.isHidden = true
+
+        return this
+    }
+
+    public canSee(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToSee'] = authorizeFunction
+
+        return this
+    }
+
+    public canCreate(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToCreate'] = authorizeFunction
+
+        return this
+    }
+
+    public canUpdate(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToUpdate'] = authorizeFunction
+
+        return this
+    }
+
+    public canDelete(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks['authorizedToDelete'] = authorizeFunction
 
         return this
     }
