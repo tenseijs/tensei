@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { DataPayload } from '../config'
+import { DataPayload, FetchAllRequestQuery } from '../config'
 import { Resource, resource as createResourceFn } from './Resource'
 import { validateAll } from 'indicative/validator'
 import { DatabaseRepositoryInterface } from '../databases/DatabaseRepositoryInterface'
@@ -228,25 +228,29 @@ export class ResourceManager {
             page,
             fields,
             search,
+            filter,
             with: withRelationships,
             no_pagination: noPagination = 'false',
-            ...rest
         }: Request['query'],
         resource: Resource
     ) {
-        let whereQueries: Array<{
-            field: string
-            value: string
-        }> = []
+        let filters: FetchAllRequestQuery['filters'] = []
 
-        Object.keys(rest).forEach((queryParam) => {
-            if (queryParam.match(/where_/i) && rest[queryParam]) {
-                whereQueries.push({
-                    field: queryParam.split('where_')[1],
-                    value: rest[queryParam] as string,
+        if (typeof filter === 'object') {
+            Object.keys(filter || {}).forEach((filterKey) => {
+                const [field, operator] = filterKey.split(':')
+    
+                filters.push({
+                    field,
+                    operator: operator as any || 'equals',
+                    value: ((filter || {}) as any)[filterKey]
                 })
-            }
-        })
+            })
+        }
+
+        const supportedOperators = [
+            'equals' , 'contains' , 'not_equals' , 'exists' , 'doesnt_exist' , 'null' , 'not_null' , 'gt' , 'gte' , 'lt' , 'lte' , 'matches'
+        ]
 
         const validFields = resource
             .serialize()
@@ -263,8 +267,8 @@ export class ResourceManager {
                 perPage,
                 page,
                 search,
+                filters,
                 noPagination,
-                whereQueries,
                 fields: (fields as string)?.split(','),
                 withRelationships: (withRelationships as string)?.split(','),
             },
@@ -273,14 +277,15 @@ export class ResourceManager {
                 page: 'number',
                 fields: 'array',
                 search: 'string',
-                whereQueries: 'array',
                 withRelationships: 'array',
                 noPagination: 'string,in:true,false',
                 'fields.*': 'in:' + validFields.join(','),
-                'whereQueries.*.value': 'required|string,',
-                'whereQueries.*.field':
-                    'required|string|in:' + validFields.join(','),
                 'withRelationships.*': 'in:' + relationshipFields.join(','),
+                'filters': 'array',
+                'filters.*.field':
+                    'required|string|in:' + validFields.join(','),
+                'filters.*.value': 'required|string',
+                'filters.*.operator': 'required|string|in:' + supportedOperators.join(',')
             }
         )
 
@@ -298,7 +303,7 @@ export class ResourceManager {
             page,
             fields,
             search,
-            whereQueries,
+            filters,
             noPagination,
             withRelationships,
         } = await this.validateRequestQuery(request.query, resource)
@@ -308,7 +313,7 @@ export class ResourceManager {
             page: page || 1,
             fields,
             search,
-            whereQueries,
+            filters,
             noPagination,
             withRelationships,
         })
@@ -330,7 +335,7 @@ export class ResourceManager {
         const {
             perPage = 10,
             page = 1,
-            whereQueries,
+            filters,
             ...rest
         } = await this.validateRequestQuery(request.query, relatedResource)
 
@@ -350,7 +355,7 @@ export class ResourceManager {
                     ...rest,
                     perPage,
                     page,
-                    whereQueries,
+                    filters
                 }
             )
         }
@@ -371,11 +376,12 @@ export class ResourceManager {
                 ...rest,
                 perPage,
                 page,
-                whereQueries: [
-                    ...whereQueries,
+                filters: [
+                    ...filters,
                     {
                         field: belongsToField.databaseField,
                         value: resourceId,
+                        operator: 'equals'
                     },
                 ],
             })

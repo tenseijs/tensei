@@ -13,10 +13,10 @@ export interface FetchAllRequestQuery {
     fields: string[]
     search: string
     noPagination: noPagination
-    whereQueries: Array<{
+    filters: Array<{
         field: string
-        value: string | string[] | number[]
-        whereType?: 'where' | 'whereIn'
+        value: string
+        operator: 'equals' | 'contains' | 'not_equals' | 'null' | 'not_null' | 'gt' | 'gte' | 'lt' | 'lte' | 'matches' | 'in' | 'not_in'
     }>
     withRelationships: string[]
 }

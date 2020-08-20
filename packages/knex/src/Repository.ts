@@ -15,6 +15,7 @@ import {
     FlamingoConfig,
     Resource,
     DataPayload,
+    resource,
 } from '@flamingo/common'
 import { FetchAllRequestQuery } from '@flamingo/common/src/config'
 
@@ -705,9 +706,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 })
             }
 
-            query.whereQueries?.forEach((whereQuery) => {
-                builder.where(whereQuery.field, whereQuery.value)
-            })
+            builder = this.handleFilterQueries(query.filters, builder)
 
             return builder
         }
@@ -765,6 +764,66 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         }
     }
 
+    public handleFilterQueries = (filters: FetchAllRequestQuery['filters'], builder: Knex): Knex => {
+        filters.forEach(filter => {
+            if (filter.operator === 'null') {
+                builder.whereNull(filter.field)
+
+                return
+            }
+
+            if (filter.operator === 'not_null') {
+                builder.whereNotNull(filter.field)
+
+                return
+            }
+
+            if(filter.operator === 'gt') {
+                builder.where(filter.field, '>', filter.value)
+
+                return
+            }
+
+            if(filter.operator === 'gte') {
+                builder.where(filter.field, '>=', filter.value)
+
+                return
+            }
+
+            if(filter.operator === 'lt') {
+                builder.where(filter.field, '<', filter.value)
+
+                return
+            }
+
+            if(filter.operator === 'lte') {
+                builder.where(filter.field, '<=', filter.value)
+
+                return
+            }
+
+            if(filter.operator === 'contains') {
+                builder.where(filter.field, 'like', `%${filter.value}%`)
+
+                return
+            }
+
+            if(filter.operator === 'equals') {
+                builder.where(filter.field, '=', filter.value)
+
+                return
+            }
+
+            if(filter.operator === 'not_equals') {
+                builder.whereNot(filter.field, '=', filter.value)
+
+                return
+            }
+        })
+
+        return builder
+    }
+
     public findAll = async (
         resource: Resource,
         query: FetchAllRequestQuery
@@ -772,7 +831,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         const Model = this.getResourceBookshelfModel(resource)
 
         const getBuilder = () => {
-            const builder = Model.query()
+            let builder = Model.query()
 
             if (query.search) {
                 const searchableFields = resource.data.fields.filter(
@@ -790,9 +849,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 })
             }
 
-            query.whereQueries?.forEach((whereQuery) => {
-                builder.where(whereQuery.field, whereQuery.value)
-            })
+            builder = this.handleFilterQueries(query.filters, builder)
 
             return builder
         }
