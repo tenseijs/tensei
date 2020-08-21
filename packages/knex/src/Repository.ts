@@ -96,6 +96,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     )
                 })
             })
+
+            resource.data.actions.forEach(action => {
+                permissions.push(`run:${resource.data.slug}:${action.data.slug}`)
+            })
         })
 
         const roleResource = this.resources.find(

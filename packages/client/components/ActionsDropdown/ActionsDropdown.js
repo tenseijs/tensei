@@ -8,26 +8,31 @@ import {
     TextLink,
     ModalConfirm,
 } from '@contentful/forma-36-react-components'
+import { withAuth } from '~/store/auth'
 
-const ActionsDropdown = ({ position = 'index', resource, selected = [] }) => {
+const ActionsDropdown = ({ position = 'index', resource, selected = [], auth }) => {
     const [form, setForm] = useState({})
     const [action, setAction] = useState(null)
     const [errors, setErrors] = useState({})
     const [htmlResponse, setHtmlResponse] = useState(null)
     const [runningAction, setRunningAction] = useState(false)
     const [showActionsDropdown, setShowActionsDropdown] = useState(false)
+
+    
     // position can be index, detail, table-row
     const actions = resource.actions.filter((action) => {
+        const authorizedToRunAction = auth.authorizedToRunAction(action.slug, resource.slug)
+
         if (position === 'index') {
-            return action.showOnIndex
+            return action.showOnIndex && authorizedToRunAction
         }
 
         if (position === 'detail') {
-            return action.showOnDetail
+            return action.showOnDetail && authorizedToRunAction
         }
 
         if (position === 'table-row') {
-            return action.showOnTableRow
+            return action.showOnTableRow && authorizedToRunAction
         }
 
         return false
@@ -35,6 +40,8 @@ const ActionsDropdown = ({ position = 'index', resource, selected = [] }) => {
 
     const toggleActionsDropdown = () =>
         setShowActionsDropdown(!showActionsDropdown)
+    
+    console.log(auth.permissions)
 
     if (actions.length === 0) {
         return null
@@ -232,4 +239,4 @@ const ActionsDropdown = ({ position = 'index', resource, selected = [] }) => {
     )
 }
 
-export default ActionsDropdown
+export default withAuth(ActionsDropdown)
