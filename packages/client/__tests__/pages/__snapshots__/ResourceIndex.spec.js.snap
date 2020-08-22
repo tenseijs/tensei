@@ -17,7 +17,6 @@ exports[`Test the resource index page resource index page should match snapshot 
       <input
         class="TextInput__TextInput__input___27vDB a11y__focus-border--default___60AXp"
         data-test-id="cf-ui-text-input"
-        data-testid="search-resource"
         placeholder="Type to search for posts"
         value=""
       />
@@ -33,7 +32,6 @@ exports[`Test the resource index page resource index page should match snapshot 
           aria-haspopup="menu"
           class="Button__Button___1ZfFj a11y__focus-border--default___60AXp Button__Button--muted___2Wair"
           data-test-id="cf-ui-button"
-          data-testid="filter-button"
           type="button"
         >
           <span
@@ -108,9 +106,9 @@ exports[`Test the resource index page resource index page should match snapshot 
           style="top: 0px;"
         >
           <input
-            aria-label=""
             class="ControlledInput__ControlledInput___2XK3j"
             data-test-id="ctf-ui-checkbox"
+            data-testid="selectall-checkbox"
             type="checkbox"
             value=""
           />
@@ -119,6 +117,7 @@ exports[`Test the resource index page resource index page should match snapshot 
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
           data-test-id="cf-ui-table-cell"
+          data-testid="table-head"
           style="top: 0px;"
         >
           Name
@@ -127,6 +126,7 @@ exports[`Test the resource index page resource index page should match snapshot 
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
           data-test-id="cf-ui-table-cell"
+          data-testid="table-head"
           style="top: 0px;"
         >
           description
@@ -135,6 +135,7 @@ exports[`Test the resource index page resource index page should match snapshot 
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
           data-test-id="cf-ui-table-cell"
+          data-testid="table-head"
           style="top: 0px;"
         >
           content
@@ -149,7 +150,6 @@ exports[`Test the resource index page resource index page should match snapshot 
     </thead>
     <tbody
       data-test-id="cf-ui-table-body"
-      data-testid="table-body"
     >
       <tr
         class="TableRow__TableRow___3kcNC"
@@ -4517,7 +4517,7 @@ exports[`Test the resource index page resource index page should match snapshot 
       class="pagination flex items-center border-gray-lightest-200 justify-center bg-white-100 rounded-sm h-10"
     >
       <li
-        class="page-item px-4 border-t border-b border-l h-full flex items-center disabled"
+        class="page-item px-4 border-t border-b border-l h-full flex items-center transition duration-150 ease-in-out hover:bg-gray-lightest-200 disabled"
       >
         <a
           aria-disabled="true"
@@ -4529,12 +4529,12 @@ exports[`Test the resource index page resource index page should match snapshot 
         </a>
       </li>
       <li
-        class="cursor-pointer page-item border-gray-lightest-200 border-l border-t border-b border-r-0 px-4 h-full w-10 flex justify-center bg-white transition duration-150 ease-in-out hover:bg-gray-lightest-200 active bg-blue-primary text-white border-none"
+        class="cursor-pointer page-item border-gray-lightest-200 border-l border-t border-b items-center border-r-0 h-full w-10 flex justify-center bg-white transition duration-150 ease-in-out hover:bg-gray-lightest-200 pagination-active bg-blue-primary text-white border-none hover:bg-red-100"
       >
         <a
           aria-current="page"
           aria-label="Page 1 is your current page"
-          class="flex items-center page-link outline-none"
+          class="page-link outline-none cursor-default flex items-center justify-center w-full h-full"
           role="button"
           tabindex="0"
         >
@@ -4542,7 +4542,7 @@ exports[`Test the resource index page resource index page should match snapshot 
         </a>
       </li>
       <li
-        class="page-item px-4 border h-full flex items-center disabled"
+        class="page-item px-4 border h-full flex items-center transition duration-150 ease-in-out hover:bg-gray-lightest-200 disabled"
       >
         <a
           aria-disabled="true"

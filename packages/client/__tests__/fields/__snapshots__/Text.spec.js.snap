@@ -1,3 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Test the Text field component 1`] = `[Function]`;
+
+exports[`Test the field components Test the Select field component 1`] = `[Function]`;
+
+exports[`Test the field components Test the Text field component 1`] = `[Function]`;
+
+exports[`Test the field components Test the TextArea field component 1`] = `[Function]`;
+
 exports[`matches snapshot 1`] = `[Function]`;

@@ -3,6 +3,8 @@ export const resources = [
         collection: 'posts',
         defaultPerPage: 1,
         displayInNavigation: true,
+        displayField: 'title',
+        valueField: 'id',
         fields: [
             {
                 asObjectId: true,

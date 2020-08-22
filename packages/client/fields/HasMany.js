@@ -104,6 +104,7 @@ class HasMany extends React.Component {
     })
 
     onAutocompleteChange = (selectedOption) => {
+        console.log('this is the auto complete')
         this.setState(
             {
                 selectedOptions: [

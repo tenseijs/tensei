@@ -334,6 +334,7 @@ class ResourceTable extends React.Component {
                                                 row.key
                                             ),
                                         })}
+                                        data-testid="table-row"
                                         key={row.key}
                                     >
                                         <TableCell>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { cleanup, render, fireEvent } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import setupPage from '~/testSetup/setupPage'
 import { resources } from '~/testSetup/data'
@@ -11,13 +11,15 @@ describe('Test the create resource page', () => {
     beforeEach(() => {
         window.Flamingo = FlamingoMock
     })
-    afterEach(cleanup)
+
     test('create resource page should match snapshot', () => {
         const match = { params: { resource: 'posts' } }
         const props = { match, resources }
         const { asFragment } = render(<CreateResource {...props} />)
+
         expect(asFragment()).toMatchSnapshot()
     })
+
     test('can create a resource i.e post', () => {
         const match = { params: { resource: 'posts' } }
         const props = { match, resources, history: { push: jest.fn() } }
@@ -26,9 +28,10 @@ describe('Test the create resource page', () => {
             ...FlamingoMock,
             request: { post: jest.fn(() => Promise.resolve(true)) },
         }
-        const { debug, getByTestId, getAllByText, getByLabelText } = render(
+        const { getByTestId, getAllByText, getByLabelText } = render(
             <CreateResource {...props} />
         )
+
         expect(getByTestId('resource-title')).toBeInTheDocument()
         expect(getAllByText(/Create post/i)).toHaveLength(2)
 
