@@ -62,7 +62,7 @@ describe('Test the resource index page', () => {
             },
         }
     })
-    test('resource index page should match snapshot', () => {
+    test.only('resource index page should match snapshot', () => {
         const { asFragment } = render(
             <Router history={history}>
                 <ResourceIndex {...props} />
@@ -238,7 +238,10 @@ describe('Test the resource index page', () => {
         await waitFor(() =>
             expect(screen.queryAllByTestId('table-row')).toHaveLength(2)
         )
-        fireEvent.change(screen.getByTestId('search-resource'), {
+        const searchInput = screen.getByPlaceholderText(
+            /Type to search for posts/i
+        )
+        fireEvent.change(searchInput, {
             target: { value: 'Amapai' },
         })
         window.Flamingo = {
@@ -273,6 +276,10 @@ describe('Test the resource index page', () => {
         await waitFor(() =>
             expect(screen.queryAllByTestId('table-row')).toHaveLength(1)
         )
+        expect(window.Flamingo.request.get).toHaveBeenCalled()
+        expect(window.Flamingo.request.get).toHaveBeenCalledWith(
+            'resources/posts?per_page=10&page=1&search=Amapai&fields=name,description,content'
+        )
     })
     test('table row should show correct amount of data', async () => {
         render(
@@ -290,8 +297,9 @@ describe('Test the resource index page', () => {
                 <ResourceIndex {...props} />
             </Router>
         )
+
         await waitFor(() =>
-            fireEvent.click(screen.getAllByTestId('delete-icon')[0])
+            fireEvent.click(screen.queryAllByTestId('delete-icon')[0])
         )
     })
     test('clicking on the filter button should open the filter dropdown', async () => {
@@ -301,12 +309,16 @@ describe('Test the resource index page', () => {
             </Router>
         )
         expect(screen.queryByTestId('filter-box')).toBeFalsy()
+
         fireEvent.click(screen.queryByTestId('filter-button'))
+
         expect(screen.queryByTestId('filter-box')).toBeTruthy()
+
         fireEvent.change(screen.getByTestId('select-filter-column'), {
             target: { value: 1 },
         })
         let options = screen.getAllByTestId('filter-column-option')
+
         expect(options[0].selected).toBeTruthy()
         expect(options[1].selected).toBeFalsy()
     })
@@ -316,7 +328,11 @@ describe('Test the resource index page', () => {
                 <ResourceIndex {...props} />
             </Router>
         )
-        expect(screen.getAllByTestId('table-head')).toHaveLength(3)
+        expect(screen.getByText(/name/i)).toBeInTheDocument()
+        expect(screen.getByText(/description/i)).toBeInTheDocument()
+        expect(screen.getByText(/content/i)).toBeInTheDocument()
+
+        expect(screen.queryByText(/visuals/i)).not.toBeInTheDocument()
     })
     test('The select checkbox should check a row', async () => {
         render(
@@ -331,7 +347,7 @@ describe('Test the resource index page', () => {
         fireEvent.click(checkBox1)
         expect(checkBox1).toBeChecked()
     })
-    test.only('The select all checkbox should check all the resources on the page', async () => {
+    test('The select all checkbox should check all the resources on the page', async () => {
         render(
             <Router history={history}>
                 <ResourceIndex {...props} />
@@ -351,4 +367,5 @@ describe('Test the resource index page', () => {
             expect(checkbox).toBeChecked()
         })
     })
+    // test('Clicking the Add X button redirects correctly to the creation page', () => {})
 })
