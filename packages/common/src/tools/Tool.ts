@@ -6,6 +6,10 @@ import { Resource } from '../resources/Resource'
 export interface ToolSetupConfig {
     resources: Resource[]
     app: Express.Application
+    resourcesMap: {
+        [key: string]: Resource
+    }
+    pushResource: (resource: Resource) => void
     style: (name: Asset['name'], path: Asset['path']) => void
     script: (name: Asset['name'], path: Asset['path']) => void
 }

@@ -1,6 +1,6 @@
 import { id } from '../fields/ID'
-import { HookFunction, AuthorizeFunction } from '../config'
 import Field, { SerializedField } from '../fields/Field'
+import { HookFunction, AuthorizeFunction, Permission } from '../config'
 
 import Pluralize from 'pluralize'
 import { snakeCase, paramCase, camelCase } from 'change-case'
@@ -21,6 +21,7 @@ interface ResourceData {
     displayField: string
     noTimeStamps: boolean
     perPageOptions: number[]
+    permissions: Permission[]
     displayInNavigation: boolean
     validationMessages: ValidationMessages
 }
@@ -94,6 +95,7 @@ export class Resource<ResourceType = {}> {
         name: '',
         slug: '',
         label: '',
+        permissions: [],
         group: 'default',
         displayField: 'id',
         valueField: 'id',
@@ -105,6 +107,12 @@ export class Resource<ResourceType = {}> {
         },
         displayInNavigation: true,
         perPageOptions: [10, 25, 50],
+    }
+
+    public permissions(permissions: Permission[]) {
+        this.setValue('permissions', permissions)
+
+        return this
     }
 
     public canSee(authorizeFunction: AuthorizeFunction) {

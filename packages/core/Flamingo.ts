@@ -3,6 +3,7 @@ import BodyParser from 'body-parser'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
+import { mail, SupportedDrivers, Mail } from '@flamingo/mail'
 import AuthController from './controllers/auth/AuthController'
 import Express, { Request, Application, NextFunction } from 'express'
 import RunActionController from './controllers/actions/RunActionController'
@@ -35,6 +36,7 @@ class Flamingo {
     private toolsBooted: boolean = false
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
+    private mailer: Mail = mail().connection('ethereal')
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
     private config: FlamingoConfig = {
@@ -112,6 +114,10 @@ class Flamingo {
                 ]
             },
             resources: this.config.resources,
+            pushResource: (resource: Resource) => {
+                this.config.resources.push(resource)
+            },
+            resourcesMap: this.config.resourcesMap,
         }
     }
 
@@ -192,6 +198,7 @@ class Flamingo {
                     this.config.resources,
                     this.databaseRepository!
                 )
+                request.Mailer = this.mailer
 
                 next()
             }
@@ -381,6 +388,12 @@ class Flamingo {
                     })
                 }
 
+                if (error.status) {
+                    return response.status(error.status).json({
+                        message: error.message || 'Internal server error.',
+                    })
+                }
+
                 console.error(error)
 
                 response.status(500).json({
@@ -526,6 +539,12 @@ class Flamingo {
 
     public tools(tools: Tool[]) {
         this.config.tools = tools
+
+        return this
+    }
+
+    public mail(driverName: SupportedDrivers, mailConfig = {}) {
+        this.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }

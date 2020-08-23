@@ -97,8 +97,10 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                 })
             })
 
-            resource.data.actions.forEach(action => {
-                permissions.push(`run:${resource.data.slug}:${action.data.slug}`)
+            resource.data.actions.forEach((action) => {
+                permissions.push(
+                    `run:${resource.data.slug}:${action.data.slug}`
+                )
             })
         })
 
@@ -585,6 +587,15 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     )
                 }
 
+                if (
+                    field.component === 'HasManyField' &&
+                    relationshipPayload[field.databaseField]
+                ) {
+                    console.log(
+                        'TODO: Handle HasManyField after resource is created.'
+                    )
+                }
+
                 return Promise.resolve()
             })
         )
@@ -601,11 +612,12 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     ) => {
         const Model = this.getResourceBookshelfModel(resource)
 
-        const result = await Model.where({
+        const result = await new Model({
             id,
         }).save(payload, {
             patch,
             autoRefresh: true,
+            method: 'update',
         })
 
         const relationshipFields = resource

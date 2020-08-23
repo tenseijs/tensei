@@ -57,7 +57,9 @@ class Wrapper extends React.Component {
                         authorizedToDelete: (slug) =>
                             user ? permissions[`delete:${slug}`] : false,
                         authorizedToRunAction: (slug, resource) =>
-                            user ? permissions[`run:${resource}:${slug}`] : false
+                            user
+                                ? permissions[`run:${resource}:${slug}`]
+                                : false,
                     }}
                 >
                     <Resources.Provider

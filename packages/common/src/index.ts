@@ -1,3 +1,26 @@
+import { User, Asset, FlamingoConfig } from './config'
+import { Resource } from './resources/Resource'
+import { ResourceManager } from './resources/ResourceManager'
+import { DatabaseRepositoryInterface } from './databases/DatabaseRepositoryInterface'
+
+import { Mail } from '@flamingo/mail'
+
+declare global {
+    namespace Express {
+        export interface Request {
+            admin: User
+            Mailer: Mail
+            styles: Asset[]
+            scripts: Asset[]
+            appConfig: FlamingoConfig
+            db: DatabaseRepositoryInterface
+            administratorResource: Resource
+            resourceManager: ResourceManager
+            resources: FlamingoConfig['resourcesMap']
+        }
+    }
+}
+
 export { text, Text } from './fields/Text'
 export { link, Link } from './fields/Link'
 export { Json, json } from './fields/Json'

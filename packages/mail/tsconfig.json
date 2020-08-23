@@ -9,8 +9,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "types": ["@types/jest"]
+        "types": ["@types/jest", "@types/node"]
     },
-    "exclude": ["__tests__", "build"],
-    "include": ["common.d.ts", "src"]
+    "exclude": ["__tests__", "build"]
 }

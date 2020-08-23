@@ -1,7 +1,6 @@
 import Express from 'express'
 import Bcrypt from 'bcryptjs'
 import { validateAll } from 'indicative/validator'
-import e from 'express'
 
 type AuthData = { email: string; password: string; name?: string }
 

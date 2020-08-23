@@ -1,4 +1,5 @@
 require('dotenv').config()
+const { auth } = require('@flamingo/auth')
 const { flamingo } = require('@flamingo/core')
 const { trixTool } = require('@flamingo/trix')
 
@@ -10,4 +11,4 @@ module.exports = flamingo()
         require('./resources/Comment'),
         require('./resources/Tag'),
     ])
-    .tools([trixTool()])
+    .tools([auth().name('Customer').tool(), trixTool()])

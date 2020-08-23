@@ -10,7 +10,12 @@ import {
 } from '@contentful/forma-36-react-components'
 import { withAuth } from '~/store/auth'
 
-const ActionsDropdown = ({ position = 'index', resource, selected = [], auth }) => {
+const ActionsDropdown = ({
+    position = 'index',
+    resource,
+    selected = [],
+    auth,
+}) => {
     const [form, setForm] = useState({})
     const [action, setAction] = useState(null)
     const [errors, setErrors] = useState({})
@@ -18,10 +23,12 @@ const ActionsDropdown = ({ position = 'index', resource, selected = [], auth }) 
     const [runningAction, setRunningAction] = useState(false)
     const [showActionsDropdown, setShowActionsDropdown] = useState(false)
 
-    
     // position can be index, detail, table-row
     const actions = resource.actions.filter((action) => {
-        const authorizedToRunAction = auth.authorizedToRunAction(action.slug, resource.slug)
+        const authorizedToRunAction = auth.authorizedToRunAction(
+            action.slug,
+            resource.slug
+        )
 
         if (position === 'index') {
             return action.showOnIndex && authorizedToRunAction
@@ -40,7 +47,7 @@ const ActionsDropdown = ({ position = 'index', resource, selected = [], auth }) 
 
     const toggleActionsDropdown = () =>
         setShowActionsDropdown(!showActionsDropdown)
-    
+
     console.log(auth.permissions)
 
     if (actions.length === 0) {

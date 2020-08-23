@@ -97,6 +97,13 @@ export interface FlamingoConfig {
     }
 }
 
+export type Permission =
+    | {
+          name: string
+          slug: string
+      }
+    | string
+
 export interface DataPayload {
     [key: string]: any
 }

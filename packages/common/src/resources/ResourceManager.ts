@@ -93,22 +93,29 @@ export class ResourceManager {
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        let { parsedPayload, relationshipFieldsPayload } = await this.validate(
-            payload,
+        let validatedPayload = await this.validate(payload, resource)
+
+        const {
+            nonRelationshipFieldsPayload,
+            relationshipFieldsPayload,
+        } = this.breakFieldsIntoRelationshipsAndNonRelationships(
+            await resource.hooks.beforeCreate(
+                {
+                    ...validatedPayload.parsedPayload,
+                    ...validatedPayload.relationshipFieldsPayload,
+                },
+                request
+            ),
             resource
         )
-
-        parsedPayload = resource.hooks.beforeCreate(parsedPayload, request)
 
         // TODO: Insert beforeCreate hook for fields here.
 
         const model = await this.db.create(
             resource,
-            parsedPayload,
+            nonRelationshipFieldsPayload,
             relationshipFieldsPayload
         )
-
-        await this.createRelationalFields(resource, payload, model)
 
         return model
     }
@@ -605,6 +612,10 @@ export class ResourceManager {
             const field = uniqueFields[index]
 
             let exists: null | {} = null
+
+            if (!payload[field.inputName]) {
+                return
+            }
 
             if (creationRules) {
                 exists = await this.db.findOneByField(
