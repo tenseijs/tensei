@@ -9,7 +9,5 @@ const stringifyValue = (value: string) =>
 
 export const json = (name: string, databaseField?: string) =>
     Json.make(name, databaseField)
-        .beforeCreate((value) => stringifyValue(value))
-        .beforeUpdate((value) => stringifyValue(value))
 
 export default Json
