@@ -16,6 +16,7 @@ interface ResourceData {
     group: string
     slug: string
     label: string
+    groupSlug: string
     valueField: string
     camelCaseName: string
     displayField: string
@@ -96,7 +97,8 @@ export class Resource<ResourceType = {}> {
         slug: '',
         label: '',
         permissions: [],
-        group: 'default',
+        group: 'Resources',
+        groupSlug: 'resources',
         displayField: 'id',
         valueField: 'id',
         noTimeStamps: false,
@@ -212,6 +214,7 @@ export class Resource<ResourceType = {}> {
 
     public group(groupName: string) {
         this.setValue('group', groupName)
+        this.setValue('groupSlug', paramCase(groupName))
 
         return this
     }

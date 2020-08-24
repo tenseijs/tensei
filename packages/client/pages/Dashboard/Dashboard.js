@@ -18,9 +18,14 @@ import { mustBeAuthenticated } from '~/store/auth'
 import ArrowIcon from '~/components/ArrowIcon'
 
 class DashboardPage extends React.Component {
-    state = {
-        accountMenuOpen: false,
-        groups: [
+    state = this.defaultState()
+
+    defaultState() {
+        const resources = this.props.resources.filter(
+            (resource) => resource.displayInNavigation
+        )
+
+        const groups = [
             {
                 name: 'Dashboard',
                 open: true,
@@ -33,19 +38,51 @@ class DashboardPage extends React.Component {
                     },
                 ],
             },
-            {
-                name: 'Resources',
-                open: true,
-                slug: 'resources',
-                items: this.props.resources
-                    .filter((resource) => resource.displayInNavigation)
-                    .map((resource) => ({
-                        slug: resource.slug,
-                        to: Flamingo.getPath(`resources/${resource.slug}`),
-                        label: resource.label,
-                    })),
-            },
-        ],
+        ]
+
+        resources.forEach((resource) => {
+            const navItem = {
+                slug: resource.slug,
+                to: Flamingo.getPath(`resources/${resource.slug}`),
+                label: resource.label,
+            }
+
+            const groupExists = groups.findIndex(
+                (group) => group.name === resource.group
+            )
+
+            if (groupExists === -1) {
+                groups.push({
+                    open: true,
+                    slug: resource.groupSlug,
+                    name: resource.group,
+                    items: [
+                        {
+                            slug: resource.slug,
+                            label: resource.label,
+                            to: Flamingo.getPath(`resources/${resource.slug}`),
+                        },
+                    ],
+                })
+            } else {
+                groups[groupExists] = {
+                    ...groups[groupExists],
+                    items: [
+                        ...groups[groupExists].items,
+                        {
+                            slug: resource.slug,
+                            label: resource.label,
+                            to: Flamingo.getPath(`resources/${resource.slug}`),
+                        },
+                    ],
+                }
+            }
+        })
+
+        return {
+            groups,
+            accountMenuOpen: false,
+        }
     }
 
     logout = () => {

@@ -304,6 +304,7 @@ class ResourceTable extends React.Component {
                                 <Checkbox
                                     checked={selectAllChecked}
                                     onChange={this.handleSelectAllClicked}
+                                    labelText={`Select all ${resource.label}`}
                                 />
                             </TableCell>
                             {tableColumns.map((column) => (
@@ -342,6 +343,7 @@ class ResourceTable extends React.Component {
                                                         row
                                                     )
                                                 }
+                                                labelText={`Select row`}
                                             />
                                         </TableCell>
                                         {row.cells.map((cell, index) => (

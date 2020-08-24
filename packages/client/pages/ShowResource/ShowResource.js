@@ -137,7 +137,7 @@ class ShowResource extends React.Component {
             }
 
             return (
-                <div className="mt-10">
+                <div key={field.inputName} className="mt-10">
                     <Component
                         field={field}
                         resourceId={this.props.match.params.resourceId}

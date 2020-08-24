@@ -77,11 +77,18 @@ class Auth {
 
     private userResource() {
         return resource(this.config.nameResource)
-            .hideFromNavigation()
             .fields([
-                text('Name'),
+                text('Name').searchable(),
                 text('Email').unique().searchable().notNullable(),
-                text('Password').hidden().notNullable(),
+                text('Password')
+                    .hidden()
+                    .notNullable()
+                    .htmlAttributes({
+                        type: 'password',
+                    })
+                    .hidden()
+                    .onlyOnForms()
+                    .hideWhenUpdating(),
                 belongsToMany(this.config.roleResource),
                 ...this.config.fields,
             ])
@@ -93,28 +100,31 @@ class Auth {
                 ...payload,
                 password: Bcrypt.hashSync(payload.password),
             }))
+            .group('Users & Permissions')
     }
 
     private permissionResource() {
         return resource(this.config.permissionResource)
-            .hideFromNavigation()
             .fields([
-                text('Name'),
-                text('Slug').rules('required').unique(),
+                text('Name').searchable(),
+                text('Slug').rules('required').unique().searchable(),
                 belongsToMany(this.config.roleResource),
             ])
+            .displayField('name')
+            .group('Users & Permissions')
     }
 
     private roleResource() {
         return resource(this.config.roleResource)
-            .hideFromNavigation()
             .fields([
-                text('Name').rules('required').unique(),
-                text('Slug').rules('required').unique(),
+                text('Name').rules('required').unique().searchable(),
+                text('Slug').rules('required').unique().searchable(),
 
                 belongsToMany(this.config.nameResource),
                 belongsToMany(this.config.permissionResource),
             ])
+            .displayField('name')
+            .group('Users & Permissions')
     }
 
     private passwordResetsResource() {

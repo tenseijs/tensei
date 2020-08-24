@@ -53,7 +53,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             connection,
             useNullAsDefault: true,
             client: config.env.database,
-            debug: false,
+            debug: true,
         }
 
         this.resources = config.resources

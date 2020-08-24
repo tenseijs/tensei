@@ -48,8 +48,6 @@ const ActionsDropdown = ({
     const toggleActionsDropdown = () =>
         setShowActionsDropdown(!showActionsDropdown)
 
-    console.log(auth.permissions)
-
     if (actions.length === 0) {
         return null
     }
