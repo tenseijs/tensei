@@ -178,6 +178,40 @@ exports[`Test the create resource page create resource page should match snapsho
             </div>
           </div>
         </div>
+        <div
+          class="mb-3"
+        >
+          <div
+            class="TextField__TextField___Sf6eo TextField__TextField--full___11DBK"
+            data-test-id="cf-ui-text-field"
+            description=""
+          >
+            <div
+              class="TextField__TextField__label-wrapper___2-MJT"
+            >
+              <label
+                class="FormLabel__FormLabel___3d6zQ"
+                data-test-id="cf-ui-form-label"
+                for="visuals"
+              >
+                Visuals
+              </label>
+            </div>
+            <div
+              class="TextInput__TextInput___36-K- TextInput__TextInput--full___1EJEW"
+            >
+              <input
+                aria-label="visuals"
+                class="TextInput__TextInput__input___27vDB a11y__focus-border--default___60AXp"
+                data-test-id="cf-ui-text-input"
+                id="visuals"
+                name="visuals"
+                type="text"
+                value=""
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

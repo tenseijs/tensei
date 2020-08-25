@@ -1,6 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { createMemoryHistory } from 'history'
 import Login from '~/pages/Login'
 import setupPage from '~/testSetup/setupPage'
 

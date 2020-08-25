@@ -137,11 +137,12 @@ class BelongsTo extends React.Component {
                             }`,
                         })}
                     >
-                        {(options) =>
-                            options.map((option) => (
+                        {(options) => {
+                            console.log(options, '>>>>>options')
+                            return options.map((option) => (
                                 <span key={option.value}>{option.label}</span>
                             ))
-                        }
+                        }}
                     </Autocomplete>
                 ) : null}
 
