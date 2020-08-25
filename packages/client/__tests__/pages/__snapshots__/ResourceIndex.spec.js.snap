@@ -22,46 +22,6 @@ exports[`Test the resource index page resource index page should match snapshot 
       />
     </div>
     <div>
-      <div
-        class="Dropdown__Dropdown___nAsJ-"
-        data-test-id="cf-ui-dropdown"
-        position="bottom-left"
-      >
-        <button
-          aria-expanded="false"
-          aria-haspopup="menu"
-          class="Button__Button___1ZfFj a11y__focus-border--default___60AXp Button__Button--muted___2Wair"
-          data-test-id="cf-ui-button"
-          type="button"
-        >
-          <span
-            class="TabFocusTrap__TabFocusTrap___39Vty Button__Button__inner-wrapper___3qrNC"
-            tabindex="-1"
-          >
-            <svg
-              class="Icon__Icon___38Epv Icon__Icon--small___1yGZK Icon__Icon--secondary___1ztcw Button__Button__icon___2YX5-"
-              data-test-id="cf-ui-icon"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"
-              />
-              <path
-                d="M0 0h24v24H0z"
-                fill="none"
-              />
-            </svg>
-            <span
-              class="Button__Button__label___3tcOj"
-            >
-              Filters
-            </span>
-          </span>
-        </button>
-      </div>
       <a
         class="ml-3"
         href="/resources/string"
@@ -174,16 +134,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-0)"
+              clip-path="url(#cf-ui-skeleton-clip-150)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-1);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-151);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-0"
+                id="cf-ui-skeleton-clip-150"
               >
                 <rect
                   height="16"
@@ -195,7 +155,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-1"
+                id="cf-ui-skeleton-clip-gradient-151"
               >
                 <stop
                   offset="0%"
@@ -205,7 +165,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-2"
+                    id="animation-152"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -217,7 +177,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-2.begin+0.25s"
+                    begin="animation-152.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -230,7 +190,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-2.begin+0.5s"
+                    begin="animation-152.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -259,16 +219,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-3)"
+              clip-path="url(#cf-ui-skeleton-clip-153)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-4);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-154);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-3"
+                id="cf-ui-skeleton-clip-153"
               >
                 <rect
                   height="16"
@@ -280,7 +240,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-4"
+                id="cf-ui-skeleton-clip-gradient-154"
               >
                 <stop
                   offset="0%"
@@ -290,7 +250,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-5"
+                    id="animation-155"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -302,7 +262,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-5.begin+0.25s"
+                    begin="animation-155.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -315,7 +275,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-5.begin+0.5s"
+                    begin="animation-155.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -344,16 +304,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-6)"
+              clip-path="url(#cf-ui-skeleton-clip-156)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-7);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-157);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-6"
+                id="cf-ui-skeleton-clip-156"
               >
                 <rect
                   height="16"
@@ -365,7 +325,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-7"
+                id="cf-ui-skeleton-clip-gradient-157"
               >
                 <stop
                   offset="0%"
@@ -375,7 +335,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-8"
+                    id="animation-158"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -387,7 +347,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-8.begin+0.25s"
+                    begin="animation-158.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -400,7 +360,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-8.begin+0.5s"
+                    begin="animation-158.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -429,16 +389,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-9)"
+              clip-path="url(#cf-ui-skeleton-clip-159)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-10);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-160);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-9"
+                id="cf-ui-skeleton-clip-159"
               >
                 <rect
                   height="16"
@@ -450,7 +410,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-10"
+                id="cf-ui-skeleton-clip-gradient-160"
               >
                 <stop
                   offset="0%"
@@ -460,7 +420,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-11"
+                    id="animation-161"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -472,7 +432,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-11.begin+0.25s"
+                    begin="animation-161.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -485,7 +445,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-11.begin+0.5s"
+                    begin="animation-161.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -514,16 +474,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-12)"
+              clip-path="url(#cf-ui-skeleton-clip-162)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-13);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-163);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-12"
+                id="cf-ui-skeleton-clip-162"
               >
                 <rect
                   height="16"
@@ -535,7 +495,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-13"
+                id="cf-ui-skeleton-clip-gradient-163"
               >
                 <stop
                   offset="0%"
@@ -545,7 +505,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-14"
+                    id="animation-164"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -557,7 +517,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-14.begin+0.25s"
+                    begin="animation-164.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -570,437 +530,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-14.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-      </tr>
-      <tr
-        class="TableRow__TableRow___3kcNC"
-        data-test-id="cf-ui-table-row"
-      >
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-15)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-16);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-15"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-16"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-17"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-17.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-17.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-18)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-19);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-18"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-19"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-20"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-20.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-20.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-21)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-22);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-21"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-22"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-23"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-23.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-23.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-24)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-25);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-24"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-25"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-26"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-26.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-26.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-27)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-28);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-27"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-28"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-29"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-29.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-29.begin+0.5s"
+                    begin="animation-164.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1034,16 +564,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-30)"
+              clip-path="url(#cf-ui-skeleton-clip-165)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-31);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-166);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-30"
+                id="cf-ui-skeleton-clip-165"
               >
                 <rect
                   height="16"
@@ -1055,7 +585,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-31"
+                id="cf-ui-skeleton-clip-gradient-166"
               >
                 <stop
                   offset="0%"
@@ -1065,7 +595,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-32"
+                    id="animation-167"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -1077,7 +607,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-32.begin+0.25s"
+                    begin="animation-167.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1090,7 +620,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-32.begin+0.5s"
+                    begin="animation-167.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1119,16 +649,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-33)"
+              clip-path="url(#cf-ui-skeleton-clip-168)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-34);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-169);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-33"
+                id="cf-ui-skeleton-clip-168"
               >
                 <rect
                   height="16"
@@ -1140,7 +670,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-34"
+                id="cf-ui-skeleton-clip-gradient-169"
               >
                 <stop
                   offset="0%"
@@ -1150,7 +680,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-35"
+                    id="animation-170"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -1162,7 +692,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-35.begin+0.25s"
+                    begin="animation-170.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1175,7 +705,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-35.begin+0.5s"
+                    begin="animation-170.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1204,16 +734,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-36)"
+              clip-path="url(#cf-ui-skeleton-clip-171)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-37);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-172);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-36"
+                id="cf-ui-skeleton-clip-171"
               >
                 <rect
                   height="16"
@@ -1225,7 +755,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-37"
+                id="cf-ui-skeleton-clip-gradient-172"
               >
                 <stop
                   offset="0%"
@@ -1235,7 +765,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-38"
+                    id="animation-173"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -1247,7 +777,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-38.begin+0.25s"
+                    begin="animation-173.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1260,7 +790,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-38.begin+0.5s"
+                    begin="animation-173.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1289,16 +819,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-39)"
+              clip-path="url(#cf-ui-skeleton-clip-174)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-40);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-175);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-39"
+                id="cf-ui-skeleton-clip-174"
               >
                 <rect
                   height="16"
@@ -1310,7 +840,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-40"
+                id="cf-ui-skeleton-clip-gradient-175"
               >
                 <stop
                   offset="0%"
@@ -1320,7 +850,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-41"
+                    id="animation-176"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -1332,7 +862,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-41.begin+0.25s"
+                    begin="animation-176.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1345,7 +875,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-41.begin+0.5s"
+                    begin="animation-176.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1374,16 +904,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-42)"
+              clip-path="url(#cf-ui-skeleton-clip-177)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-43);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-178);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-42"
+                id="cf-ui-skeleton-clip-177"
               >
                 <rect
                   height="16"
@@ -1395,7 +925,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-43"
+                id="cf-ui-skeleton-clip-gradient-178"
               >
                 <stop
                   offset="0%"
@@ -1405,7 +935,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-44"
+                    id="animation-179"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -1417,7 +947,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-44.begin+0.25s"
+                    begin="animation-179.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1430,437 +960,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-44.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-      </tr>
-      <tr
-        class="TableRow__TableRow___3kcNC"
-        data-test-id="cf-ui-table-row"
-      >
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-45)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-46);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-45"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-46"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-47"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-47.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-47.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-48)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-49);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-48"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-49"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-50"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-50.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-50.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-51)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-52);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-51"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-52"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-53"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-53.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-53.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-54)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-55);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-54"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-55"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-56"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-56.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-56.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-57)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-58);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-57"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-58"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-59"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-59.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-59.begin+0.5s"
+                    begin="animation-179.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1894,16 +994,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-60)"
+              clip-path="url(#cf-ui-skeleton-clip-180)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-61);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-181);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-60"
+                id="cf-ui-skeleton-clip-180"
               >
                 <rect
                   height="16"
@@ -1915,7 +1015,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-61"
+                id="cf-ui-skeleton-clip-gradient-181"
               >
                 <stop
                   offset="0%"
@@ -1925,7 +1025,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-62"
+                    id="animation-182"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -1937,7 +1037,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-62.begin+0.25s"
+                    begin="animation-182.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1950,7 +1050,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-62.begin+0.5s"
+                    begin="animation-182.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -1979,16 +1079,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-63)"
+              clip-path="url(#cf-ui-skeleton-clip-183)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-64);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-184);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-63"
+                id="cf-ui-skeleton-clip-183"
               >
                 <rect
                   height="16"
@@ -2000,7 +1100,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-64"
+                id="cf-ui-skeleton-clip-gradient-184"
               >
                 <stop
                   offset="0%"
@@ -2010,7 +1110,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-65"
+                    id="animation-185"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2022,7 +1122,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-65.begin+0.25s"
+                    begin="animation-185.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2035,7 +1135,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-65.begin+0.5s"
+                    begin="animation-185.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2064,16 +1164,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-66)"
+              clip-path="url(#cf-ui-skeleton-clip-186)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-67);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-187);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-66"
+                id="cf-ui-skeleton-clip-186"
               >
                 <rect
                   height="16"
@@ -2085,7 +1185,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-67"
+                id="cf-ui-skeleton-clip-gradient-187"
               >
                 <stop
                   offset="0%"
@@ -2095,7 +1195,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-68"
+                    id="animation-188"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2107,7 +1207,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-68.begin+0.25s"
+                    begin="animation-188.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2120,7 +1220,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-68.begin+0.5s"
+                    begin="animation-188.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2149,16 +1249,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-69)"
+              clip-path="url(#cf-ui-skeleton-clip-189)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-70);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-190);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-69"
+                id="cf-ui-skeleton-clip-189"
               >
                 <rect
                   height="16"
@@ -2170,7 +1270,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-70"
+                id="cf-ui-skeleton-clip-gradient-190"
               >
                 <stop
                   offset="0%"
@@ -2180,7 +1280,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-71"
+                    id="animation-191"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2192,7 +1292,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-71.begin+0.25s"
+                    begin="animation-191.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2205,7 +1305,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-71.begin+0.5s"
+                    begin="animation-191.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2234,16 +1334,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-72)"
+              clip-path="url(#cf-ui-skeleton-clip-192)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-73);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-193);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-72"
+                id="cf-ui-skeleton-clip-192"
               >
                 <rect
                   height="16"
@@ -2255,7 +1355,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-73"
+                id="cf-ui-skeleton-clip-gradient-193"
               >
                 <stop
                   offset="0%"
@@ -2265,7 +1365,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-74"
+                    id="animation-194"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2277,7 +1377,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-74.begin+0.25s"
+                    begin="animation-194.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2290,437 +1390,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-74.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-      </tr>
-      <tr
-        class="TableRow__TableRow___3kcNC"
-        data-test-id="cf-ui-table-row"
-      >
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-75)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-76);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-75"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-76"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-77"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-77.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-77.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-78)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-79);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-78"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-79"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-80"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-80.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-80.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-81)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-82);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-81"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-82"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-83"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-83.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-83.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-84)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-85);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-84"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-85"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-86"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-86.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-86.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-87)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-88);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-87"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-88"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-89"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-89.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-89.begin+0.5s"
+                    begin="animation-194.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2754,16 +1424,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-90)"
+              clip-path="url(#cf-ui-skeleton-clip-195)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-91);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-196);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-90"
+                id="cf-ui-skeleton-clip-195"
               >
                 <rect
                   height="16"
@@ -2775,7 +1445,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-91"
+                id="cf-ui-skeleton-clip-gradient-196"
               >
                 <stop
                   offset="0%"
@@ -2785,7 +1455,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-92"
+                    id="animation-197"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2797,7 +1467,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-92.begin+0.25s"
+                    begin="animation-197.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2810,7 +1480,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-92.begin+0.5s"
+                    begin="animation-197.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2839,16 +1509,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-93)"
+              clip-path="url(#cf-ui-skeleton-clip-198)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-94);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-199);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-93"
+                id="cf-ui-skeleton-clip-198"
               >
                 <rect
                   height="16"
@@ -2860,7 +1530,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-94"
+                id="cf-ui-skeleton-clip-gradient-199"
               >
                 <stop
                   offset="0%"
@@ -2870,7 +1540,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-95"
+                    id="animation-200"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2882,7 +1552,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-95.begin+0.25s"
+                    begin="animation-200.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2895,7 +1565,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-95.begin+0.5s"
+                    begin="animation-200.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2924,16 +1594,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-96)"
+              clip-path="url(#cf-ui-skeleton-clip-201)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-97);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-202);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-96"
+                id="cf-ui-skeleton-clip-201"
               >
                 <rect
                   height="16"
@@ -2945,7 +1615,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-97"
+                id="cf-ui-skeleton-clip-gradient-202"
               >
                 <stop
                   offset="0%"
@@ -2955,7 +1625,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-98"
+                    id="animation-203"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -2967,7 +1637,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-98.begin+0.25s"
+                    begin="animation-203.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -2980,7 +1650,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-98.begin+0.5s"
+                    begin="animation-203.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3009,16 +1679,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-99)"
+              clip-path="url(#cf-ui-skeleton-clip-204)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-100);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-205);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-99"
+                id="cf-ui-skeleton-clip-204"
               >
                 <rect
                   height="16"
@@ -3030,7 +1700,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-100"
+                id="cf-ui-skeleton-clip-gradient-205"
               >
                 <stop
                   offset="0%"
@@ -3040,7 +1710,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-101"
+                    id="animation-206"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3052,7 +1722,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-101.begin+0.25s"
+                    begin="animation-206.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3065,7 +1735,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-101.begin+0.5s"
+                    begin="animation-206.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3094,16 +1764,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-102)"
+              clip-path="url(#cf-ui-skeleton-clip-207)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-103);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-208);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-102"
+                id="cf-ui-skeleton-clip-207"
               >
                 <rect
                   height="16"
@@ -3115,7 +1785,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-103"
+                id="cf-ui-skeleton-clip-gradient-208"
               >
                 <stop
                   offset="0%"
@@ -3125,7 +1795,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-104"
+                    id="animation-209"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3137,7 +1807,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-104.begin+0.25s"
+                    begin="animation-209.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3150,437 +1820,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-104.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-      </tr>
-      <tr
-        class="TableRow__TableRow___3kcNC"
-        data-test-id="cf-ui-table-row"
-      >
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-105)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-106);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-105"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-106"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-107"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-107.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-107.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-108)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-109);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-108"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-109"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-110"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-110.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-110.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-111)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-112);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-111"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-112"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-113"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-113.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-113.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-114)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-115);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-114"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-115"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-116"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-116.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-116.begin+0.5s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-              </lineargradient>
-            </defs>
-          </svg>
-        </td>
-        <td
-          align="left"
-          class="TableCell__TableCell___Wou8a"
-          data-test-id="cf-ui-table-cell"
-          style="top: 0px;"
-        >
-          <svg
-            aria-label="Loading component..."
-            class="SkeletonContainer__SkeletonContainer___23jiu"
-            data-test-id="cf-ui-skeleton-form"
-            height="16"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            width="100%"
-          >
-            <title>
-              Loading component...
-            </title>
-            <rect
-              clip-path="url(#cf-ui-skeleton-clip-117)"
-              height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-118);"
-              width="100%"
-              x="0"
-              y="0"
-            />
-            <defs>
-              <clippath
-                id="cf-ui-skeleton-clip-117"
-              >
-                <rect
-                  height="16"
-                  rx="0"
-                  ry="0"
-                  width="100%"
-                  x="0"
-                  y="0"
-                />
-              </clippath>
-              <lineargradient
-                id="cf-ui-skeleton-clip-gradient-118"
-              >
-                <stop
-                  offset="0%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    dur="2s"
-                    id="animation-119"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="50%"
-                  stop-color="#f7f9fa"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-119.begin+0.25s"
-                    dur="2s"
-                    repeatCount="indefinite"
-                    values="#e5ebed; #f7f9fa; #e5ebed"
-                  />
-                </stop>
-                <stop
-                  offset="100%"
-                  stop-color="#e5ebed"
-                  stop-opacity="1"
-                >
-                  <animate
-                    attributeName="stop-color"
-                    begin="animation-119.begin+0.5s"
+                    begin="animation-209.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3614,16 +1854,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-120)"
+              clip-path="url(#cf-ui-skeleton-clip-210)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-121);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-211);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-120"
+                id="cf-ui-skeleton-clip-210"
               >
                 <rect
                   height="16"
@@ -3635,7 +1875,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-121"
+                id="cf-ui-skeleton-clip-gradient-211"
               >
                 <stop
                   offset="0%"
@@ -3645,7 +1885,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-122"
+                    id="animation-212"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3657,7 +1897,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-122.begin+0.25s"
+                    begin="animation-212.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3670,7 +1910,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-122.begin+0.5s"
+                    begin="animation-212.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3699,16 +1939,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-123)"
+              clip-path="url(#cf-ui-skeleton-clip-213)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-124);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-214);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-123"
+                id="cf-ui-skeleton-clip-213"
               >
                 <rect
                   height="16"
@@ -3720,7 +1960,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-124"
+                id="cf-ui-skeleton-clip-gradient-214"
               >
                 <stop
                   offset="0%"
@@ -3730,7 +1970,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-125"
+                    id="animation-215"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3742,7 +1982,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-125.begin+0.25s"
+                    begin="animation-215.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3755,7 +1995,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-125.begin+0.5s"
+                    begin="animation-215.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3784,16 +2024,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-126)"
+              clip-path="url(#cf-ui-skeleton-clip-216)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-127);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-217);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-126"
+                id="cf-ui-skeleton-clip-216"
               >
                 <rect
                   height="16"
@@ -3805,7 +2045,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-127"
+                id="cf-ui-skeleton-clip-gradient-217"
               >
                 <stop
                   offset="0%"
@@ -3815,7 +2055,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-128"
+                    id="animation-218"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3827,7 +2067,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-128.begin+0.25s"
+                    begin="animation-218.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3840,7 +2080,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-128.begin+0.5s"
+                    begin="animation-218.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3869,16 +2109,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-129)"
+              clip-path="url(#cf-ui-skeleton-clip-219)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-130);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-220);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-129"
+                id="cf-ui-skeleton-clip-219"
               >
                 <rect
                   height="16"
@@ -3890,7 +2130,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-130"
+                id="cf-ui-skeleton-clip-gradient-220"
               >
                 <stop
                   offset="0%"
@@ -3900,7 +2140,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-131"
+                    id="animation-221"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3912,7 +2152,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-131.begin+0.25s"
+                    begin="animation-221.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3925,7 +2165,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-131.begin+0.5s"
+                    begin="animation-221.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -3954,16 +2194,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-132)"
+              clip-path="url(#cf-ui-skeleton-clip-222)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-133);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-223);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-132"
+                id="cf-ui-skeleton-clip-222"
               >
                 <rect
                   height="16"
@@ -3975,7 +2215,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-133"
+                id="cf-ui-skeleton-clip-gradient-223"
               >
                 <stop
                   offset="0%"
@@ -3985,7 +2225,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-134"
+                    id="animation-224"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -3997,7 +2237,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-134.begin+0.25s"
+                    begin="animation-224.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4010,7 +2250,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-134.begin+0.5s"
+                    begin="animation-224.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4044,16 +2284,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-135)"
+              clip-path="url(#cf-ui-skeleton-clip-225)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-136);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-226);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-135"
+                id="cf-ui-skeleton-clip-225"
               >
                 <rect
                   height="16"
@@ -4065,7 +2305,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-136"
+                id="cf-ui-skeleton-clip-gradient-226"
               >
                 <stop
                   offset="0%"
@@ -4075,7 +2315,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-137"
+                    id="animation-227"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -4087,7 +2327,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-137.begin+0.25s"
+                    begin="animation-227.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4100,7 +2340,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-137.begin+0.5s"
+                    begin="animation-227.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4129,16 +2369,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-138)"
+              clip-path="url(#cf-ui-skeleton-clip-228)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-139);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-229);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-138"
+                id="cf-ui-skeleton-clip-228"
               >
                 <rect
                   height="16"
@@ -4150,7 +2390,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-139"
+                id="cf-ui-skeleton-clip-gradient-229"
               >
                 <stop
                   offset="0%"
@@ -4160,7 +2400,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-140"
+                    id="animation-230"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -4172,7 +2412,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-140.begin+0.25s"
+                    begin="animation-230.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4185,7 +2425,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-140.begin+0.5s"
+                    begin="animation-230.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4214,16 +2454,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-141)"
+              clip-path="url(#cf-ui-skeleton-clip-231)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-142);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-232);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-141"
+                id="cf-ui-skeleton-clip-231"
               >
                 <rect
                   height="16"
@@ -4235,7 +2475,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-142"
+                id="cf-ui-skeleton-clip-gradient-232"
               >
                 <stop
                   offset="0%"
@@ -4245,7 +2485,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-143"
+                    id="animation-233"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -4257,7 +2497,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-143.begin+0.25s"
+                    begin="animation-233.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4270,7 +2510,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-143.begin+0.5s"
+                    begin="animation-233.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4299,16 +2539,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-144)"
+              clip-path="url(#cf-ui-skeleton-clip-234)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-145);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-235);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-144"
+                id="cf-ui-skeleton-clip-234"
               >
                 <rect
                   height="16"
@@ -4320,7 +2560,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-145"
+                id="cf-ui-skeleton-clip-gradient-235"
               >
                 <stop
                   offset="0%"
@@ -4330,7 +2570,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-146"
+                    id="animation-236"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -4342,7 +2582,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-146.begin+0.25s"
+                    begin="animation-236.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4355,7 +2595,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-146.begin+0.5s"
+                    begin="animation-236.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4384,16 +2624,16 @@ exports[`Test the resource index page resource index page should match snapshot 
               Loading component...
             </title>
             <rect
-              clip-path="url(#cf-ui-skeleton-clip-147)"
+              clip-path="url(#cf-ui-skeleton-clip-237)"
               height="100%"
-              style="fill: url(#cf-ui-skeleton-clip-gradient-148);"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-238);"
               width="100%"
               x="0"
               y="0"
             />
             <defs>
               <clippath
-                id="cf-ui-skeleton-clip-147"
+                id="cf-ui-skeleton-clip-237"
               >
                 <rect
                   height="16"
@@ -4405,7 +2645,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 />
               </clippath>
               <lineargradient
-                id="cf-ui-skeleton-clip-gradient-148"
+                id="cf-ui-skeleton-clip-gradient-238"
               >
                 <stop
                   offset="0%"
@@ -4415,7 +2655,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                   <animate
                     attributeName="stop-color"
                     dur="2s"
-                    id="animation-149"
+                    id="animation-239"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
                   />
@@ -4427,7 +2667,7 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-149.begin+0.25s"
+                    begin="animation-239.begin+0.25s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"
@@ -4440,7 +2680,1727 @@ exports[`Test the resource index page resource index page should match snapshot 
                 >
                   <animate
                     attributeName="stop-color"
-                    begin="animation-149.begin+0.5s"
+                    begin="animation-239.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+      </tr>
+      <tr
+        class="TableRow__TableRow___3kcNC"
+        data-test-id="cf-ui-table-row"
+      >
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-240)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-241);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-240"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-241"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-242"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-242.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-242.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-243)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-244);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-243"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-244"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-245"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-245.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-245.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-246)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-247);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-246"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-247"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-248"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-248.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-248.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-249)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-250);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-249"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-250"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-251"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-251.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-251.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-252)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-253);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-252"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-253"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-254"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-254.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-254.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+      </tr>
+      <tr
+        class="TableRow__TableRow___3kcNC"
+        data-test-id="cf-ui-table-row"
+      >
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-255)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-256);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-255"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-256"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-257"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-257.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-257.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-258)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-259);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-258"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-259"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-260"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-260.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-260.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-261)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-262);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-261"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-262"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-263"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-263.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-263.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-264)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-265);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-264"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-265"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-266"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-266.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-266.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-267)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-268);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-267"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-268"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-269"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-269.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-269.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+      </tr>
+      <tr
+        class="TableRow__TableRow___3kcNC"
+        data-test-id="cf-ui-table-row"
+      >
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-270)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-271);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-270"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-271"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-272"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-272.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-272.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-273)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-274);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-273"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-274"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-275"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-275.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-275.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-276)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-277);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-276"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-277"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-278"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-278.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-278.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-279)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-280);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-279"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-280"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-281"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-281.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-281.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-282)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-283);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-282"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-283"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-284"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-284.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-284.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+      </tr>
+      <tr
+        class="TableRow__TableRow___3kcNC"
+        data-test-id="cf-ui-table-row"
+      >
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-285)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-286);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-285"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-286"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-287"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-287.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-287.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-288)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-289);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-288"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-289"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-290"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-290.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-290.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-291)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-292);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-291"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-292"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-293"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-293.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-293.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-294)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-295);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-294"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-295"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-296"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-296.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-296.begin+0.5s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+              </lineargradient>
+            </defs>
+          </svg>
+        </td>
+        <td
+          align="left"
+          class="TableCell__TableCell___Wou8a"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        >
+          <svg
+            aria-label="Loading component..."
+            class="SkeletonContainer__SkeletonContainer___23jiu"
+            data-test-id="cf-ui-skeleton-form"
+            height="16"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            width="100%"
+          >
+            <title>
+              Loading component...
+            </title>
+            <rect
+              clip-path="url(#cf-ui-skeleton-clip-297)"
+              height="100%"
+              style="fill: url(#cf-ui-skeleton-clip-gradient-298);"
+              width="100%"
+              x="0"
+              y="0"
+            />
+            <defs>
+              <clippath
+                id="cf-ui-skeleton-clip-297"
+              >
+                <rect
+                  height="16"
+                  rx="0"
+                  ry="0"
+                  width="100%"
+                  x="0"
+                  y="0"
+                />
+              </clippath>
+              <lineargradient
+                id="cf-ui-skeleton-clip-gradient-298"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    dur="2s"
+                    id="animation-299"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="50%"
+                  stop-color="#f7f9fa"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-299.begin+0.25s"
+                    dur="2s"
+                    repeatCount="indefinite"
+                    values="#e5ebed; #f7f9fa; #e5ebed"
+                  />
+                </stop>
+                <stop
+                  offset="100%"
+                  stop-color="#e5ebed"
+                  stop-opacity="1"
+                >
+                  <animate
+                    attributeName="stop-color"
+                    begin="animation-299.begin+0.5s"
                     dur="2s"
                     repeatCount="indefinite"
                     values="#e5ebed; #f7f9fa; #e5ebed"

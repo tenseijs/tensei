@@ -422,6 +422,7 @@ class ResourceTable extends React.Component {
                                                             icon: 'Delete',
                                                             color: 'negative',
                                                         }}
+                                                        data-testid="d"
                                                         label={`Delete resource`}
                                                     />
                                                 ) : null}
