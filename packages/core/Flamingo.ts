@@ -71,7 +71,6 @@ class Flamingo {
         if (this.registeredApplication) {
             return this
         }
-        await this.callToolHook('setup')
 
         await this.callToolHook('beforeDatabaseSetup')
         await this.registerDatabase()
@@ -86,6 +85,8 @@ class Flamingo {
         await this.callToolHook('beforeCoreRoutesSetup')
         this.registerCoreRoutes()
         await this.callToolHook('afterCoreRoutesSetup')
+
+        await this.callToolHook('setup')
 
         this.registeredApplication = true
 

@@ -21,6 +21,7 @@ declare global {
     }
 }
 
+export { id, ID } from './fields/ID'
 export { text, Text } from './fields/Text'
 export { link, Link } from './fields/Link'
 export { Json, json } from './fields/Json'
@@ -35,6 +36,7 @@ export { password, Password } from './fields/Password'
 export { textarea, Textarea } from './fields/Textarea'
 export { Field, SerializedField } from './fields/Field'
 export { belongsTo, BelongsTo } from './fields/BelongsTo'
+export { timestamp, Timestamp } from './fields/Timestamp'
 export { bigInteger, BigInteger } from './fields/BigInteger'
 export { belongsToMany, BelongsToMany } from './fields/BelongsToMany'
 

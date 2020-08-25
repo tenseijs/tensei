@@ -78,14 +78,19 @@ class Auth {
     private userResource() {
         return resource(this.config.nameResource)
             .fields([
-                text('Name').searchable(),
-                text('Email').unique().searchable().notNullable(),
+                text('Name').searchable().rules('required'),
+                text('Email')
+                    .unique()
+                    .searchable()
+                    .notNullable()
+                    .rules('required|email'),
                 text('Password')
                     .hidden()
                     .notNullable()
                     .htmlAttributes({
                         type: 'password',
                     })
+                    .rules('required')
                     .hidden()
                     .onlyOnForms()
                     .hideWhenUpdating(),
@@ -106,8 +111,12 @@ class Auth {
     private permissionResource() {
         return resource(this.config.permissionResource)
             .fields([
-                text('Name').searchable(),
-                text('Slug').rules('required').unique().searchable(),
+                text('Name').searchable().rules('required'),
+                text('Slug')
+                    .rules('required')
+                    .unique()
+                    .searchable()
+                    .rules('required'),
                 belongsToMany(this.config.roleResource),
             ])
             .displayField('name')
@@ -117,8 +126,16 @@ class Auth {
     private roleResource() {
         return resource(this.config.roleResource)
             .fields([
-                text('Name').rules('required').unique().searchable(),
-                text('Slug').rules('required').unique().searchable(),
+                text('Name')
+                    .rules('required')
+                    .unique()
+                    .searchable()
+                    .rules('required'),
+                text('Slug')
+                    .rules('required')
+                    .unique()
+                    .searchable()
+                    .rules('required'),
 
                 belongsToMany(this.config.nameResource),
                 belongsToMany(this.config.permissionResource),

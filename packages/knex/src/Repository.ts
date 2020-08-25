@@ -53,7 +53,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             connection,
             useNullAsDefault: true,
             client: config.env.database,
-            debug: true,
+            debug: false,
         }
 
         this.resources = config.resources
@@ -463,7 +463,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         if (
             field.defaultValue &&
-            !['datetime', 'date', 'time'].includes(knexMethodName)
+            !['datetime', 'date', 'time', 'timestamp'].includes(knexMethodName)
         ) {
             method.defaultTo(field.defaultValue)
         }
