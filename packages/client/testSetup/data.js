@@ -108,7 +108,7 @@ export const resources = [
                 updateRules: [],
             },
         ],
-        group: 'All',
+        group: 'Resources',
         label: 'Posts',
         slug: 'posts',
         messages: {
@@ -229,7 +229,7 @@ export const resources = [
                 updateRules: [],
             },
         ],
-        group: 'All',
+        group: 'Resources',
         label: 'News',
         slug: 'news',
         messages: {

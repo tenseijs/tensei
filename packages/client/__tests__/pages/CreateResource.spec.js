@@ -1,7 +1,6 @@
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import setupPage from '~/testSetup/setupPage'
 import Auth from '~/store/auth'
 import { resources } from '~/testSetup/data'
 import FlamingoMock from '~/testSetup/Flamingo'

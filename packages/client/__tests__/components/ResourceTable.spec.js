@@ -56,37 +56,7 @@ const tableDataBuilder = build('TableData', {
     },
 })
 
-const tableData = [
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-    tableDataBuilder(),
-]
+const tableData = Array.from({ length: 50 }).map(() => tableDataBuilder())
 
 describe('ResourceTable tests', () => {
     beforeEach(() => {
@@ -110,10 +80,10 @@ describe('ResourceTable tests', () => {
         jest.clearAllMocks()
         jest.resetAllMocks()
     })
-    test.only('can search for values on the resource table', async () => {
+    test('can search for values on the resource table', async () => {
         render(<WithAuthComponent {...props} />)
-        await waitFor(() =>
-            expect(screen.queryAllByRole('row')).toHaveLength(30)
+        await waitFor(
+            () => expect(screen.queryAllByRole('row')).toHaveLength(51) // add one for the header row
         )
         const searchInput = screen.getByPlaceholderText(
             /Type to search for posts/i
@@ -143,7 +113,7 @@ describe('ResourceTable tests', () => {
             'resources/posts?per_page=25&page=1&search=Amapai&fields=name,description,content'
         )
     })
-    test.only('clicking the pagination should fetch new values', async () => {
+    test('clicking the pagination should fetch new values', async () => {
         render(<WithAuthComponent {...props} />)
 
         const ul = await screen.findByRole('list')
@@ -157,19 +127,19 @@ describe('ResourceTable tests', () => {
 
         expect(page2Btn).toHaveAttribute('aria-current', 'page')
     })
-    test('The ResourceIndex page shows only fields with showOnIndex', async () => {
-        render(
-            <Router history={history}>
-                <ResourceIndex {...props} />
-            </Router>
-        )
-        expect(screen.getByText(/name/i)).toBeInTheDocument()
-        expect(screen.getByText(/description/i)).toBeInTheDocument()
-        expect(screen.getByText(/content/i)).toBeInTheDocument()
+    // test('The ResourceIndex page shows only fields with showOnIndex', async () => {
+    //     render(
+    //         <Router history={history}>
+    //             <ResourceIndex {...props} />
+    //         </Router>
+    //     )
+    //     expect(screen.getByText(/name/i)).toBeInTheDocument()
+    //     expect(screen.getByText(/description/i)).toBeInTheDocument()
+    //     expect(screen.getByText(/content/i)).toBeInTheDocument()
 
-        expect(screen.queryByText(/visuals/i)).not.toBeInTheDocument()
-    })
-    test.only('The select checkbox should check a row', async () => {
+    //     expect(screen.queryByText(/visuals/i)).not.toBeInTheDocument()
+    // })
+    test('The select checkbox should check a row', async () => {
         render(<WithAuthComponent {...props} />)
         const [checkBox1] = await waitFor(() =>
             screen.getAllByRole('checkbox', { name: 'Select row' })
@@ -178,7 +148,7 @@ describe('ResourceTable tests', () => {
         fireEvent.click(checkBox1)
         expect(checkBox1).toBeChecked()
     })
-    test.only('The select all checkbox should check all the resources on the page', async () => {
+    test('The select all checkbox should check all the resources on the page', async () => {
         render(<WithAuthComponent {...props} />)
 
         const selectAllCheckBox = await screen.findByRole('checkbox', {
@@ -198,7 +168,7 @@ describe('ResourceTable tests', () => {
             expect(checkbox).toBeChecked()
         })
     })
-    test.only('clicking the table row navigates to the details page', async () => {
+    test('clicking the table row navigates to the details page', async () => {
         render(<WithAuthComponent {...props} />)
         const tableRows = await screen.findAllByTestId('table-row')
         userEvent.click(tableRows[1])
@@ -206,12 +176,12 @@ describe('ResourceTable tests', () => {
         // to do, findout why the props.history.push is not getting called in the test
         // expect(props.history.push).toHaveBeenCalledWith(`resources/mane`)
     })
-    test.only('can delete a resource', async () => {
+    test('can delete a resource', async () => {
         render(<WithAuthComponent {...props} />)
 
         const allDeleteBtn = await screen.findAllByTestId('delete-resource-btn')
 
-        await waitFor(() => expect(allDeleteBtn).toHaveLength(29))
+        await waitFor(() => expect(allDeleteBtn).toHaveLength(50))
         const [deleteBtn] = await screen.findAllByTestId('delete-resource-btn')
 
         userEvent.click(deleteBtn)
