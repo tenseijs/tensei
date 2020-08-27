@@ -3,7 +3,7 @@ import Supertest from 'supertest'
 import { setup, createAdminUser, cleanup } from '../helpers'
 
 test('can fetch the index.html file on all subroutes of the dashboard page', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup()
 
     const client = Supertest(app)
 
@@ -13,8 +13,6 @@ test('can fetch the index.html file on all subroutes of the dashboard page', asy
     expect(response.text).toMatch('<div id="app"></div>')
     expect(response.text).toMatch('window.Flamingo.boot()')
     expect(response.text).toMatch("shouldShowRegistrationScreen: 'true'")
-
-    await cleanup(databaseClient)
 })
 
 test('passes shouldShowRegistrationScreen: false option to client if an administrator already exists', async () => {
@@ -28,8 +26,6 @@ test('passes shouldShowRegistrationScreen: false option to client if an administ
 
     expect(response.status).toBe(200)
     expect(response.text).toMatch("shouldShowRegistrationScreen: 'false'")
-
-    await cleanup(databaseClient)
 })
 
 test('passes user to view if user is logged in', async () => {
@@ -56,6 +52,4 @@ test('passes user to view if user is logged in', async () => {
 
     expect(response.text).toMatch(admin.name)
     expect(response.text).toMatch(admin.email)
-
-    await cleanup(databaseClient)
 })

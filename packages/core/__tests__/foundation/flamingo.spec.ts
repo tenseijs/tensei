@@ -2,15 +2,14 @@ import Path from 'path'
 import Supertest from 'supertest'
 import { tool } from '@flamingo/common'
 
-import { setup, cleanup } from '../helpers'
+import { setup } from '../helpers'
 
 test('can configure custom dashboard path', async () => {
     const CUSTOM_DASHBOARD_PATH = 'custom-dashboard-path'
 
-    const instance = await setup((instance) => {
-        instance.dashboardPath(CUSTOM_DASHBOARD_PATH)
-        return instance
-    })
+    const instance = await setup({
+        dashboardPath: CUSTOM_DASHBOARD_PATH
+    }, true)
 
     const client = Supertest(instance.app)
 
@@ -26,10 +25,9 @@ test('can configure custom dashboard path', async () => {
 test('can configure custom api path', async () => {
     const CUSTOM_API_PATH = 'custom-api-path'
 
-    const { app, databaseClient } = await setup((instance) => {
-        instance.apiPath(CUSTOM_API_PATH)
-        return instance
-    })
+    const { app } = await setup({
+        apiPath: CUSTOM_API_PATH
+    }, true)
 
     const client = Supertest(app)
 
@@ -39,26 +37,22 @@ test('can configure custom api path', async () => {
     expect((await client.post(`/${CUSTOM_API_PATH}/register`)).status).not.toBe(
         404
     )
-
-    cleanup(databaseClient)
 })
 
 test('cannot register dashboard after it has been registered', async () => {
-    const instance = await setup()
+    const instance = await setup({})
 
     const spy = jest.spyOn(instance, 'registerDatabase')
 
     await instance.register()
 
     expect(spy).toHaveBeenCalledTimes(0)
-
-    await cleanup(instance.databaseClient)
 })
 
-test('tools can correctly register custom stylesheets and scripts', async () => {
-    const { app, databaseClient } = await setup((instance) => {
-        instance.tools([
-            tool('Graphql').setup(async ({ style, script }) => {
+test('tools can correctly register custom stylesheets and scripts before middleware are setup', async () => {
+    const { app } = await setup({
+        tools: [
+            tool('Graphql').beforeMiddlewareSetup(async ({ style, script }) => {
                 script(
                     'graphql.js',
                     Path.resolve(__dirname, '..', 'helpers', 'assets', 'app.js')
@@ -74,10 +68,8 @@ test('tools can correctly register custom stylesheets and scripts', async () => 
                     )
                 )
             }),
-        ])
-
-        return instance
-    })
+        ]
+    }, true)
 
     const client = Supertest(app)
 
@@ -96,26 +88,20 @@ test('tools can correctly register custom stylesheets and scripts', async () => 
 
     expect(js.text).toMatch('TEST_ASSET')
     expect(css.text).toMatch('TEST_ASSET')
-
-    await cleanup(databaseClient)
 })
 
-test('tools can correctly customise the express application', async () => {
+test('tools can correctly customise the express application with new routes', async () => {
     const TEST_GRAPHQL_MESSAGE = 'TEST_GRAPHQL_MESSAGE'
 
-    const { app, databaseClient } = await setup((instance) => {
-        instance.tools([
-            tool('Graphql').setup(async ({ app }) => {
-                app.post('/graphql', (req, res) =>
-                    res.status(212).json({
-                        message: TEST_GRAPHQL_MESSAGE,
-                    })
-                )
-            }),
-        ])
-
-        return instance
-    })
+    const { app } = await setup({
+        tools: [tool('Graphql').setup(async ({ app }) => {
+            app.post('/graphql', (req, res) =>
+                res.status(212).json({
+                    message: TEST_GRAPHQL_MESSAGE,
+                })
+            )
+        })]
+    }, true)
 
     const client = Supertest(app)
 
@@ -123,6 +109,4 @@ test('tools can correctly customise the express application', async () => {
 
     expect(response.status).toBe(212)
     expect(response.body.message).toBe(TEST_GRAPHQL_MESSAGE)
-
-    await cleanup(databaseClient)
 })

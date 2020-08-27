@@ -1,20 +1,47 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
+import { tool, Tool, User as IUser } from '@flamingo/common'
 import Flamingo, { flamingo } from '../../Flamingo'
 
 import { Tag, Comment, User, Post } from './resources'
 
-type ConfigureSetup = (app: Flamingo) => Flamingo
+interface ConfigureSetup {
+    tools?: Tool[],
+    admin?: IUser
+    apiPath?: string
+    dashboardPath?: string
+}
 
-export const setup = async (configure?: ConfigureSetup) => {
+let cachedInstance: Flamingo|null = null
+
+export const setup = async ({ tools, admin, apiPath, dashboardPath }: ConfigureSetup = {}, forceNewInstance = false) => {
     process.env.DATABASE = 'mysql'
     process.env.DATABASE_URI = 'mysql://root@127.0.0.1/testdb'
 
-    let instance = flamingo()
+    let instance = forceNewInstance ? flamingo() : cachedInstance ? cachedInstance : flamingo()
 
-    if (configure) {
-        instance = configure(instance)
+    cachedInstance = instance
+
+    instance.tools([
+        ...(tools || []),
+        ...(admin ? [
+            tool('Force auth').beforeDatabaseSetup(async ({ app }) => {
+                app.use((request, response, next) => {
+                    request.admin = admin
+
+                    next()
+                })
+            })
+        ] : [])
+    ])
+
+    if (apiPath) {
+        instance.apiPath(apiPath)
+    }
+
+    if (dashboardPath) {
+        instance.dashboardPath(dashboardPath)
     }
 
     instance = await instance.resources([Post, Tag, User, Comment]).register()
@@ -38,11 +65,14 @@ export const createAdminUser = async (knex: Knex) => {
         password: 'password',
     }
 
-    await knex('administrators').insert({
+    const id = await knex('administrators').insert({
         name: user.name,
         email: user.email,
         password: Bcrypt.hashSync(user.password),
     })
 
-    return user
+    return {
+        id: id[0],
+        ...user,
+    }
 }

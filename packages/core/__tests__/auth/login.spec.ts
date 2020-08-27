@@ -13,8 +13,6 @@ test('validates login data and returns error messages with a 422', async () => {
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    cleanup(databaseClient)
 })
 
 test('returns a 422 if user does not exist in database', async () => {
@@ -30,8 +28,6 @@ test('returns a 422 if user does not exist in database', async () => {
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })
 
 test('returns a 422 if user password is wrong', async () => {
@@ -49,8 +45,6 @@ test('returns a 422 if user password is wrong', async () => {
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })
 
 test('returns a 200, and creates a new session when correct credentials are passed', async () => {
@@ -80,10 +74,7 @@ test('returns a 200, and creates a new session when correct credentials are pass
 
     const session = JSON.parse(sessions[0].sess)
 
-    expect(session.user.name).toBe(user.name)
-    expect(session.user.email).toBe(user.email)
-
-    await cleanup(knex)
+    expect(session.user).toBe(user.id)
 })
 
 test('can login correctly with remember me', async () => {
@@ -111,6 +102,4 @@ test('can login correctly with remember me', async () => {
     const session = JSON.parse(sessions[0].sess)
 
     expect(isAfter(new Date(session.cookie.expires), new Date())).toBeTruthy()
-
-    await cleanup(knex)
 })

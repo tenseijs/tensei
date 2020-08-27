@@ -146,6 +146,10 @@ class Flamingo {
     }
 
     public async registerDatabase() {
+        if (this.databaseBooted) {
+            return this
+        }
+
         // if database === mysql | sqlite | pg, we'll use the @flamingo/knex package, with either mysql, pg or sqlite3 package
         // We'll require('@flamingo/knex') and require('sqlite3') for example. If not found, we'll install.
         const { Repository } = require('@flamingo/knex')
@@ -318,6 +322,7 @@ class Flamingo {
 
         this.app.post(
             this.getApiPath('logout'),
+            this.authMiddleware,
             this.asyncHandler(AuthController.logout)
         )
 

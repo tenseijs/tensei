@@ -5,7 +5,9 @@ import isAfter from 'date-fns/isAfter'
 import { setup, createAdminUser, cleanup } from '../helpers'
 
 test('runs an action that returns html', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup({
+        admin: {} as any
+    })
 
     const client = Supertest(app)
 
@@ -15,12 +17,12 @@ test('runs an action that returns html', async () => {
     expect(response.body.html).toMatch(
         /SOME EXAMPLE HTML TO BE SET ON THE DOM/i
     )
-
-    await cleanup(databaseClient)
 })
 
 test('validates an action with input fields', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup({
+        admin: {} as any
+    })
 
     const client = Supertest(app)
 
@@ -30,12 +32,12 @@ test('validates an action with input fields', async () => {
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })
 
 test('runs an action with fields that returns a push', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup({
+        admin: {} as any
+    })
 
     const client = Supertest(app)
 
@@ -43,12 +45,12 @@ test('runs an action with fields that returns a push', async () => {
 
     expect(response.status).toBe(202)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })
 
 test('runs an action with fields that returns an array of validation errors', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup({
+        admin: {} as any
+    })
 
     const client = Supertest(app)
 
@@ -58,6 +60,4 @@ test('runs an action with fields that returns an array of validation errors', as
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })

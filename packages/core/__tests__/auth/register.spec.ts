@@ -6,7 +6,7 @@ import isAfter from 'date-fns/isAfter'
 import { setup, createAdminUser, cleanup } from '../helpers'
 
 test('validates registration data and returns error messages with a 422', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup()
 
     const client = Supertest(app)
 
@@ -14,8 +14,6 @@ test('validates registration data and returns error messages with a 422', async 
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })
 
 test('returns a 422 if there is already an administrator in the database', async () => {
@@ -32,12 +30,10 @@ test('returns a 422 if there is already an administrator in the database', async
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-
-    await cleanup(databaseClient)
 })
 
 test('correctly creates an administrator user, logs in the user and returns a success message', async () => {
-    const { app, databaseClient } = await setup()
+    const { app } = await setup()
 
     const client = Supertest(app)
 
@@ -50,8 +46,6 @@ test('correctly creates an administrator user, logs in the user and returns a su
     expect(response.status).toBe(200)
     expect(response.body).toMatchSnapshot()
     expect(response.header['set-cookie']).toHaveLength(1)
-
-    await cleanup(databaseClient)
 })
 
 test('returns a 200, and creates a new session when correct credentials are passed', async () => {
@@ -81,10 +75,7 @@ test('returns a 200, and creates a new session when correct credentials are pass
 
     const session = JSON.parse(sessions[0].sess)
 
-    expect(session.user.name).toBe(user.name)
-    expect(session.user.email).toBe(user.email)
-
-    await cleanup(knex)
+    expect(session.user).toBe(user.id)
 })
 
 test('can login correctly with remember me', async () => {
@@ -112,6 +103,4 @@ test('can login correctly with remember me', async () => {
     const session = JSON.parse(sessions[0].sess)
 
     expect(isAfter(new Date(session.cookie.expires), new Date())).toBeTruthy()
-
-    await cleanup(knex)
 })
