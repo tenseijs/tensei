@@ -83,8 +83,6 @@ class Cashier {
                     throw new Error(`The customer resource must be provided.`)
                 }
 
-                console.log('|><| CASHIER TOOL', customerResource)
-
                 return Promise.resolve()
             })
     }

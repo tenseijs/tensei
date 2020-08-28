@@ -2,7 +2,7 @@ import Path from 'path'
 import { tool } from '@flamingo/common'
 
 export const trixTool = () =>
-    tool('Trix').setup(async ({ script, style }) => {
+    tool('Trix').beforeMiddlewareSetup(async ({ script, style }) => {
         script(
             'trix-editor.js',
             Path.resolve(__dirname, '..', '..', 'build/client/index.js')
