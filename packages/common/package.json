@@ -5,13 +5,21 @@
     "license": "MIT",
     "types": "./build/index.d.ts",
     "devDependencies": {
+        "@babel/core": "^7.11.4",
+        "@babel/preset-env": "^7.11.0",
+        "@babel/preset-typescript": "^7.10.4",
+        "babel-jest": "^26.3.0",
+        "faker": "^4.1.0",
+        "jest": "^26.0.1",
         "prettier": "^2.0.5",
+        "supertest": "^4.0.2",
         "typescript": "^3.9.7"
     },
     "scripts": {
         "build": "tsc --p tsconfig.json",
         "dev": "tsc --watch --p tsconfig.json",
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'"
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "test": "jest --verbose --runInBand --forceExit"
     },
     "dependencies": {
         "@types/pluralize": "^0.0.29",

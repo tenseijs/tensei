@@ -98,8 +98,6 @@ export class Action {
         }),
     }
 
-    public _beans = ''
-
     public showHideField = {
         /**
          *
