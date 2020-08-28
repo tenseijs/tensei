@@ -172,7 +172,7 @@ class ResourceTable extends React.Component {
     onSearchChange = debounce(500, (search) => {
         this.setState(
             {
-                isLoading: true,
+                loading: true,
                 search,
             },
             () => this.fetch()
@@ -403,6 +403,7 @@ class ResourceTable extends React.Component {
                                                                 color:
                                                                     'negative',
                                                             }}
+                                                            data-testid="edit-resource-btn"
                                                             label={`Edit resource`}
                                                         />
                                                     </Link>
@@ -455,7 +456,7 @@ class ResourceTable extends React.Component {
                             </Select>
                         </div>
 
-                        <Paragraph>
+                        <Paragraph data-testid="pagination-info">
                             Showing <span>{showingFrom}</span> to{' '}
                             <span>
                                 {showingOnPage > total ? total : showingOnPage}

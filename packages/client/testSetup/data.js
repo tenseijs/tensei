@@ -117,7 +117,7 @@ export const resources = [
         },
         name: 'Post',
         param: 'posts',
-        perPageOptions: [1, 3, 5],
+        perPageOptions: [10, 25, 50],
         primaryKey: '_id',
     },
     {
@@ -238,7 +238,7 @@ export const resources = [
         },
         name: 'News',
         param: 'news',
-        perPageOptions: [1, 3, 5],
+        perPageOptions: [10, 25, 50],
         primaryKey: '_id',
     },
 ]

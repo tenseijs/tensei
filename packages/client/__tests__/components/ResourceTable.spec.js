@@ -19,23 +19,24 @@ import ResourceTable from '~/components/ResourceTable'
 
 const history = createMemoryHistory({ initialEntries: ['/resources/posts'] })
 const match = { params: { resource: 'posts' } }
-const props = {
-    match,
-    resource: resources[0],
-    history: { push: jest.fn() },
-    location: { pathname: 'resource/posts' },
+let props = {
+    defaultProps: {
+        match,
+        resource: resources[0],
+        history: { push: jest.fn() },
+        location: { pathname: 'resource/posts' },
+    },
+    permissions: {
+        authorizedToCreate: jest.fn(() => true),
+        authorizedToUpdate: jest.fn(() => true),
+        authorizedToDelete: jest.fn(() => true),
+    },
 }
 
 const WithAuthComponent = (props) => (
     <Router history={history}>
-        <Auth.Provider
-            value={{
-                authorizedToCreate: jest.fn(() => true),
-                authorizedToUpdate: jest.fn(() => true),
-                authorizedToDelete: jest.fn(() => true),
-            }}
-        >
-            <ResourceTable {...props} />
+        <Auth.Provider value={props.permissions}>
+            <ResourceTable {...props.defaultProps} />
         </Auth.Provider>
     </Router>
 )
@@ -63,11 +64,11 @@ describe('ResourceTable tests', () => {
         window.Flamingo = {
             ...FlamingoMock,
             request: {
-                get: jest.fn().mockResolvedValue({
+                get: jest.fn().mockResolvedValueOnce({
                     data: {
                         data: tableData,
                         page: 1,
-                        total: 29,
+                        total: 50,
                         perPage: 25,
                         pageCount: 2,
                     },
@@ -78,7 +79,6 @@ describe('ResourceTable tests', () => {
     })
     afterEach(() => {
         jest.clearAllMocks()
-        jest.resetAllMocks()
     })
     test('can search for values on the resource table', async () => {
         render(<WithAuthComponent {...props} />)
@@ -123,6 +123,16 @@ describe('ResourceTable tests', () => {
         expect(page1Btn).toHaveAttribute('aria-current', 'page')
         expect(page2Btn).not.toHaveAttribute('aria-current', 'page')
 
+        window.Flamingo.request.get = jest.fn().mockResolvedValueOnce({
+            data: {
+                data: tableData,
+                page: 2,
+                total: 50,
+                perPage: 10,
+                pageCount: 2,
+            },
+        })
+
         userEvent.click(page2Btn)
 
         expect(page2Btn).toHaveAttribute('aria-current', 'page')
@@ -152,7 +162,7 @@ describe('ResourceTable tests', () => {
         render(<WithAuthComponent {...props} />)
 
         const selectAllCheckBox = await screen.findByRole('checkbox', {
-            name: `Select all ${props.resource.label}`,
+            name: `Select all ${props.defaultProps.resource.label}`,
         })
 
         const checkBoxes = await screen.findAllByRole('checkbox', {
@@ -193,10 +203,173 @@ describe('ResourceTable tests', () => {
         const modalDeletBtn = await within(deleteModal).findByText('Delete')
 
         userEvent.click(modalDeletBtn)
+
+        await waitFor(() =>
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        )
         await waitFor(() =>
             expect(window.Flamingo.request.delete).toHaveBeenCalledWith(
-                `resources/${props.resource.slug}/${tableData[0].id}`
+                `resources/${props.defaultProps.resource.slug}/${tableData[0].id}`
             )
         )
     })
+    test('Hides add button if not authorizedToCreate', () => {
+        props = {
+            ...props,
+            permissions: {
+                ...props.permissions,
+                authorizedToCreate: jest.fn(() => false),
+            },
+        }
+        render(<WithAuthComponent {...props} />)
+        expect(
+            screen.queryByText(`Add ${props.defaultProps.resource.name}`)
+        ).not.toBeInTheDocument()
+    })
+    test('Hides delete button if not authorizedToDelete', () => {
+        props = {
+            ...props,
+            permissions: {
+                ...props.permissions,
+                authorizedToDelete: jest.fn(() => false),
+            },
+        }
+        render(<WithAuthComponent {...props} />)
+        expect(screen.queryAllByTestId('delete-resource-btn')).toHaveLength(0)
+    })
+    test('Hides pencil button if not authorizedToUpdate', () => {
+        props = {
+            ...props,
+            permissions: {
+                ...props.permissions,
+                authorizedToUpdate: jest.fn(() => false),
+            },
+        }
+        render(<WithAuthComponent {...props} />)
+        expect(screen.queryAllByTestId('edit-resource-btn')).toHaveLength(0)
+    })
+    test('Shows the correct resource label.', () => {
+        render(<WithAuthComponent {...props} />)
+        expect(
+            screen.getByText(props.defaultProps.resource.label)
+        ).toBeInTheDocument()
+    })
+    test('Typing in the search box should call the API endpoint with the correct search parameter', () => {})
+    // test('Shows loading state during a search', () => {
+    //     render(<WithAuthComponent {...props} />)
+
+    // })
+    test('Flashes an error if calling fetch fails', async () => {
+        window.Flamingo = {
+            ...FlamingoMock,
+            request: {
+                get: jest
+                    .fn()
+                    .mockImplementation(() => Promise.reject('value')),
+            },
+        }
+        render(<WithAuthComponent {...props} />)
+
+        await waitFor(() =>
+            expect(
+                window.Flamingo.library.Notification.error
+            ).toHaveBeenCalled()
+        )
+    })
+    test('Pushes parameters to url such as page, per_page', () => {})
+    test('Can select different per page based on resource', async () => {
+        render(<WithAuthComponent {...props} />)
+        const perPageBox = screen.getByRole('combobox', { name: 'per-page' })
+
+        props.defaultProps.resource.perPageOptions.forEach((i) => {
+            expect(
+                within(perPageBox).getAllByRole('option', {
+                    name: `${i} / page`,
+                })
+            )
+        })
+
+        window.Flamingo.request.get = jest
+            .fn()
+            .mockResolvedValueOnce({
+                data: {
+                    data: tableData,
+                    page: 1,
+                    total: 50,
+                    perPage: 10,
+                    pageCount: 2,
+                },
+            })
+            .mockResolvedValueOnce({
+                data: {
+                    data: tableData,
+                    page: 1,
+                    total: 50,
+                    perPage: 25,
+                    pageCount: 2,
+                },
+            })
+
+        userEvent.selectOptions(perPageBox, ['10'])
+
+        await waitFor(() =>
+            expect(window.Flamingo.request.get).toHaveBeenCalledWith(
+                'resources/posts?per_page=10&page=1&search=&fields=name,description,content'
+            )
+        )
+        userEvent.selectOptions(perPageBox, ['25'])
+
+        await waitFor(() =>
+            expect(window.Flamingo.request.get).toHaveBeenCalledWith(
+                'resources/posts?per_page=25&page=1&search=&fields=name,description,content'
+            )
+        )
+    })
+    test('Should have the correct showing Showing from 0 to 25 of 150 entries message', async () => {
+        render(<WithAuthComponent {...props} />)
+        const perPageBox = screen.getByRole('combobox', { name: 'per-page' })
+        const paginationInfo = await screen.findByTestId('pagination-info')
+
+        window.Flamingo.request.get = jest
+            .fn()
+            .mockResolvedValueOnce({
+                data: {
+                    data: tableData,
+                    page: 1,
+                    total: 50,
+                    perPage: 10,
+                    pageCount: 2,
+                },
+            })
+            .mockResolvedValueOnce({
+                data: {
+                    data: tableData,
+                    page: 1,
+                    total: 50,
+                    perPage: 25,
+                    pageCount: 2,
+                },
+            })
+
+        userEvent.selectOptions(perPageBox, ['10'])
+
+        await waitFor(() =>
+            expect(paginationInfo).toHaveTextContent(
+                'Showing 0 to 10 of 50 entries'
+            )
+        )
+
+        userEvent.selectOptions(perPageBox, ['25'])
+
+        await waitFor(() =>
+            expect(paginationInfo).toHaveTextContent(
+                'Showing 0 to 25 of 50 entries'
+            )
+        )
+        await waitFor(() =>
+            expect(window.Flamingo.request.get).toHaveBeenCalledTimes(2)
+        )
+    })
+    test('Should show all actions in the actions dropdown', () => {})
+    test('Should show only authorized actions in the actions dropdown', () => {})
 })
