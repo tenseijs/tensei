@@ -1,5 +1,12 @@
 import Plan from './Plan'
-import { tool, resource, text, integer, timestamp, belongsTo } from '@flamingo/common'
+import {
+    tool,
+    resource,
+    text,
+    integer,
+    timestamp,
+    belongsTo,
+} from '@flamingo/common'
 
 interface CashierConfig {
     customerResourceName: string
@@ -33,14 +40,12 @@ class Cashier {
                 integer('Quantity').default('0'),
                 timestamp('Trial Ends At'),
                 timestamp('Ends At'),
-                belongsTo(this.config.customerResourceName)
+                belongsTo(this.config.customerResourceName),
             ])
     }
 
     private invoicesResource() {
-        return resource('Invoice')
-            .hideFromNavigation()
-            .fields([])
+        return resource('Invoice').hideFromNavigation().fields([])
     }
 
     public plans(plans: Plan[]) {

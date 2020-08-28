@@ -992,4 +992,43 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             pageCount: Math.ceil(total / query.perPage),
         }
     }
+
+    public getAdministratorById = async (id: number | string) => {
+        const AdminModel = this.resources
+            .find((resource) => resource.data.slug === 'administrators')
+            ?.Model()
+
+        let admin = await new AdminModel({
+            id,
+        }).fetch({
+            withRelated: ['administrator-roles.administrator-permissions'],
+            require: false,
+        })
+
+        if (!admin) {
+            return null
+        }
+
+        admin = admin.toJSON()
+
+        return {
+            name: admin.name,
+            email: admin.email,
+            id: admin.id as number,
+            roles: (admin['administrator-roles'] || []).map((role: any) => ({
+                id: role.id,
+                name: role.name,
+                slug: role.slug,
+            })),
+            permissions: admin['administrator-roles'].reduce(
+                (acc: [], role: any) => [
+                    ...acc,
+                    ...(role['administrator-permissions'] || []).map(
+                        (permission: any) => permission.slug
+                    ),
+                ],
+                []
+            ),
+        }
+    }
 }

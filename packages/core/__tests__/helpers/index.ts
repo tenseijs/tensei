@@ -7,33 +7,59 @@ import Flamingo, { flamingo } from '../../Flamingo'
 import { Tag, Comment, User, Post } from './resources'
 
 interface ConfigureSetup {
-    tools?: Tool[],
+    tools?: Tool[]
     admin?: IUser
     apiPath?: string
     dashboardPath?: string
+    createAndLoginAdmin?: boolean
 }
 
-let cachedInstance: Flamingo|null = null
+let cachedInstance: Flamingo | null = null
 
-export const setup = async ({ tools, admin, apiPath, dashboardPath }: ConfigureSetup = {}, forceNewInstance = false) => {
+export const fakePostData = () => ({
+    title: Faker.lorem.word(),
+    description: Faker.lorem.word(),
+    content: Faker.lorem.sentence(),
+    av_cpc: Faker.random.number(),
+    published_at: Faker.date.future(),
+    scheduled_for: Faker.date.future(),
+    category: Faker.random.arrayElement(['javascript', 'angular']),
+})
+
+export const setup = async (
+    {
+        tools,
+        admin,
+        apiPath,
+        dashboardPath,
+        createAndLoginAdmin,
+    }: ConfigureSetup = {},
+    forceNewInstance = false
+) => {
     process.env.DATABASE = 'mysql'
     process.env.DATABASE_URI = 'mysql://root@127.0.0.1/testdb'
 
-    let instance = forceNewInstance ? flamingo() : cachedInstance ? cachedInstance : flamingo()
+    let instance = forceNewInstance
+        ? flamingo()
+        : cachedInstance
+        ? cachedInstance
+        : flamingo()
 
     cachedInstance = instance
 
     instance.tools([
         ...(tools || []),
-        ...(admin ? [
-            tool('Force auth').beforeDatabaseSetup(async ({ app }) => {
-                app.use((request, response, next) => {
-                    request.admin = admin
+        ...(admin
+            ? [
+                  tool('Force auth').beforeDatabaseSetup(async ({ app }) => {
+                      app.use(async (request, response, next) => {
+                          request.admin = admin
 
-                    next()
-                })
-            })
-        ] : [])
+                          next()
+                      })
+                  }),
+              ]
+            : []),
     ])
 
     if (apiPath) {
@@ -48,6 +74,8 @@ export const setup = async ({ tools, admin, apiPath, dashboardPath }: ConfigureS
 
     const knex: Knex = instance.databaseClient
 
+    await knex('users').truncate()
+    await knex('posts').truncate()
     await knex('sessions').truncate()
     await knex('administrators').truncate()
 

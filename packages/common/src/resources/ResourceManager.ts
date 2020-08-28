@@ -670,6 +670,10 @@ export class ResourceManager {
                 ]
             }
 
+            if (!payload[field.inputName]) {
+                return
+            }
+
             if (field.component === 'HasManyField') {
                 const allRelatedRows = await this.db.findAllByIds(
                     relatedResource,
@@ -760,5 +764,9 @@ export class ResourceManager {
         })
 
         return response
+    }
+
+    getAdministratorById = (id: number | string) => {
+        return this.db.getAdministratorById(id)
     }
 }

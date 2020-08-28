@@ -188,6 +188,17 @@ class Flamingo {
         return this
     }
 
+    public resourceManager = () => {
+        if (!this.databaseBooted) {
+            return null
+        }
+
+        return new ResourceManager(
+            this.config.resources,
+            this.databaseRepository!
+        )
+    }
+
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
@@ -199,10 +210,7 @@ class Flamingo {
             ) => {
                 request.resources = this.config.resourcesMap
                 request.administratorResource = this.administratorResource()
-                request.resourceManager = new ResourceManager(
-                    this.config.resources,
-                    this.databaseRepository!
-                )
+                request.resourceManager = this.resourceManager()!
                 request.Mailer = this.mailer
 
                 next()
@@ -229,7 +237,7 @@ class Flamingo {
         return `/${this.config.apiPath}/${path}`
     }
 
-    private authMiddleware = async (
+    public authMiddleware = async (
         request: Express.Request,
         response: Express.Response,
         next: Express.NextFunction
@@ -243,7 +251,7 @@ class Flamingo {
         next()
     }
 
-    private setAuthMiddleware = async (
+    public setAuthMiddleware = async (
         request: Express.Request,
         response: Express.Response,
         next: Express.NextFunction
@@ -252,55 +260,19 @@ class Flamingo {
             return next()
         }
 
-        try {
-            const AdminModel = request.resources['administrators'].Model()
+        const admin = await request.resourceManager.getAdministratorById(
+            request.session?.user
+        )
 
-            const admin = (
-                await new AdminModel({
-                    id: request.session?.user,
-                }).fetch({
-                    withRelated: [
-                        'administrator-roles.administrator-permissions',
-                    ],
-                })
-            ).toJSON()
-
-            if (!admin) {
-                throw {
-                    message: `Unauthenticated.`,
-                    status: 401,
-                }
-            }
-
-            request.admin = {
-                name: admin.name,
-                email: admin.email,
-                id: admin.id as number,
-                roles: (admin['administrator-roles'] || []).map(
-                    (role: any) => ({
-                        id: role.id,
-                        name: role.name,
-                        slug: role.slug,
-                    })
-                ),
-                permissions: admin['administrator-roles'].reduce(
-                    (acc: [], role: any) => [
-                        ...acc,
-                        ...(role['administrator-permissions'] || []).map(
-                            (permission: any) => permission.slug
-                        ),
-                    ],
-                    []
-                ),
-            }
-
-            next()
-        } catch (errors) {
-            throw {
+        if (!admin) {
+            return response.status(401).json({
                 message: `Unauthenticated.`,
-                status: 401,
-            }
+            })
         }
+
+        request.admin = admin
+
+        next()
     }
 
     public registerCoreRoutes() {

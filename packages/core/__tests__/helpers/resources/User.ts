@@ -9,7 +9,7 @@ export default resource('User')
             .htmlAttributes({
                 type: 'email',
             })
-            .rules('required', 'max:32', 'email'),
+            .rules('required', 'max:84', 'email'),
         text('Password')
             .htmlAttributes({
                 type: 'password',

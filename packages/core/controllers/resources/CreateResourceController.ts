@@ -11,7 +11,7 @@ class CreateResourceController {
             request.body
         )
 
-        return response.json(model)
+        return response.status(201).json(model)
     }
 }
 

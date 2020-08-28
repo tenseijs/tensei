@@ -76,4 +76,5 @@ export abstract class DatabaseRepositoryInterface<Model = any> {
         },
         valuesToUpdate: {}
     ) => Promise<any>
+    abstract getAdministratorById: (id: string | number) => Promise<User | null>
 }
