@@ -25,7 +25,7 @@ test('returns a 422 if there is already an administrator in the database', async
 
     const response = await client.post('/api/register').send({
         email: 'hey@unknown-user.io',
-        password: 'password',
+        password: 'password'
     })
 
     expect(response.status).toBe(422)
@@ -40,7 +40,7 @@ test('correctly creates an administrator user, logs in the user and returns a su
     const response = await client.post('/api/register').send({
         email: 'hey@admin.io',
         password: 'password',
-        name: 'Hey Admin io',
+        name: 'Hey Admin io'
     })
 
     expect(response.status).toBe(200)
@@ -61,7 +61,7 @@ test('returns a 200, and creates a new session when correct credentials are pass
 
     const response = await client.post('/api/login').send({
         email: user.email,
-        password: user.password,
+        password: user.password
     })
 
     expect(response.status).toBe(200)
@@ -90,7 +90,7 @@ test('can login correctly with remember me', async () => {
     const response = await client.post('/api/login').send({
         email: user.email,
         password: user.password,
-        rememberMe: true,
+        rememberMe: true
     })
 
     expect(response.status).toBe(200)

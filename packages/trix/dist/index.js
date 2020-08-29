@@ -1,4 +1,4 @@
-parcelRequire = (function (e, r, t, n) {
+parcelRequire = (function(e, r, t, n) {
     var i,
         o = 'function' == typeof parcelRequire && parcelRequire,
         u = 'function' == typeof require && require
@@ -12,7 +12,7 @@ parcelRequire = (function (e, r, t, n) {
                 var c = new Error("Cannot find module '" + t + "'")
                 throw ((c.code = 'MODULE_NOT_FOUND'), c)
             }
-            ;(p.resolve = function (r) {
+            ;(p.resolve = function(r) {
                 return e[t][1][r] || r
             }),
                 (p.cache = {})
@@ -25,18 +25,18 @@ parcelRequire = (function (e, r, t, n) {
         }
     }
     ;(f.isParcelRequire = !0),
-        (f.Module = function (e) {
+        (f.Module = function(e) {
             ;(this.id = e), (this.bundle = f), (this.exports = {})
         }),
         (f.modules = e),
         (f.cache = r),
         (f.parent = o),
-        (f.register = function (r, t) {
+        (f.register = function(r, t) {
             e[r] = [
-                function (e, r) {
+                function(e, r) {
                     r.exports = t
                 },
-                {},
+                {}
             ]
         })
     for (var c = 0; c < t.length; c++)
@@ -50,7 +50,7 @@ parcelRequire = (function (e, r, t, n) {
         'object' == typeof exports && 'undefined' != typeof module
             ? (module.exports = l)
             : 'function' == typeof define && define.amd
-            ? define(function () {
+            ? define(function() {
                   return l
               })
             : n && (this[n] = l)
@@ -60,11 +60,11 @@ parcelRequire = (function (e, r, t, n) {
 })(
     {
         Focm: [
-            function (require, module, exports) {
-                window.Flamingo.boot(function () {})
+            function(require, module, exports) {
+                window.Flamingo.boot(function() {})
             },
-            {},
-        ],
+            {}
+        ]
     },
     {},
     ['Focm'],

@@ -5,7 +5,7 @@ import 'trix/dist/trix.css'
 
 const TrixField = 'TrixField'
 
-Flamingo.booting(function () {
+Flamingo.booting(function() {
     this.field(TrixField, Trix)
 
     this.detailField(TrixField, TrixDetail)

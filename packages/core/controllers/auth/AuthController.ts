@@ -11,7 +11,7 @@ class AuthController {
     ) => {
         request.session!.destroy(() => {
             response.status(200).json({
-                message: 'Logout successful.',
+                message: 'Logout successful.'
             })
         })
     }
@@ -25,7 +25,7 @@ class AuthController {
         if (!validationPassed) {
             return response.status(422).json({
                 message: 'Validation failed.',
-                errors,
+                errors
             })
         }
 
@@ -41,9 +41,9 @@ class AuthController {
                 errors: [
                     {
                         message: 'These credentials do not match our records.',
-                        field: 'email',
-                    },
-                ],
+                        field: 'email'
+                    }
+                ]
             })
 
         if (!user) {
@@ -57,7 +57,7 @@ class AuthController {
         request.session!.user = user.id
 
         response.status(200).json({
-            message: 'Login successful.',
+            message: 'Login successful.'
         })
     }
 
@@ -68,7 +68,7 @@ class AuthController {
         if ((await request.db.getAdministratorsCount()) > 0) {
             return response.status(422).json({
                 message:
-                    'An administrator user already exists. Please use the administration management dashboard to add more users.',
+                    'An administrator user already exists. Please use the administration management dashboard to add more users.'
             })
         }
 
@@ -80,7 +80,7 @@ class AuthController {
         if (!validationPassed) {
             return response.status(422).json({
                 message: 'Validation failed.',
-                errors,
+                errors
             })
         }
 
@@ -90,14 +90,14 @@ class AuthController {
             {
                 name: request.body.name,
                 email: request.body.email,
-                password: request.body.password,
+                password: request.body.password
             }
         )
 
         request.session!.user = userId
 
         return response.json({
-            message: 'Registration and login successful.',
+            message: 'Registration and login successful.'
         })
     }
 
@@ -106,7 +106,7 @@ class AuthController {
             [key: string]: string
         } = {
             email: 'required|email',
-            password: 'required|min:8',
+            password: 'required|min:8'
         }
 
         if (registration) {
@@ -117,7 +117,7 @@ class AuthController {
             await validateAll(data, rules, {
                 'email.required': 'The email is required.',
                 'password.required': 'The password is required.',
-                'name.required': 'The name is required.',
+                'name.required': 'The name is required.'
             })
 
             return [true, []]

@@ -3,16 +3,16 @@ import Uniqid from 'uniqid'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import Randomstring from 'randomstring'
-import { Request, Response } from 'express'
 import AsyncHandler from 'express-async-handler'
 import { validateAll } from 'indicative/validator'
+import { Request, Response, NextFunction } from 'express'
 import {
     tool,
     resource,
     text,
+    belongsTo,
     belongsToMany,
     dateTime,
-    Password,
 } from '@flamingo/common'
 
 import { AuthToolConfig, AuthData } from './config'
@@ -26,11 +26,14 @@ class Auth {
         permissionResource: 'Permission',
         passwordResetsResource: 'Password Resets',
         fields: [],
-        apiPath: 'auth/api',
+        apiPath: 'api/auth',
         jwt: {
             expiresIn: '7d',
             secretKey: process.env.JWT_SECRET || 'auth-secret-key',
         },
+        teams: false,
+        teamFields: [],
+        twoFactorAuth: false,
     }
 
     public name(name: string) {
@@ -63,6 +66,18 @@ class Auth {
         return this
     }
 
+    public teamFields(fields: AuthToolConfig['teamFields']) {
+        this.config.teamFields = fields
+
+        return this
+    }
+
+    public twoFactorAuth() {
+        this.config.twoFactorAuth = true
+
+        return this
+    }
+
     public role(name: string) {
         this.config.roleResource = name
 
@@ -75,37 +90,84 @@ class Auth {
         return this
     }
 
+    public teams() {
+        this.config.teams = true
+
+        return this
+    }
+
     private userResource() {
         return resource(this.config.nameResource)
             .fields([
-                text('Name').searchable().rules('required'),
+                text('Name').searchable().creationRules('required'),
                 text('Email')
                     .unique()
                     .searchable()
                     .notNullable()
-                    .rules('required|email'),
+                    .creationRules('required|email'),
                 text('Password')
                     .hidden()
                     .notNullable()
                     .htmlAttributes({
                         type: 'password',
                     })
-                    .rules('required')
-                    .hidden()
+                    .creationRules('required')
                     .onlyOnForms()
                     .hideWhenUpdating(),
                 belongsToMany(this.config.roleResource),
+                ...(this.config.twoFactorAuth
+                    ? [
+                          text('Two Factor Enabled')
+                              .hideWhenCreating()
+                              .hideWhenUpdating()
+                              .hideFromIndex()
+                              .hideFromDetail(),
+                          text('Two Factor Secret')
+                              .hidden()
+                              .hideFromIndex()
+                              .hideWhenCreating()
+                              .hideWhenUpdating()
+                              .hideFromDetail(),
+                      ]
+                    : []),
                 ...this.config.fields,
             ])
             .beforeCreate((payload) => ({
                 ...payload,
                 password: Bcrypt.hashSync(payload.password),
             }))
-            .beforeUpdate((payload) => ({
-                ...payload,
-                password: Bcrypt.hashSync(payload.password),
-            }))
+            .beforeUpdate((payload) => {
+                if (payload.password) {
+                    return {
+                        ...payload,
+                        password: Bcrypt.hashSync(payload.password),
+                    }
+                }
+
+                return payload
+            })
             .group('Users & Permissions')
+    }
+
+    private teamResource() {
+        return resource('Team')
+            .fields([
+                text('Name').unique(),
+                belongsTo(this.config.nameResource),
+                belongsToMany(this.config.nameResource),
+                ...this.config.teamFields,
+            ])
+            .hideFromNavigation()
+    }
+
+    private teamInviteResource() {
+        return resource('Team Invite').fields([
+            text('Email'),
+            text('Role'),
+            text('Token').unique().rules('required'),
+            belongsTo(this.teamResource().data.name),
+            belongsTo(this.config.nameResource),
+        ])
     }
 
     private permissionResource() {
@@ -166,6 +228,12 @@ class Auth {
 
                     pushResource(this.passwordResetsResource())
 
+                    if (this.config.teams) {
+                        pushResource(this.teamResource())
+
+                        pushResource(this.teamInviteResource())
+                    }
+
                     return Promise.resolve()
                 })
 
@@ -188,6 +256,29 @@ class Auth {
                         this.getApiPath('forgot-password'),
                         AsyncHandler(this.forgotPassword)
                     )
+
+                    if (this.config.twoFactorAuth) {
+                        app.post(
+                            this.getApiPath('two-factor/enable'),
+                            this.setAuthMiddleware,
+                            this.authMiddleware,
+                            AsyncHandler(this.enableTwoFactorAuth)
+                        )
+
+                        app.post(
+                            this.getApiPath('two-factor/disable'),
+                            this.setAuthMiddleware,
+                            this.authMiddleware,
+                            AsyncHandler(this.disableTwoFactorAuth)
+                        )
+
+                        app.post(
+                            this.getApiPath('two-factor/confirm'),
+                            this.setAuthMiddleware,
+                            this.authMiddleware,
+                            AsyncHandler(this.confirmEnableTwoFactorAuth)
+                        )
+                    }
 
                     return {}
                 })
@@ -230,7 +321,7 @@ class Auth {
     }
 
     private login = async (request: Request, response: Response) => {
-        const { email, password } = await this.validate(request.body)
+        const { email, password, token } = await this.validate(request.body)
 
         const UserModel = request.resources[
             this.userResource().data.slug
@@ -254,23 +345,231 @@ class Auth {
             }
         }
 
-        const user = (
-            await UserModel.where({
-                id: userWithPassword.id,
-            }).fetch({
-                withRelated: [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
-                    }`,
-                ],
+        const model = await UserModel.where({
+            id: userWithPassword.id,
+        }).fetch({
+            withRelated: [
+                `${this.roleResource().data.slug}.${
+                    this.permissionResource().data.slug
+                }`,
+            ],
+        })
+
+        const user = model.toJSON()
+
+        if (user.two_factor_enabled) {
+            const Speakeasy = require('speakeasy')
+
+            if (!token) {
+                return response.status(400).json({
+                    message: 'The two factor authentication token is required.',
+                    requiresTwoFactorToken: true,
+                })
+            }
+
+            const verified = Speakeasy.totp.verify({
+                token,
+                encoding: 'base32',
+                secret: model.get('two_factor_secret'),
             })
-        ).toJSON()
+
+            if (!verified) {
+                return response.status(400).json({
+                    message: `Invalid two factor authentication token.`,
+                })
+            }
+        }
 
         return response.json({
             token: this.generateJwt({
                 id: user.id,
             }),
             user,
+        })
+    }
+
+    private authMiddleware = async (
+        request: Request,
+        response: Response,
+        next: NextFunction
+    ) => {
+        if (!request.authUser) {
+            return response.status(401).json({
+                message: 'Unauthenticated.',
+            })
+        }
+
+        next()
+    }
+
+    private setAuthMiddleware = async (
+        request: Request,
+        response: Response,
+        next: NextFunction
+    ) => {
+        const { headers, resourceManager } = request
+        const [, token] = (headers['authorization'] || '').split('Bearer ')
+
+        if (!token) {
+            return next()
+        }
+
+        try {
+            const { id } = Jwt.verify(token, this.config.jwt.secretKey) as {
+                id: number
+            }
+
+            const model = await resourceManager.findOneById(
+                request,
+                this.userResource().data.slug,
+                id,
+                [
+                    `${this.roleResource().data.slug}.${
+                        this.permissionResource().data.slug
+                    }`,
+                ]
+            )
+
+            const user = {
+                ...model.toJSON(),
+                two_factor_secret: model.get('two_factor_secret'),
+                two_factor_enabled: model.get('two_factor_enabled') === '1',
+            }
+
+            user.permissions = user[this.roleResource().data.slug].reduce(
+                (acc: [], role: any) => [
+                    ...acc,
+                    ...(role[this.permissionResource().data.slug] || []).map(
+                        (permission: any) => permission.slug
+                    ),
+                ],
+                []
+            )
+
+            request.authUser = user
+        } catch (errors) {
+            return next()
+        }
+
+        return next()
+    }
+
+    private disableTwoFactorAuth = async (
+        request: Request,
+        response: Response
+    ) => {
+        if (!request.authUser?.two_factor_enabled) {
+            return response.status(400).json({
+                message: `You do not have two factor authentication enabled.`,
+            })
+        }
+
+        const Speakeasy = require('speakeasy')
+
+        const verified = Speakeasy.totp.verify({
+            encoding: 'base32',
+            token: request.body.token,
+            secret: request.authUser?.two_factor_secret,
+        })
+
+        if (!verified) {
+            return response.status(400).json({
+                message: `Invalid two factor authentication code.`,
+            })
+        }
+
+        await request.resourceManager.update(
+            request,
+            this.userResource(),
+            request.authUser!.id,
+            {
+                two_factor_secret: null,
+                two_factor_enabled: false,
+            },
+            true
+        )
+
+        return response.json({
+            message: `Two factor auth has been disabled.`,
+        })
+    }
+
+    private confirmEnableTwoFactorAuth = async (
+        request: Request,
+        response: Response
+    ) => {
+        const Speakeasy = require('speakeasy')
+
+        await validateAll(request.body, {
+            token: 'required|number',
+        })
+
+        if (!request.authUser?.two_factor_secret) {
+            return response.status(400).json({
+                message: `You must enable two factor authentication first.`,
+            })
+        }
+
+        const verified = Speakeasy.totp.verify({
+            encoding: 'base32',
+            token: request.body.token,
+            secret: request.authUser?.two_factor_secret,
+        })
+
+        if (!verified) {
+            return response.status(400).json({
+                message: `Invalid two factor token.`,
+            })
+        }
+
+        await request.resourceManager.update(
+            request,
+            this.userResource(),
+            request.authUser!.id,
+            {
+                two_factor_enabled: true,
+            },
+            true
+        )
+
+        return response.json({
+            message: `Two factor authentication has been enabled.`,
+        })
+    }
+
+    private enableTwoFactorAuth = async (
+        request: Request,
+        response: Response
+    ) => {
+        const Qr = require('qrcode')
+        const Speakeasy = require('speakeasy')
+
+        const { base32, otpauth_url } = Speakeasy.generateSecret()
+
+        const a = await request.resourceManager.update(
+            request,
+            this.userResource(),
+            request.authUser!.id,
+            {
+                two_factor_secret: base32,
+                two_factor_enabled: false,
+            },
+            true
+        )
+
+        console.log(a)
+
+        Qr.toDataURL(otpauth_url, (error: null | Error, dataURL: string) => {
+            if (error) {
+                return response.status(500).json({
+                    message: `Error generating qr code.`,
+                    error,
+                })
+            }
+
+            return response.json({
+                dataURL,
+            })
         })
     }
 

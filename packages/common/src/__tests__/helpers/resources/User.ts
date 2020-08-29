@@ -2,7 +2,6 @@ import { text } from '../../../fields/Text'
 import { hasMany } from '../../../fields/HasMany'
 import { resource } from '../../../resources/Resource'
 
-
 export default resource('User')
     .fields([
         text('Full name').searchable().rules('required'),

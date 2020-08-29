@@ -19,7 +19,7 @@ import {
     ResourceManager,
     SupportedDatabases,
     DatabaseRepositoryInterface,
-    belongsToMany,
+    belongsToMany
 } from '@flamingo/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
@@ -49,22 +49,22 @@ class Flamingo {
         scripts: [
             {
                 name: 'flamingo.js',
-                path: Path.resolve(__dirname, 'client', 'index.js'),
-            },
+                path: Path.resolve(__dirname, 'client', 'index.js')
+            }
         ],
         styles: [
             {
                 name: 'flamingo.css',
-                path: Path.resolve(__dirname, 'client', 'index.css'),
-            },
+                path: Path.resolve(__dirname, 'client', 'index.css')
+            }
         ],
         env: {
             port: process.env.PORT || 1377,
             database: (process.env.DATABASE as SupportedDatabases) || 'sqlite',
             sessionSecret: process.env.SESSION_SECRET || 'test-session-secret',
             databaseUrl:
-                process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg',
-        },
+                process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg'
+        }
     }
 
     public async register() {
@@ -101,8 +101,8 @@ class Flamingo {
                     ...this.config.styles,
                     {
                         name,
-                        path,
-                    },
+                        path
+                    }
                 ]
             },
             script: (name: Asset['name'], path: Asset['path']) => {
@@ -110,15 +110,15 @@ class Flamingo {
                     ...this.config.scripts,
                     {
                         name,
-                        path,
-                    },
+                        path
+                    }
                 ]
             },
             resources: this.config.resources,
             pushResource: (resource: Resource) => {
                 this.config.resources.push(resource)
             },
-            resourcesMap: this.config.resourcesMap,
+            resourcesMap: this.config.resourcesMap
         }
     }
 
@@ -131,7 +131,7 @@ class Flamingo {
             if (hook === 'setup') {
                 this.extensions = {
                     ...this.extensions,
-                    [tool.slug]: extension,
+                    [tool.slug]: extension
                 }
             }
         }
@@ -223,10 +223,10 @@ class Flamingo {
             ExpressSession({
                 secret: this.config.env.sessionSecret,
                 store: new Store({
-                    knex: this.databaseClient,
+                    knex: this.databaseClient
                 }),
                 resave: false,
-                saveUninitialized: false,
+                saveUninitialized: false
             })
         )
 
@@ -244,7 +244,7 @@ class Flamingo {
     ) => {
         if (!request.admin) {
             return response.status(401).json({
-                message: 'Unauthenticated.',
+                message: 'Unauthenticated.'
             })
         }
 
@@ -266,7 +266,7 @@ class Flamingo {
 
         if (!admin) {
             return response.status(401).json({
-                message: `Unauthenticated.`,
+                message: `Unauthenticated.`
             })
         }
 
@@ -356,19 +356,19 @@ class Flamingo {
                 if (Array.isArray(error)) {
                     return response.status(422).json({
                         message: 'Validation failed.',
-                        errors: error,
+                        errors: error
                     })
                 }
 
                 if (error.status === 404) {
                     return response.status(404).json({
-                        message: error.message,
+                        message: error.message
                     })
                 }
 
                 if (error.status) {
                     return response.status(error.status).json({
-                        message: error.message || 'Internal server error.',
+                        message: error.message || 'Internal server error.'
                     })
                 }
 
@@ -376,7 +376,7 @@ class Flamingo {
 
                 response.status(500).json({
                     message: 'Internal server error.',
-                    error,
+                    error
                 })
             }
         )
@@ -398,7 +398,7 @@ class Flamingo {
             }
         )
 
-        this.config.scripts.concat(this.config.styles).forEach((asset) => {
+        this.config.scripts.concat(this.config.styles).forEach(asset => {
             this.app.get(
                 `/${asset.name}`,
                 this.asyncHandler(
@@ -434,7 +434,7 @@ class Flamingo {
     private setValue(key: keyof FlamingoConfig, value: any) {
         this.config = {
             ...this.config,
-            [key]: value,
+            [key]: value
         }
 
         return this
@@ -446,15 +446,15 @@ class Flamingo {
             this.administratorResource(),
             this.roleResource(),
             this.permissionResource(),
-            ...resources,
+            ...resources
         ]
 
         const uniqueResources = Array.from(
-            new Set(updatedResources.map((resource) => resource.data.name))
+            new Set(updatedResources.map(resource => resource.data.name))
         )
-            .map((resourceName) =>
+            .map(resourceName =>
                 updatedResources.find(
-                    (resource) => resource.data.name === resourceName
+                    resource => resource.data.name === resourceName
                 )
             )
             .filter(Boolean) as Array<Resource>
@@ -463,7 +463,7 @@ class Flamingo {
 
         const resourcesMap: FlamingoConfig['resourcesMap'] = {}
 
-        uniqueResources.forEach((resource) => {
+        uniqueResources.forEach(resource => {
             resourcesMap[resource.data.slug] = resource
         })
 
@@ -476,11 +476,15 @@ class Flamingo {
         return resource('Administrator Role')
             .hideFromNavigation()
             .fields([
-                text('Name').rules('required').unique(),
-                text('Slug').rules('required').unique(),
+                text('Name')
+                    .rules('required')
+                    .unique(),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
 
                 belongsToMany('Administrator'),
-                belongsToMany('Administrator Permission'),
+                belongsToMany('Administrator Permission')
             ])
     }
 
@@ -489,8 +493,10 @@ class Flamingo {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Slug').rules('required').unique(),
-                belongsToMany('Administrator Role'),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
+                belongsToMany('Administrator Role')
             ])
     }
 
@@ -501,17 +507,19 @@ class Flamingo {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email').unique().searchable(),
+                text('Email')
+                    .unique()
+                    .searchable(),
                 text('Password').hidden(),
-                belongsToMany('Administrator Role'),
+                belongsToMany('Administrator Role')
             ])
-            .beforeCreate((payload) => ({
+            .beforeCreate(payload => ({
                 ...payload,
-                password: Bcrypt.hashSync(payload.password),
+                password: Bcrypt.hashSync(payload.password)
             }))
-            .beforeUpdate((payload) => ({
+            .beforeUpdate(payload => ({
                 ...payload,
-                password: Bcrypt.hashSync(payload.password),
+                password: Bcrypt.hashSync(payload.password)
             }))
     }
 
@@ -522,7 +530,9 @@ class Flamingo {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail().connection(driverName).config(mailConfig)
+        this.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }

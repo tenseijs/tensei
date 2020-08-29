@@ -1,4 +1,4 @@
-import { Field } from '@flamingo/common'
+import { Field, User } from '@flamingo/common'
 
 export interface AuthToolConfig {
     fields: Field[]
@@ -11,6 +11,14 @@ export interface AuthToolConfig {
         expiresIn: string
         secretKey: string
     }
+    teams: boolean
+    teamFields: Field[]
+    twoFactorAuth: boolean
+}
+
+export interface UserWithTwoFactorAuth extends User {
+    two_factor_secret?: string
+    two_factor_enabled?: boolean
 }
 
 export type AuthData = { email: string; password: string; name?: string }

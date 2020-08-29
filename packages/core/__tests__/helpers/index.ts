@@ -23,7 +23,7 @@ export const fakePostData = () => ({
     av_cpc: Faker.random.number(),
     published_at: Faker.date.future(),
     scheduled_for: Faker.date.future(),
-    category: Faker.random.arrayElement(['javascript', 'angular']),
+    category: Faker.random.arrayElement(['javascript', 'angular'])
 })
 
 export const setup = async (
@@ -32,7 +32,7 @@ export const setup = async (
         admin,
         apiPath,
         dashboardPath,
-        createAndLoginAdmin,
+        createAndLoginAdmin
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -57,9 +57,9 @@ export const setup = async (
 
                           next()
                       })
-                  }),
+                  })
               ]
-            : []),
+            : [])
     ])
 
     if (apiPath) {
@@ -90,17 +90,17 @@ export const createAdminUser = async (knex: Knex) => {
     const user = {
         name: Faker.name.findName(),
         email: Faker.internet.email(),
-        password: 'password',
+        password: 'password'
     }
 
     const id = await knex('administrators').insert({
         name: user.name,
         email: user.email,
-        password: Bcrypt.hashSync(user.password),
+        password: Bcrypt.hashSync(user.password)
     })
 
     return {
         id: id[0],
-        ...user,
+        ...user
     }
 }

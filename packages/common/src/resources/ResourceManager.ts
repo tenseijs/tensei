@@ -455,7 +455,8 @@ export class ResourceManager {
     public async findOneById(
         request: Request,
         resourceSlugOrResource: string | Resource,
-        id: number | string
+        id: number | string,
+        withRelated?: string[]
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
@@ -468,7 +469,7 @@ export class ResourceManager {
             resource,
             id,
             fields,
-            withRelationships
+            withRelated ? withRelated : withRelationships
         )
 
         if (!model) {
@@ -521,7 +522,7 @@ export class ResourceManager {
         resource.data.fields.forEach((field) => {
             const serializedField = field.serialize()
 
-            if (payload[serializedField.inputName]) {
+            if (Object.keys(payload).includes(serializedField.inputName)) {
                 validPayload[serializedField.inputName] =
                     payload[serializedField.inputName]
             }
@@ -540,7 +541,7 @@ export class ResourceManager {
         resource.data.fields.forEach((field) => {
             const serializedField = field.serialize()
 
-            if (payload[serializedField.inputName]) {
+            if (Object.keys(payload).includes(serializedField.inputName)) {
                 if (serializedField.isRelationshipField) {
                     relationshipFieldsPayload[serializedField.inputName] =
                         payload[serializedField.inputName]

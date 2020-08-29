@@ -13,7 +13,7 @@ module.exports = flamingo()
         require('./resources/Tag'),
     ])
     .tools([
-        auth().name('Customer').tool(),
+        auth().name('Customer').twoFactorAuth().tool(),
         trix(),
         cashier()
             .customerResourceName('Customer')

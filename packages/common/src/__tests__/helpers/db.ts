@@ -15,5 +15,5 @@ export default {
     updateManyByIds: jest.fn(),
     deleteById: jest.fn(),
     updateManyWhere: jest.fn(),
-    getAdministratorById: jest.fn()
+    getAdministratorById: jest.fn(),
 }

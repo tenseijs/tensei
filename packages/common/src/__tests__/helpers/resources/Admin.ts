@@ -10,22 +10,22 @@ import { resource } from '../../../resources/Resource'
 import { belongsToMany } from '../../../fields/BelongsToMany'
 
 export default resource('Administrator')
-            .fields([
-                text('Name').searchable().rules('required'),
-                text('Email')
-                    .unique()
-                    .searchable()
-                    .notNullable()
-                    .rules('required|email'),
-                text('Password')
-                    .hidden()
-                    .notNullable()
-                    .htmlAttributes({
-                        type: 'password',
-                    })
-                    .rules('required')
-                    .hidden()
-                    .onlyOnForms()
-                    .hideWhenUpdating(),
-            ])
-            .group('Users & Permissions')
+    .fields([
+        text('Name').searchable().rules('required'),
+        text('Email')
+            .unique()
+            .searchable()
+            .notNullable()
+            .rules('required|email'),
+        text('Password')
+            .hidden()
+            .notNullable()
+            .htmlAttributes({
+                type: 'password',
+            })
+            .rules('required')
+            .hidden()
+            .onlyOnForms()
+            .hideWhenUpdating(),
+    ])
+    .group('Users & Permissions')

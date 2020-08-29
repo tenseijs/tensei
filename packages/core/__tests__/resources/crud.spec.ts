@@ -6,21 +6,21 @@ import { setup, fakePostData } from '../helpers'
 test('can create a resource with correct values (posts)', async () => {
     const { app, resourceManager } = await setup({
         admin: {
-            permissions: ['create:posts'],
-        } as any,
+            permissions: ['create:posts']
+        } as any
     })
 
     const user = (
         await resourceManager().create({} as any, 'users', {
             email: Faker.internet.exampleEmail(),
             full_name: Faker.name.findName(),
-            password: 'password',
+            password: 'password'
         })
     ).toJSON()
 
     const post = {
         ...fakePostData(),
-        user_id: user.id,
+        user_id: user.id
     }
 
     const client = Supertest(app)
@@ -35,14 +35,14 @@ test('can create a resource with correct values (posts)', async () => {
 test('can create a resource with correct values (user)', async () => {
     const { app } = await setup({
         admin: {
-            permissions: ['create:users'],
-        } as any,
+            permissions: ['create:users']
+        } as any
     })
 
     const userDetails = {
         email: Faker.internet.exampleEmail(),
         full_name: Faker.name.findName(),
-        password: 'password',
+        password: 'password'
     }
 
     const client = Supertest(app)
@@ -57,14 +57,14 @@ test('can create a resource with correct values (user)', async () => {
 test('can get multiple resources (users)', async () => {
     const { app, resourceManager } = await setup({
         admin: {
-            permissions: ['create:users'],
-        } as any,
+            permissions: ['create:users']
+        } as any
     })
 
     const userDetails = {
         email: Faker.internet.exampleEmail(),
         full_name: Faker.name.findName(),
-        password: 'password',
+        password: 'password'
     }
 
     await resourceManager().create({} as any, 'users', userDetails)
@@ -81,19 +81,19 @@ test('can get multiple resources (users)', async () => {
 test('can update a resource (posts)', async () => {
     const { app, resourceManager } = await setup({
         admin: {
-            permissions: ['update:users'],
-        } as any,
+            permissions: ['update:users']
+        } as any
     })
 
     const userDetails = {
         email: Faker.internet.exampleEmail(),
         full_name: Faker.name.findName(),
-        password: 'password',
+        password: 'password'
     }
 
     const updateDetails = {
         email: Faker.internet.exampleEmail(),
-        full_name: Faker.name.findName(),
+        full_name: Faker.name.findName()
     }
 
     const user = (
@@ -114,14 +114,14 @@ test('can update a resource (posts)', async () => {
 test('can get a single resource (user)', async () => {
     const { app, resourceManager } = await setup({
         admin: {
-            permissions: ['create:users'],
-        } as any,
+            permissions: ['create:users']
+        } as any
     })
 
     const userDetails = {
         email: Faker.internet.exampleEmail(),
         full_name: Faker.name.findName(),
-        password: 'password',
+        password: 'password'
     }
 
     const user = (
