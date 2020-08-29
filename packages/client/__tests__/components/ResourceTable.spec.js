@@ -30,6 +30,8 @@ let props = {
         authorizedToCreate: jest.fn(() => true),
         authorizedToUpdate: jest.fn(() => true),
         authorizedToDelete: jest.fn(() => true),
+        authorizedToRunAction: jest.fn(() => true),
+        authorizedToSee: jest.fn(() => true),
     },
 }
 
@@ -91,20 +93,16 @@ describe('ResourceTable tests', () => {
         fireEvent.change(searchInput, {
             target: { value: 'Amapai' },
         })
-        window.Flamingo = {
-            ...FlamingoMock,
-            request: {
-                get: jest.fn().mockResolvedValue({
-                    data: {
-                        data: [tableDataBuilder()],
-                        page: 1,
-                        total: 1,
-                        perPage: 10,
-                        pageCount: 1,
-                    },
-                }),
+        window.Flamingo.request.get = jest.fn().mockResolvedValueOnce({
+            data: {
+                data: [tableDataBuilder()],
+                page: 1,
+                total: 1,
+                perPage: 10,
+                pageCount: 1,
             },
-        }
+        })
+
         await waitFor(() =>
             expect(screen.queryAllByRole('row')).toHaveLength(2)
         )
@@ -370,6 +368,20 @@ describe('ResourceTable tests', () => {
             expect(window.Flamingo.request.get).toHaveBeenCalledTimes(2)
         )
     })
-    test('Should show all actions in the actions dropdown', () => {})
-    test('Should show only authorized actions in the actions dropdown', () => {})
+    test('Should show all actions in the actions dropdown', async () => {
+        render(<WithAuthComponent {...props} />)
+
+        const [actionsLink] = await screen.findAllByTestId('action-link')
+        userEvent.click(actionsLink)
+
+        const allActions = await screen.findAllByRole('menuitem')
+
+        expect(allActions).toHaveLength(1)
+        expect(
+            await screen.findByRole('menuitem', { name: 'Publish on' })
+        ).toBeInTheDocument()
+        expect(
+            screen.queryByRole('menuitem', { name: 'Prevent publish' })
+        ).not.toBeInTheDocument()
+    })
 })

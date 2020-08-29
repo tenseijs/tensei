@@ -181,6 +181,7 @@ const ActionsDropdown = ({
                 toggleElement={
                     position === 'table-row' ? (
                         <TextLink
+                            data-testid="action-link"
                             onClick={toggleActionsDropdown}
                             disabled={selected.length === 0}
                         >
