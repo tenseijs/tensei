@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<create> validates payload before creating any record 1`] = `
+Array [
+  Object {
+    "field": "title",
+    "message": "The title is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "description",
+    "message": "The description is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "content",
+    "message": "The content is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "av_cpc",
+    "message": "The av_cpc is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "category",
+    "message": "The category is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "user_id",
+    "message": "The user_id is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "published_at",
+    "message": "The published_at is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "scheduled_for",
+    "message": "The scheduled_for is required.",
+    "validation": "required",
+  },
+]
+`;

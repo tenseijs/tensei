@@ -1,10 +1,9 @@
 import { ResourceManager } from '../resources/ResourceManager'
 
+import db from './helpers/db'
 import { Tag, Comment, User, Post } from './helpers/resources'
 
-const setup = () => new ResourceManager([
-    Tag, Comment, User, Post
-], {} as any)
+const setup = () => new ResourceManager([Tag, Comment, User, Post], db as any)
 
 test('<findResource> can find a resource by string', () => {
     const resource = setup().findResource('users')
@@ -20,12 +19,22 @@ test('<findResource> returns the resourceOrSlug if it is an instance', () => {
 
 test('<findResource> throws an error if the resource is not found', () => {
     expect(() => setup().findResource('unknown-resource')).toThrow({
-        message: 'Resource unknown-resource not found.'
+        message: 'Resource unknown-resource not found.',
     } as any)
 })
 
 test('<findResource> throws an error if the slug is not passed in', () => {
     expect(() => setup().findResource(undefined as any)).toThrow({
-        message: 'Resource undefined not found.'
+        message: 'Resource undefined not found.',
     } as any)
+})
+
+test('<create> validates payload before creating any record', async () => {
+    expect.assertions(1)
+
+    try {
+        await setup().create({} as any, 'posts', {})
+    } catch (error) {
+        expect(error).toMatchSnapshot()
+    }
 })
