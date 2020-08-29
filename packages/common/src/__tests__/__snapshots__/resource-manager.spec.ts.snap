@@ -1,6 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<create> validates payload before creating any record 1`] = `
+exports[`ResourceManager create validates payload before creating any record (comments) 1`] = `
+Array [
+  Object {
+    "field": "title",
+    "message": "The title is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "body",
+    "message": "The body is required.",
+    "validation": "required",
+  },
+]
+`;
+
+exports[`ResourceManager create validates payload before creating any record (posts) 1`] = `
 Array [
   Object {
     "field": "title",
@@ -40,6 +55,36 @@ Array [
   Object {
     "field": "scheduled_for",
     "message": "The scheduled_for is required.",
+    "validation": "required",
+  },
+]
+`;
+
+exports[`ResourceManager create validates payload before creating any record (tags) 1`] = `
+Array [
+  Object {
+    "field": "name",
+    "message": "The name is required.",
+    "validation": "required",
+  },
+]
+`;
+
+exports[`ResourceManager create validates payload before creating any record (users) 1`] = `
+Array [
+  Object {
+    "field": "full_name",
+    "message": "The full_name is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "email",
+    "message": "The email is required.",
+    "validation": "required",
+  },
+  Object {
+    "field": "password",
+    "message": "The password is required.",
     "validation": "required",
   },
 ]

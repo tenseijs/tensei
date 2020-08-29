@@ -1,3 +1,4 @@
+import Faker from 'faker'
 import { date } from '../../../fields/Date'
 import { text } from '../../../fields/Text'
 import { select } from '../../../fields/Select'
@@ -102,3 +103,13 @@ export default resource('Post')
     ])
     .perPageOptions([25, 50, 100])
     .displayField('title')
+
+export const fakePostData = () => ({
+    title: Faker.lorem.word(),
+    description: Faker.lorem.word(),
+    content: Faker.lorem.sentence(),
+    av_cpc: Faker.random.number(),
+    published_at: Faker.date.future(),
+    scheduled_for: Faker.date.future(),
+    category: Faker.random.arrayElement(['javascript', 'angular']),
+})
