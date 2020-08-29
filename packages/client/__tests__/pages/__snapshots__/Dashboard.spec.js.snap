@@ -72,7 +72,7 @@ exports[`Test the dashboard page should match snapshot 1`] = `
           Dashboard
         </header>
         <a
-          href="/string"
+          href="/resources/string"
         >
           <div
             class="w-full py-3 pl-10 pr-3 text-sm cursor-pointer hover:bg-gray-lightest-200 transition duration-75"
@@ -100,12 +100,21 @@ exports[`Test the dashboard page should match snapshot 1`] = `
           Resources
         </header>
         <a
-          href="/string"
+          href="/resources/string"
         >
           <div
             class="w-full py-3 pl-10 pr-3 text-sm cursor-pointer hover:bg-gray-lightest-200 transition duration-75"
           >
             Posts
+          </div>
+        </a>
+        <a
+          href="/resources/string"
+        >
+          <div
+            class="w-full py-3 pl-10 pr-3 text-sm cursor-pointer hover:bg-gray-lightest-200 transition duration-75"
+          >
+            News
           </div>
         </a>
       </div>

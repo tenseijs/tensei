@@ -267,7 +267,6 @@ describe('Test the field components', () => {
         render(<DateTimeField {...props} />)
 
         const inputBox = screen.getByRole('textbox', { name: '' })
-        screen.debug()
         const dateNumber = screen.getByText('15')
 
         userEvent.click(inputBox)

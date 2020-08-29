@@ -19,6 +19,7 @@
         "@types/jest": "^25.2.3",
         "babel-jest": "^26.2.2",
         "jest": "^26.0.1",
+        "jest-environment-jsdom-sixteen": "^1.0.3",
         "lerna": "^3.22.1",
         "parcel-bundler": "^1.12.4",
         "prettier": "^2.0.5",
@@ -33,7 +34,7 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "test": "jest --verbose --runInBand",
+        "test": "jest --verbose --runInBand --env=jest-environment-jsdom-sixteen",
         "dev:css": "NODE_ENV=development yarn build:css",
         "build:css": "tailwind build css/index.css -o css/index.output.css",
         "dev": "yarn dev:css && parcel watch index.js --no-autoinstall -d './../core/build/client'",

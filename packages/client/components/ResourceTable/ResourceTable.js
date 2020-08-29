@@ -172,7 +172,7 @@ class ResourceTable extends React.Component {
     onSearchChange = debounce(500, (search) => {
         this.setState(
             {
-                isLoading: true,
+                loading: true,
                 search,
             },
             () => this.fetch()
@@ -194,7 +194,8 @@ class ResourceTable extends React.Component {
             deleteLoading: true,
         })
 
-        const { resource, deleting } = this.state
+        const { deleting } = this.state
+        const { resource } = this.props
 
         const resourceId = deleting.key
 
@@ -239,6 +240,7 @@ class ResourceTable extends React.Component {
             deleteLoading,
             loading,
         } = this.state
+
         const { resource } = this.props
         const selectAllChecked =
             selected.length === data.length && data.length > 0
@@ -348,8 +350,9 @@ class ResourceTable extends React.Component {
                                         </TableCell>
                                         {row.cells.map((cell, index) => (
                                             <TableCell
+                                                data-testid="table-row"
                                                 onClick={() => {
-                                                    this.props.history.push(
+                                                    return this.props.history.push(
                                                         Flamingo.getPath(
                                                             `resources/${resource.slug}/${row.key}`
                                                         )
@@ -400,6 +403,7 @@ class ResourceTable extends React.Component {
                                                                 color:
                                                                     'negative',
                                                             }}
+                                                            data-testid="edit-resource-btn"
                                                             label={`Edit resource`}
                                                         />
                                                     </Link>
@@ -416,6 +420,7 @@ class ResourceTable extends React.Component {
                                                             icon: 'Delete',
                                                             color: 'negative',
                                                         }}
+                                                        data-testid="delete-resource-btn"
                                                         label={`Delete resource`}
                                                     />
                                                 ) : null}
@@ -451,7 +456,7 @@ class ResourceTable extends React.Component {
                             </Select>
                         </div>
 
-                        <Paragraph>
+                        <Paragraph data-testid="pagination-info">
                             Showing <span>{showingFrom}</span> to{' '}
                             <span>
                                 {showingOnPage > total ? total : showingOnPage}
@@ -482,6 +487,7 @@ class ResourceTable extends React.Component {
                 <ModalConfirm
                     intent="negative"
                     isShown={!!deleting}
+                    data-testid="delete-resource-modal"
                     title="Delete resource"
                     confirmLabel="Delete"
                     onCancel={this.handleModalCancel}
