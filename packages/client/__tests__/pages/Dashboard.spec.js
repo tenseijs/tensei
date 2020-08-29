@@ -1,9 +1,47 @@
 import React from 'react'
-import { fireEvent, cleanup } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
+import { createMemoryHistory } from 'history'
+import { MemoryRouter } from 'react-router-dom'
+
+import Auth from '~/store/auth'
+import Resources from '~/store/resources'
 import Dashboard from '~/pages/Dashboard'
-import setupPage from '~/testSetup/setupPage'
-import { resources } from '~/testSetup/data'
+import { resources, user } from '~/testSetup/data'
+
+const history = createMemoryHistory()
+
+const DashBoardSetup = () => {
+    const props = { resources }
+    return (
+        <MemoryRouter
+            initialIndex={0}
+            initialEntries={[
+                '/resources/posts',
+                '/resources/posts/new',
+                'auth/login',
+            ]}
+        >
+            <Auth.Provider
+                value={{
+                    user,
+                    authorizedToCreate: jest.fn(() => true),
+                    authorizedToUpdate: jest.fn(() => true),
+                    authorizedToDelete: jest.fn(() => true),
+                }}
+            >
+                <Resources.Provider
+                    value={{
+                        resources: resources,
+                    }}
+                >
+                    <Dashboard {...props} location={history.location} />
+                </Resources.Provider>
+            </Auth.Provider>
+        </MemoryRouter>
+    )
+}
 
 describe('Test the dashboard page', () => {
     beforeEach(() => {
@@ -13,48 +51,44 @@ describe('Test the dashboard page', () => {
     })
     afterEach(cleanup)
     test('should match snapshot', () => {
-        const { asFragment } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
+        const { asFragment } = render(<DashBoardSetup />)
         expect(asFragment()).toMatchSnapshot()
     })
     test('resources should be listed on the sidebar', () => {
-        const { getByText } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
-        expect(getByText(resources[0].label)).toBeInTheDocument()
+        render(<DashBoardSetup />)
+
+        resources.map((r) => {
+            expect(screen.getByText(r.label)).toBeInTheDocument()
+        })
     })
     test('resources can be toggled to hide / show', () => {
-        const { getByText, queryByText } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
-        fireEvent.click(getByText('Resources'))
+        render(<DashBoardSetup />)
 
-        expect(queryByText(resources[0].label)).not.toBeInTheDocument()
+        resources.map((r) => {
+            expect(screen.getByText(r.label)).toBeInTheDocument()
+        })
+
+        userEvent.click(screen.getByText('Resources'))
+
+        resources.map((r) => {
+            expect(screen.queryByText(r.label)).not.toBeInTheDocument()
+        })
     })
     test('the dashboard header has the appropriate links', () => {
-        const { getByTestId, getAllByTestId } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
-        fireEvent.click(getByTestId('dashboard-header-dropdown'))
-        expect(getAllByTestId('dashboard-header-dropdown-list')).toHaveLength(2)
-    })
-    test('the dashboard header has the appropriate links', () => {
-        const { getByTestId, getAllByTestId } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
-        fireEvent.click(getByTestId('dashboard-header-dropdown'))
-        expect(getAllByTestId('dashboard-header-dropdown-list')).toHaveLength(2)
+        render(<DashBoardSetup />)
+
+        userEvent.click(screen.getByTestId('dashboard-header-dropdown'))
+
+        expect(
+            screen.getAllByTestId('dashboard-header-dropdown-list')
+        ).toHaveLength(2)
+        expect(screen.getByText(/Account settings/i)).toBeInTheDocument()
+        expect(screen.getByText(/Logout/i)).toBeInTheDocument()
+
+        userEvent.click(screen.getByTestId('dashboard-header-dropdown'))
+
+        expect(screen.queryByText(/Account settings/i)).not.toBeInTheDocument()
+        expect(screen.queryByText(/Logout/i)).not.toBeInTheDocument()
     })
     test('clicking logout on the header dropdown should log user out', () => {
         window.Flamingo = {
@@ -62,37 +96,11 @@ describe('Test the dashboard page', () => {
             request: { post: jest.fn(() => Promise.resolve(true)) },
             location: { assign: jest.fn() },
         }
-        const { getByTestId, getByText, debug } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
-        fireEvent.click(getByTestId('dashboard-header-dropdown'))
-        fireEvent.click(getByText('Logout'))
-    })
-    test('can navigate to a resource i.e Post resource', async () => {
-        window.Flamingo = {
-            getPath: jest.fn(() => '/resources/posts?page=1&per_page=25'),
-            request: {
-                get: jest.fn().mockResolvedValue({
-                    response: {
-                        status: 200,
-                        data: {
-                            data: 'posts',
-                            page: 1,
-                            total: 2,
-                            perPage: 5,
-                            pageCount: 1,
-                        },
-                    },
-                }),
-            },
-        }
-        const { getByText, debug } = setupPage(
-            ['/', '/resources/posts', '/resources/posts/new', 'auth/login'],
-            0,
-            Dashboard
-        )
-        fireEvent.click(await getByText('Posts'))
+        render(<DashBoardSetup />)
+
+        userEvent.click(screen.getByTestId('dashboard-header-dropdown'))
+        userEvent.click(screen.getByText(/Logout/i))
+
+        expect(window.Flamingo.request.post).toHaveBeenCalledWith('logout')
     })
 })

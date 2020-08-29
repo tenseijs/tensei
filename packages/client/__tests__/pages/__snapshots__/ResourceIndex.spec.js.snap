@@ -66,9 +66,9 @@ exports[`Test the resource index page resource index page should match snapshot 
           style="top: 0px;"
         >
           <input
+            aria-label="Select all Posts"
             class="ControlledInput__ControlledInput___2XK3j"
             data-test-id="ctf-ui-checkbox"
-            data-testid="selectall-checkbox"
             type="checkbox"
             value=""
           />
@@ -77,7 +77,6 @@ exports[`Test the resource index page resource index page should match snapshot 
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
           data-test-id="cf-ui-table-cell"
-          data-testid="table-head"
           style="top: 0px;"
         >
           Name
@@ -86,7 +85,6 @@ exports[`Test the resource index page resource index page should match snapshot 
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
           data-test-id="cf-ui-table-cell"
-          data-testid="table-head"
           style="top: 0px;"
         >
           description
@@ -95,7 +93,6 @@ exports[`Test the resource index page resource index page should match snapshot 
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
           data-test-id="cf-ui-table-cell"
-          data-testid="table-head"
           style="top: 0px;"
         >
           content
@@ -4432,6 +4429,18 @@ exports[`Test the resource index page resource index page should match snapshot 
           <option
             data-test-id="cf-ui-select-option"
             selected=""
+            value="1"
+          >
+            1 / page
+          </option>
+          <option
+            data-test-id="cf-ui-select-option"
+            value="3"
+          >
+            3 / page
+          </option>
+          <option
+            data-test-id="cf-ui-select-option"
             value="5"
           >
             5 / page

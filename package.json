@@ -29,12 +29,12 @@
     },
     "private": true,
     "workspaces": {
-      "packages": [
-        "packages/*",
-        "examples/*"
-      ],
-      "nohoist": [
-          "**/react-trix-editor"
-      ]
+        "packages": [
+            "packages/*",
+            "examples/*"
+        ],
+        "nohoist": [
+            "**/react-trix-editor"
+        ]
     }
 }
