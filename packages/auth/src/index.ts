@@ -546,7 +546,7 @@ class Auth {
 
         const { base32, otpauth_url } = Speakeasy.generateSecret()
 
-        const a = await request.resourceManager.update(
+        await request.resourceManager.update(
             request,
             this.userResource(),
             request.authUser!.id,
@@ -556,8 +556,6 @@ class Auth {
             },
             true
         )
-
-        console.log(a)
 
         Qr.toDataURL(otpauth_url, (error: null | Error, dataURL: string) => {
             if (error) {
@@ -627,8 +625,6 @@ class Auth {
                 token,
             }).save()
         }
-
-        console.log(process.cwd())
 
         Mailer.to(email, existingUser.get('name')).sendRaw(
             `Some raw message to send with the token ${token}`
