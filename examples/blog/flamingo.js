@@ -24,3 +24,5 @@ module.exports = flamingo()
             ])
             .tool(),
     ])
+    .database(process.env.DATABASE || 'mysql')
+    .databaseUrl(process.env.DATABASE_URL ||  'mysql://127.0.0.1/flmg')

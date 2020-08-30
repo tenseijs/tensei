@@ -145,6 +145,24 @@ class Flamingo {
         return this
     }
 
+    public database(database: SupportedDatabases) {
+        this.config.env.database = database
+
+        return this
+    }
+
+    public databaseUrl(databaseUrl: string) {
+        this.config.env.databaseUrl = databaseUrl
+
+        return this
+    }
+
+    public sessionSecret(secret: string) {
+        this.config.env.sessionSecret = secret
+
+        return this
+    }
+
     public async registerDatabase() {
         if (this.databaseBooted) {
             return this

@@ -1,6 +1,6 @@
 module.exports = {
-  title: "Mingo CMS",
-  description: "Headless CMS",
+  title: "Tensei CMS",
+  description: "Tensei CMS is an open-source, easy to use, developer first headless CMS for rapidly building javascript applications",
   base: "/",
 
   serviceWorker: true,
@@ -56,8 +56,6 @@ module.exports = {
 
     sidebar: {
       "/1.0/": require("./1.0"),
-      "/2.0/": require("./2.0"),
-      "/3.0/": require("./3.0")
     },
 
     algolia: {
