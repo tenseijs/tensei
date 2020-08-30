@@ -1,4 +1,4 @@
-import { Resource, Permission } from '@flamingo/common'
+import { Resource, Permission } from '@tensei/common'
 import { sentenceCase } from 'change-case'
 
 import { AuthToolConfig } from './config'

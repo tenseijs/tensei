@@ -194,6 +194,7 @@ export const resources = [
             },
         ],
         group: 'Resources',
+        groupSlug: 'resources',
         label: 'Posts',
         slug: 'posts',
         messages: {
@@ -315,6 +316,7 @@ export const resources = [
             },
         ],
         group: 'Resources',
+        groupSlug: 'resources',
         label: 'News',
         slug: 'news',
         messages: {

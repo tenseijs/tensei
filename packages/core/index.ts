@@ -1,3 +1,3 @@
-export { flamingo } from './Flamingo'
+export { tensei } from './Tensei'
 
-export * from '@flamingo/common'
+export * from '@tensei/common'

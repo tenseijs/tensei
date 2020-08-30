@@ -1,5 +1,5 @@
 import { graphqlHTTP } from 'express-graphql'
-import { tool, Resource } from '@flamingo/common'
+import { tool, Resource } from '@tensei/common'
 import { GraphQLSchema, GraphQLObjectType } from 'graphql'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 

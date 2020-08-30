@@ -31,7 +31,7 @@ class BelongsTo extends React.Component {
     fetchOptions = (query) => {
         const { relatedResource } = this.state
 
-        Flamingo.request
+        Tensei.request
             .get(
                 `resources/${relatedResource.slug}?fields=${[
                     relatedResource.displayField,

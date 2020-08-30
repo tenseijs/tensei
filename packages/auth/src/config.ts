@@ -1,4 +1,4 @@
-import { Field, User } from '@flamingo/common'
+import { Field, User } from '@tensei/common'
 
 export interface AuthToolConfig {
     fields: Field[]

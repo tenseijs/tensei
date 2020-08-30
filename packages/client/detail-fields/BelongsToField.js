@@ -37,7 +37,7 @@ class BelongsTo extends React.Component {
 
         const { relatedResource } = this.state
 
-        Flamingo.request
+        Tensei.request
             .get(
                 `resources/${relatedResource.slug}/${value}?fields=${relatedResource.displayField}`
             )
@@ -52,7 +52,7 @@ class BelongsTo extends React.Component {
                     loading: false,
                 })
 
-                Flamingo.library.Notification.success(
+                Tensei.library.Notification.success(
                     error?.response?.data?.message ||
                         `Could not find a resource with ID ${value}.`
                 )
@@ -72,7 +72,7 @@ class BelongsTo extends React.Component {
                 ) : null}
                 {!loading && value && textValue ? (
                     <Link
-                        to={Flamingo.getPath(
+                        to={Tensei.getPath(
                             `resources/${relatedResource.slug}/${value}`
                         )}
                     >

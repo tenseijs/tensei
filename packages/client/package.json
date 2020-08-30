@@ -1,12 +1,9 @@
 {
-    "name": "@flamingo/client",
+    "name": "@tensei/client",
     "version": "0.0.1",
     "main": "./build/server/index.js",
     "license": "MIT",
     "types": "./build/typings/index.d.ts",
-    "bin": {
-        "flamingo": "build/cli/index.js"
-    },
     "devDependencies": {
         "@babel/core": "^7.11.1",
         "@babel/preset-env": "^7.11.0",
@@ -19,15 +16,12 @@
         "@types/jest": "^25.2.3",
         "babel-jest": "^26.2.2",
         "jest": "^26.0.1",
-        "jest-environment-jsdom-sixteen": "^1.0.3",
-        "lerna": "^3.22.1",
         "parcel-bundler": "^1.12.4",
         "prettier": "^2.0.5",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "react-flatpickr": "^3.10.4",
         "react-paginate": "^6.3.2",
-        "supertest": "^4.0.2",
         "tailwindcss": "^1.4.6",
         "ts-loader": "^7.0.5",
         "typescript": "^3.9.5"
@@ -49,13 +43,10 @@
         "@types/react-dom": "^16.9.8",
         "axios": "^0.19.2",
         "classnames": "^2.2.6",
-        "components": "^0.1.0",
         "date-fns": "^2.14.0",
-        "fields": "^0.1.24",
         "pluralize": "^8.0.0",
         "react-popper": "^2.2.3",
         "react-router-dom": "^5.2.0",
-        "store": "^2.0.12",
         "throttle-debounce": "^2.2.1"
     },
     "private": true

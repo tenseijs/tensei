@@ -1,4 +1,4 @@
-import { text, resource, hasMany } from '@flamingo/common'
+import { text, resource, hasMany } from '@tensei/common'
 
 export default resource('User')
     .fields([

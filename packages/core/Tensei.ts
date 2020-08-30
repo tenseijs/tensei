@@ -3,7 +3,7 @@ import BodyParser from 'body-parser'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
-import { mail, SupportedDrivers, Mail } from '@flamingo/mail'
+import { mail, SupportedDrivers, Mail } from '@tensei/mail'
 import AuthController from './controllers/auth/AuthController'
 import Express, { Request, Application, NextFunction } from 'express'
 import RunActionController from './controllers/actions/RunActionController'
@@ -15,19 +15,19 @@ import {
     Asset,
     resource,
     Resource,
-    FlamingoConfig,
+    SetupFunctions,
+    Config,
     ResourceManager,
     SupportedDatabases,
     DatabaseRepositoryInterface,
     belongsToMany
-} from '@flamingo/common'
+} from '@tensei/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { SetupFunctions } from '@flamingo/common/build/tools/Tool'
 
-class Flamingo {
+class Tensei {
     public app: Application = Express()
     public databaseClient: any = null
     public extensions: {
@@ -39,7 +39,7 @@ class Flamingo {
     private mailer: Mail = mail().connection('ethereal')
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
-    private config: FlamingoConfig = {
+    private config: Config = {
         resources: [],
         tools: [],
         resourcesMap: {},
@@ -48,13 +48,13 @@ class Flamingo {
         apiPath: 'api',
         scripts: [
             {
-                name: 'flamingo.js',
+                name: 'tensei.js',
                 path: Path.resolve(__dirname, 'client', 'index.js')
             }
         ],
         styles: [
             {
-                name: 'flamingo.css',
+                name: 'tensei.css',
                 path: Path.resolve(__dirname, 'client', 'index.css')
             }
         ],
@@ -168,9 +168,9 @@ class Flamingo {
             return this
         }
 
-        // if database === mysql | sqlite | pg, we'll use the @flamingo/knex package, with either mysql, pg or sqlite3 package
-        // We'll require('@flamingo/knex') and require('sqlite3') for example. If not found, we'll install.
-        const { Repository } = require('@flamingo/knex')
+        // if database === mysql | sqlite | pg, we'll use the @tensei/knex package, with either mysql, pg or sqlite3 package
+        // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
+        const { Repository } = require('@tensei/knex')
 
         const repository: DatabaseRepositoryInterface = new Repository(
             this.config.env
@@ -449,7 +449,7 @@ class Flamingo {
         return AsyncHandler(handler)
     }
 
-    private setValue(key: keyof FlamingoConfig, value: any) {
+    private setValue(key: keyof Config, value: any) {
         this.config = {
             ...this.config,
             [key]: value
@@ -479,7 +479,7 @@ class Flamingo {
 
         this.setValue('resources', uniqueResources)
 
-        const resourcesMap: FlamingoConfig['resourcesMap'] = {}
+        const resourcesMap: Config['resourcesMap'] = {}
 
         uniqueResources.forEach(resource => {
             resourcesMap[resource.data.slug] = resource
@@ -556,8 +556,8 @@ class Flamingo {
     }
 }
 
-export const flamingo = (config = {}) => {
-    return new Flamingo()
+export const tensei = (config = {}) => {
+    return new Tensei()
 }
 
-export default Flamingo
+export default Tensei

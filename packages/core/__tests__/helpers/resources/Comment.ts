@@ -1,4 +1,4 @@
-import { text, belongsTo, resource, textarea } from '@flamingo/common'
+import { text, belongsTo, resource, textarea } from '@tensei/common'
 
 export default resource('Comment').fields([
     text('Title')

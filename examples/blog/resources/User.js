@@ -1,4 +1,4 @@
-const { text, resource, hasMany } = require('@flamingo/core')
+const { text, resource, hasMany } = require('@tensei/core')
 
 const User = resource('User')
     .fields([

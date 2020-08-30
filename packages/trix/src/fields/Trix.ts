@@ -1,4 +1,4 @@
-import { Textarea } from '@flamingo/common'
+import { Textarea } from '@tensei/common'
 
 export class Trix extends Textarea {}
 

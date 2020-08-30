@@ -60,7 +60,7 @@ class ShowResource extends React.Component {
         const { resource } = this.state
         const { resourceId } = this.props.match.params
 
-        Flamingo.request
+        Tensei.request
             .get(
                 `resources/${
                     resource.slug
@@ -79,12 +79,12 @@ class ShowResource extends React.Component {
                     loading: false,
                 })
 
-                Flamingo.library.Notification.error(
+                Tensei.library.Notification.error(
                     `Could not find resource with ID. ${resourceId}`
                 )
 
                 this.props.history.push(
-                    Flamingo.getPath(`resources/${resource.slug}`)
+                    Tensei.getPath(`resources/${resource.slug}`)
                 )
             })
     }
@@ -95,7 +95,7 @@ class ShowResource extends React.Component {
             return null
         }
 
-        const Component = Flamingo.detailFieldComponents[field.component]
+        const Component = Tensei.detailFieldComponents[field.component]
 
         if (!Component) {
             return null
@@ -130,7 +130,7 @@ class ShowResource extends React.Component {
 
     renderRelationalFields() {
         return this.getRelationalFields().map((field) => {
-            const Component = Flamingo.detailFieldComponents[field.component]
+            const Component = Tensei.detailFieldComponents[field.component]
 
             if (!Component) {
                 return null
@@ -179,7 +179,7 @@ class ShowResource extends React.Component {
                         {authorizedToUpdate ? (
                             <Link
                                 className="ml-2"
-                                to={Flamingo.getPath(
+                                to={Tensei.getPath(
                                     `resources/${resource.slug}/${resourceId}/edit`
                                 )}
                             >

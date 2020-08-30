@@ -12,12 +12,12 @@ import {
     User,
     SerializedResource,
     SerializedField,
-    FlamingoConfig,
+    Config,
     Resource,
     DataPayload,
+    FetchAllRequestQuery,
     resource
-} from '@flamingo/common'
-import { FetchAllRequestQuery } from '@flamingo/common/src/config'
+} from '@tensei/common'
 
 export class SqlRepository implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
@@ -26,7 +26,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
     private bookshelfModels: any[] = []
 
-    private resources: FlamingoConfig['resources'] = []
+    private resources: Config['resources'] = []
 
     private connectionEstablished: boolean = false
 
@@ -40,7 +40,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         this.connectionEstablished = true
     }
 
-    public setup = async (config: FlamingoConfig) => {
+    public setup = async (config: Config) => {
         let connection: Knex.Config['connection'] = config.env.databaseUrl
 
         if (config.env.database === 'sqlite3') {

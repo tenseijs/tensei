@@ -1,5 +1,5 @@
 import Path from 'path'
-import { tool } from '@flamingo/common'
+import { tool } from '@tensei/common'
 
 export const trixTool = () =>
     tool('Trix').beforeMiddlewareSetup(async ({ script, style }) => {

@@ -61,7 +61,7 @@ parcelRequire = (function(e, r, t, n) {
     {
         Focm: [
             function(require, module, exports) {
-                window.Flamingo.boot(function() {})
+                window.Tensei.boot(function() {})
             },
             {}
         ]

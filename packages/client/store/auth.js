@@ -22,7 +22,7 @@ export const mustBeAuthenticated = (Component) => {
                 if (!user) {
                     return (
                         <Redirect
-                            to={Flamingo.getPath(
+                            to={Tensei.getPath(
                                 shouldShowRegistrationScreen
                                     ? 'auth/register'
                                     : 'auth/login'
@@ -46,7 +46,7 @@ export const mustBeNotAuthenticated = (Component) => {
                 const { user } = value
 
                 if (user) {
-                    return <Redirect to={Flamingo.getPath('')} />
+                    return <Redirect to={Tensei.getPath('')} />
                 }
 
                 return <Component {...props} auth={value} />

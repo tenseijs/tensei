@@ -6,7 +6,7 @@ import {
     integer,
     timestamp,
     belongsTo,
-} from '@flamingo/common'
+} from '@tensei/common'
 
 interface CashierConfig {
     customerResourceName: string

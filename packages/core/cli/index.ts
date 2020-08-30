@@ -7,7 +7,7 @@ import Commander from 'commander'
 
 Commander.program
     .command('create:admin')
-    .description('Create a flamingo administrator user.')
+    .description('Create a tensei administrator user.')
     .action(console.log)
 
 Commander.program.parse(process.argv)

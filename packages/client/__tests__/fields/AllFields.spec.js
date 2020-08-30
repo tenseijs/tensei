@@ -224,7 +224,7 @@ describe('Test the field components', () => {
         expect(screen.queryAllByRole('option')).toHaveLength(0)
     })
     test('Test the HasMany field component', () => {
-        window.Flamingo = {
+        window.Tensei = {
             request: {
                 get: jest.fn().mockResolvedValue({
                     status: 200,
@@ -247,7 +247,7 @@ describe('Test the field components', () => {
         }
 
         render(<HasManyField {...props} />)
-        expect(window.Flamingo.request.get).toHaveBeenCalledTimes(1)
+        expect(window.Tensei.request.get).toHaveBeenCalledTimes(1)
 
         const autoCompleteBox = screen.getByPlaceholderText(
             'Type to search posts'
@@ -255,7 +255,7 @@ describe('Test the field components', () => {
 
         userEvent.type(autoCompleteBox, 'title')
 
-        expect(window.Flamingo.request.get).toHaveBeenCalledTimes(1)
+        expect(window.Tensei.request.get).toHaveBeenCalledTimes(1)
     })
     test('Test the DateTime Field', () => {
         const props = {
@@ -275,7 +275,7 @@ describe('Test the field components', () => {
         expect(screen.getByText('Scheduled For')).toBeInTheDocument()
     })
     test('Test the BelongsTo ', async () => {
-        window.Flamingo = {
+        window.Tensei = {
             request: {
                 get: jest.fn().mockResolvedValue({
                     status: 200,
@@ -298,7 +298,7 @@ describe('Test the field components', () => {
         }
 
         const { rerender } = render(<BelongsToField {...props} />)
-        expect(window.Flamingo.request.get).toHaveBeenCalledTimes(1)
+        expect(window.Tensei.request.get).toHaveBeenCalledTimes(1)
         const inputBox = screen.getByRole('searchbox', { name: 'Search' })
 
         await waitFor(() => expect(inputBox).toHaveValue('a new title'))

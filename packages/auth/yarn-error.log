@@ -28,7 +28,7 @@ Trace:
 
 npm manifest: 
   {
-      "name": "@flamingo/auth",
+      "name": "@tensei/auth",
       "version": "0.0.0",
       "main": "./build/index.js",
       "license": "MIT",

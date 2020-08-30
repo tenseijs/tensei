@@ -11,7 +11,7 @@ test('can fetch the index.html file on all subroutes of the dashboard page', asy
 
     expect(response.status).toBe(200)
     expect(response.text).toMatch('<div id="app"></div>')
-    expect(response.text).toMatch('window.Flamingo.boot()')
+    expect(response.text).toMatch('window.Tensei.boot()')
     expect(response.text).toMatch("shouldShowRegistrationScreen: 'true'")
 })
 

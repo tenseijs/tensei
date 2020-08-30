@@ -54,7 +54,7 @@ const postsTagsBuilder = build('PostTag', {
     },
 })
 
-require('./flamingo')
+require('./app')
     .register()
     .then(async ({ databaseClient: knex }) => {
         await Promise.all([

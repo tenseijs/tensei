@@ -9,12 +9,12 @@ import { Route, BrowserRouter } from 'react-router-dom'
 class Wrapper extends React.Component {
     state = {
         booted: false,
-        user: window.Flamingo.state.user,
-        resources: window.Flamingo.state.resources,
-        appConfig: window.Flamingo.state.appConfig,
-        permissions: window.Flamingo.state.permissions,
+        user: window.Tensei.state.user,
+        resources: window.Tensei.state.resources,
+        appConfig: window.Tensei.state.appConfig,
+        permissions: window.Tensei.state.permissions,
         shouldShowRegistrationScreen:
-            window.Flamingo.state.shouldShowRegistrationScreen,
+            window.Tensei.state.shouldShowRegistrationScreen,
     }
 
     setUser = (user) => {
@@ -24,7 +24,7 @@ class Wrapper extends React.Component {
     }
 
     componentDidMount() {
-        Flamingo.setWrapperState = this.setState.bind(this)
+        Tensei.setWrapperState = this.setState.bind(this)
     }
 
     render() {
@@ -68,16 +68,16 @@ class Wrapper extends React.Component {
                         }}
                     >
                         <Route
-                            path={Flamingo.getPath('')}
+                            path={Tensei.getPath('')}
                             component={DashboardPage}
                         />
                         <Route
-                            path={Flamingo.getPath('auth/login')}
+                            path={Tensei.getPath('auth/login')}
                             component={LoginPage}
                         />
                         {shouldShowRegistrationScreen ? (
                             <Route
-                                path={Flamingo.getPath('auth/register')}
+                                path={Tensei.getPath('auth/register')}
                                 component={RegisterPage}
                             />
                         ) : null}

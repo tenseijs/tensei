@@ -1,6 +1,6 @@
 import Path from 'path'
 import Supertest from 'supertest'
-import { tool, resource, text } from '@flamingo/common'
+import { tool, resource, text } from '@tensei/common'
 
 import { setup, createAdminUser } from '../helpers'
 

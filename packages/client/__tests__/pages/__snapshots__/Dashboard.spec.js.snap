@@ -132,7 +132,7 @@ exports[`Test the dashboard page should match snapshot 1`] = `
               data-test-id="cf-ui-paragraph"
               variant="small"
             >
-              © Flamingo Admin 2020
+              © Tensei Admin 2020
             </p>
           </div>
         </div>

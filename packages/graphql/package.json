@@ -1,5 +1,5 @@
 {
-    "name": "@flamingo/graphql",
+    "name": "@tensei/graphql",
     "version": "0.0.0",
     "main": "./build/index.js",
     "license": "MIT",

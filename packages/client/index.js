@@ -1,4 +1,4 @@
-import './Flamingo'
+import './Tensei'
 
 import React from 'react'
 import ReactDOM from 'react-dom'

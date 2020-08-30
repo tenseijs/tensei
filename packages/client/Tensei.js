@@ -17,7 +17,7 @@ import BelongsToManyDetailField from './detail-fields/BelongsToManyField'
 
 import TextIndexField from './index-fields/Text'
 
-class Flamingo {
+class Tensei {
     state = (() => {
         let user = null
         let resources = []
@@ -26,13 +26,13 @@ class Flamingo {
         let shouldShowRegistrationScreen = false
 
         try {
-            appConfig = JSON.parse(window.flamingoDefaultState.appConfig)
-            resources = JSON.parse(window.flamingoDefaultState.resources)
+            appConfig = JSON.parse(window.tenseiDefaultState.appConfig)
+            resources = JSON.parse(window.tenseiDefaultState.resources)
             shouldShowRegistrationScreen =
-                window.flamingoDefaultState.shouldShowRegistrationScreen ===
+                window.tenseiDefaultState.shouldShowRegistrationScreen ===
                 'true'
 
-            user = JSON.parse(window.flamingoDefaultState.user || null)
+            user = JSON.parse(window.tenseiDefaultState.user || null)
 
             user.permissions.forEach((permission) => {
                 permissions[permission] = true
@@ -144,4 +144,4 @@ class Flamingo {
     }
 }
 
-window.Flamingo = new Flamingo()
+window.Tensei = new Tensei()

@@ -12,6 +12,8 @@ import { resources, user } from '~/testSetup/data'
 
 const history = createMemoryHistory()
 
+console.error = jest.fn()
+
 const DashBoardSetup = () => {
     const props = { resources }
     return (
@@ -45,15 +47,19 @@ const DashBoardSetup = () => {
 
 describe('Test the dashboard page', () => {
     beforeEach(() => {
-        window.Flamingo = {
+        window.Tensei = {
             getPath: jest.fn(() => 'string'),
         }
     })
+
     afterEach(cleanup)
+
     test('should match snapshot', () => {
         const { asFragment } = render(<DashBoardSetup />)
+
         expect(asFragment()).toMatchSnapshot()
     })
+
     test('resources should be listed on the sidebar', () => {
         render(<DashBoardSetup />)
 
@@ -61,6 +67,7 @@ describe('Test the dashboard page', () => {
             expect(screen.getByText(r.label)).toBeInTheDocument()
         })
     })
+
     test('resources can be toggled to hide / show', () => {
         render(<DashBoardSetup />)
 
@@ -74,6 +81,7 @@ describe('Test the dashboard page', () => {
             expect(screen.queryByText(r.label)).not.toBeInTheDocument()
         })
     })
+
     test('the dashboard header has the appropriate links', () => {
         render(<DashBoardSetup />)
 
@@ -90,17 +98,19 @@ describe('Test the dashboard page', () => {
         expect(screen.queryByText(/Account settings/i)).not.toBeInTheDocument()
         expect(screen.queryByText(/Logout/i)).not.toBeInTheDocument()
     })
+
     test('clicking logout on the header dropdown should log user out', () => {
-        window.Flamingo = {
+        window.Tensei = {
             getPath: jest.fn(() => 'auth/login'),
             request: { post: jest.fn(() => Promise.resolve(true)) },
             location: { assign: jest.fn() },
         }
+
         render(<DashBoardSetup />)
 
         userEvent.click(screen.getByTestId('dashboard-header-dropdown'))
         userEvent.click(screen.getByText(/Logout/i))
 
-        expect(window.Flamingo.request.post).toHaveBeenCalledWith('logout')
+        expect(window.Tensei.request.post).toHaveBeenCalledWith('logout')
     })
 })

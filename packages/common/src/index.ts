@@ -1,10 +1,11 @@
+import { Mail } from '@tensei/mail'
+
 import { Resource } from './resources/Resource'
 import { ResourceManager } from './resources/ResourceManager'
-import { User as BaseUser, Asset, FlamingoConfig } from './config'
+import { User as BaseUser, Asset, Config } from './config'
 import { DatabaseRepositoryInterface } from './databases/DatabaseRepositoryInterface'
 
 export { id, ID } from './fields/ID'
-import { Mail } from '@flamingo/mail'
 export { text, Text } from './fields/Text'
 export { link, Link } from './fields/Link'
 export { Json, json } from './fields/Json'
@@ -24,14 +25,14 @@ export { timestamp, Timestamp } from './fields/Timestamp'
 export { bigInteger, BigInteger } from './fields/BigInteger'
 export { belongsToMany, BelongsToMany } from './fields/BelongsToMany'
 
-export { Tool, tool, ToolSetupConfig } from './tools/Tool'
 export { ResourceManager } from './resources/ResourceManager'
 export { action, SerializedAction, Action } from './actions/Action'
+export { Tool, tool, ToolSetupConfig, SetupFunctions } from './tools/Tool'
 export { resource, Resource, SerializedResource } from './resources/Resource'
 export { DatabaseRepositoryInterface } from './databases/DatabaseRepositoryInterface'
 
 declare global {
-    namespace Flamingo {
+    namespace Tensei {
         interface User {}
     }
 }
@@ -45,11 +46,11 @@ declare global {
             Mailer: Mail
             styles: Asset[]
             scripts: Asset[]
-            appConfig: FlamingoConfig
+            appConfig: Config
             db: DatabaseRepositoryInterface
             administratorResource: Resource
             resourceManager: ResourceManager
-            resources: FlamingoConfig['resourcesMap']
+            resources: Config['resourcesMap']
         }
     }
 }

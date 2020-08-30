@@ -13,7 +13,7 @@ import {
     belongsTo,
     belongsToMany,
     dateTime,
-} from '@flamingo/common'
+} from '@tensei/common'
 
 import { AuthToolConfig, AuthData } from './config'
 

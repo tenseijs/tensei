@@ -48,7 +48,7 @@ class HasMany extends React.Component {
             return
         }
 
-        Flamingo.request
+        Tensei.request
             .get(
                 `resources/${relatedResource.slug}/${resourceId}/${
                     relatedResource.slug
@@ -78,7 +78,7 @@ class HasMany extends React.Component {
     fetchOptions = (query) => {
         const { relatedResource } = this.state
 
-        Flamingo.request
+        Tensei.request
             .get(
                 `resources/${relatedResource.slug}?fields=${[
                     relatedResource.displayField,
@@ -194,7 +194,7 @@ class HasMany extends React.Component {
                         {selectedOptions.length > 20 ? (
                             <TextLink className="mt-2">
                                 <Link
-                                    to={Flamingo.getPath(
+                                    to={Tensei.getPath(
                                         `resources/${resource.slug}/${resourceId}`
                                     )}
                                 >

@@ -5,7 +5,7 @@ import { Router } from 'react-router-dom'
 import { createMemoryHistory } from 'history'
 import Auth from '~/store/auth'
 import { resources } from '~/testSetup/data'
-import FlamingoMock from '~/testSetup/Flamingo'
+import TenseiMock from '~/testSetup/Tensei'
 import ResourceIndex from '~/pages/ResourceIndex'
 
 const history = createMemoryHistory({ initialEntries: ['/resources/posts'] })
@@ -24,6 +24,7 @@ const WithAuthComponent = (props) => (
                 authorizedToCreate: jest.fn(() => Promise.resolve(true)),
                 authorizedToUpdate: jest.fn(() => Promise.resolve(true)),
                 authorizedToDelete: jest.fn(() => Promise.resolve(true)),
+                authorizedToRunAction: jest.fn(() => true),
             }}
         >
             <ResourceIndex {...props} />
@@ -33,8 +34,8 @@ const WithAuthComponent = (props) => (
 
 describe('Test the resource index page', () => {
     beforeEach(() => {
-        window.Flamingo = {
-            ...FlamingoMock,
+        window.Tensei = {
+            ...TenseiMock,
             request: {
                 get: jest.fn().mockResolvedValue({
                     data: {
@@ -77,10 +78,13 @@ describe('Test the resource index page', () => {
             },
         }
     })
+
     test('resource index page should match snapshot', () => {
         const { asFragment } = render(<WithAuthComponent {...props} />)
+
         expect(asFragment()).toMatchSnapshot()
     })
+
     test('resource index page rerenders with apporpriate props when the params changes', async () => {
         const props = {
             match,

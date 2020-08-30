@@ -9,8 +9,8 @@ const {
     action,
     textarea,
     belongsToMany,
-} = require('@flamingo/core')
-const { trix } = require('@flamingo/trix')
+} = require('@tensei/core')
+const { trix } = require('@tensei/trix')
 
 module.exports = resource('Post')
     .displayInNavigation()

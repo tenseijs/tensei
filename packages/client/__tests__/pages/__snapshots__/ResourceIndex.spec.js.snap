@@ -22,6 +22,47 @@ exports[`Test the resource index page resource index page should match snapshot 
       />
     </div>
     <div>
+      <div
+        class="Dropdown__Dropdown___nAsJ-"
+        data-test-id="cf-ui-dropdown"
+        position="bottom-left"
+      >
+        <button
+          aria-expanded="false"
+          aria-haspopup="menu"
+          class="Button__Button___1ZfFj a11y__focus-border--default___60AXp Button__Button--muted___2Wair Button__Button--disabled___1E20M"
+          data-test-id="cf-ui-button"
+          disabled=""
+          type="button"
+        >
+          <span
+            class="TabFocusTrap__TabFocusTrap___39Vty Button__Button__inner-wrapper___3qrNC"
+            tabindex="-1"
+          >
+            <span
+              class="Button__Button__label___3tcOj"
+            >
+              Actions 
+              <svg
+                class="Icon__Icon___38Epv Icon__Icon--small___1yGZK Icon__Icon--muted___3egnD"
+                data-test-id="cf-ui-icon"
+                height="18"
+                viewBox="0 0 24 24"
+                width="18"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.41 7.84L12 12.42l4.59-4.58L18 9.25l-6 6-6-6z"
+                />
+                <path
+                  d="M0-.75h24v24H0z"
+                  fill="none"
+                />
+              </svg>
+            </span>
+          </span>
+        </button>
+      </div>
       <a
         class="ml-3"
         href="/resources/string"
@@ -97,6 +138,12 @@ exports[`Test the resource index page resource index page should match snapshot 
         >
           content
         </th>
+        <th
+          align="left"
+          class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
+          data-test-id="cf-ui-table-cell"
+          style="top: 0px;"
+        />
         <th
           align="left"
           class="TableCell__TableCell___Wou8a TableCell__TableCell--head___1HhvZ"
@@ -4429,21 +4476,21 @@ exports[`Test the resource index page resource index page should match snapshot 
           <option
             data-test-id="cf-ui-select-option"
             selected=""
-            value="1"
+            value="10"
           >
-            1 / page
+            10 / page
           </option>
           <option
             data-test-id="cf-ui-select-option"
-            value="3"
+            value="25"
           >
-            3 / page
+            25 / page
           </option>
           <option
             data-test-id="cf-ui-select-option"
-            value="5"
+            value="50"
           >
-            5 / page
+            50 / page
           </option>
         </select>
         <svg
@@ -4467,6 +4514,7 @@ exports[`Test the resource index page resource index page should match snapshot 
     <p
       class="Paragraph__Paragraph___2aO-9"
       data-test-id="cf-ui-paragraph"
+      data-testid="pagination-info"
     >
       Showing 
       <span>

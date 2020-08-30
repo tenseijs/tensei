@@ -13,7 +13,7 @@ export class DateField extends Field {
      *
      * The date format to be used
      * The date-fns library is used by
-     * flamingo
+     * tensei
      *
      * https://date-fns.org/v2.14.0/docs/format
      */
@@ -64,7 +64,7 @@ export class DateField extends Field {
      *
      * Set the date format to be used
      * The date-fns library is used by
-     * flamingo
+     * tensei
      *
      * https://date-fns.org/v2.14.0/docs/format
      */

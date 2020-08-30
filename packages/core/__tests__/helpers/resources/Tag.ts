@@ -1,4 +1,4 @@
-import { text, resource, textarea, belongsToMany } from '@flamingo/common'
+import { text, resource, textarea, belongsToMany } from '@tensei/common'
 
 export default resource('Tag')
     .fields([

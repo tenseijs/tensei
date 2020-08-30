@@ -79,7 +79,7 @@ class ResourceTable extends React.Component {
             cells: [
                 ...this.getTableColumns().map((column) => {
                     const Component =
-                        Flamingo.indexFieldComponents[column.component]
+                        Tensei.indexFieldComponents[column.component]
 
                     return {
                         content: Component ? (
@@ -122,7 +122,7 @@ class ResourceTable extends React.Component {
 
         const endpoint = getEndpoint || `resources/${resource.slug}`
 
-        Flamingo.request
+        Tensei.request
             .get(
                 `${endpoint}?per_page=${perPage}&page=${page}&search=${
                     search || ''
@@ -143,7 +143,7 @@ class ResourceTable extends React.Component {
                     loading: false,
                 })
 
-                Flamingo.library.Notification.error(
+                Tensei.library.Notification.error(
                     `There might be a problem with your query parameters.`
                 )
             })
@@ -199,7 +199,7 @@ class ResourceTable extends React.Component {
 
         const resourceId = deleting.key
 
-        Flamingo.request
+        Tensei.request
             .delete(`resources/${resource.slug}/${resourceId}`)
             .then(() => {
                 this.setState(
@@ -211,7 +211,7 @@ class ResourceTable extends React.Component {
                     () => this.fetch()
                 )
 
-                Flamingo.library.Notification.success(
+                Tensei.library.Notification.success(
                     `Resource has been deleted.`
                 )
             })
@@ -221,7 +221,7 @@ class ResourceTable extends React.Component {
                     deleting: null,
                 })
 
-                Flamingo.library.Notification.error(
+                Tensei.library.Notification.error(
                     `Could not delete resource with ID ${resourceId}.`
                 )
             })
@@ -287,7 +287,7 @@ class ResourceTable extends React.Component {
                         {authorizedToCreate ? (
                             <Link
                                 className="ml-3"
-                                to={Flamingo.getPath(
+                                to={Tensei.getPath(
                                     `resources/${resource.slug}/new`
                                 )}
                             >
@@ -353,7 +353,7 @@ class ResourceTable extends React.Component {
                                                 data-testid="table-row"
                                                 onClick={() => {
                                                     return this.props.history.push(
-                                                        Flamingo.getPath(
+                                                        Tensei.getPath(
                                                             `resources/${resource.slug}/${row.key}`
                                                         )
                                                     )
@@ -361,7 +361,7 @@ class ResourceTable extends React.Component {
                                                 key={`${row.key}-cell-${index}`}
                                             >
                                                 <Link
-                                                    to={Flamingo.getPath(
+                                                    to={Tensei.getPath(
                                                         `resources/${resource.slug}/${row.key}`
                                                     )}
                                                 >
@@ -383,7 +383,7 @@ class ResourceTable extends React.Component {
                                             <TableCell>
                                                 {authorizedToUpdate ? (
                                                     <Link
-                                                        to={Flamingo.getPath(
+                                                        to={Tensei.getPath(
                                                             `resources/${resource.slug}/${row.key}/edit`
                                                         )}
                                                         className="cursor-pointer"

@@ -1,6 +1,6 @@
 import { Resource } from '../resources/Resource'
 import {
-    FlamingoConfig,
+    Config,
     User,
     FetchAllResults,
     FetchAllRequestQuery,
@@ -9,7 +9,7 @@ import {
 
 export abstract class DatabaseRepositoryInterface<Model = any> {
     static databases: string[]
-    abstract setup: (config: FlamingoConfig) => Promise<any>
+    abstract setup: (config: Config) => Promise<any>
     abstract setResourceModels: (resources: Resource[]) => Resource[]
     abstract establishDatabaseConnection: () => void
     abstract findUserByEmail: (email: string) => Promise<Model | null>

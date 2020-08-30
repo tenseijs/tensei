@@ -9,7 +9,7 @@ import {
     textarea,
     belongsTo,
     belongsToMany
-} from '@flamingo/common'
+} from '@tensei/common'
 
 export default resource('Post')
     .displayInNavigation()

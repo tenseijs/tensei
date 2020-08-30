@@ -3,7 +3,7 @@ import { render, fireEvent, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import Auth from '~/store/auth'
 import { resources } from '~/testSetup/data'
-import FlamingoMock from '~/testSetup/Flamingo'
+import TenseiMock from '~/testSetup/Tensei'
 import CreateResource from '~/pages/CreateResource'
 
 const WithAuthComponent = (props) => (
@@ -18,7 +18,7 @@ const WithAuthComponent = (props) => (
 
 describe('Test the create resource page', () => {
     beforeEach(() => {
-        window.Flamingo = FlamingoMock
+        window.Tensei = TenseiMock
     })
 
     test('create resource page should match snapshot', () => {
@@ -41,8 +41,8 @@ describe('Test the create resource page', () => {
             history: { push: jest.fn() },
         }
 
-        window.Flamingo = {
-            ...FlamingoMock,
+        window.Tensei = {
+            ...TenseiMock,
             request: { post: jest.fn(() => Promise.resolve(true)) },
         }
         render(<WithAuthComponent {...props} />)
@@ -63,6 +63,6 @@ describe('Test the create resource page', () => {
 
         fireEvent.click(submitBtn)
 
-        expect(window.Flamingo.request.post).toHaveBeenCalled()
+        expect(window.Tensei.request.post).toHaveBeenCalled()
     })
 })

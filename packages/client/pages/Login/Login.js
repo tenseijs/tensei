@@ -22,14 +22,14 @@ class LoginPage extends React.Component {
             isLoading: true,
         })
 
-        Flamingo.request
+        Tensei.request
             .post('login', {
                 email: this.state.email,
                 password: this.state.password,
                 rememberMe: this.state.rememberMe,
             })
             .then(() => {
-                window.location.href = Flamingo.getPath('')
+                window.location.href = Tensei.getPath('')
             })
             .catch((error) => {
                 if (error?.response?.status === 422) {

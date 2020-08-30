@@ -34,7 +34,7 @@ class DashboardPage extends React.Component {
                     {
                         slug: 'home',
                         label: 'Home',
-                        to: Flamingo.getPath('dashboard'),
+                        to: Tensei.getPath('dashboard'),
                     },
                 ],
             },
@@ -43,7 +43,7 @@ class DashboardPage extends React.Component {
         resources.forEach((resource) => {
             const navItem = {
                 slug: resource.slug,
-                to: Flamingo.getPath(`resources/${resource.slug}`),
+                to: Tensei.getPath(`resources/${resource.slug}`),
                 label: resource.label,
             }
 
@@ -60,7 +60,7 @@ class DashboardPage extends React.Component {
                         {
                             slug: resource.slug,
                             label: resource.label,
-                            to: Flamingo.getPath(`resources/${resource.slug}`),
+                            to: Tensei.getPath(`resources/${resource.slug}`),
                         },
                     ],
                 })
@@ -72,7 +72,7 @@ class DashboardPage extends React.Component {
                         {
                             slug: resource.slug,
                             label: resource.label,
-                            to: Flamingo.getPath(`resources/${resource.slug}`),
+                            to: Tensei.getPath(`resources/${resource.slug}`),
                         },
                     ],
                 }
@@ -86,8 +86,8 @@ class DashboardPage extends React.Component {
     }
 
     logout = () => {
-        Flamingo.request.post('logout').then(() => {
-            window.location.href = Flamingo.getPath('auth/login')
+        Tensei.request.post('logout').then(() => {
+            window.location.href = Tensei.getPath('auth/login')
         })
     }
 
@@ -216,27 +216,25 @@ class DashboardPage extends React.Component {
                             <Switch>
                                 <Route
                                     exact
-                                    path={Flamingo.getPath(
-                                        'resources/:resource'
-                                    )}
+                                    path={Tensei.getPath('resources/:resource')}
                                     component={ResourceIndex}
                                 />
                                 <Route
-                                    path={Flamingo.getPath(
+                                    path={Tensei.getPath(
                                         'resources/:resource/new'
                                     )}
                                     exact
                                     component={CreateResource}
                                 />
                                 <Route
-                                    path={Flamingo.getPath(
+                                    path={Tensei.getPath(
                                         'resources/:resource/:resourceId'
                                     )}
                                     exact
                                     component={ShowResource}
                                 />
                                 <Route
-                                    path={Flamingo.getPath(
+                                    path={Tensei.getPath(
                                         'resources/:resource/:resourceId/edit'
                                     )}
                                     component={CreateResource}
@@ -244,7 +242,7 @@ class DashboardPage extends React.Component {
                             </Switch>
                             <div className="w-full flex items-center justify-center py-3 mt-24">
                                 <Paragraph variant="small">
-                                    © Flamingo Admin {new Date().getFullYear()}
+                                    © Tensei Admin {new Date().getFullYear()}
                                 </Paragraph>
                             </div>
                         </div>

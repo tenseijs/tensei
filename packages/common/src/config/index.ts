@@ -83,7 +83,7 @@ export interface Env {
     database: SupportedDatabases
 }
 
-export interface FlamingoConfig {
+export interface Config {
     tools: Tool[]
     resources: Resource[]
     scripts: Asset[]

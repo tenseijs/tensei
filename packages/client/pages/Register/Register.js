@@ -23,7 +23,7 @@ class RegisterPage extends React.Component {
             isLoading: true,
         })
 
-        Flamingo.request
+        Tensei.request
             .post('register', {
                 name: this.state.name,
                 email: this.state.email,
@@ -31,7 +31,7 @@ class RegisterPage extends React.Component {
                 rememberMe: this.state.rememberMe,
             })
             .then(() => {
-                window.location.href = Flamingo.getPath('')
+                window.location.href = Tensei.getPath('')
             })
             .catch((error) => {
                 if (error?.response?.status === 422) {

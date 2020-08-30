@@ -30,7 +30,7 @@ const LoginSetup = (props) => {
 
 describe('Test the Login page', () => {
     beforeEach(() => {
-        window.Flamingo = {
+        window.Tensei = {
             request: {
                 post: jest.fn().mockRejectedValue({
                     response: {
@@ -50,7 +50,7 @@ describe('Test the Login page', () => {
         }
     })
     test('should match snapshot', () => {
-        window.Flamingo = {
+        window.Tensei = {
             request: { post: jest.fn(() => Promise.resolve(true)) },
         }
         const { asFragment } = render(<LoginSetup />)
@@ -68,7 +68,7 @@ describe('Test the Login page', () => {
         userEvent.type(passwordField, 'secret')
         userEvent.click(loginBtn)
 
-        expect(window.Flamingo.request.post).toHaveBeenCalled()
+        expect(window.Tensei.request.post).toHaveBeenCalled()
     })
     test('user shoule get apporpriate error messages', async () => {
         render(<LoginSetup />)

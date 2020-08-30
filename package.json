@@ -1,12 +1,9 @@
 {
-    "name": "@flamingo/main",
+    "name": "@tensei/main",
     "version": "0.0.0",
     "main": "./build/server/index.js",
     "license": "MIT",
     "types": "./build/typings/index.d.ts",
-    "bin": {
-        "flamingo": "build/cli/index.js"
-    },
     "devDependencies": {
         "lerna": "^3.22.1",
         "prettier": "^2.0.5"

@@ -41,7 +41,7 @@ class CreateResource extends React.Component {
         const { resourceId } = this.props.match.params
 
         if (editingState) {
-            Flamingo.request
+            Tensei.request
                 .get(`resources/${resource.slug}/${resourceId}`)
 
                 .then(({ data }) => {
@@ -56,12 +56,12 @@ class CreateResource extends React.Component {
                 })
 
                 .catch(() => {
-                    Flamingo.library.Notification.error(
+                    Tensei.library.Notification.error(
                         `Could not find resource with ID. ${resourceId}`
                     )
 
                     this.props.history.push(
-                        Flamingo.getPath(`resources/${resource.slug}`)
+                        Tensei.getPath(`resources/${resource.slug}`)
                     )
                 })
         } else {
@@ -186,7 +186,7 @@ class CreateResource extends React.Component {
         parentResourceField = null,
         [arrayParentResourceField, resourceFieldIndex] = []
     ) => {
-        const Component = Flamingo.fieldComponents[resourceField.component]
+        const Component = Tensei.fieldComponents[resourceField.component]
 
         if (!Component) {
             return null
@@ -278,7 +278,7 @@ class CreateResource extends React.Component {
 
         const { resource, editingState } = this.state
 
-        Flamingo.request[editingState ? 'put' : 'post'](
+        Tensei.request[editingState ? 'put' : 'post'](
             `resources/${resource.slug}/${
                 editingState ? this.props.match.params.resourceId : ''
             }`,
@@ -289,15 +289,15 @@ class CreateResource extends React.Component {
         )
             .then(() => {
                 this.props.history.push(
-                    Flamingo.getPath(`resources/${resource.slug}`)
+                    Tensei.getPath(`resources/${resource.slug}`)
                 )
 
-                Flamingo.library.Notification.success(
+                Tensei.library.Notification.success(
                     `Resource has been ${editingState ? 'updated' : 'created'}.`
                 )
             })
             .catch((error) => {
-                Flamingo.library.Notification.error(
+                Tensei.library.Notification.error(
                     `Failed ${editingState ? 'updating' : 'creating'} resource.`
                 )
 
@@ -421,7 +421,7 @@ class CreateResource extends React.Component {
         )
 
         if (!authorizedToCreate) {
-            return <Redirect to={Flamingo.getPath('')} />
+            return <Redirect to={Tensei.getPath('')} />
         }
 
         return (

@@ -1,4 +1,4 @@
-require('./flamingo')
+require('./app')
     .register()
     .then(({ app }) => {
         app.listen(5000, () => {

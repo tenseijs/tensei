@@ -1,8 +1,8 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
-import { tool, Tool, User as IUser } from '@flamingo/common'
-import Flamingo, { flamingo } from '../../Flamingo'
+import { tool, Tool, User as IUser } from '@tensei/common'
+import tensei, { tensei } from '../../tensei'
 
 import { Tag, Comment, User, Post } from './resources'
 
@@ -14,7 +14,7 @@ interface ConfigureSetup {
     createAndLoginAdmin?: boolean
 }
 
-let cachedInstance: Flamingo | null = null
+let cachedInstance: tensei | null = null
 
 export const fakePostData = () => ({
     title: Faker.lorem.word(),
@@ -40,10 +40,10 @@ export const setup = async (
     process.env.DATABASE_URI = 'mysql://root@127.0.0.1/testdb'
 
     let instance = forceNewInstance
-        ? flamingo()
+        ? tensei()
         : cachedInstance
         ? cachedInstance
-        : flamingo()
+        : tensei()
 
     cachedInstance = instance
 

@@ -1,10 +1,10 @@
 require('dotenv').config()
-const { auth } = require('@flamingo/auth')
-const { flamingo } = require('@flamingo/core')
-const { trixTool: trix } = require('@flamingo/trix')
-const { cashier, plan } = require('@flamingo/cashier')
+const { auth } = require('@tensei/auth')
+const { tensei } = require('@tensei/core')
+const { trixTool: trix } = require('@tensei/trix')
+const { cashier, plan } = require('@tensei/cashier')
 
-module.exports = flamingo()
+module.exports = tensei()
     .dashboardPath('nova')
     .resources([
         require('./resources/Post'),
@@ -25,4 +25,4 @@ module.exports = flamingo()
             .tool(),
     ])
     .database(process.env.DATABASE || 'mysql')
-    .databaseUrl(process.env.DATABASE_URL ||  'mysql://127.0.0.1/flmg')
+    .databaseUrl(process.env.DATABASE_URL || 'mysql://127.0.0.1/flmg')

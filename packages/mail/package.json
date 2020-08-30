@@ -1,5 +1,5 @@
 {
-    "name": "@flamingo/mail",
+    "name": "@tensei/mail",
     "version": "0.0.0",
     "main": "./build/index.js",
     "license": "MIT",

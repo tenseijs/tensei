@@ -74,7 +74,7 @@ const ActionsDropdown = ({
     }
 
     const renderField = (field) => {
-        const Component = Flamingo.fieldComponents[field.component]
+        const Component = Tensei.fieldComponents[field.component]
 
         if (!Component) {
             return null
@@ -118,16 +118,16 @@ const ActionsDropdown = ({
         }
 
         if (response.type === 'notification') {
-            Flamingo.library.Notification.setPosition(response.position)
+            Tensei.library.Notification.setPosition(response.position)
             switch (response.variant) {
                 case 'positive':
-                    Flamingo.library.Notification.success(response.message)
+                    Tensei.library.Notification.success(response.message)
                     break
                 case 'negative':
-                    Flamingo.library.Notification.error(response.message)
+                    Tensei.library.Notification.error(response.message)
                     break
                 case 'warning':
-                    Flamingo.library.Notification.warning(response.message)
+                    Tensei.library.Notification.warning(response.message)
                     break
             }
 
@@ -155,7 +155,7 @@ const ActionsDropdown = ({
     const confirmAction = () => {
         setRunningAction(true)
 
-        Flamingo.request
+        Tensei.request
             .post(`resources/${resource.slug}/actions/${action.slug}`, {
                 models: selected,
                 form,

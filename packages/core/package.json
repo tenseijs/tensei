@@ -1,12 +1,9 @@
 {
-    "name": "@flamingo/core",
+    "name": "@tensei/core",
     "version": "0.0.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/typings/index.d.ts",
-    "bin": {
-        "flamingo": "build/cli/index.js"
-    },
     "devDependencies": {
         "@babel/core": "^7.11.1",
         "@babel/preset-env": "^7.11.0",
