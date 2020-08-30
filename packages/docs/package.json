@@ -1,0 +1,12 @@
+{
+  "name": "@flamingo/docs",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "vuepress build",
+    "dev": "vuepress dev"
+  },
+  "devDependencies": {
+    "vuepress": "^1.5.4"
+  }
+}
