@@ -21,6 +21,7 @@ const postBuilder = build('Post', {
     fields: {
         user_id: sequence(),
         title: fake((f) => f.lorem.sentence()),
+        approved: fake((f) => f.random.boolean()),
         description: fake((f) => f.lorem.sentence()),
         content: fake((f) => f.lorem.sentence(10)),
         av_cpc: fake((f) => f.random.number()),

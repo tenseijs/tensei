@@ -3,12 +3,14 @@ import { Notification } from '@contentful/forma-36-react-components'
 
 import TextField from './fields/Text'
 import SelectField from './fields/Select'
+import BooleanField from './fields/Boolean'
 import HasManyField from './fields/HasMany'
 import LinkField from './index-fields/Link'
 import DateTimeField from './fields/DateTime'
 import TextareaField from './fields/Textarea'
 import BelongsToField from './fields/BelongsTo'
 import DateIndexField from './index-fields/Date'
+import BooleanIndexField from './index-fields/Boolean'
 import BelongsToManyField from './fields/BelongsToMany'
 import HasManyDetailField from './detail-fields/HasManyField'
 import TextareaDetailField from './detail-fields/TextareaField'
@@ -65,6 +67,7 @@ class Tensei {
     fieldComponents = {
         TextField,
         SelectField,
+        BooleanField,
         HasManyField,
         DateTimeField,
         TextareaField,
@@ -83,6 +86,7 @@ class Tensei {
         NumberField: TextField,
         DateField: DateIndexField,
         DateTimeField: DateIndexField,
+        BooleanField: BooleanIndexField
     }
 
     detailFieldComponents = {
@@ -94,6 +98,7 @@ class Tensei {
         NumberField: TextIndexField,
         IntegerField: TextIndexField,
         DateTimeField: DateIndexField,
+        BooleanField: BooleanIndexField,
         HasManyField: HasManyDetailField,
         TextareaField: TextareaDetailField,
         BelongsToField: BelongsToDetailField,

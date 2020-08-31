@@ -12,7 +12,7 @@ export interface SerializedField {
     isSortable: boolean
     description: string
     rules: string[]
-    defaultValue: string
+    defaultValue: string|boolean|number
     isNullable: boolean
     isUnique: boolean
     isSearchable: boolean
@@ -34,6 +34,8 @@ export interface SerializedField {
     }[]
     defaultToNow?: boolean
     isUnsigned?: boolean
+    trueLabel?: string
+    falseLabel?: string
     isRelationshipField: boolean
 }
 
@@ -229,7 +231,7 @@ export class Field {
      * field
      *
      */
-    public defaultValue: string = ''
+    public defaultValue: string|number|boolean = ''
 
     /**
      * Instantiate a new field. Requires the name,
@@ -476,7 +478,7 @@ export class Field {
      * default
      *
      */
-    public default<T extends Field>(this: T, value: string): T {
+    public default<T extends Field>(this: T, value: string|number|boolean): T {
         this.defaultValue = value
 
         return this

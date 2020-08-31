@@ -3,6 +3,7 @@ const {
     integer,
     text,
     date,
+    boolean,
     belongsTo,
     select,
     resource,
@@ -52,6 +53,7 @@ module.exports = resource('Post')
             .searchable()
             .unique()
             .rules('required', 'max:24'),
+        boolean('Approved').trueLabel('Done').falseLabel('Pending').default(false),
         text('Description').rules('required').hideFromIndex(),
         trix('Content').rules('required', 'max:2000', 'min:12').hideFromIndex(),
         integer('Av. CPC').rules('required').hideFromDetail(),
