@@ -1,4 +1,5 @@
 import Path from 'path'
+import { Signale } from 'signale'
 import BodyParser from 'body-parser'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
@@ -37,6 +38,9 @@ class Tensei {
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
     private mailer: Mail = mail().connection('ethereal')
+
+    private supportedDatabases = ['mysql', 'pg', 'sqlite', 'mongodb']
+
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
     private config: Config = {
@@ -64,7 +68,8 @@ class Tensei {
             sessionSecret: process.env.SESSION_SECRET || 'test-session-secret',
             databaseUrl:
                 process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg'
-        }
+        },
+        logger: new Signale()
     }
 
     public async register() {
@@ -168,9 +173,21 @@ class Tensei {
             return this
         }
 
+        let Repository = null
+
         // if database === mysql | sqlite | pg, we'll use the @tensei/knex package, with either mysql, pg or sqlite3 package
         // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
-        const { Repository } = require('@tensei/knex')
+        if (['mysql', 'pg', 'sqlite'].includes(this.config.env.database)) {
+            try {
+                Repository = require('@tensei/knex').Repository
+            } catch (error) {
+                this.config.logger.error(
+                    `To use the ${this.config.env.database} database, you need to install @tensei/knex and ${this.config.env.database} packages`
+                )
+
+                process.exit(1)
+            }
+        }
 
         const repository: DatabaseRepositoryInterface = new Repository(
             this.config.env

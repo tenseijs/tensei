@@ -34,6 +34,7 @@
         "copy:files": "cp index.mustache build/index.mustache"
     },
     "dependencies": {
+        "@types/signale": "^1.4.1",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",
         "change-case": "^4.1.1",
@@ -51,6 +52,7 @@
         "numeral": "^2.0.6",
         "pluralize": "^8.0.0",
         "readline-sync": "^1.4.10",
+        "signale": "^1.4.0",
         "sqlite3": "^5.0.0",
         "throttle-debounce": "^2.2.1"
     },

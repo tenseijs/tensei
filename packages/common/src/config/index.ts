@@ -1,4 +1,5 @@
 import { Request } from 'express'
+import { Signale } from 'signale'
 import { Tool } from '../tools/Tool'
 import { Resource } from '../resources/Resource'
 
@@ -95,6 +96,7 @@ export interface Config {
     resourcesMap: {
         [key: string]: Resource
     }
+    logger: Signale
 }
 
 export type Permission =
