@@ -44,6 +44,7 @@
         "axios": "^0.19.2",
         "classnames": "^2.2.6",
         "date-fns": "^2.14.0",
+        "jest-environment-jsdom-sixteen": "^1.0.3",
         "pluralize": "^8.0.0",
         "react-popper": "^2.2.3",
         "react-router-dom": "^5.2.0",

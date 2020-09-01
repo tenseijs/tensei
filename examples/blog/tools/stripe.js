@@ -1,8 +1,8 @@
-const { tool } = require('@tensei/core')
+const { plugin } = require('@tensei/core')
 
 module.exports = (config = {}) =>
-    tool('Stripe').setup(async ({ app, style, script }) => {
-        console.log('-----> STRIPE TOOL CONFIG', config)
+    plugin('Stripe').setup(async ({ app, style, script }) => {
+        console.log('-----> STRIPE PLUGIN CONFIG', config)
 
         return {}
     })

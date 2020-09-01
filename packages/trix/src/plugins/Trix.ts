@@ -1,8 +1,8 @@
 import Path from 'path'
-import { tool } from '@tensei/common'
+import { plugin } from '@tensei/common'
 
-export const trixTool = () =>
-    tool('Trix').beforeMiddlewareSetup(async ({ script, style }) => {
+export const trixPlugin = () =>
+    plugin('Trix').beforeMiddlewareSetup(async ({ script, style }) => {
         script(
             'trix-editor.js',
             Path.resolve(__dirname, '..', '..', 'build/client/index.js')

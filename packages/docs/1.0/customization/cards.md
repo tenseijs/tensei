@@ -4,7 +4,7 @@
 
 ## Overview
 
-Cards are similar to resource tools, but are small, miniature tools that are typically displayed at the top of your dashboard, resource index, or resource detail screens. In fact, if you have used [Nova metrics](./../metrics/defining-metrics.md), you have already seen Nova cards. Custom Nova cards allow you to build own, metric-sized tools.
+Cards are similar to resource plugins, but are small, miniature plugins that are typically displayed at the top of your dashboard, resource index, or resource detail screens. In fact, if you have used [Nova metrics](./../metrics/defining-metrics.md), you have already seen Nova cards. Custom Nova cards allow you to build own, metric-sized plugins.
 
 ## Defining Cards
 

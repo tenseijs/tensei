@@ -1,6 +1,6 @@
 import Plan from './Plan'
 import {
-    tool,
+    plugin,
     resource,
     text,
     integer,
@@ -66,8 +66,8 @@ class Cashier {
         return this
     }
 
-    public tool() {
-        return tool('Cashier')
+    public plugin() {
+        return plugin('Cashier')
             .beforeDatabaseSetup(({ pushResource }) => {
                 pushResource(this.subscriptionsResource())
 

@@ -1,9 +1,9 @@
 import { graphqlHTTP } from 'express-graphql'
-import { tool, Resource } from '@tensei/common'
+import { plugin, Resource } from '@tensei/common'
 import { GraphQLSchema, GraphQLObjectType } from 'graphql'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 
-export interface GraphQlToolConfig {
+export interface GraphQlPluginConfig {
     graphiql?: boolean
     graphqlPath?: string
 }
@@ -25,8 +25,8 @@ const generateSchemaFromResources = (resources: Resource[]) => {
     })
 }
 
-export const graphql = (customConfig?: GraphQlToolConfig) =>
-    tool('Graph QL').setup(async ({ app, resources }) => {
+export const graphql = (customConfig?: GraphQlPluginConfig) =>
+    plugin('Graph QL').setup(async ({ app, resources }) => {
         const defaultConfig = {
             graphiql: true,
             graphqlPath: '/graphql',

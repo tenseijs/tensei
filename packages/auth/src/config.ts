@@ -1,6 +1,6 @@
 import { Field, User } from '@tensei/common'
 
-export interface AuthToolConfig {
+export interface AuthPluginConfig {
     fields: Field[]
     nameResource: string
     roleResource: string

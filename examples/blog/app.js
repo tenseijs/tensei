@@ -1,7 +1,7 @@
 require('dotenv').config()
 const { auth } = require('@tensei/auth')
 const { tensei } = require('@tensei/core')
-const { trixTool: trix } = require('@tensei/trix')
+const { trixPlugin: trix } = require('@tensei/trix')
 const { cashier, plan } = require('@tensei/cashier')
 
 module.exports = tensei()
@@ -12,8 +12,8 @@ module.exports = tensei()
         require('./resources/Comment'),
         require('./resources/Tag'),
     ])
-    .tools([
-        auth().name('Customer').twoFactorAuth().tool(),
+    .plugins([
+        auth().name('Customer').twoFactorAuth().plugin(),
         trix(),
         cashier()
             .customerResourceName('Customer')
@@ -22,7 +22,7 @@ module.exports = tensei()
                 plan('Basic Sub').monthly().price(29),
                 plan('Premium Sub').yearly().price(99),
             ])
-            .tool(),
+            .plugin(),
     ])
     .database(process.env.DATABASE || 'mysql')
     .databaseUrl(process.env.DATABASE_URL || 'mysql://127.0.0.1/flmg')
