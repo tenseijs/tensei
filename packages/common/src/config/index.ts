@@ -85,7 +85,7 @@ export interface Env {
 }
 
 export interface Config {
-    plugin: Plugin[]
+    plugins: Plugin[]
     resources: Resource[]
     scripts: Asset[]
     styles: Asset[]
