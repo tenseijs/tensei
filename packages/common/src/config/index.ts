@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import { Signale } from 'signale'
-import { Tool } from '../tools/Tool'
+import { Plugin } from '../plugins/Plugin'
 import { Resource } from '../resources/Resource'
 
 enum noPagination {
@@ -69,7 +69,7 @@ export type FieldHookFunction<FieldValueType = any> = (
 ) => FieldValueType
 
 export interface Asset {
-    /* This will be the url this asset will be served from. For example, app-tool.js */
+    /* This will be the url this asset will be served from. For example, app-plugin.js */
     name: string
     /* This is the absolute path to the file. This will be used to serve the asset. */
     path: string
@@ -85,7 +85,7 @@ export interface Env {
 }
 
 export interface Config {
-    tools: Tool[]
+    plugin: Plugin[]
     resources: Resource[]
     scripts: Asset[]
     styles: Asset[]

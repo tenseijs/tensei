@@ -7,7 +7,7 @@ import AsyncHandler from 'express-async-handler'
 import { validateAll } from 'indicative/validator'
 import { Request, Response, NextFunction } from 'express'
 import {
-    tool,
+    plugin,
     resource,
     text,
     belongsTo,
@@ -15,12 +15,12 @@ import {
     dateTime,
 } from '@tensei/common'
 
-import { AuthToolConfig, AuthData } from './config'
+import { AuthPluginConfig, AuthData } from './config'
 
 import SetupSql from './setup-sql'
 
 class Auth {
-    private config: AuthToolConfig = {
+    private config: AuthPluginConfig = {
         nameResource: 'User',
         roleResource: 'Role',
         permissionResource: 'Permission',
@@ -60,13 +60,13 @@ class Auth {
         return this
     }
 
-    public fields(fields: AuthToolConfig['fields']) {
+    public fields(fields: AuthPluginConfig['fields']) {
         this.config.fields = fields
 
         return this
     }
 
-    public teamFields(fields: AuthToolConfig['teamFields']) {
+    public teamFields(fields: AuthPluginConfig['teamFields']) {
         this.config.teamFields = fields
 
         return this
@@ -216,9 +216,9 @@ class Auth {
             ])
     }
 
-    public tool() {
+    public plugin() {
         return (
-            tool('Auth')
+            plugin('Auth')
                 .beforeDatabaseSetup(({ pushResource }) => {
                     pushResource(this.userResource())
 

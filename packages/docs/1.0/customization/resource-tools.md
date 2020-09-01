@@ -1,26 +1,26 @@
-# Resource Tools
+# Resource Plugins
 
 [[toc]]
 
 ## Overview
 
-Resource tools are very similar to [custom tools](./tools.md); however, instead of displaying in the Nova sidebar, resource tools are displayed on a particular resource's detail screen. Like Nova tools, resource tools are incredibly customizable, and primarily consist of a single-file Vue component that is totally under your control.
+Resource plugins are very similar to [custom plugins](./plugins.md); however, instead of displaying in the Nova sidebar, resource plugins are displayed on a particular resource's detail screen. Like Nova plugins, resource plugins are incredibly customizable, and primarily consist of a single-file Vue component that is totally under your control.
 
-## Defining Tools
+## Defining Plugins
 
-Resource tools may be generated using the `nova:resource-tool` Artisan command. By default, all new tools will be placed in the `nova-components` directory of your application. When generating a tool using the `nova:resource-tool` command, the tool name you pass to the command should follow the Composer `vendor/package` format. So, if we were building a Stripe inspector tool, we might run the following command:
+Resource plugins may be generated using the `nova:resource-plugin` Artisan command. By default, all new plugins will be placed in the `nova-components` directory of your application. When generating a plugin using the `nova:resource-plugin` command, the plugin name you pass to the command should follow the Composer `vendor/package` format. So, if we were building a Stripe inspector plugin, we might run the following command:
 
 ```bash
-php artisan nova:resource-tool acme/stripe-inspector
+php artisan nova:resource-plugin acme/stripe-inspector
 ```
 
-When generating a tool, Nova will prompt you to install the tool's NPM dependencies, compile its assets, and update your application's `composer.json` file. All custom tools are registered with your application as a Composer "path" repository.
+When generating a plugin, Nova will prompt you to install the plugin's NPM dependencies, compile its assets, and update your application's `composer.json` file. All custom plugins are registered with your application as a Composer "path" repository.
 
-Nova resource tools include all of the scaffolding necessary to build your tool. Each tool even contains its own `composer.json` file and is ready to be shared with the world on GitHub or the source control provider of your choice.
+Nova resource plugins include all of the scaffolding necessary to build your plugin. Each plugin even contains its own `composer.json` file and is ready to be shared with the world on GitHub or the source control provider of your choice.
 
-## Registering Tools
+## Registering Plugins
 
-Nova resource tools may be registered in your resource's `fields` method. This method returns an array of fields available to the resource. To register your resource tool, add your tool to the array of fields returned by this method:
+Nova resource plugins may be registered in your resource's `fields` method. This method returns an array of fields available to the resource. To register your resource plugin, add your plugin to the array of fields returned by this method:
 
 ```php
 use Acme\StripeInspector\StripeInspector;
@@ -41,21 +41,21 @@ public function fields(Request $request)
 }
 ```
 
-### Tool Options
+### Plugin Options
 
-Often, you will need to allow the consumer's of your tool to customize run-time configuration options on the tool. You may do this by exposing methods on your tool class. These methods may call the tool's underlying `withMeta` method to add information to the tool's metadata, which [will be available](#resource-tool-properties) within your `Tool.vue` component. The `withMeta` method accepts an array of key / value options:
+Often, you will need to allow the consumer's of your plugin to customize run-time configuration options on the plugin. You may do this by exposing methods on your plugin class. These methods may call the plugin's underlying `withMeta` method to add information to the plugin's metadata, which [will be available](#resource-plugin-properties) within your `Plugin.vue` component. The `withMeta` method accepts an array of key / value options:
 
 ```php
 <?php
 
 namespace Acme\StripeInspector;
 
-use Laravel\Nova\ResourceTool;
+use Laravel\Nova\ResourcePlugin;
 
-class StripeInspector extends ResourceTool
+class StripeInspector extends ResourcePlugin
 {
     /**
-     * Get the displayable name of the resource tool.
+     * Get the displayable name of the resource plugin.
      *
      * @return string
      */
@@ -75,7 +75,7 @@ class StripeInspector extends ResourceTool
     }
 
     /**
-     * Get the component name for the resource tool.
+     * Get the component name for the resource plugin.
      *
      * @return string
      */
@@ -86,15 +86,15 @@ class StripeInspector extends ResourceTool
 }
 ```
 
-## Building Tools
+## Building Plugins
 
-Each tool generated by Nova includes its own service provider and "tool" class. Using the `stripe-inspector` tool as an example, the tool class will be located at `src/StripeInspector.php`.
+Each plugin generated by Nova includes its own service provider and "plugin" class. Using the `stripe-inspector` plugin as an example, the plugin class will be located at `src/StripeInspector.php`.
 
-The tool's service provider is also located within the `src` directory of the tool, and is registered in your tool's `composer.json` file so that it will be auto-loaded by the Laravel framework.
+The plugin's service provider is also located within the `src` directory of the plugin, and is registered in your plugin's `composer.json` file so that it will be auto-loaded by the Laravel framework.
 
 ### Authorization
 
-If you would like to only expose a given tool to certain users, you may chain the `canSee` method onto your tool's registration. The `canSee` method accepts a Closure which should return `true` or `false`. The Closure will receive the incoming HTTP request:
+If you would like to only expose a given plugin to certain users, you may chain the `canSee` method onto your plugin's registration. The `canSee` method accepts a Closure which should return `true` or `false`. The Closure will receive the incoming HTTP request:
 
 ```php
 use Acme\StripeInspector\StripeInspector;
@@ -119,24 +119,24 @@ public function fields(Request $request)
 
 ### Routing
 
-Often, you will need to define Laravel routes that are called by your tool. When Nova generates your tool, it creates a `routes/api.php` routes file. If needed, you may use this file to define any routes your tool requires.
+Often, you will need to define Laravel routes that are called by your plugin. When Nova generates your plugin, it creates a `routes/api.php` routes file. If needed, you may use this file to define any routes your plugin requires.
 
-All routes within this file are automatically defined inside a route group by your tool's `ToolServiceProvider`. The route group specifies that all routes within the group should receive a `/nova-vendor/tool-name` prefix, where `tool-name` is the "kebab-case" name of your tool. So, for example, `/nova-vendor/stripe-inspector`. You are free to modify this route group definition, but take care to make sure your Nova tool will co-exist with other Nova packages.
+All routes within this file are automatically defined inside a route group by your plugin's `PluginServiceProvider`. The route group specifies that all routes within the group should receive a `/nova-vendor/plugin-name` prefix, where `plugin-name` is the "kebab-case" name of your plugin. So, for example, `/nova-vendor/stripe-inspector`. You are free to modify this route group definition, but take care to make sure your Nova plugin will co-exist with other Nova packages.
 
 :::danger Routing Authorization
 
-When building routes for your tool, you should **always** add authorization to these routes using Laravel gates or policies.
+When building routes for your plugin, you should **always** add authorization to these routes using Laravel gates or policies.
 :::
 
 ### Assets
 
-When Nova generates your tool, `resources/js` and `resources/sass` directories are generated for you. These directories contain your tool's JavaScript and Sass stylesheets. The primary files of interest in these directories are: `resources/js/components/Tool.vue` and `resources/sass/tool.scss`.
+When Nova generates your plugin, `resources/js` and `resources/sass` directories are generated for you. These directories contain your plugin's JavaScript and Sass stylesheets. The primary files of interest in these directories are: `resources/js/components/Plugin.vue` and `resources/sass/plugin.scss`.
 
-The `Tool.vue` file is a single-file Vue component that contains your tool's front-end. From this file, you are free to build your tool however you want. Your tool can make HTTP requests using Axios, which is available globally. In addition, the `moment.js` and `underscore.js` libraries are globally available.
+The `Plugin.vue` file is a single-file Vue component that contains your plugin's front-end. From this file, you are free to build your plugin however you want. Your plugin can make HTTP requests using Axios, which is available globally. In addition, the `moment.js` and `underscore.js` libraries are globally available.
 
-#### Resource Tool Properties
+#### Resource Plugin Properties
 
-Your resource tool's `Tool.vue` component receives several Vue `props`: `resourceName`, `resourceId`, and `field`. The `resourceId` property contains the primary key of the resource the tool is currently attached to. You may use the `resourceId` when making requests to your controllers. The `field` property provides access to any tool [options](#tool-options) that may be available:
+Your resource plugin's `Plugin.vue` component receives several Vue `props`: `resourceName`, `resourceId`, and `field`. The `resourceId` property contains the primary key of the resource the plugin is currently attached to. You may use the `resourceId` when making requests to your controllers. The `field` property provides access to any plugin [options](#plugin-options) that may be available:
 
 ```js
 const issuesRefunds = this.field.issuesRefunds;
@@ -144,7 +144,7 @@ const issuesRefunds = this.field.issuesRefunds;
 
 #### Registering Assets
 
-Your Nova tool's service provider registers your tool's compiled assets so that they will be available to the Nova front-end:
+Your Nova plugin's service provider registers your plugin's compiled assets so that they will be available to the Nova front-end:
 
 ```php
 /**
@@ -159,20 +159,20 @@ public function boot()
     });
 
     Nova::serving(function (ServingNova $event) {
-        Nova::script('stripe-inspector', __DIR__.'/../dist/js/tool.js');
-        Nova::style('stripe-inspector', __DIR__.'/../dist/css/tool.css');
+        Nova::script('stripe-inspector', __DIR__.'/../dist/js/plugin.js');
+        Nova::style('stripe-inspector', __DIR__.'/../dist/css/plugin.css');
     });
 }
 ```
 
 :::tip JavaScript Bootstrap & Routing
 
-Your component is bootstrapped and registered in the `resources/js/tool.js` file. You are free to modify this file or register additional components here as needed.
+Your component is bootstrapped and registered in the `resources/js/plugin.js` file. You are free to modify this file or register additional components here as needed.
 :::
 
 #### Compiling Assets
 
-Your Nova resource tool contains a `webpack.mix.js` file, which is generated when Nova creates your tool. You may build your tool using the NPM `dev` and `prod` commands:
+Your Nova resource plugin contains a `webpack.mix.js` file, which is generated when Nova creates your plugin. You may build your plugin using the NPM `dev` and `prod` commands:
 
 ```bash
 // Compile your assets for local development...

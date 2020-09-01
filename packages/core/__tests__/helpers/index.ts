@@ -1,13 +1,13 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
-import { tool, Tool, User as IUser } from '@tensei/common'
+import { plugin, Plugin, User as IUser } from '@tensei/common'
 import tensei, { tensei } from '../../tensei'
 
 import { Tag, Comment, User, Post } from './resources'
 
 interface ConfigureSetup {
-    tools?: Tool[]
+    plugins?: Plugin[]
     admin?: IUser
     apiPath?: string
     dashboardPath?: string
@@ -23,16 +23,16 @@ export const fakePostData = () => ({
     av_cpc: Faker.random.number(),
     published_at: Faker.date.future(),
     scheduled_for: Faker.date.future(),
-    category: Faker.random.arrayElement(['javascript', 'angular'])
+    category: Faker.random.arrayElement(['javascript', 'angular']),
 })
 
 export const setup = async (
     {
-        tools,
+        plugins,
         admin,
         apiPath,
         dashboardPath,
-        createAndLoginAdmin
+        createAndLoginAdmin,
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -47,19 +47,19 @@ export const setup = async (
 
     cachedInstance = instance
 
-    instance.tools([
-        ...(tools || []),
+    instance.plugins([
+        ...(plugins || []),
         ...(admin
             ? [
-                  tool('Force auth').beforeDatabaseSetup(async ({ app }) => {
+                  plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
                       app.use(async (request, response, next) => {
                           request.admin = admin
 
                           next()
                       })
-                  })
+                  }),
               ]
-            : [])
+            : []),
     ])
 
     if (apiPath) {
@@ -90,17 +90,17 @@ export const createAdminUser = async (knex: Knex) => {
     const user = {
         name: Faker.name.findName(),
         email: Faker.internet.email(),
-        password: 'password'
+        password: 'password',
     }
 
     const id = await knex('administrators').insert({
         name: user.name,
         email: user.email,
-        password: Bcrypt.hashSync(user.password)
+        password: Bcrypt.hashSync(user.password),
     })
 
     return {
         id: id[0],
-        ...user
+        ...user,
     }
 }

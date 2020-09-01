@@ -26,7 +26,12 @@ export { belongsToMany, BelongsToMany } from './fields/BelongsToMany'
 
 export { ResourceManager } from './resources/ResourceManager'
 export { action, SerializedAction, Action } from './actions/Action'
-export { Tool, tool, ToolSetupConfig, SetupFunctions } from './tools/Tool'
+export {
+    Plugin,
+    plugin,
+    PluginSetupConfig,
+    SetupFunctions,
+} from './plugins/Plugin'
 export { resource, Resource, SerializedResource } from './resources/Resource'
 export { DatabaseRepositoryInterface } from './databases/DatabaseRepositoryInterface'
 

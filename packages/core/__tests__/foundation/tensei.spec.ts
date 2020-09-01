@@ -1,6 +1,6 @@
 import Path from 'path'
 import Supertest from 'supertest'
-import { tool, resource, text } from '@tensei/common'
+import { plugin, resource, text } from '@tensei/common'
 
 import { setup, createAdminUser } from '../helpers'
 
@@ -9,7 +9,7 @@ test('can configure custom dashboard path', async () => {
 
     const instance = await setup(
         {
-            dashboardPath: CUSTOM_DASHBOARD_PATH
+            dashboardPath: CUSTOM_DASHBOARD_PATH,
         },
         true
     )
@@ -30,7 +30,7 @@ test('can configure custom api path', async () => {
 
     const { app } = await setup(
         {
-            apiPath: CUSTOM_API_PATH
+            apiPath: CUSTOM_API_PATH,
         },
         true
     )
@@ -65,11 +65,11 @@ test('cannot register database after it has been registered', async () => {
     expect(spy).toHaveBeenCalledTimes(0)
 })
 
-test('tools can correctly register custom stylesheets and scripts before middleware are setup', async () => {
+test('plugins can correctly register custom stylesheets and scripts before middleware are setup', async () => {
     const { app } = await setup(
         {
-            tools: [
-                tool('Graphql').beforeMiddlewareSetup(
+            plugins: [
+                plugin('Graphql').beforeMiddlewareSetup(
                     async ({ style, script }) => {
                         script(
                             'graphql.js',
@@ -92,8 +92,8 @@ test('tools can correctly register custom stylesheets and scripts before middlew
                             )
                         )
                     }
-                )
-            ]
+                ),
+            ],
         },
         true
     )
@@ -117,20 +117,20 @@ test('tools can correctly register custom stylesheets and scripts before middlew
     expect(css.text).toMatch('TEST_ASSET')
 })
 
-test('tools can correctly customise the express application with new routes', async () => {
+test('plugins can correctly customise the express application with new routes', async () => {
     const TEST_GRAPHQL_MESSAGE = 'TEST_GRAPHQL_MESSAGE'
 
     const { app } = await setup(
         {
-            tools: [
-                tool('Graphql').setup(async ({ app }) => {
+            plugins: [
+                plugin('Graphql').setup(async ({ app }) => {
                     app.post('/graphql', (req, res) =>
                         res.status(212).json({
-                            message: TEST_GRAPHQL_MESSAGE
+                            message: TEST_GRAPHQL_MESSAGE,
                         })
                     )
-                })
-            ]
+                }),
+            ],
         },
         true
     )
@@ -143,23 +143,23 @@ test('tools can correctly customise the express application with new routes', as
     expect(response.body.message).toBe(TEST_GRAPHQL_MESSAGE)
 })
 
-test('tools can push in new resources to the application', async () => {
+test('plugins can push in new resources to the application', async () => {
     const TEST_FIELD_NAME = 'TEST_FIELD_NAME'
     const TEST_RESOURCE_NAME = 'TEST_RESOURCE_NAME'
 
     const { app } = await setup(
         {
-            tools: [
-                tool('Graphql').beforeDatabaseSetup(
+            plugins: [
+                plugin('Graphql').beforeDatabaseSetup(
                     async ({ pushResource }) => {
                         pushResource(
                             resource(TEST_RESOURCE_NAME).fields([
-                                text(TEST_FIELD_NAME)
+                                text(TEST_FIELD_NAME),
                             ])
                         )
                     }
-                )
-            ]
+                ),
+            ],
         },
         true
     )
@@ -182,7 +182,7 @@ test('the auth middleware passes if the admin is correctly logged in', async () 
     const cookie = (
         await client.post('/api/login').send({
             email: user.email,
-            password: 'password'
+            password: 'password',
         })
     ).header['set-cookie'][0]
         .split(';')[0]
@@ -210,17 +210,17 @@ test('the auth middleware returns a 401 if there is no logged in admin', async (
 test('the set auth middleware returns a 401 if the user does not exist in the database', async () => {
     const { app, databaseClient: knex } = await setup(
         {
-            tools: [
-                tool('').beforeDatabaseSetup(async ({ app }) => {
+            plugin: [
+                plugin('').beforeDatabaseSetup(async ({ app }) => {
                     app.use((request, response, next) => {
                         request.session = {
-                            user: 3094892829
+                            user: 3094892829,
                         } as any
 
                         next()
                     })
-                })
-            ]
+                }),
+            ],
         },
         true
     )

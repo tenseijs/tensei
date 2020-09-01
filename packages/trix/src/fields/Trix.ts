@@ -1,4 +1,4 @@
-import { Textarea } from '@tensei/common'
+import { Textarea } from 'plugins/node_modules/@tensei/common'
 
 export class Trix extends Textarea {}
 

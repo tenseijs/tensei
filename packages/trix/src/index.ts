@@ -1,2 +1,2 @@
-export { trixTool } from './tools/Trix'
+export { trixPlugin } from './plugins/Trix'
 export { trix, Trix } from './fields/Trix'
