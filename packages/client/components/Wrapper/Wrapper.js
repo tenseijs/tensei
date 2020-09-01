@@ -1,6 +1,8 @@
 import React from 'react'
 import Auth from '~/store/auth'
 import LoginPage from '~/pages/Login'
+import ForgotPasswordPage from '~/pages/ForgotPassword'
+import ResetPasswordPage from '~/pages/ResetPassword'
 import Resources from '~/store/resources'
 import RegisterPage from '~/pages/Register'
 import DashboardPage from '~/pages/Dashboard'
@@ -74,6 +76,14 @@ class Wrapper extends React.Component {
                         <Route
                             path={Tensei.getPath('auth/login')}
                             component={LoginPage}
+                        />
+                        <Route
+                            path={Tensei.getPath('auth/password/new')}
+                            component={ForgotPasswordPage}
+                        />
+                        <Route
+                            path={Tensei.getPath('auth/password/reset/:token')}
+                            component={ResetPasswordPage}
                         />
                         {shouldShowRegistrationScreen ? (
                             <Route
