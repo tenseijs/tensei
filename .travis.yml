@@ -17,6 +17,8 @@ before_script:
     - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO testuser"
 
 script:
+    - yarn build
+    - cd packages/common && yarn test
     - cd packages/core && yarn test
     - cd packages/client && yarn test
 services:
