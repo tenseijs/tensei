@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: tensei
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: [12.x, 13.x, 14.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Node.js v-${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Show folder
+        run: pwd
+      - name: Install dependencies
+        run: yarn
+      - name: Build packages
+        run: yarn build
+      - name: Run Tests
+        run: yarn test
+        env:  
+          DATABASE: mysql
+          DATABASE_URL: mysql://root@127.0.0.1/tensei
