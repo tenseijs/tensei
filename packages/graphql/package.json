@@ -23,7 +23,8 @@
     },
     "dependencies": {
         "graphql": "^15.3.0",
-        "graphql-playground-middleware-express": "^1.7.18"
+        "graphql-playground-middleware-express": "^1.7.18",
+        "@tensei/common": "0.0.0"
     },
     "config": {
         "commitizen": {

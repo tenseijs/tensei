@@ -18,6 +18,7 @@
         "typescript": "^3.9.7"
     },
     "dependencies": {
-        "trix": "^1.2.4"
+        "trix": "^1.2.4",
+        "@tensei/common": "0.0.0"
     }
 }

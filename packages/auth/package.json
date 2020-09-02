@@ -47,6 +47,7 @@
         "randomstring": "^1.1.5",
         "speakeasy": "^2.0.0",
         "uniqid": "^5.2.0",
-        "uuid": "^8.3.0"
+        "uuid": "^8.3.0",
+        "@tensei/common": "0.0.0"
     }
 }

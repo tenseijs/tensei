@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "dayjs": "^1.8.34",
-        "randomstring": "^1.1.5"
+        "randomstring": "^1.1.5",
+        "@tensei/common": "0.0.0"
     }
 }

@@ -28,6 +28,7 @@
         "change-case": "^4.1.1",
         "indicative": "^7.4.4",
         "pluralize": "^8.0.0",
-        "signale": "^1.4.0"
+        "signale": "^1.4.0",
+        "@tensei/mail": "0.0.0"
     }
 }

@@ -9,7 +9,8 @@
         "bookshelf-eloquent": "^0.1.15",
         "change-case": "^4.1.1",
         "connect-session-knex": "^1.7.3",
-        "knex": "^0.21.2"
+        "knex": "^0.21.2",
+        "@tensei/common": "0.0.0"
     },
     "scripts": {
         "build": "tsc --p tsconfig.json",
