@@ -35,10 +35,10 @@ jobs:
         run: yarn build
       - name: Run @tensei/common tests
         run: cd /home/runner/work/tensei/tensei/packages/common && yarn test
-      - name: Run @tensei/core tests
-        run: cd /home/runner/work/tensei/tensei/packages/core && yarn test
-        env:
-          DATABASE: mysql
-          DATABASE_URL: mysql://root@127.0.0.1/tensei
       - name: Run @tensei/client tests
         run: cd /home/runner/work/tensei/tensei/packages/client && yarn test
+      # - name: Run @tensei/core tests
+      #   run: cd /home/runner/work/tensei/tensei/packages/core && yarn test
+      #   env:
+      #     DATABASE: mysql
+      #     DATABASE_URL: mysql://root@127.0.0.1/tensei
