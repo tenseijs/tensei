@@ -2,7 +2,7 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
 import { plugin, Plugin, User as IUser } from '@tensei/common'
-import tensei, { tensei } from '../../tensei'
+import tensei, { Tensei } from '../../tensei'
 
 import { Tag, Comment, User, Post } from './resources'
 
@@ -14,7 +14,7 @@ interface ConfigureSetup {
     createAndLoginAdmin?: boolean
 }
 
-let cachedInstance: tensei | null = null
+let cachedInstance: Tensei | null = null
 
 export const fakePostData = () => ({
     title: Faker.lorem.word(),
@@ -36,8 +36,8 @@ export const setup = async (
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
-    process.env.DATABASE = 'mysql'
-    process.env.DATABASE_URI = 'mysql://root@127.0.0.1/testdb'
+    process.env.DATABASE = process.env.DATABASE || 'mysql'
+    process.env.DATABASE_URI = process.env.DATABASE_URI || 'mysql://root@127.0.0.1/testdb'
 
     let instance = forceNewInstance
         ? tensei()
