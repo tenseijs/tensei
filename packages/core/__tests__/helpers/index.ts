@@ -1,7 +1,7 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
-import { Tensei, tensei } from '../../tensei'
+import { Tensei, tensei } from '../../Tensei'
 import { plugin, Plugin, User as IUser } from '@tensei/common'
 
 import { Tag, Comment, User, Post } from './resources'
