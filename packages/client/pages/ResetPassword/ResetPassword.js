@@ -4,9 +4,10 @@ import { TextField, Button } from '@contentful/forma-36-react-components'
 
 class ResetPasswordPage extends React.Component {
     state = {
-        email: '',
+        password: '',
         errors: {},
         isLoading: false,
+        token: '',
     }
 
     submit = (submitEvent) => {
@@ -17,8 +18,9 @@ class ResetPasswordPage extends React.Component {
         })
 
         Tensei.request
-            .post('forgot-password', {
-                email: this.state.email,
+            .post('reset-password', {
+                password: this.state.password,
+                token: this.props.match.params.token,
             })
             .then(() => {
                 window.location.href = Tensei.getPath('')
@@ -58,16 +60,14 @@ class ResetPasswordPage extends React.Component {
                         <form onSubmit={this.submit} action="">
                             <TextField
                                 labelText="New Password"
-                                name="newPassword"
-                                id="newPassword"
+                                name="password"
+                                id="password"
                                 textInputProps={{
                                     type: 'password',
                                 }}
-                                value={this.state.newPassword}
+                                value={this.state.password}
                                 placeholder=""
-                                validationMessage={
-                                    this.state.errors.newPassword
-                                }
+                                validationMessage={this.state.errors.password}
                                 onChange={(event) =>
                                     this.setState({ email: event.target.value })
                                 }

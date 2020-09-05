@@ -13,7 +13,7 @@ export class Manager implements ManagerContract {
     constructor(
         private resources: ResourceContract[],
         private db: DatabaseRepositoryInterface
-    ) {}
+    ) { }
 
     public findResource = (resourceSlug: string | ResourceContract) => {
         if (!resourceSlug) {
@@ -486,6 +486,10 @@ export class Manager implements ManagerContract {
         return model
     }
 
+    public async findUserByEmail(email: string) {
+        return await this.db.findUserByEmail(email)
+    }
+
     getValidationRules = (resource: ResourceContract, creationRules = true) => {
         const fields = resource.data.fields.filter((field) =>
             creationRules
@@ -504,7 +508,7 @@ export class Manager implements ManagerContract {
                 new Set([
                     ...serializedField.rules,
                     ...serializedField[
-                        creationRules ? 'creationRules' : 'updateRules'
+                    creationRules ? 'creationRules' : 'updateRules'
                     ],
                 ])
             ).join('|')
@@ -644,7 +648,7 @@ export class Manager implements ManagerContract {
                     {
                         message: `A ${resource.data.name.toLowerCase()} already exists with ${
                             field.inputName
-                        } ${payload[field.inputName]}.`,
+                            } ${payload[field.inputName]}.`,
                         field: field.inputName,
                     },
                 ]
@@ -773,10 +777,6 @@ export class Manager implements ManagerContract {
 
     getAdministratorById = (id: number | string) => {
         return this.db.getAdministratorById(id)
-    }
-
-    findUserByEmail = (email: string) => {
-        return this.db.findUserByEmail(email)
     }
 
     getAdministratorsCount = () => this.db.getAdministratorsCount()

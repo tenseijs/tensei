@@ -1,141 +1,145 @@
-// import Express from 'express'
-// import Bcrypt from 'bcryptjs'
-// import { validateAll } from 'indicative/validator'
+import Express from 'express'
+import Bcrypt from 'bcryptjs'
+import Dayjs from 'dayjs'
+import Uniqid from 'uniqid'
+import Randomstring from 'randomstring'
 
-// type AuthData = { email: string; password: string; name?: string }
+import { validateAll } from 'indicative/validator'
 
-// class ForgotPasswordController {
-//     public forgotPassword = async (
-//         request: Express.Request,
-//         response: Express.Response
-//     ) => {
-//         const { body, resources, Mailer, resourceManager } = request
-//         const { email } = await validateAll(body, {
-//             email: 'required|email',
-//         })
+type AuthData = { email: string; password: string; name?: string }
 
-//         const UserModel = resources[this.userResource().data.slug].Model()
+class ForgotPasswordController {
+    public forgotPassword = async (
+        request: Express.Request,
+        response: Express.Response
+    ) => {
+        const { body, resources, Mailer, resourceManager } = request
+        const { email } = await validateAll(body, {
+            email: 'required|email',
+        })
 
-//         const PasswordResetModel = resources[
-//             this.passwordResetsResource().data.slug
-//         ].Model()
+        const PasswordResetModel = resources['password-resets'].Model()
 
-//         const existingUser = await UserModel.where({
-//             email,
-//         }).fetch({
-//             require: false,
-//         })
+        const existingUser = await resourceManager.findUserByEmail(email)
 
-//         const existingPasswordReset = await PasswordResetModel.where({
-//             email,
-//         }).fetch({
-//             require: false,
-//         })
+        const existingPasswordReset = await PasswordResetModel.where({
+            email,
+        }).fetch({
+            require: false,
+        })
 
-//         if (!existingUser) {
-//             return response.status(422).json([
-//                 {
-//                     field: 'email',
-//                     message: 'Invalid email address.',
-//                 },
-//             ])
-//         }
+        if (!existingUser) {
+            return response.status(422).json([
+                {
+                    field: 'email',
+                    message: 'Invalid email address.',
+                },
+            ])
+        }
 
-//         const token =
-//             Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
+        const token =
+            Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
 
-//         const expiresAt = Dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
+        const expiresAt = Dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
 
-//         if (existingPasswordReset) {
-//             // make sure it has not expired
-//             await PasswordResetModel.query()
-//                 .where({
-//                     email,
-//                 })
-//                 .update({
-//                     token,
-//                     expires_at: expiresAt,
-//                 })
-//         } else {
-//             await PasswordResetModel.forge({
-//                 email,
-//                 token,
-//             }).save()
-//         }
+        if (existingPasswordReset) {
+            await PasswordResetModel.query()
+                .where({
+                    email,
+                })
+                .update({
+                    token,
+                    expires_at: expiresAt,
+                })
+        } else {
+            await PasswordResetModel.forge({
+                email,
+                token,
+            }).save()
+        }
 
-//         Mailer.to(email, existingUser.get('name')).sendRaw(
-//             `Some raw message to send with the token ${token}`
-//         )
+        Mailer.to(email, existingUser.name).sendRaw(
+            `Some raw message to send with the token ${token}`
+        )
 
-//         return response.json({
-//             message: `Please check your email for steps to reset your password.`,
-//         })
-//     }
+        return response.json({
+            message: `Please check your email for steps to reset your password.`,
+        })
+    }
 
-//     public register = async (
-//         request: Express.Request,
-//         response: Express.Response
-//     ) => {
-//         if ((await request.db.getAdministratorsCount()) > 0) {
-//             return response.status(422).json({
-//                 message:
-//                     'An administrator user already exists. Please use the administration management dashboard to add more users.',
-//             })
-//         }
+    public resetPassword = async (request: Express.Request, response: Express.Response) => {
+        const { body, resources, resourceManager } = request
 
-//         const [validationPassed, errors] = await this.validate(
-//             request.body,
-//             true
-//         )
+        const { token, password } = await validateAll(body, {
+            token: 'required|string',
+            password: 'required|string|min:8',
+        })
 
-//         if (!validationPassed) {
-//             return response.status(422).json({
-//                 message: 'Validation failed.',
-//                 errors,
-//             })
-//         }
+        const PasswordResetModel = resources['password-resets'].Model()
 
-//         const userId = await request.resourceManager.createAdmin(
-//             request,
-//             request.administratorResource,
-//             {
-//                 name: request.body.name,
-//                 email: request.body.email,
-//                 password: request.body.password,
-//             }
-//         )
 
-//         request.session!.user = userId
+        let existingPasswordReset = await PasswordResetModel.where({
+            token,
+        }).fetch({
+            require: false,
+        })
 
-//         return response.json({
-//             message: 'Registration and login successful.',
-//         })
-//     }
+        if (!existingPasswordReset) {
+            return response.status(422).json([
+                {
+                    field: 'token',
+                    message: 'Invalid reset token.',
+                },
+            ])
+        }
 
-//     public validate = async (data: AuthData, registration = false) => {
-//         let rules: {
-//             [key: string]: string
-//         } = {
-//             email: 'required|email',
-//             password: 'required|min:8',
-//         }
+        existingPasswordReset = existingPasswordReset.toJSON()
 
-//         if (registration) {
-//             rules.name = 'required'
-//         }
+        if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
+            return response.status(422).json([
+                {
+                    field: 'token',
+                    message: 'Invalid reset token.',
+                },
+            ])
+        }
 
-//         try {
-//             await validateAll(data, rules, {
-//                 'email.required': 'The email is required.',
-//                 'password.required': 'The password is required.',
-//                 'name.required': 'The name is required.',
-//             })
+        const user = await resourceManager.findUserByEmail(existingPasswordReset.email)
 
-//             return [true, []]
-//         } catch (errors) {
-//             return [false, errors]
-//         }
-//     }
-// }
+        if (!user) {
+            await new PasswordResetModel({
+                id: existingPasswordReset.id,
+            }).destroy({
+                require: false,
+            })
 
-// export default new ForgotPasswordController()
+            return response.status(500).json({
+                message: 'User does not exist anymore.',
+            })
+        }
+
+        await resourceManager.update(
+            request,
+            resources['administrators'],
+            user.id,
+            {
+                password,
+            },
+            true
+        )
+
+        await new PasswordResetModel({
+            id: existingPasswordReset.id,
+        }).destroy()
+
+        // TODO: Send an email to the user notifying them
+        // that their password was reset.
+
+        response.json({
+            message: `Password reset successful.`,
+        })
+    }
+
+}
+
+export default new ForgotPasswordController()

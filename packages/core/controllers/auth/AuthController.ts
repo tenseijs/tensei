@@ -22,8 +22,6 @@ class AuthController {
     ) => {
         const [validationPassed, errors] = await this.validate(request.body)
 
-        console.log(request.resources, '>>>>>')
-
         if (!validationPassed) {
             return response.status(422).json({
                 message: 'Validation failed.',
