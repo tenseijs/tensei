@@ -1,26 +1,23 @@
 import Express from 'express'
-import Bcrypt from 'bcryptjs'
 import Dayjs from 'dayjs'
 import Uniqid from 'uniqid'
 import Randomstring from 'randomstring'
 
 import { validateAll } from 'indicative/validator'
 
-type AuthData = { email: string; password: string; name?: string }
-
 class ForgotPasswordController {
     public forgotPassword = async (
         request: Express.Request,
         response: Express.Response
     ) => {
-        const { body, resources, Mailer, resourceManager } = request
+        const { body, resources, Mailer, manager } = request
         const { email } = await validateAll(body, {
             email: 'required|email',
         })
 
         const PasswordResetModel = resources['password-resets'].Model()
 
-        const existingUser = await resourceManager.findUserByEmail(email)
+        const existingUser = await manager.findUserByEmail(email)
 
         const existingPasswordReset = await PasswordResetModel.where({
             email,
@@ -68,7 +65,7 @@ class ForgotPasswordController {
     }
 
     public resetPassword = async (request: Express.Request, response: Express.Response) => {
-        const { body, resources, resourceManager } = request
+        const { body, resources, manager, Mailer } = request
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
@@ -85,7 +82,7 @@ class ForgotPasswordController {
         })
 
         if (!existingPasswordReset) {
-            return response.status(422).json([
+            return response.status(401).json([
                 {
                     field: 'token',
                     message: 'Invalid reset token.',
@@ -96,7 +93,7 @@ class ForgotPasswordController {
         existingPasswordReset = existingPasswordReset.toJSON()
 
         if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
-            return response.status(422).json([
+            return response.status(401).json([
                 {
                     field: 'token',
                     message: 'Invalid reset token.',
@@ -104,7 +101,7 @@ class ForgotPasswordController {
             ])
         }
 
-        const user = await resourceManager.findUserByEmail(existingPasswordReset.email)
+        const user = await manager.findUserByEmail(existingPasswordReset.email)
 
         if (!user) {
             await new PasswordResetModel({
@@ -118,7 +115,7 @@ class ForgotPasswordController {
             })
         }
 
-        await resourceManager.update(
+        await manager.update(
             request,
             resources['administrators'],
             user.id,
@@ -132,8 +129,9 @@ class ForgotPasswordController {
             id: existingPasswordReset.id,
         }).destroy()
 
-        // TODO: Send an email to the user notifying them
-        // that their password was reset.
+        Mailer.to(user.email, user.name).sendRaw(
+            `Your password has been changed successfully`
+        )
 
         response.json({
             message: `Password reset successful.`,

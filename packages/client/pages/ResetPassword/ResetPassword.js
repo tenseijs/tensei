@@ -23,14 +23,27 @@ class ResetPasswordPage extends React.Component {
                 token: this.props.match.params.token,
             })
             .then(() => {
-                window.location.href = Tensei.getPath('')
+                this.setState({ isLoading: false })
+
+                Tensei.library.Notification.success(
+                    'Your password has been reset, login in again'
+                )
+
+                this.props.history.push(Tensei.getPath('auth/login'))
             })
             .catch((error) => {
+                this.setState({ isLoading: false })
                 if (error?.response?.status === 422) {
                     this.setState({
                         isLoading: false,
                         errors: this.flattenErrors(error.response.data.errors),
                     })
+                }
+                if (error?.response?.status === 401) {
+                    Tensei.library.Notification.error(
+                        error.response.data[0].message ||
+                            'The reset token has expired'
+                    )
                 }
             })
     }
@@ -69,7 +82,9 @@ class ResetPasswordPage extends React.Component {
                                 placeholder=""
                                 validationMessage={this.state.errors.password}
                                 onChange={(event) =>
-                                    this.setState({ email: event.target.value })
+                                    this.setState({
+                                        password: event.target.value,
+                                    })
                                 }
                             />
 

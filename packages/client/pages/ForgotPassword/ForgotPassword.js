@@ -21,18 +21,25 @@ class ForgotPasswordPage extends React.Component {
                 email: this.state.email,
             })
             .then(() => {
-                Tensei.library.Notification.error(
+                this.setState({
+                    isLoading: false,
+                })
+
+                Tensei.library.Notification.success(
                     `An email has been sent to the supplied email address. Follow the instruction in the email to reset your password`
                 )
-                window.location.href = Tensei.getPath('')
+                this.props.history.push(Tensei.getPath('auth/login'))
             })
             .catch((error) => {
                 if (error?.response?.status === 422) {
-                    this.setState({
+                    return this.setState({
                         isLoading: false,
                         errors: this.flattenErrors(error.response.data),
                     })
                 }
+                Tensei.library.Notification.error(
+                    `An error occured while sending password reset email, please try again.`
+                )
             })
     }
 

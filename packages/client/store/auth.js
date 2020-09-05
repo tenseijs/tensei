@@ -25,7 +25,7 @@ export const mustBeAuthenticated = (Component) => {
                             to={Tensei.getPath(
                                 shouldShowRegistrationScreen
                                     ? 'auth/register'
-                                    : 'auth/password/new'
+                                    : 'auth/login'
                             )}
                         />
                     )
