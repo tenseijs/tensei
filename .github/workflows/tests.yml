@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  mysql:
+  tests:
     runs-on: ubuntu-latest
     services:
       mysql:
