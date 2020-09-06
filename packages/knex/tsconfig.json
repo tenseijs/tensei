@@ -12,5 +12,5 @@
         "types": ["@types/jest"]
     },
     "exclude": ["__tests__", "build"],
-    "include": ["bookshelf.d.ts", "src"]
+    "include": ["bookshelf.d.ts", "src", "knex.d.ts"]
 }
