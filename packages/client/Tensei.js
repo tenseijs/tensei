@@ -86,7 +86,7 @@ class Tensei {
         NumberField: TextField,
         DateField: DateIndexField,
         DateTimeField: DateIndexField,
-        BooleanField: BooleanIndexField
+        BooleanField: BooleanIndexField,
     }
 
     detailFieldComponents = {

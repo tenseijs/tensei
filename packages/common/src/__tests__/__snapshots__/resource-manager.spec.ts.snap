@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ResourceManager create validates payload before creating any record (comments) 1`] = `
+exports[`Manager create validates payload before creating any record (comments) 1`] = `
 Array [
   Object {
     "field": "title",
@@ -15,7 +15,7 @@ Array [
 ]
 `;
 
-exports[`ResourceManager create validates payload before creating any record (posts) 1`] = `
+exports[`Manager create validates payload before creating any record (posts) 1`] = `
 Array [
   Object {
     "field": "title",
@@ -60,7 +60,7 @@ Array [
 ]
 `;
 
-exports[`ResourceManager create validates payload before creating any record (tags) 1`] = `
+exports[`Manager create validates payload before creating any record (tags) 1`] = `
 Array [
   Object {
     "field": "name",
@@ -70,7 +70,7 @@ Array [
 ]
 `;
 
-exports[`ResourceManager create validates payload before creating any record (users) 1`] = `
+exports[`Manager create validates payload before creating any record (users) 1`] = `
 Array [
   Object {
     "field": "full_name",

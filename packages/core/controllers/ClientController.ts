@@ -24,14 +24,14 @@ class ClientController {
                 scripts: request.scripts,
                 user: request.admin ? JSON.stringify(request.admin) : null,
                 resources: JSON.stringify(
-                    Object.keys(request.resources).map(key =>
+                    Object.keys(request.resources).map((key) =>
                         request.resources[key].serialize()
                     )
                 ),
                 appConfig: JSON.stringify({
-                    dashboardPath: request.appConfig.dashboardPath
+                    dashboardPath: request.appConfig.dashboardPath,
                 }),
-                shouldShowRegistrationScreen
+                shouldShowRegistrationScreen,
             })
         )
     }

@@ -12,13 +12,14 @@ import IndexResourceController from './controllers/resources/IndexResourceContro
 
 import {
     text,
-    Plugin,
     Asset,
     resource,
-    Resource,
+    PluginContract,
+    ResourceContract,
     SetupFunctions,
     Config,
-    ResourceManager,
+    Manager,
+    ManagerContract,
     SupportedDatabases,
     DatabaseRepositoryInterface,
     belongsToMany,
@@ -120,7 +121,7 @@ export class Tensei {
                 ]
             },
             resources: this.config.resources,
-            pushResource: (resource: Resource) => {
+            pushResource: (resource: ResourceContract) => {
                 this.config.resources.push(resource)
             },
             resourcesMap: this.config.resourcesMap,
@@ -206,7 +207,7 @@ export class Tensei {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
-                request.db = repository
+                // request.db = repository
 
                 next()
             }
@@ -223,15 +224,12 @@ export class Tensei {
         return this
     }
 
-    public resourceManager = () => {
+    public manager = () => {
         if (!this.databaseBooted) {
             return null
         }
 
-        return new ResourceManager(
-            this.config.resources,
-            this.databaseRepository!
-        )
+        return new Manager(this.config.resources, this.databaseRepository!)
     }
 
     public registerMiddleware() {
@@ -245,7 +243,7 @@ export class Tensei {
             ) => {
                 request.resources = this.config.resourcesMap
                 request.administratorResource = this.administratorResource()
-                request.resourceManager = this.resourceManager()!
+                request.manager = this.manager()!
                 request.Mailer = this.mailer
 
                 next()
@@ -295,7 +293,7 @@ export class Tensei {
             return next()
         }
 
-        const admin = await request.resourceManager.getAdministratorById(
+        const admin = await request.manager.getAdministratorById(
             request.session?.user
         )
 
@@ -475,7 +473,7 @@ export class Tensei {
         return this
     }
 
-    public resources(resources: Array<Resource>) {
+    public resources(resources: ResourceContract[]) {
         const updatedResources = [
             ...this.config.resources,
             this.administratorResource(),
@@ -492,7 +490,7 @@ export class Tensei {
                     (resource) => resource.data.name === resourceName
                 )
             )
-            .filter(Boolean) as Array<Resource>
+            .filter(Boolean) as ResourceContract[]
 
         this.setValue('resources', uniqueResources)
 
@@ -550,7 +548,7 @@ export class Tensei {
             }))
     }
 
-    public plugins(plugins: Plugin[]) {
+    public plugins(plugins: PluginContract[]) {
         this.config.plugins = plugins
 
         return this

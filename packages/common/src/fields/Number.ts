@@ -40,6 +40,6 @@ export class NumberField extends Text {
 }
 
 export const number = (name: string, databaseField?: string) =>
-    NumberField.make(name, databaseField)
+    new NumberField(name, databaseField)
 
 export default NumberField

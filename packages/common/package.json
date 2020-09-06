@@ -3,7 +3,14 @@
     "version": "0.0.0",
     "main": "./build/index.js",
     "license": "MIT",
-    "types": "./build/index.d.ts",
+    "types": "./typings/index.d.ts",
+    "files": [
+        "build/typings",
+        "build/src/actions",
+        "build/src/fields",
+        "build/src/resources",
+        "build/src/plugins"
+    ],
     "devDependencies": {
         "@babel/core": "^7.11.4",
         "@babel/preset-env": "^7.11.0",

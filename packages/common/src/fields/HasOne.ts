@@ -12,6 +12,6 @@ export class HasOne extends Integer {
 }
 
 export const hasOne = (name: string, databaseField?: string) =>
-    HasOne.make(name, databaseField)
+    new HasOne(name, databaseField)
 
 export default HasOne

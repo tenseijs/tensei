@@ -1,17 +1,21 @@
 import { Request } from 'express'
-import { DataPayload, FetchAllRequestQuery } from '../config'
-import { Resource, resource as createResourceFn } from './Resource'
 import { validateAll } from 'indicative/validator'
-import { DatabaseRepositoryInterface } from '../databases/DatabaseRepositoryInterface'
-import { ActionResponse } from '../actions/Action'
+import { resource as createResourceFn } from './Resource'
+import { DataPayload, FetchAllRequestQuery } from '@tensei/common'
+import {
+    ActionResponse,
+    DatabaseRepositoryInterface,
+    ResourceContract,
+    ManagerContract,
+} from '@tensei/common'
 
-export class ResourceManager {
+export class Manager implements ManagerContract {
     constructor(
-        private resources: Resource[],
+        private resources: ResourceContract[],
         private db: DatabaseRepositoryInterface
     ) {}
 
-    public findResource = (resourceSlug: string | Resource) => {
+    public findResource = (resourceSlug: string | ResourceContract) => {
         if (!resourceSlug) {
             throw {
                 message: `Resource ${resourceSlug} not found.`,
@@ -39,7 +43,7 @@ export class ResourceManager {
 
     public async deleteById(
         request: Request,
-        resourceSlugOrResource: string | Resource,
+        resourceSlugOrResource: string | ResourceContract,
         id: number | string
     ) {
         const resource = this.findResource(resourceSlugOrResource)
@@ -49,7 +53,7 @@ export class ResourceManager {
 
     public async createAdmin(
         request: Request,
-        resourceSlugOrResource: string | Resource,
+        resourceSlugOrResource: string | ResourceContract,
         payload: DataPayload
     ) {
         const resource = this.findResource(resourceSlugOrResource)
@@ -88,7 +92,7 @@ export class ResourceManager {
 
     public async create(
         request: Request,
-        resourceSlugOrResource: string | Resource,
+        resourceSlugOrResource: string | ResourceContract,
         payload: DataPayload
     ) {
         const resource = this.findResource(resourceSlugOrResource)
@@ -122,7 +126,7 @@ export class ResourceManager {
 
     public async update(
         request: Request,
-        resourceSlugOrResource: string | Resource,
+        resourceSlugOrResource: string | ResourceContract,
         id: number | string,
         payload: DataPayload,
         patch = true
@@ -150,7 +154,7 @@ export class ResourceManager {
     }
 
     public async updateRelationshipFields(
-        resource: Resource,
+        resource: ResourceContract,
         payload: DataPayload,
         modelId: string | number
     ) {
@@ -215,7 +219,7 @@ export class ResourceManager {
     }
 
     public async createRelationalFields(
-        resource: Resource,
+        resource: ResourceContract,
         payload: DataPayload,
         model: any
     ) {
@@ -282,7 +286,7 @@ export class ResourceManager {
             with: withRelationships,
             no_pagination: noPagination = 'false',
         }: Request['query'],
-        resource: Resource
+        resource: ResourceContract
     ) {
         let filters: FetchAllRequestQuery['filters'] = []
 
@@ -356,7 +360,7 @@ export class ResourceManager {
 
     public async findAll(
         request: Request,
-        resourceSlugOrResource: string | Resource
+        resourceSlugOrResource: string | ResourceContract
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
@@ -384,8 +388,8 @@ export class ResourceManager {
     public async findAllRelatedResource(
         request: Request,
         resourceId: string | number,
-        resourceSlugOrResource: string | Resource,
-        relatedResourceSlugOrResource: string | Resource
+        resourceSlugOrResource: string | ResourceContract,
+        relatedResourceSlugOrResource: string | ResourceContract
     ) {
         const resource = this.findResource(resourceSlugOrResource)
         const relatedResource = this.findResource(relatedResourceSlugOrResource)
@@ -454,7 +458,7 @@ export class ResourceManager {
 
     public async findOneById(
         request: Request,
-        resourceSlugOrResource: string | Resource,
+        resourceSlugOrResource: string | ResourceContract,
         id: number | string,
         withRelated?: string[]
     ) {
@@ -482,7 +486,7 @@ export class ResourceManager {
         return model
     }
 
-    getValidationRules = (resource: Resource, creationRules = true) => {
+    getValidationRules = (resource: ResourceContract, creationRules = true) => {
         const fields = resource.data.fields.filter((field) =>
             creationRules
                 ? field.showHideField.showOnCreation
@@ -515,7 +519,7 @@ export class ResourceManager {
 
     getResourceFieldsFromPayload = (
         payload: DataPayload,
-        resource: Resource
+        resource: ResourceContract
     ) => {
         let validPayload: DataPayload = {}
 
@@ -533,7 +537,7 @@ export class ResourceManager {
 
     breakFieldsIntoRelationshipsAndNonRelationships = (
         payload: DataPayload,
-        resource: Resource
+        resource: ResourceContract
     ) => {
         const relationshipFieldsPayload: DataPayload = {}
         const nonRelationshipFieldsPayload: DataPayload = {}
@@ -560,7 +564,7 @@ export class ResourceManager {
 
     validate = async (
         payload: DataPayload,
-        resource: Resource,
+        resource: ResourceContract,
         creationRules: boolean = true,
         modelId?: string | number
     ): Promise<DataPayload> => {
@@ -599,7 +603,7 @@ export class ResourceManager {
 
     validateUniqueFields = async (
         payload: DataPayload,
-        resource: Resource,
+        resource: ResourceContract,
         creationRules = true,
         modelId?: string | number
     ) => {
@@ -650,7 +654,7 @@ export class ResourceManager {
 
     validateRelationshipFields = async (
         payload: DataPayload,
-        resource: Resource
+        resource: ResourceContract
     ) => {
         const fields = resource.data.fields
             .map((field) => field.serialize())
@@ -770,4 +774,10 @@ export class ResourceManager {
     getAdministratorById = (id: number | string) => {
         return this.db.getAdministratorById(id)
     }
+
+    findUserByEmail = (email: string) => {
+        return this.db.findUserByEmail(email)
+    }
+
+    getAdministratorsCount = () => this.db.getAdministratorsCount()
 }

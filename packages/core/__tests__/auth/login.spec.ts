@@ -23,7 +23,7 @@ test('returns a 422 if user does not exist in database', async () => {
     const response = await client.post('/api/login').send({
         email: 'hey@unknown-user.io',
         password: 'password',
-        rememberMe: true
+        rememberMe: true,
     })
 
     expect(response.status).toBe(422)
@@ -40,7 +40,7 @@ test('returns a 422 if user password is wrong', async () => {
     const response = await client.post('/api/login').send({
         email: user.email,
         password: 'WRONG_PASSWORD',
-        rememberMe: true
+        rememberMe: true,
     })
 
     expect(response.status).toBe(422)
@@ -60,7 +60,7 @@ test('returns a 200, and creates a new session when correct credentials are pass
 
     const response = await client.post('/api/login').send({
         email: user.email,
-        password: user.password
+        password: user.password,
     })
 
     expect(response.status).toBe(200)
@@ -89,7 +89,7 @@ test('can login correctly with remember me', async () => {
     const response = await client.post('/api/login').send({
         email: user.email,
         password: user.password,
-        rememberMe: true
+        rememberMe: true,
     })
 
     expect(response.status).toBe(200)

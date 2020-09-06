@@ -1,19 +1,14 @@
 import Text from './Text'
-import Field from './Field'
 
 export class Link extends Text {
-    /**
-     *
-     * @param this
-     */
-    public rules<T extends Field>(this: T, ...rules: Array<string>): T {
-        this.validationRules = ['url', ...rules]
+    public constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
 
-        return this
+        this.rules('url')
     }
 }
 
 export const link = (name: string, databaseField?: string) =>
-    Link.make(name, databaseField)
+    new Link(name, databaseField)
 
 export default Link

@@ -1,5 +1,6 @@
 import Field from './Field'
 import { singular } from 'pluralize'
+import { FieldContract } from '@tensei/common'
 
 export class HasManyEmbedded extends Field {
     /**
@@ -43,7 +44,7 @@ export class HasManyEmbedded extends Field {
      *
      * @param this
      */
-    public rules<T extends Field>(this: T, ...rules: Array<string>): T {
+    public rules<T extends FieldContract>(this: T, ...rules: Array<string>): T {
         this.validationRules = ['array', ...rules]
 
         return this

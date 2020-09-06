@@ -1,7 +1,7 @@
-import { Field, User } from '@tensei/common'
+import { FieldContract, User } from '@tensei/common'
 
 export interface AuthPluginConfig {
-    fields: Field[]
+    fields: FieldContract[]
     nameResource: string
     roleResource: string
     permissionResource: string
@@ -12,7 +12,7 @@ export interface AuthPluginConfig {
         secretKey: string
     }
     teams: boolean
-    teamFields: Field[]
+    teamFields: FieldContract[]
     twoFactorAuth: boolean
 }
 

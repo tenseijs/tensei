@@ -6,9 +6,9 @@ const copyFiles = require('copyfiles')
 copyFiles(
     [
         Path.resolve('..', 'index.mustache'),
-        Path.resolve('..', 'server', 'build', 'index.mustache')
+        Path.resolve('..', 'server', 'build', 'index.mustache'),
     ],
-    error => {
+    (error) => {
         if (error) {
             Consola.error(error)
 
@@ -24,9 +24,9 @@ console.log(Path.resolve('..', 'server', 'build', 'index.client.js'))
 copyFiles(
     [
         Path.resolve('..', '..', 'client/build/index.js'),
-        Path.resolve('..', 'server', 'build', 'index.client.js')
+        Path.resolve('..', 'server', 'build', 'index.client.js'),
     ],
-    error => {
+    (error) => {
         if (error) {
             Consola.error(error)
 
@@ -40,9 +40,9 @@ copyFiles(
 copyFiles(
     [
         Path.resolve('..', '..', 'client/build/index.css'),
-        Path.resolve('..', 'server', 'build', 'index.client.css')
+        Path.resolve('..', 'server', 'build', 'index.client.css'),
     ],
-    error => {
+    (error) => {
         if (error) {
             Consola.error(error)
 

@@ -1,9 +1,12 @@
-import { Resource, Permission } from '@tensei/common'
+import { ResourceContract, Permission } from '@tensei/common'
 import { sentenceCase } from 'change-case'
 
 import { AuthPluginConfig } from './config'
 
-export default async (resources: Resource[], config: AuthPluginConfig) => {
+export default async (
+    resources: ResourceContract[],
+    config: AuthPluginConfig
+) => {
     const UserResource = resources.find(
         (resource) => resource.data.name === config.nameResource
     )

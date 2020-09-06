@@ -1,47 +1,25 @@
 import { id } from '../fields/ID'
-import Field, { SerializedField } from '../fields/Field'
-import { HookFunction, AuthorizeFunction, Permission } from '../config'
+import { Action } from '../actions/Action'
+import {
+    HookFunction,
+    AuthorizeFunction,
+    Permission,
+    ResourceData,
+    ValidationMessages,
+    SerializedResource,
+    ResourceContract,
+    FieldContract,
+} from '@tensei/common'
 
 import Pluralize from 'pluralize'
 import { snakeCase, paramCase, camelCase } from 'change-case'
-import Action, { SerializedAction } from '../actions/Action'
-
-interface ValidationMessages {
-    [key: string]: string
-}
-
-interface ResourceData {
-    name: string
-    table: string
-    group: string
-    slug: string
-    label: string
-    groupSlug: string
-    valueField: string
-    camelCaseName: string
-    displayField: string
-    noTimeStamps: boolean
-    perPageOptions: number[]
-    permissions: Permission[]
-    displayInNavigation: boolean
-    validationMessages: ValidationMessages
-}
 
 interface ResourceDataWithFields extends ResourceData {
-    fields: Field[]
+    fields: FieldContract[]
     actions: Action[]
 }
 
-export interface SerializedResource extends ResourceData {
-    fields: SerializedField[]
-    actions: SerializedAction[]
-}
-
-export class Resource<ResourceType = {}> {
-    private $model: ResourceType | null = null
-
-    private $models: ResourceType[] = []
-
+export class Resource<ResourceType = {}> implements ResourceContract {
     public authorizeCallbacks: {
         authorizedToSee: AuthorizeFunction
         authorizedToCreate: AuthorizeFunction
@@ -147,19 +125,7 @@ export class Resource<ResourceType = {}> {
         return this
     }
 
-    public model($model: ResourceType) {
-        this.$model = $model
-
-        return this
-    }
-
-    public models($models: ResourceType[]) {
-        this.$models = $models
-
-        return this
-    }
-
-    public fields(fields: Field[]) {
+    public fields(fields: FieldContract[]) {
         this.setValue('fields', [
             // We'll set the primary key here. We're not ready to allow custom primary keys yet.
             id('ID'),

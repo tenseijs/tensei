@@ -5,7 +5,7 @@ class IndexResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const results = await request.resourceManager.findAll(
+        const results = await request.manager.findAll(
             request,
             request.params.resource
         )

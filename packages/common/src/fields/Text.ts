@@ -5,6 +5,6 @@ export class Text extends Field {
 }
 
 export const text = (name: string, databaseField?: string) =>
-    Text.make(name, databaseField)
+    new Text(name, databaseField)
 
 export default Text

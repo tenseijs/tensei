@@ -5,6 +5,6 @@ export class Textarea extends Text {
 }
 
 export const textarea = (name: string, databaseField?: string) =>
-    Textarea.make(name, databaseField)
+    new Textarea(name, databaseField)
 
 export default Textarea

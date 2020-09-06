@@ -1,10 +1,11 @@
 import Field from './Field'
+import { IDContract } from '@tensei/common'
 
 interface Constructor<M> {
     new (...args: any[]): M
 }
 
-export class ID extends Field {
+export class ID extends Field implements IDContract {
     /**
      *
      * If set to true, this field will

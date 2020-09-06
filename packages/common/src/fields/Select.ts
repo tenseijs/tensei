@@ -36,6 +36,6 @@ export class Select extends Field {
 }
 
 export const select = (name: string, databaseField?: string) =>
-    Select.make(name, databaseField)
+    new Select(name, databaseField)
 
 export default Select

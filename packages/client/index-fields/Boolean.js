@@ -13,10 +13,12 @@ class BooleanField extends React.Component {
 
         return (
             <div className="flex items-center">
-                <div className={cn('h-2 w-2 mr-2 rounded-full', {
-                    'bg-green-500': checked,
-                    'bg-red-500': ! checked
-                })}></div>
+                <div
+                    className={cn('h-2 w-2 mr-2 rounded-full', {
+                        'bg-green-500': checked,
+                        'bg-red-500': !checked,
+                    })}
+                ></div>
                 {checked ? field.trueLabel : field.falseLabel}
             </div>
         )

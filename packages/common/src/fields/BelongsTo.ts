@@ -1,6 +1,6 @@
-import Field from './Field'
 import Integer from './Integer'
 import { snakeCase } from 'change-case'
+import { FieldContract } from '@tensei/common'
 
 export class BelongsTo extends Integer {
     /**
@@ -33,7 +33,7 @@ export class BelongsTo extends Integer {
      * Make this field nullable
      *
      */
-    public notNullable<T extends Field>(this: T): T {
+    public notNullable<T extends FieldContract>(this: T): T {
         console.warn(
             `BelongsTo relationships can not be set to notNullable(). We recommend adding a required validation rule instead.`
         )
@@ -43,6 +43,6 @@ export class BelongsTo extends Integer {
 }
 
 export const belongsTo = (name: string, databaseField?: string) =>
-    BelongsTo.make(name, databaseField)
+    new BelongsTo(name, databaseField)
 
 export default BelongsTo

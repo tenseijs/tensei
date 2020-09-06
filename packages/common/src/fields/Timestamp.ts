@@ -17,6 +17,6 @@ export class Timestamp extends DateField {
 }
 
 export const timestamp = (name: string, databaseField?: string) =>
-    Timestamp.make(name, databaseField)
+    new Timestamp(name, databaseField)
 
 export default Timestamp

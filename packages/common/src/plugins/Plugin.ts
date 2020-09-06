@@ -1,52 +1,12 @@
-import Express from 'express'
-import { Asset } from '../config'
 import { paramCase } from 'change-case'
-import { Resource } from '../resources/Resource'
+import {
+    PluginSetupConfig,
+    PluginSetupFunction,
+    SetupFunctions,
+    PluginContract,
+} from '@tensei/common'
 
-export interface PluginSetupConfig {
-    resources: Resource[]
-    app: Express.Application
-    resourcesMap: {
-        [key: string]: Resource
-    }
-    pushResource: (resource: Resource) => void
-    style: (name: Asset['name'], path: Asset['path']) => void
-    script: (name: Asset['name'], path: Asset['path']) => void
-}
-
-export type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
-
-export type PluginBeforeDabaseSetupFunction = (
-    config: PluginSetupConfig
-) => Promise<any>
-export type PluginAfterDatabaseSetupFunction = (
-    config: PluginSetupConfig
-) => Promise<any>
-
-export type PluginBeforeCoreRoutesSetupFunction = (
-    config: PluginSetupConfig
-) => Promise<any>
-export type PluginAfterCoreRoutesSetupFunction = (
-    config: PluginSetupConfig
-) => Promise<any>
-
-export type PluginBeforeMiddlewareSetupFunction = (
-    config: PluginSetupConfig
-) => Promise<any>
-export type PluginAfterMiddlewareSetupFunction = (
-    config: PluginSetupConfig
-) => Promise<any>
-
-export type SetupFunctions =
-    | 'setup'
-    | 'beforeDatabaseSetup'
-    | 'afterDatabaseSetup'
-    | 'beforeMiddlewareSetup'
-    | 'afterMiddlewareSetup'
-    | 'beforeCoreRoutesSetup'
-    | 'afterCoreRoutesSetup'
-
-export class Plugin {
+export class Plugin implements PluginContract {
     public data = {
         setup: (config: PluginSetupConfig) => Promise.resolve(),
 

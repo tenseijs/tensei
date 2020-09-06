@@ -77,6 +77,6 @@ export class Integer extends Number {
 }
 
 export const integer = (name: string, databaseField?: string) =>
-    Integer.make(name, databaseField)
+    new Integer(name, databaseField)
 
 export default Integer

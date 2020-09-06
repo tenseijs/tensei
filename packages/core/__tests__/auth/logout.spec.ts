@@ -11,7 +11,7 @@ test('can successfully logout when administrator is logged in', async () => {
     const cookie = (
         await client.post('/api/login').send({
             ...user,
-            password: 'password'
+            password: 'password',
         })
     ).header['set-cookie'][0]
         .split('=')[1]

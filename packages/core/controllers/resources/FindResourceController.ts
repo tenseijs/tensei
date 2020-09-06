@@ -5,7 +5,7 @@ class FindResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const model = await request.resourceManager.findOneById(
+        const model = await request.manager.findOneById(
             request,
             request.params.resource,
             request.params.resourceId
@@ -13,7 +13,7 @@ class FindResourceController {
 
         if (!model) {
             return response.status(404).json({
-                message: `Resource with id ${request.params.resourceId} was not found.`
+                message: `Resource with id ${request.params.resourceId} was not found.`,
             })
         }
 
@@ -25,7 +25,7 @@ class FindResourceController {
         response: Express.Response
     ) => {
         return response.json(
-            await request.resourceManager.findAllRelatedResource(
+            await request.manager.findAllRelatedResource(
                 request,
                 request.params.resourceId,
                 request.params.resource,

@@ -17,6 +17,6 @@ export class DateTime extends DateField {
 }
 
 export const dateTime = (name: string, databaseField?: string) =>
-    DateTime.make(name, databaseField)
+    new DateTime(name, databaseField)
 
 export default DateTime

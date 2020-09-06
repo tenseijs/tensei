@@ -1,45 +1,16 @@
 import { snakeCase, camelCase } from 'change-case'
-import { FieldHookFunction, AuthorizeFunction } from '../config'
+import {
+    FieldHookFunction,
+    AuthorizeFunction,
+    FieldContract,
+    SerializedField,
+} from '@tensei/common'
 
 interface Constructor<M> {
     new (...args: any[]): M
 }
 
-export interface SerializedField {
-    name: string
-    component: string
-    inputName: string
-    isSortable: boolean
-    description: string
-    rules: string[]
-    defaultValue: string|boolean|number
-    isNullable: boolean
-    isUnique: boolean
-    isSearchable: boolean
-    showOnIndex: boolean
-    showOnDetail: boolean
-    showOnUpdate: boolean
-    showOnCreation: boolean
-    updateRules: string[]
-    creationRules: string[]
-    hidden: boolean
-    fieldName: string
-    camelCaseName: string
-    databaseField: string
-    sqlDatabaseFieldType: string | undefined
-    attributes: { [key: string]: string }
-    selectOptions?: {
-        label: string
-        value: string
-    }[]
-    defaultToNow?: boolean
-    isUnsigned?: boolean
-    trueLabel?: string
-    falseLabel?: string
-    isRelationshipField: boolean
-}
-
-export class Field {
+export class Field implements FieldContract {
     public showHideField = {
         /**
          *
@@ -231,7 +202,7 @@ export class Field {
      * field
      *
      */
-    public defaultValue: string|number|boolean = ''
+    public defaultValue: string | number | boolean = ''
 
     /**
      * Instantiate a new field. Requires the name,
@@ -250,7 +221,7 @@ export class Field {
      *
      * Show this field on the index page
      */
-    public showOnIndex(): Field {
+    public showOnIndex() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: true,
@@ -263,7 +234,7 @@ export class Field {
      *
      * Show this field on the detail page
      */
-    public showOnDetail(): Field {
+    public showOnDetail() {
         this.showHideField = {
             ...this.showHideField,
             showOnDetail: true,
@@ -276,7 +247,7 @@ export class Field {
      *
      * Show this field on the creation page
      */
-    public showOnCreation(): Field {
+    public showOnCreation() {
         this.showHideField = {
             ...this.showHideField,
             showOnCreation: true,
@@ -289,7 +260,7 @@ export class Field {
      *
      * Show this field on the update page
      */
-    public showOnUpdate(): Field {
+    public showOnUpdate() {
         this.showHideField = {
             ...this.showHideField,
             showOnUpdate: true,
@@ -302,7 +273,7 @@ export class Field {
      *
      * Hide this field on the index page
      */
-    public hideFromIndex(): Field {
+    public hideFromIndex() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: false,
@@ -315,7 +286,7 @@ export class Field {
      *
      * Hide this field from the detail page
      */
-    public hideFromDetail(): Field {
+    public hideFromDetail() {
         this.showHideField = {
             ...this.showHideField,
             showOnDetail: false,
@@ -328,7 +299,7 @@ export class Field {
      *
      * Hide this field from the create form
      */
-    public hideWhenCreating(): Field {
+    public hideWhenCreating() {
         this.showHideField = {
             ...this.showHideField,
             showOnCreation: false,
@@ -341,7 +312,7 @@ export class Field {
      *
      * Hide this field from the update form
      */
-    public hideWhenUpdating(): Field {
+    public hideWhenUpdating() {
         this.showHideField = {
             ...this.showHideField,
             showOnUpdate: false,
@@ -354,7 +325,7 @@ export class Field {
      *
      * Hide this field everywhere, except the index page
      */
-    public onlyOnIndex(): Field {
+    public onlyOnIndex() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: true,
@@ -371,7 +342,7 @@ export class Field {
      * Hide this field everuwhere, except the
      * create and update forms
      */
-    public onlyOnForms(): Field {
+    public onlyOnForms() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: false,
@@ -389,7 +360,7 @@ export class Field {
      * index pages. hidden on create and
      * update forms.
      */
-    public exceptOnForms(): Field {
+    public exceptOnForms() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: true,
@@ -402,24 +373,11 @@ export class Field {
     }
 
     /**
-     * Create a new instance of the field
-     * requires constructor parameters
-     *
-     */
-    public static make<T extends Field>(
-        this: Constructor<T>,
-        name: string,
-        databaseField?: string
-    ): T {
-        return new this(name, databaseField)
-    }
-
-    /**
      *
      * Make this field sortable
      *
      */
-    public sortable<T extends Field>(this: T): T {
+    public sortable<T extends FieldContract>(this: T): T {
         this.isSortable = true
 
         return this
@@ -431,7 +389,7 @@ export class Field {
      * this field in the database.
      *
      */
-    public searchable<T extends Field>(this: T): T {
+    public searchable<T extends FieldContract>(this: T): T {
         this.isSearchable = true
 
         return this
@@ -442,7 +400,7 @@ export class Field {
      * Make this field sortable
      *
      */
-    public unique<T extends Field>(this: T): T {
+    public unique<T extends FieldContract>(this: T) {
         this.isUnique = true
 
         return this
@@ -453,7 +411,7 @@ export class Field {
      * Make this field nullable
      *
      */
-    public notNullable<T extends Field>(this: T): T {
+    public notNullable<T extends FieldContract>(this: T): T {
         this.isNullable = false
 
         return this
@@ -465,7 +423,10 @@ export class Field {
      * that provides more information to the user
      * about this field on forms.
      */
-    public description<T extends Field>(this: T, description: string): T {
+    public description<T extends FieldContract>(
+        this: T,
+        description: string
+    ): T {
         this.helpText = description
 
         return this
@@ -478,7 +439,10 @@ export class Field {
      * default
      *
      */
-    public default<T extends Field>(this: T, value: string|number|boolean): T {
+    public default<T extends FieldContract>(
+        this: T,
+        value: string | number | boolean
+    ): T {
         this.defaultValue = value
 
         return this
@@ -488,7 +452,7 @@ export class Field {
      *
      * Set html attributes for this component
      */
-    public htmlAttributes<T extends Field>(this: T, attributes: {}): T {
+    public htmlAttributes<T extends FieldContract>(this: T, attributes: {}): T {
         this.attributes = attributes
 
         return this
@@ -498,8 +462,10 @@ export class Field {
      *
      * @param this
      */
-    public rules<T extends Field>(this: T, ...rules: Array<string>): T {
-        this.validationRules = rules
+    public rules<T extends FieldContract>(this: T, ...rules: Array<string>): T {
+        this.validationRules = Array.from(
+            new Set([...this.validationRules, ...rules])
+        )
 
         return this
     }
@@ -508,8 +474,13 @@ export class Field {
      * Set the validation rules to be used when
      * creating this field to the database
      */
-    public creationRules<T extends Field>(this: T, ...rules: Array<string>): T {
-        this.creationValidationRules = rules
+    public creationRules<T extends FieldContract>(
+        this: T,
+        ...rules: Array<string>
+    ): T {
+        this.creationValidationRules = Array.from(
+            new Set([...this.creationValidationRules, ...rules])
+        )
 
         return this
     }
@@ -518,8 +489,13 @@ export class Field {
      * Set the validation rules to be used when updating
      * this field
      */
-    public updateRules<T extends Field>(this: T, ...rules: Array<string>): T {
-        this.updateValidationRules = rules
+    public updateRules<T extends FieldContract>(
+        this: T,
+        ...rules: Array<string>
+    ): T {
+        this.updateValidationRules = Array.from(
+            new Set([...this.updateValidationRules, ...rules])
+        )
 
         return this
     }
@@ -528,7 +504,7 @@ export class Field {
      * Set this field to be a hidden field. It won't show up
      * in query results.
      */
-    public hidden<T extends Field>(this: T): T {
+    public hidden<T extends FieldContract>(this: T): T {
         this.isHidden = true
 
         return this

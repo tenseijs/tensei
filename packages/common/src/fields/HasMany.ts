@@ -27,7 +27,6 @@ export class HasMany extends Integer {
     }
 }
 
-export const hasMany = (name: string, databaseField?: string) =>
-    HasMany.make(name, databaseField)
+export const hasMany = (name: string) => new HasMany(name)
 
 export default HasMany

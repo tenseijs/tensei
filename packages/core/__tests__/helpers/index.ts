@@ -37,7 +37,8 @@ export const setup = async (
     forceNewInstance = false
 ) => {
     process.env.DATABASE = process.env.DATABASE || 'mysql'
-    process.env.DATABASE_URI = process.env.DATABASE_URI || 'mysql://root@127.0.0.1/testdb'
+    process.env.DATABASE_URI =
+        process.env.DATABASE_URI || 'mysql://root@127.0.0.1/testdb'
 
     let instance = forceNewInstance
         ? tensei()

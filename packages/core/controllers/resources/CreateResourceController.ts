@@ -5,7 +5,7 @@ class CreateResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const model = await request.resourceManager.create(
+        const model = await request.manager.create(
             request,
             request.params.resource,
             request.body

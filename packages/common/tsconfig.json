@@ -1,16 +1,22 @@
 {
     "compilerOptions": {
-        "target": "ES2017",
+        "target": "ES2019",
         "module": "commonjs",
+        "lib": [
+            "es2019",
+            "es2020.bigint",
+            "es2020.string",
+            "es2020.symbol.wellknown"
+        ],
         "declaration": true,
         "outDir": "./build",
         "strict": true,
         "baseUrl": "./src",
         "esModuleInterop": true,
-        "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "types": ["@types/jest"]
+        "moduleResolution": "node",
+        "skipLibCheck": true
     },
-    "exclude": ["__tests__", "build"],
-    "include": ["common.d.ts", "src"]
+    "include": ["./src"],
+    "exclude": ["./node_modules", "./build/**/*"]
 }

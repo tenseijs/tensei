@@ -19,6 +19,6 @@ export class BigInteger extends Integer {
 }
 
 export const bigInteger = (name: string, databaseField?: string) =>
-    BigInteger.make(name, databaseField)
+    new BigInteger(name, databaseField)
 
 export default BigInteger

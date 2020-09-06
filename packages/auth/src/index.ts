@@ -290,7 +290,7 @@ class Auth {
     }
 
     private register = async (request: Request, response: Response) => {
-        const { id } = await request.resourceManager.create(
+        const { id } = await request.manager.create(
             request,
             this.userResource(),
             request.body
@@ -407,7 +407,7 @@ class Auth {
         response: Response,
         next: NextFunction
     ) => {
-        const { headers, resourceManager } = request
+        const { headers, manager } = request
         const [, token] = (headers['authorization'] || '').split('Bearer ')
 
         if (!token) {
@@ -419,7 +419,7 @@ class Auth {
                 id: number
             }
 
-            const model = await resourceManager.findOneById(
+            const model = await manager.findOneById(
                 request,
                 this.userResource().data.slug,
                 id,
@@ -478,7 +478,7 @@ class Auth {
             })
         }
 
-        await request.resourceManager.update(
+        await request.manager.update(
             request,
             this.userResource(),
             request.authUser!.id,
@@ -522,7 +522,7 @@ class Auth {
             })
         }
 
-        await request.resourceManager.update(
+        await request.manager.update(
             request,
             this.userResource(),
             request.authUser!.id,
@@ -546,7 +546,7 @@ class Auth {
 
         const { base32, otpauth_url } = Speakeasy.generateSecret()
 
-        await request.resourceManager.update(
+        await request.manager.update(
             request,
             this.userResource(),
             request.authUser!.id,
@@ -636,7 +636,7 @@ class Auth {
     }
 
     private resetPassword = async (request: Request, response: Response) => {
-        const { body, resources, resourceManager } = request
+        const { body, resources, manager } = request
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
@@ -693,7 +693,7 @@ class Auth {
             })
         }
 
-        await resourceManager.update(
+        await manager.update(
             request,
             request.resources[this.userResource().data.slug],
             user.get('id'),

@@ -5,7 +5,7 @@ class UpdateResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const updated = await request.resourceManager.update(
+        const updated = await request.manager.update(
             request,
             request.params.resource,
             request.params.resourceId,

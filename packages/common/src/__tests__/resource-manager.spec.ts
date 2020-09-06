@@ -1,12 +1,12 @@
-import { ResourceManager } from '../resources/ResourceManager'
+import { Manager } from '../resources/Manager'
 
 import db from './helpers/db'
 import { Tag, Comment, User, Post } from './helpers/resources'
 
 const setup = (resources = []) =>
-    new ResourceManager([Tag, Comment, User, Post, ...resources], db as any)
+    new Manager([Tag, Comment, User, Post, ...resources], db as any)
 
-describe('ResourceManager', () => {
+describe('Manager', () => {
     describe('findResource', () => {
         test('can find a resource by string', () => {
             const resource = setup().findResource('users')

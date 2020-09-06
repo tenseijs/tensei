@@ -1,8 +1,13 @@
 import Express from 'express'
 import { paramCase } from 'change-case'
 
-import { DataPayload, ValidationError } from '../config'
-import Field, { SerializedField } from '../fields/Field'
+import {
+    FieldContract,
+    ActionContract,
+    SerializedField,
+    DataPayload,
+    ValidationError,
+} from '@tensei/common'
 
 export interface ActionFlashMessage {
     message: string
@@ -71,7 +76,7 @@ interface ActionData {
 }
 
 interface ActionDataWithFields extends ActionData {
-    fields: Field[]
+    fields: FieldContract[]
 }
 
 export interface SerializedAction extends ActionData {
@@ -82,7 +87,7 @@ export interface SerializedAction extends ActionData {
     fields: SerializedField[]
 }
 
-export class Action {
+export class Action implements ActionContract {
     public data: ActionDataWithFields = {
         fields: [],
         slug: '',
@@ -278,7 +283,7 @@ export class Action {
         return this
     }
 
-    fields(fields: Field[]) {
+    fields(fields: FieldContract[]) {
         this.setValue('fields', fields)
 
         return this

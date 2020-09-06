@@ -8,7 +8,7 @@ import {
     resource,
     textarea,
     belongsTo,
-    belongsToMany
+    belongsToMany,
 } from '@tensei/common'
 
 export default resource('Post')
@@ -20,7 +20,7 @@ export default resource('Post')
                 return notification({
                     message: 'All articles have been published.',
                     variant: 'positive',
-                    position: 'top'
+                    position: 'top',
                 })
             })
             .fields([
@@ -28,7 +28,7 @@ export default resource('Post')
                 textarea('Reason for publishing', 'reason')
                     .default('A short description of why you published.')
                     .rules('required', 'max:50'),
-                textarea('Post content', 'content').rules('required', 'min:12')
+                textarea('Post content', 'content').rules('required', 'min:12'),
             ])
             .showOnTableRow(),
         action('Archive')
@@ -52,12 +52,12 @@ export default resource('Post')
                 [
                     {
                         message: 'Custom validation message',
-                        field: 'custom-field-name'
-                    }
+                        field: 'custom-field-name',
+                    },
                 ],
                 422
             )
-        )
+        ),
     ])
     .fields([
         text('Title')
@@ -69,33 +69,29 @@ export default resource('Post')
         textarea('Content')
             .rules('required', 'max:2000', 'min:12')
             .hideFromIndex(),
-        integer('Av. CPC')
-            .rules('required')
-            .hideFromDetail(),
+        integer('Av. CPC').rules('required').hideFromDetail(),
         select('Category')
             .options([
                 {
                     label: 'Javascript',
-                    value: 'javascript'
+                    value: 'javascript',
                 },
                 {
                     label: 'Angular',
-                    value: 'angular'
+                    value: 'angular',
                 },
                 {
                     label: 'Mysql',
-                    value: 'mysql'
+                    value: 'mysql',
                 },
                 {
                     label: 'Postgresql',
-                    value: 'pg'
-                }
+                    value: 'pg',
+                },
             ])
             .rules('required')
             .searchable(),
-        belongsTo('User')
-            .searchable()
-            .rules('required'),
+        belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()
             .firstDayOfWeek(4)
@@ -104,7 +100,7 @@ export default resource('Post')
         dateTime('Scheduled For')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a'),
-        belongsToMany('Tag')
+        belongsToMany('Tag'),
     ])
     .perPageOptions([25, 50, 100])
     .displayField('title')

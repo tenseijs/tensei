@@ -2,6 +2,7 @@ import Field from './Field'
 import Integer from './Integer'
 import { snakeCase } from 'change-case'
 import Pluralize from 'pluralize'
+import { FieldContract } from '@tensei/common'
 
 export class BelongsToMany extends Integer {
     /**
@@ -28,7 +29,7 @@ export class BelongsToMany extends Integer {
      * Make this field nullable
      *
      */
-    public notNullable<T extends Field>(this: T): T {
+    public notNullable<T extends FieldContract>(this: T): T {
         console.warn(
             `BelongsToMany relationships can not be set to notNullable() at the moment. We recommend adding a required validation rule instead.`
         )
@@ -37,6 +38,6 @@ export class BelongsToMany extends Integer {
     }
 }
 
-export const belongsToMany = (name: string) => BelongsToMany.make(name)
+export const belongsToMany = (name: string) => new BelongsToMany(name)
 
 export default BelongsToMany

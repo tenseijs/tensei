@@ -7,10 +7,10 @@ export class BooleanField extends Field {
 
     private config = {
         trueLabel: 'Yes',
-        falseLabel: 'No'
+        falseLabel: 'No',
     }
 
-        /**
+    /**
      * Instantiate a new field. Requires the name,
      * and optionally the corresponding database
      * field. This field if not provided will
@@ -20,33 +20,12 @@ export class BooleanField extends Field {
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
-        this.rules()
-    }
-
-    /**
-     *
-     * Set the default value of this
-     * field
-     *
-     */
-    public defaultValue: string|number|boolean = false
-
-        /**
-     *
-     * @param this
-     */
-    public rules<T extends Field>(this: T, ...rules: Array<string>): T {
-        this.validationRules = [
-            'boolean',
-            ...rules
-        ]
-
-        return this
+        this.rules('boolean')
     }
 
     public trueLabel(value: string) {
         this.config.trueLabel = value
-    
+
         return this
     }
 
@@ -60,12 +39,12 @@ export class BooleanField extends Field {
         return {
             ...super.serialize(),
             trueLabel: this.config.trueLabel,
-            falseLabel: this.config.falseLabel
+            falseLabel: this.config.falseLabel,
         }
     }
 }
 
 export const boolean = (name: string, databaseField?: string) =>
-    BooleanField.make(name, databaseField)
+    new BooleanField(name, databaseField)
 
 export default BooleanField

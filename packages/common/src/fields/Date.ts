@@ -93,6 +93,6 @@ export class DateField extends Field {
 }
 
 export const date = (name: string, databaseField?: string) =>
-    DateField.make(name, databaseField)
+    new DateField(name, databaseField)
 
 export default DateField
