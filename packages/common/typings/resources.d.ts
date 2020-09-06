@@ -104,6 +104,13 @@ declare module '@tensei/common/resources' {
             resourceSlugOrResource: string | ResourceContract,
             payload: DataPayload
         ): Promise<any>
+        updateOneByField(
+            request: Request,
+            resourceSlugOrResource: string | ResourceContract,
+            databaseField: string,
+            value: any,
+            payload: DataPayload
+        ): Promise<any>
         update(
             request: Request,
             resourceSlugOrResource: string | ResourceContract,
@@ -190,8 +197,17 @@ declare module '@tensei/common/resources' {
         getAdministratorById: (
             id: number | string
         ) => Promise<import('@tensei/common').User | null>
-        findUserByEmail: (email: string) => Promise<User | null>
+        findUserByEmail: (email: string) => Promise<any>
         getAdministratorsCount: () => Promise<number>
+        getFieldFromResource: (
+            resource: ResourceContract,
+            databaseField: string
+        ) => import('@tensei/common').FieldContract | undefined
+        findOneByField: (
+            resourceSlugNameOrResource: ResourceContract | string,
+            databaseField: string,
+            value: any
+        ) => Promise<any>
     }
 
     export declare class Manager extends ManagerContract {}

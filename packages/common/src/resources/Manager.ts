@@ -124,6 +124,33 @@ export class Manager implements ManagerContract {
         return model
     }
 
+    public async updateOneByField(
+        request: Request,
+        resourceSlugOrResource: string | ResourceContract,
+        databaseField: string,
+        value: any,
+        payload: DataPayload
+    ) {
+        const resource = this.findResource(resourceSlugOrResource)
+
+        const field = this.getFieldFromResource(resource, databaseField)
+
+        if (!field) {
+            throw new Error(
+                `The field ${databaseField} does not exist on resource ${resource.data.name}.`
+            )
+        }
+
+        let { parsedPayload } = await this.validate(payload, resource, false)
+
+        return this.db.updateOneByField(
+            resource,
+            field.databaseField,
+            value,
+            parsedPayload
+        )
+    }
+
     public async update(
         request: Request,
         resourceSlugOrResource: string | ResourceContract,
@@ -780,4 +807,37 @@ export class Manager implements ManagerContract {
     }
 
     getAdministratorsCount = () => this.db.getAdministratorsCount()
+
+    getFieldFromResource = (
+        resource: ResourceContract,
+        databaseField: string
+    ) => {
+        return resource.data.fields.find(
+            (field) =>
+                field.name === databaseField ||
+                field.databaseField === databaseField
+        )
+    }
+
+    findOneByField = async (
+        resourceSlugNameOrResource: ResourceContract | string,
+        databaseField: string,
+        value: any
+    ) => {
+        const resource = this.findResource(resourceSlugNameOrResource)
+
+        const field = this.getFieldFromResource(resource, databaseField)
+
+        if (!field) {
+            throw new Error(
+                `Field ${databaseField} could not be found on resource.`
+            )
+        }
+
+        return this.db.findOneByField(
+            this.findResource(resource),
+            field.databaseField,
+            value
+        )
+    }
 }

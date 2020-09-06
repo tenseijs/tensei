@@ -709,6 +709,17 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             .update(valuesToUpdate)
     }
 
+    public updateOneByField = async (
+        resource: ResourceContract,
+        field: string,
+        value: any,
+        payload: DataPayload = {}
+    ) => {
+        return this.$db!(resource.data.table)
+            .where(field, value)
+            .update(payload)
+    }
+
     public updateManyWhere = async (
         resource: ResourceContract,
         whereClause: {},
