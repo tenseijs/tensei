@@ -13,7 +13,7 @@ class ClientController {
 
         if (
             request.session?.user ||
-            (await request.db.getAdministratorsCount()) > 0
+            (await request.manager.getAdministratorsCount()) > 0
         ) {
             shouldShowRegistrationScreen = false
         }

@@ -194,5 +194,5 @@ declare module '@tensei/common/resources' {
         getAdministratorsCount: () => Promise<number>
     }
 
-    export const Manager = ManagerContract
+    export declare class Manager extends ManagerContract {}
 }
