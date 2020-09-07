@@ -23,7 +23,7 @@ export class HasMany extends Integer {
 
         this.rules('array')
 
-        this.hideFromIndex()
+        this.hideOnIndex()
     }
 }
 

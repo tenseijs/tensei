@@ -18,6 +18,6 @@ export default resource('Administrator')
             .rules('required')
             .hidden()
             .onlyOnForms()
-            .hideWhenUpdating(),
+            .hideOnUpdate(),
     ])
     .group('Users & Permissions')

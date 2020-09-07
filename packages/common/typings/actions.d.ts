@@ -121,12 +121,12 @@ declare module '@tensei/common/actions' {
          *
          * Hide this field on the index page
          */
-        hideFromIndex(): this
+        hideOnIndex(): this
         /**
          *
          * Hide this field from the detail page
          */
-        hideFromDetail(): this
+        hideOnDetail(): this
         /**
          *
          * Hide this field everywhere, except the index page

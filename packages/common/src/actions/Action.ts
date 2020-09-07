@@ -198,7 +198,7 @@ export class Action implements ActionContract {
      *
      * Hide this field on the index page
      */
-    public hideFromIndex() {
+    public hideOnIndex() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: false,
@@ -211,7 +211,7 @@ export class Action implements ActionContract {
      *
      * Hide this field from the detail page
      */
-    public hideFromDetail() {
+    public hideOnDetail() {
         this.showHideField = {
             ...this.showHideField,
             showOnDetail: false,

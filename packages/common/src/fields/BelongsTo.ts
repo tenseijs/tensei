@@ -25,7 +25,7 @@ export class BelongsTo extends Integer {
 
         this.unsigned()
 
-        this.hideFromIndex()
+        this.hideOnIndex()
     }
 
     /**

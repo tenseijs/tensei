@@ -14,9 +14,9 @@ const User = resource('User')
             .htmlAttributes({
                 type: 'password',
             })
-            .hideWhenUpdating()
-            .hideFromIndex()
-            .hideFromDetail()
+            .hideOnUpdate()
+            .hideOnIndex()
+            .hideOnDetail()
             .rules('required', 'min:8', 'max:24')
             .notNullable(),
         hasMany('Post'),

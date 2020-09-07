@@ -42,7 +42,7 @@ export default resource('Post')
                     201
                 )
             })
-            .hideFromIndex()
+            .hideOnIndex()
             .confirmButtonText('Archive posts'),
         action('Fix SEO').handle(({ push }) =>
             push('/resources/posts/12', 202)
@@ -68,8 +68,8 @@ export default resource('Post')
         text('Description').rules('required'),
         textarea('Content')
             .rules('required', 'max:2000', 'min:12')
-            .hideFromIndex(),
-        integer('Av. CPC').rules('required').hideFromDetail(),
+            .hideOnIndex(),
+        integer('Av. CPC').rules('required').hideOnDetail(),
         select('Category')
             .options([
                 {
@@ -94,7 +94,6 @@ export default resource('Post')
         belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()
-            .firstDayOfWeek(4)
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a'),
         dateTime('Scheduled For')

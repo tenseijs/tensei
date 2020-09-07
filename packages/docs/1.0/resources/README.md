@@ -18,7 +18,7 @@ const { resource } = require('@tensei/core')
 resource('Post')
 ```
 
-This resource called `Post` would connect to a database table called `posts`, which matches the plural, lowercase of the resource name. 
+Each resource maps to a database table or collection. By default, the `Post` resource would connect to a database table called `posts`, which matches the plural, lowercase of the resource name. The `Tag` resource would connect to the `tags` table, and the `Customer Expense` resource would connect to the `customer_expenses` table.
 
 ## Registering Resources
 
@@ -53,3 +53,15 @@ tensei()
 Now the `Post` and `Author` resources would be in the same group. This is a great way to separate concerns on your dashboard.
 
 ## Pagination
+If you'd like to customize the amounts shown on each resource's "per page" filter menu, you can do so by calling the `.perPageOptions()` method on the resource:
+
+```javascript
+resource('Post')
+    .perPageOptions([25, 50, 100, 250, 500])
+```
+
+:::tip
+Customizing `perPageOptions` affects the initial amount of resources fetched.
+
+Changing the value of perPageOptions on your Resource will cause Tensei to fetch the number of resources equal to the first value in the perPageOptions array.
+:::

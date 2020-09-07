@@ -113,21 +113,21 @@ class Auth {
                     })
                     .creationRules('required')
                     .onlyOnForms()
-                    .hideWhenUpdating(),
+                    .hideOnUpdate(),
                 belongsToMany(this.config.roleResource),
                 ...(this.config.twoFactorAuth
                     ? [
                           text('Two Factor Enabled')
-                              .hideWhenCreating()
-                              .hideWhenUpdating()
-                              .hideFromIndex()
-                              .hideFromDetail(),
+                              .hideOnCreate()
+                              .hideOnUpdate()
+                              .hideOnIndex()
+                              .hideOnDetail(),
                           text('Two Factor Secret')
                               .hidden()
-                              .hideFromIndex()
-                              .hideWhenCreating()
-                              .hideWhenUpdating()
-                              .hideFromDetail(),
+                              .hideOnIndex()
+                              .hideOnCreate()
+                              .hideOnUpdate()
+                              .hideOnDetail(),
                       ]
                     : []),
                 ...this.config.fields,

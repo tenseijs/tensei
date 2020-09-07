@@ -21,7 +21,7 @@ export class BelongsToMany extends Integer {
     constructor(name: string) {
         super(name, Pluralize(snakeCase(name)))
 
-        this.hideFromIndex()
+        this.hideOnIndex()
     }
 
     /**

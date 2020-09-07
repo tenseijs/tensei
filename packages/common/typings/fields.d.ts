@@ -178,7 +178,7 @@ declare module '@tensei/common/fields' {
          *
          * Show this field on the creation page
          */
-        showOnCreation(): this
+        showOnCreate(): this
         /**
          *
          * Show this field on the update page
@@ -188,22 +188,22 @@ declare module '@tensei/common/fields' {
          *
          * Hide this field on the index page
          */
-        hideFromIndex(): this
+        hideOnIndex(): this
         /**
          *
          * Hide this field from the detail page
          */
-        hideFromDetail(): this
+        hideOnDetail(): this
         /**
          *
          * Hide this field from the create form
          */
-        hideWhenCreating(): this
+        hideOnCreate(): this
         /**
          *
          * Hide this field from the update form
          */
-        hideWhenUpdating(): this
+        hideOnUpdate(): this
         /**
          *
          * Hide this field everywhere, except the index page
@@ -582,7 +582,7 @@ declare module '@tensei/common/fields' {
          *
          * Show this field on the creation page
          */
-        showOnCreation(): this
+        showOnCreate(): this
         /**
          *
          * Show this field on the update page
@@ -592,22 +592,22 @@ declare module '@tensei/common/fields' {
          *
          * Hide this field on the index page
          */
-        hideFromIndex(): this
+        hideOnIndex(): this
         /**
          *
          * Hide this field from the detail page
          */
-        hideFromDetail(): this
+        hideOnDetail(): this
         /**
          *
          * Hide this field from the create form
          */
-        hideWhenCreating(): this
+        hideOnCreate(): this
         /**
          *
          * Hide this field from the update form
          */
-        hideWhenUpdating(): this
+        hideOnUpdate(): this
         /**
          *
          * Hide this field everywhere, except the index page
