@@ -13,6 +13,7 @@ export default {
     findOneByFieldExcludingOne: jest.fn(),
     updateManyByIds: jest.fn(),
     deleteById: jest.fn(),
+    updateOneByField: jest.fn(),
     updateManyWhere: jest.fn(),
     getAdministratorById: jest.fn(),
 }
