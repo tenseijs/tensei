@@ -41,20 +41,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public setup = async (config: Config) => {
-        let connection: Knex.Config['connection'] = config.env.databaseUrl
-
-        if (config.env.database === 'sqlite3') {
-            connection = {
-                filename: config.env.databaseUrl!,
-            }
-        }
-
-        this.config = {
-            connection,
-            useNullAsDefault: true,
-            client: config.env.database,
-            debug: false,
-        }
+        this.config = config.databaseConfig
 
         this.resources = config.resources
 

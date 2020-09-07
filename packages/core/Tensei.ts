@@ -151,14 +151,9 @@ export class Tensei {
         return this
     }
 
-    public database(database: SupportedDatabases) {
-        this.config.env.database = database
-
-        return this
-    }
-
-    public databaseUrl(databaseUrl: string) {
-        this.config.env.databaseUrl = databaseUrl
+    public databaseConfig(config: any) {
+        // @ts-ignore
+        this.config.databaseConfig = config
 
         return this
     }
@@ -180,6 +175,7 @@ export class Tensei {
         // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
         if (['mysql', 'pg', 'sqlite'].includes(this.config.env.database)) {
             try {
+                // import('@tensei/knex')
                 Repository = require('@tensei/knex').Repository
             } catch (error) {
                 this.config.logger.error(

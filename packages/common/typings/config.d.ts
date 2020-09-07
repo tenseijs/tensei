@@ -68,7 +68,7 @@ declare module '@tensei/common/config' {
         databaseUrl?: string
         database: SupportedDatabases
     }
-    interface Config {
+    export interface Config {
         plugins: PluginContract[]
         resources: ResourceContract[]
         scripts: Asset[]
