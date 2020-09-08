@@ -609,7 +609,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             }
 
             if (exists) {
-                console.log('----->>>')
                 throw [
                     {
                         message: `A ${resource.data.name.toLowerCase()} already exists with ${
@@ -664,6 +663,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     ]
                 }
             }
+
+            //the code might never get here, because for it to get here the field must be a relationship component and BelongsToField is not a relationship component
 
             if (field.component === 'BelongsToField') {
                 if (

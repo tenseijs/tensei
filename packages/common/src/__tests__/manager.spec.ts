@@ -349,26 +349,6 @@ describe('Manager', () => {
         })
     })
 
-    describe('getAdministratorById', () => {
-        test('calls getAdministratorById method from db', () => {
-            db.getAdministratorById.mockClear()
-            expect.assertions(1)
-
-            setup().getAdministratorById(1)
-            expect(db.getAdministratorById).toHaveBeenCalled()
-        })
-    })
-
-    describe('findUserByEmail', () => {
-        test('calls findUserByEmail method from db', () => {
-            db.findUserByEmail.mockClear()
-            expect.assertions(1)
-
-            setup().findUserByEmail('dodo@email.com')
-            expect(db.findUserByEmail).toHaveBeenCalled()
-        })
-    })
-
     describe('findOneByField', () => {
         test('calls findOneByField method from db', () => {
             db.findOneByField.mockClear()
@@ -504,4 +484,25 @@ describe('Manager', () => {
             expect(db.findAllBelongingToMany).toHaveBeenCalled()
         })
     })
+
+    describe('findUserByEmail', () => {
+        test('calls findUserByEmail method from db', () => {
+            db.findUserByEmail.mockClear()
+            expect.assertions(1)
+
+            setup().findUserByEmail('dodo@email.com')
+            expect(db.findUserByEmail).toHaveBeenCalled()
+        })
+    })
+
+    describe('findOneByField', () => {
+        test('calls findOneByField method from db', () => {
+            db.findOneByField.mockClear()
+            expect.assertions(1)
+
+            setup().findOneByField(User, 'email', 'dodo@email.com')
+            expect(db.findOneByField).toHaveBeenCalled()
+        })
+    })
+
 })

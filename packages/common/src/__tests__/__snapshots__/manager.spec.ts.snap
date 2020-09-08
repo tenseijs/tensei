@@ -89,3 +89,5 @@ Array [
   },
 ]
 `;
+
+exports[`Manager runAction method calls findAllByIds method 1`] = `Promise {}`;
