@@ -503,6 +503,39 @@ describe('Manager', () => {
             setup().findOneByField(User, 'email', 'dodo@email.com')
             expect(db.findOneByField).toHaveBeenCalled()
         })
+        test('throws error', async () => {
+            db.findOneByField.mockClear()
+            expect.assertions(1)
+
+            await expect(() => setup().findOneByField(User, 'content', 'dodo@email.com')).rejects.toThrow('Field content could not be found on resource.')
+        })
+    })
+
+    describe('validateRequestQuery', () => {
+        test('calls findOneByField method from db', async () => {
+            const s = await setup().validateRequestQuery({
+                per_page: 5,
+                page: 1,
+                fields: 'email',
+                search: '',
+                filter: { 'email:contains': 'example@email.com' },
+                with: 'posts',
+            } as any, User)
+
+            expect(s).toEqual({
+                perPage: 5,
+                page: 1,
+                search: '',
+                filters: [{
+                    "field": "email",
+                    "operator": "contains",
+                    "value": "example@email.com",
+                }],
+                noPagination: 'false',
+                fields: ['email'],
+                withRelationships: ['posts']
+            })
+        })
     })
 
 })

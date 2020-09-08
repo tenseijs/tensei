@@ -91,3 +91,17 @@ Array [
 `;
 
 exports[`Manager runAction method calls findAllByIds method 1`] = `Promise {}`;
+
+exports[`Manager runAction method calls findAllByIds method 2`] = `Promise {}`;
+
+exports[`Manager runAction method calls findAllByIds method 3`] = `Promise {}`;
+
+exports[`Manager runAction method calls findAllByIds method 4`] = `
+Object {
+  "message": "All articles have been published.",
+  "position": "top",
+  "status": 200,
+  "type": "notification",
+  "variant": "positive",
+}
+`;
