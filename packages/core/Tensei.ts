@@ -240,7 +240,7 @@ export class Tensei {
                 request.resources = this.config.resourcesMap
                 request.administratorResource = this.administratorResource()
                 request.manager = this.manager()!
-                request.Mailer = this.mailer
+                request.mailer = this.mailer
 
                 next()
             }

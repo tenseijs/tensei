@@ -24,5 +24,12 @@ module.exports = tensei()
             ])
             .plugin(),
     ])
-    .database(process.env.DATABASE || 'mysql')
-    .databaseUrl(process.env.DATABASE_URL || 'mysql://127.0.0.1/flmg')
+    .databaseConfig({
+        client: 'mysql',
+        connection: {
+            host: '127.0.0.1',
+            user: 'root',
+            pass: '',
+            database: 'flmg',
+        },
+    })

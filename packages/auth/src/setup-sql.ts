@@ -23,8 +23,11 @@ export default async (
         )
     }
 
+    // @ts-ignore
     const UserModel = UserResource.Model()
+    // @ts-ignore
     const RoleModel = RoleResource.Model()
+    // @ts-ignore
     const PermissionModel = PermissionResource.Model()
 
     const permissions: Permission[] = []

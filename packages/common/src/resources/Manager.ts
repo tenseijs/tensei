@@ -12,7 +12,7 @@ import {
 export class Manager implements ManagerContract {
     constructor(
         private resources: ResourceContract[],
-        private db: DatabaseRepositoryInterface
+        public database: DatabaseRepositoryInterface
     ) {}
 
     public findResource = (resourceSlug: string | ResourceContract) => {
@@ -48,7 +48,7 @@ export class Manager implements ManagerContract {
     ) {
         const resource = this.findResource(resourceSlugOrResource)
 
-        await this.db.deleteById(resource, id)
+        await this.database.deleteById(resource, id)
     }
 
     public async createAdmin(
@@ -69,7 +69,7 @@ export class Manager implements ManagerContract {
             }
         }
 
-        const superAdmin = await this.db.findOneByField(
+        const superAdmin = await this.database.findOneByField(
             roleResource,
             'slug',
             'super-admin'
@@ -115,7 +115,7 @@ export class Manager implements ManagerContract {
 
         // TODO: Insert beforeCreate hook for fields here.
 
-        const model = await this.db.create(
+        const model = await this.database.create(
             resource,
             nonRelationshipFieldsPayload,
             relationshipFieldsPayload
@@ -143,7 +143,7 @@ export class Manager implements ManagerContract {
 
         let { parsedPayload } = await this.validate(payload, resource, false)
 
-        return this.db.updateOneByField(
+        return this.database.updateOneByField(
             resource,
             field.databaseField,
             value,
@@ -171,7 +171,7 @@ export class Manager implements ManagerContract {
 
         // TODO: Add beforeUpdate hook for fields.
 
-        return this.db.update(
+        return this.database.update(
             resource,
             id,
             parsedPayload,
@@ -227,14 +227,14 @@ export class Manager implements ManagerContract {
                 }
 
                 // go to posts table, find all related posts and update the user_id field to be the null
-                await this.db.updateManyWhere(
+                await this.database.updateManyWhere(
                     relatedResource,
                     { [relatedBelongsToField.databaseField]: modelId },
                     { [relatedBelongsToField.databaseField]: null }
                 )
 
                 // finally, go to posts table, find all related posts (new ones from request body) and update the user_id field to be modelId
-                await this.db.updateManyByIds(
+                await this.database.updateManyByIds(
                     relatedResource,
                     relationshipFieldsPayload[field.inputName],
                     {
@@ -294,7 +294,7 @@ export class Manager implements ManagerContract {
                 }
 
                 // go to posts table, find all related posts and update the user_id field to be the model.id
-                this.db.updateManyByIds(
+                this.database.updateManyByIds(
                     relatedResource,
                     relationshipFieldsPayload[field.inputName],
                     valuesToUpdate
@@ -401,7 +401,7 @@ export class Manager implements ManagerContract {
             withRelationships,
         } = await this.validateRequestQuery(request.query, resource)
 
-        return this.db.findAll(resource, {
+        return this.database.findAll(resource, {
             perPage: perPage || resource.data.perPageOptions[0] || 10,
             page: page || 1,
             fields,
@@ -440,7 +440,7 @@ export class Manager implements ManagerContract {
         }
 
         if (relationField.component === 'BelongsToManyField') {
-            return this.db.findAllBelongingToMany(
+            return this.database.findAllBelongingToMany(
                 resource,
                 relatedResource,
                 resourceId,
@@ -465,7 +465,7 @@ export class Manager implements ManagerContract {
                 }
             }
 
-            return this.db.findAll(relatedResource, {
+            return this.database.findAll(relatedResource, {
                 ...rest,
                 perPage,
                 page,
@@ -496,7 +496,7 @@ export class Manager implements ManagerContract {
             resource
         )
 
-        const model = await this.db.findOneById(
+        const model = await this.database.findOneById(
             resource,
             id,
             fields,
@@ -650,14 +650,14 @@ export class Manager implements ManagerContract {
             }
 
             if (creationRules) {
-                exists = await this.db.findOneByField(
+                exists = await this.database.findOneByField(
                     resource,
                     field.databaseField,
                     payload[field.inputName],
                     ['id']
                 )
             } else {
-                exists = await this.db.findOneByFieldExcludingOne(
+                exists = await this.database.findOneByFieldExcludingOne(
                     resource,
                     field.databaseField,
                     payload[field.inputName],
@@ -707,7 +707,7 @@ export class Manager implements ManagerContract {
             }
 
             if (field.component === 'HasManyField') {
-                const allRelatedRows = await this.db.findAllByIds(
+                const allRelatedRows = await this.database.findAllByIds(
                     relatedResource,
                     payload[field.inputName],
                     ['id']
@@ -725,7 +725,7 @@ export class Manager implements ManagerContract {
 
             if (field.component === 'BelongsToField') {
                 if (
-                    !(await this.db.findOneById(
+                    !(await this.database.findOneById(
                         relatedResource,
                         payload[field.inputName],
                         ['id']
@@ -755,7 +755,7 @@ export class Manager implements ManagerContract {
             }
         }
 
-        const models = await this.db.findAllByIds(
+        const models = await this.database.findAllByIds(
             resource,
             request.body.models || []
         )
@@ -799,14 +799,14 @@ export class Manager implements ManagerContract {
     }
 
     getAdministratorById = (id: number | string) => {
-        return this.db.getAdministratorById(id)
+        return this.database.getAdministratorById(id)
     }
 
     findUserByEmail = (email: string) => {
-        return this.db.findUserByEmail(email)
+        return this.database.findUserByEmail(email)
     }
 
-    getAdministratorsCount = () => this.db.getAdministratorsCount()
+    getAdministratorsCount = () => this.database.getAdministratorsCount()
 
     getFieldFromResource = (
         resource: ResourceContract,
@@ -834,7 +834,7 @@ export class Manager implements ManagerContract {
             )
         }
 
-        return this.db.findOneByField(
+        return this.database.findOneByField(
             this.findResource(resource),
             field.databaseField,
             value

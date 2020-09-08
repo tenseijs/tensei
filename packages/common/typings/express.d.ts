@@ -8,7 +8,7 @@ declare global {
             resources: {
                 [key: string]: ResourceContract
             }
-            Mailer: Mail
+            mailer: Mail
         }
     }
 }

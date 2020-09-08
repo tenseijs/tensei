@@ -119,8 +119,9 @@ declare module '@tensei/common/resources' {
     export abstract class ManagerContract {
         constructor(
             resources: ResourceContract[],
-            db: DatabaseRepositoryInterface
+            database: DatabaseRepositoryInterface
         )
+        database: DatabaseRepositoryInterface
         findResource: (
             resourceSlug: string | ResourceContract
         ) => ResourceContract<{}>
