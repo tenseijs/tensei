@@ -25,7 +25,7 @@ export class HasManyEmbedded extends Field {
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
-        this.hideFromIndex()
+        this.hideOnIndex()
     }
 
     /**

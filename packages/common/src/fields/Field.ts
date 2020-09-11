@@ -247,7 +247,7 @@ export class Field implements FieldContract {
      *
      * Show this field on the creation page
      */
-    public showOnCreation() {
+    public showOnCreate() {
         this.showHideField = {
             ...this.showHideField,
             showOnCreation: true,
@@ -273,7 +273,7 @@ export class Field implements FieldContract {
      *
      * Hide this field on the index page
      */
-    public hideFromIndex() {
+    public hideOnIndex() {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: false,
@@ -286,7 +286,7 @@ export class Field implements FieldContract {
      *
      * Hide this field from the detail page
      */
-    public hideFromDetail() {
+    public hideOnDetail() {
         this.showHideField = {
             ...this.showHideField,
             showOnDetail: false,
@@ -299,7 +299,7 @@ export class Field implements FieldContract {
      *
      * Hide this field from the create form
      */
-    public hideWhenCreating() {
+    public hideOnCreate() {
         this.showHideField = {
             ...this.showHideField,
             showOnCreation: false,
@@ -312,7 +312,7 @@ export class Field implements FieldContract {
      *
      * Hide this field from the update form
      */
-    public hideWhenUpdating() {
+    public hideOnUpdate() {
         this.showHideField = {
             ...this.showHideField,
             showOnUpdate: false,

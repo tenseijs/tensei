@@ -36,7 +36,8 @@ declare module '@tensei/common/resources' {
         fields: SerializedField[]
         actions: SerializedAction[]
     }
-    export abstract class ResourceContract<ResourceType = {}> {
+
+    export interface ResourceContract<ResourceType = {}> {
         authorizeCallbacks: {
             authorizedToSee: AuthorizeFunction
             authorizedToCreate: AuthorizeFunction
@@ -49,7 +50,6 @@ declare module '@tensei/common/resources' {
             afterCreate: HookFunction
             afterUpdate: HookFunction
         }
-        Model: () => any
         data: ResourceDataWithFields
         permissions(permissions: Permission[]): this
         canSee(authorizeFunction: AuthorizeFunction): this
@@ -74,7 +74,42 @@ declare module '@tensei/common/resources' {
         afterUpdate(hook: HookFunction): this
     }
 
-    export declare class Resource extends ResourceContract {}
+    export class Resource implements ResourceContract {
+        authorizeCallbacks: {
+            authorizedToSee: AuthorizeFunction
+            authorizedToCreate: AuthorizeFunction
+            authorizedToUpdate: AuthorizeFunction
+            authorizedToDelete: AuthorizeFunction
+        }
+        hooks: {
+            beforeCreate: HookFunction
+            beforeUpdate: HookFunction
+            afterCreate: HookFunction
+            afterUpdate: HookFunction
+        }
+        data: ResourceDataWithFields
+        permissions(permissions: Permission[]): this
+        canSee(authorizeFunction: AuthorizeFunction): this
+        canCreate(authorizeFunction: AuthorizeFunction): this
+        canUpdate(authorizeFunction: AuthorizeFunction): this
+        canDelete(authorizeFunction: AuthorizeFunction): this
+        displayField(displayField: string): this
+        fields(fields: FieldContract[]): this
+        actions(actions: ActionContract[]): this
+        noTimeStamps(): this
+        perPageOptions(perPageOptions: number[]): this
+        displayInNavigation(): this
+        hideFromNavigation(): this
+        validationMessages(validationMessages: ValidationMessages): this
+        group(groupName: string): this
+        slug(slug: string): this
+        label(label: string): this
+        serialize(): SerializedResource
+        beforeCreate(hook: HookFunction): this
+        beforeUpdate(hook: HookFunction): this
+        afterCreate(hook: HookFunction): this
+        afterUpdate(hook: HookFunction): this
+    }
 
     export const resource: (
         name: string,
@@ -84,8 +119,9 @@ declare module '@tensei/common/resources' {
     export abstract class ManagerContract {
         constructor(
             resources: ResourceContract[],
-            db: DatabaseRepositoryInterface
+            database: DatabaseRepositoryInterface
         )
+        database: DatabaseRepositoryInterface
         findResource: (
             resourceSlug: string | ResourceContract
         ) => ResourceContract<{}>
@@ -102,6 +138,13 @@ declare module '@tensei/common/resources' {
         create(
             request: Request,
             resourceSlugOrResource: string | ResourceContract,
+            payload: DataPayload
+        ): Promise<any>
+        updateOneByField(
+            request: Request,
+            resourceSlugOrResource: string | ResourceContract,
+            databaseField: string,
+            value: any,
             payload: DataPayload
         ): Promise<any>
         update(
@@ -190,8 +233,17 @@ declare module '@tensei/common/resources' {
         getAdministratorById: (
             id: number | string
         ) => Promise<import('@tensei/common').User | null>
-        findUserByEmail: (email: string) => Promise<User | null>
+        findUserByEmail: (email: string) => Promise<any>
         getAdministratorsCount: () => Promise<number>
+        getFieldFromResource: (
+            resource: ResourceContract,
+            databaseField: string
+        ) => import('@tensei/common').FieldContract | undefined
+        findOneByField: (
+            resourceSlugNameOrResource: ResourceContract | string,
+            databaseField: string,
+            value: any
+        ) => Promise<any>
     }
 
     export declare class Manager extends ManagerContract {}

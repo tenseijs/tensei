@@ -68,7 +68,7 @@ declare module '@tensei/common/config' {
         databaseUrl?: string
         database: SupportedDatabases
     }
-    interface Config {
+    export interface Config {
         plugins: PluginContract[]
         resources: ResourceContract[]
         scripts: Asset[]
@@ -154,6 +154,12 @@ declare module '@tensei/common/config' {
             ids: number[],
             valuesToUpdate: {}
         ) => Promise<number>
+        abstract updateOneByField: (
+            resource: ResourceContract,
+            field: string,
+            value: any,
+            payload: DataPayload = {}
+        ) => Promise<any>
         abstract deleteById: (
             ResourceContract: ResourceContract,
             id: number | string

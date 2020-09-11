@@ -113,21 +113,21 @@ class Auth {
                     })
                     .creationRules('required')
                     .onlyOnForms()
-                    .hideWhenUpdating(),
+                    .hideOnUpdate(),
                 belongsToMany(this.config.roleResource),
                 ...(this.config.twoFactorAuth
                     ? [
                           text('Two Factor Enabled')
-                              .hideWhenCreating()
-                              .hideWhenUpdating()
-                              .hideFromIndex()
-                              .hideFromDetail(),
+                              .hideOnCreate()
+                              .hideOnUpdate()
+                              .hideOnIndex()
+                              .hideOnDetail(),
                           text('Two Factor Secret')
                               .hidden()
-                              .hideFromIndex()
-                              .hideWhenCreating()
-                              .hideWhenUpdating()
-                              .hideFromDetail(),
+                              .hideOnIndex()
+                              .hideOnCreate()
+                              .hideOnUpdate()
+                              .hideOnDetail(),
                       ]
                     : []),
                 ...this.config.fields,
@@ -296,21 +296,20 @@ class Auth {
             request.body
         )
 
-        const UserModel = request.resources[
-            this.userResource().data.slug
-        ].Model()
-
-        const user = (
-            await UserModel.where({
+        const model = (
+            await request.manager.database.findOneById(
+                this.userResource(),
                 id,
-            }).fetch({
-                withRelated: [
+                [],
+                [
                     `${this.roleResource().data.slug}.${
                         this.permissionResource().data.slug
                     }`,
-                ],
-            })
+                ]
+            )
         ).toJSON()
+
+        const user = model.toJSON ? model.toJSON() : model
 
         return response.status(201).json({
             token: this.generateJwt({
@@ -321,15 +320,14 @@ class Auth {
     }
 
     private login = async (request: Request, response: Response) => {
+        const { manager } = request
         const { email, password, token } = await this.validate(request.body)
 
-        const UserModel = request.resources[
-            this.userResource().data.slug
-        ].Model()
-
-        const [userWithPassword] = await UserModel.query().where({
-            email,
-        })
+        const userWithPassword = await manager.findOneByField(
+            this.userResource(),
+            'email',
+            email
+        )
 
         if (!userWithPassword) {
             throw {
@@ -345,17 +343,18 @@ class Auth {
             }
         }
 
-        const model = await UserModel.where({
-            id: userWithPassword.id,
-        }).fetch({
-            withRelated: [
+        const model = await request.manager.database.findOneById(
+            this.userResource(),
+            userWithPassword.id,
+            [],
+            [
                 `${this.roleResource().data.slug}.${
                     this.permissionResource().data.slug
                 }`,
-            ],
-        })
+            ]
+        )
 
-        const user = model.toJSON()
+        const user = model.toJSON ? model.toJSON() : model
 
         if (user.two_factor_enabled) {
             const Speakeasy = require('speakeasy')
@@ -370,7 +369,7 @@ class Auth {
             const verified = Speakeasy.totp.verify({
                 token,
                 encoding: 'base32',
-                secret: model.get('two_factor_secret'),
+                secret: model.two_factor_secret,
             })
 
             if (!verified) {
@@ -572,28 +571,21 @@ class Auth {
     }
 
     private forgotPassword = async (request: Request, response: Response) => {
-        const { body, resources, Mailer } = request
+        const { body, resources, mailer, manager } = request
         const { email } = await validateAll(body, {
             email: 'required|email',
         })
 
-        const UserModel = resources[this.userResource().data.slug].Model()
-
-        const PasswordResetModel = resources[
-            this.passwordResetsResource().data.slug
-        ].Model()
-
-        const existingUser = await UserModel.where({
-            email,
-        }).fetch({
-            require: false,
-        })
-
-        const existingPasswordReset = await PasswordResetModel.where({
-            email,
-        }).fetch({
-            require: false,
-        })
+        const existingUser = await manager.findOneByField(
+            this.userResource(),
+            'email',
+            email
+        )
+        const existingPasswordReset = await manager.findOneByField(
+            this.passwordResetsResource(),
+            'email',
+            email
+        )
 
         if (!existingUser) {
             return response.status(422).json([
@@ -611,24 +603,30 @@ class Auth {
 
         if (existingPasswordReset) {
             // make sure it has not expired
-            await PasswordResetModel.query()
-                .where({
-                    email,
-                })
-                .update({
+            await manager.updateOneByField(
+                request,
+                this.passwordResetsResource(),
+                'email',
+                email,
+                {
                     token,
                     expires_at: expiresAt,
-                })
+                }
+            )
         } else {
-            await PasswordResetModel.forge({
-                email,
-                token,
-            }).save()
+            await manager.database.create(
+                this.passwordResetsResource(),
+                {
+                    email,
+                    token,
+                },
+                {}
+            )
         }
 
-        Mailer.to(email, existingUser.get('name')).sendRaw(
-            `Some raw message to send with the token ${token}`
-        )
+        mailer
+            .to(email, existingUser.name)
+            .sendRaw(`Some raw message to send with the token ${token}`)
 
         return response.json({
             message: `Please check your email for steps to reset your password.`,
@@ -636,24 +634,18 @@ class Auth {
     }
 
     private resetPassword = async (request: Request, response: Response) => {
-        const { body, resources, manager } = request
+        const { body, manager } = request
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
             password: 'required|string|min:8',
         })
 
-        const UserModel = resources[this.userResource().data.slug].Model()
-
-        const PasswordResetModel = resources[
-            this.passwordResetsResource().data.slug
-        ].Model()
-
-        let existingPasswordReset = await PasswordResetModel.where({
-            token,
-        }).fetch({
-            require: false,
-        })
+        let existingPasswordReset = await manager.findOneByField(
+            this.passwordResetsResource(),
+            'token',
+            token
+        )
 
         if (!existingPasswordReset) {
             return response.status(422).json([
@@ -664,7 +656,9 @@ class Auth {
             ])
         }
 
-        existingPasswordReset = existingPasswordReset.toJSON()
+        existingPasswordReset = existingPasswordReset.toJSON
+            ? existingPasswordReset.toJSON()
+            : existingPasswordReset
 
         if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
             return response.status(422).json([
@@ -675,37 +669,39 @@ class Auth {
             ])
         }
 
-        let user = await UserModel.where({
-            email: existingPasswordReset.email,
-        }).fetch({
-            require: false,
-        })
+        let user = await manager.findOneByField(
+            this.userResource(),
+            'email',
+            existingPasswordReset.email
+        )
 
         if (!user) {
-            await new PasswordResetModel({
-                id: existingPasswordReset.id,
-            }).destroy({
-                require: false,
-            })
+            await manager.database.deleteById(
+                this.passwordResetsResource(),
+                existingPasswordReset.id
+            )
 
             return response.status(500).json({
                 message: 'User does not exist anymore.',
             })
         }
 
+        // TODO: Rename update to updateOneByField
         await manager.update(
             request,
-            request.resources[this.userResource().data.slug],
-            user.get('id'),
+            this.userResource(),
+            user.id,
             {
                 password,
             },
             true
         )
 
-        await new PasswordResetModel({
-            id: existingPasswordReset.id,
-        }).destroy()
+        // TODO: Rename deleteById this to deleteOneById
+        await manager.database.deleteById(
+            this.passwordResetsResource(),
+            existingPasswordReset.id
+        )
 
         // TODO: Send an email to the user notifying them
         // that their password was reset.

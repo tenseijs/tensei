@@ -14,8 +14,8 @@ declare global {
             resources: {
                 [key: string]: ResourceContract
             }
-            administratorResource: ResourceContract,
-            Mailer: Mail
+            administratorResource: ResourceContract
+            mailer: Mail
             admin?: User
             appConfig: Config
             scripts: Asset[]

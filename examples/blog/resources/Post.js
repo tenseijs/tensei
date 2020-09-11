@@ -44,7 +44,7 @@ module.exports = resource('Post')
                     201
                 )
             )
-            .hideFromIndex()
+            .hideOnIndex()
             .confirmButtonText('Archive posts'),
     ])
     .fields([
@@ -57,10 +57,10 @@ module.exports = resource('Post')
             .trueLabel('Done')
             .falseLabel('Pending')
             .default(false)
-            .hideFromIndex(),
-        text('Description').rules('required').hideFromIndex(),
-        trix('Content').rules('required', 'max:2000', 'min:12').hideFromIndex(),
-        integer('Av. CPC').rules('required').hideFromDetail(),
+            .hideOnIndex(),
+        text('Description').rules('required').hideOnIndex(),
+        trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
+        integer('Av. CPC').rules('required').hideOnDetail(),
         select('Category')
             .options([
                 {
@@ -91,7 +91,7 @@ module.exports = resource('Post')
         dateTime('Scheduled For')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a')
-            .hideFromIndex(),
+            .hideOnIndex(),
         belongsToMany('Tag'),
     ])
     .perPageOptions([25, 50, 100])

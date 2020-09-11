@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "main": "./build/index.js",
     "license": "MIT",
-    "types": "./build/index.d.ts",
+    "types": "./core.d.ts",
     "dependencies": {
         "bookshelf": "^1.2.0",
         "bookshelf-eloquent": "^0.1.15",
