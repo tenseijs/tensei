@@ -446,7 +446,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 new Set([
                     ...serializedField.rules,
                     ...serializedField[
-                        creationRules ? 'creationRules' : 'updateRules'
+                    creationRules ? 'creationRules' : 'updateRules'
                     ],
                 ])
             ).join('|')
@@ -582,7 +582,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     {
                         message: `A ${resource.data.name.toLowerCase()} already exists with ${
                             field.inputName
-                        } ${payload[field.inputName]}.`,
+                            } ${payload[field.inputName]}.`,
                         field: field.inputName,
                     },
                 ]

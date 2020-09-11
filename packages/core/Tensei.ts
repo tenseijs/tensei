@@ -6,6 +6,7 @@ import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
 import AuthController from './controllers/auth/AuthController'
+import ForgotPasswordController from './controllers/auth/ForgotPasswordController'
 import Express, { Request, Application, NextFunction } from 'express'
 import RunActionController from './controllers/actions/RunActionController'
 import IndexResourceController from './controllers/resources/IndexResourceController'
@@ -23,6 +24,7 @@ import {
     SupportedDatabases,
     DatabaseRepositoryInterface,
     belongsToMany,
+    dateTime
 } from '@tensei/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
@@ -325,6 +327,16 @@ export class Tensei {
         )
 
         this.app.post(
+            this.getApiPath('forgot-password'),
+            this.asyncHandler(ForgotPasswordController.forgotPassword)
+        )
+
+        this.app.post(
+            this.getApiPath('reset-password'),
+            this.asyncHandler(ForgotPasswordController.resetPassword)
+        )
+
+        this.app.post(
             this.getApiPath('logout'),
             this.authMiddleware,
             this.asyncHandler(AuthController.logout)
@@ -478,6 +490,7 @@ export class Tensei {
             this.administratorResource(),
             this.roleResource(),
             this.permissionResource(),
+            this.passwordResetsResource(),
             ...resources,
         ]
 
@@ -523,6 +536,16 @@ export class Tensei {
                 text('Name'),
                 text('Slug').rules('required').unique(),
                 belongsToMany('Administrator Role'),
+            ])
+    }
+
+    private passwordResetsResource() {
+        return resource('Password Reset')
+            .hideFromNavigation()
+            .fields([
+                text('Email').searchable().unique().notNullable(),
+                text('Token').unique().notNullable(),
+                dateTime('Expires At'),
             ])
     }
 

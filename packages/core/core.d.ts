@@ -1,6 +1,6 @@
 import { Signale } from 'signale'
 import { Mail } from '@tensei/mail'
-import { ResourceContract, User, Config, Asset } from '@tensei/common'
+import { ResourceContract, User, Config, Asset, ManagerContract } from '@tensei/common'
 
 declare module '@tensei/common' {
     interface Config {
