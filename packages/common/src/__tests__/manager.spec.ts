@@ -537,5 +537,97 @@ describe('Manager', () => {
             })
         })
     })
+    describe('findAll', () => {
+        test('calls findAll method from db', async () => {
+            expect.assertions(1)
+            await setup().findAll({
+                query: {
+                    per_page: 5,
+                    page: 1,
+                    fields: 'email',
+                    search: '',
+                    filters: [{ 'email:contains': 'example@email.com' }],
+                    noPagination: false,
+                    withRelationships: ['posts'],
+                }
+            } as any, User)
 
+            expect(db.findAll).toHaveBeenCalled()
+        })
+    })
+    describe('findOneById', () => {
+        test('calls findOneById method from db', async () => {
+            expect.assertions(1)
+
+            const dbNew = { ...db, findOneById: jest.fn(() => true) }
+            const setup = (resources = []) =>
+                new Manager([Tag, Comment, User, Post, ...resources], dbNew as any)
+
+            await setup().findOneById({ query: {} } as any, User, 1)
+
+            expect(dbNew.findOneById).toHaveBeenCalled()
+        })
+        test('throws error when no model was found', async () => {
+            expect.assertions(1)
+
+            try {
+                await setup().findOneById({ query: {} } as any, User, 1)
+            } catch (error) {
+                expect(error).toEqual({
+                    message: `Could not find a resource with id 1`,
+                    status: 404,
+                } as any)
+            }
+        })
+    })
+    describe('findAllRelatedResource', () => {
+        test('calls findAll method from db when resource is a HasMany Field', async () => {
+            expect.assertions(1)
+            await setup().findAllRelatedResource({
+                query: {
+                    perPage: 10,
+                    page: 1,
+                    filters: [{ 'email:contains': 'example@email.com' }],
+                }
+            } as any, 1, User, Post)
+
+            expect(db.findAll).toHaveBeenCalled()
+        })
+        test('throw error when it manager cannot find related HasManyField in the resources', async () => {
+            expect.assertions(1)
+            const PostNew = Post
+
+            PostNew.data.name = 'postas'
+            try {
+                await setup().findAllRelatedResource({
+                    query: {
+                        perPage: 10,
+                        page: 1,
+                        filters: [{ 'email:contains': 'example@email.com' }],
+                    }
+                } as any, 1, User, Post)
+            } catch (error) {
+                expect(error).toEqual(
+                    {
+                        message: "Related field not found between User and postas.",
+                        status: 404
+                    }
+                )
+            }
+            PostNew.data.name = 'Post'
+
+        })
+        test('calls findAllBelongingToMany method from db when resource is a BelongsToMany Field', async () => {
+            expect.assertions(1)
+            await setup().findAllRelatedResource({
+                query: {
+                    perPage: 10,
+                    page: 1,
+                    filters: [{ 'email:contains': 'example@email.com' }],
+                }
+            } as any, 1, Post, Tag)
+
+            expect(db.findAllBelongingToMany).toHaveBeenCalled()
+        })
+    })
 })
