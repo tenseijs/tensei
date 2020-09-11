@@ -290,15 +290,12 @@ class Auth {
     }
 
     private register = async (request: Request, response: Response) => {
-        const { id } = await request.manager.create(
-            request,
-            this.userResource(),
+        const { id } = await request.manager(this.userResource()).create(
             request.body
         )
 
         const model = (
-            await request.manager.database.findOneById(
-                this.userResource(),
+            await request.manager(this.userResource()).database().findOneById(
                 id,
                 [],
                 [
@@ -323,8 +320,7 @@ class Auth {
         const { manager } = request
         const { email, password, token } = await this.validate(request.body)
 
-        const userWithPassword = await manager.findOneByField(
-            this.userResource(),
+        const userWithPassword = await manager(this.userResource()).findOneByField(
             'email',
             email
         )
@@ -343,8 +339,7 @@ class Auth {
             }
         }
 
-        const model = await request.manager.database.findOneById(
-            this.userResource(),
+        const model = await request.manager(this.userResource()).database().findOneById(
             userWithPassword.id,
             [],
             [
@@ -418,9 +413,7 @@ class Auth {
                 id: number
             }
 
-            const model = await manager.findOneById(
-                request,
-                this.userResource().data.slug,
+            const model = await manager(this.userResource()).database().findOneById(
                 id,
                 [
                     `${this.roleResource().data.slug}.${
@@ -477,9 +470,7 @@ class Auth {
             })
         }
 
-        await request.manager.update(
-            request,
-            this.userResource(),
+        await request.manager(this.userResource()).update(
             request.authUser!.id,
             {
                 two_factor_secret: null,
@@ -521,9 +512,7 @@ class Auth {
             })
         }
 
-        await request.manager.update(
-            request,
-            this.userResource(),
+        await request.manager(this.userResource()).update(
             request.authUser!.id,
             {
                 two_factor_enabled: true,
@@ -545,9 +534,7 @@ class Auth {
 
         const { base32, otpauth_url } = Speakeasy.generateSecret()
 
-        await request.manager.update(
-            request,
-            this.userResource(),
+        await request.manager(this.userResource()).update(
             request.authUser!.id,
             {
                 two_factor_secret: base32,
@@ -576,13 +563,11 @@ class Auth {
             email: 'required|email',
         })
 
-        const existingUser = await manager.findOneByField(
-            this.userResource(),
+        const existingUser = await manager(this.userResource()).findOneByField(
             'email',
             email
         )
-        const existingPasswordReset = await manager.findOneByField(
-            this.passwordResetsResource(),
+        const existingPasswordReset = await manager(this.passwordResetsResource()).findOneByField(
             'email',
             email
         )
@@ -603,9 +588,7 @@ class Auth {
 
         if (existingPasswordReset) {
             // make sure it has not expired
-            await manager.updateOneByField(
-                request,
-                this.passwordResetsResource(),
+            await manager(this.passwordResetsResource()).updateOneByField(
                 'email',
                 email,
                 {
@@ -614,8 +597,7 @@ class Auth {
                 }
             )
         } else {
-            await manager.database.create(
-                this.passwordResetsResource(),
+            await manager(this.passwordResetsResource()).database().create(
                 {
                     email,
                     token,
@@ -641,8 +623,7 @@ class Auth {
             password: 'required|string|min:8',
         })
 
-        let existingPasswordReset = await manager.findOneByField(
-            this.passwordResetsResource(),
+        let existingPasswordReset = await manager(this.passwordResetsResource()).findOneByField(
             'token',
             token
         )
@@ -669,15 +650,13 @@ class Auth {
             ])
         }
 
-        let user = await manager.findOneByField(
-            this.userResource(),
+        let user = await manager(this.userResource()).findOneByField(
             'email',
             existingPasswordReset.email
         )
 
         if (!user) {
-            await manager.database.deleteById(
-                this.passwordResetsResource(),
+            await manager(this.passwordResetsResource()).database().deleteById(
                 existingPasswordReset.id
             )
 
@@ -687,9 +666,7 @@ class Auth {
         }
 
         // TODO: Rename update to updateOneByField
-        await manager.update(
-            request,
-            this.userResource(),
+        await manager(this.userResource()).update(
             user.id,
             {
                 password,
@@ -698,8 +675,7 @@ class Auth {
         )
 
         // TODO: Rename deleteById this to deleteOneById
-        await manager.database.deleteById(
-            this.passwordResetsResource(),
+        await manager(this.passwordResetsResource()).database().deleteById(
             existingPasswordReset.id
         )
 

@@ -5,10 +5,8 @@ class FindResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const model = await request.manager.findOneById(
-            request,
+        const model = await request.manager(request.params.resource).findOneById(
             request.params.resource,
-            request.params.resourceId
         )
 
         if (!model) {
@@ -25,10 +23,8 @@ class FindResourceController {
         response: Express.Response
     ) => {
         return response.json(
-            await request.manager.findAllRelatedResource(
-                request,
+            await request.manager(request.params.resource).findAllRelatedResource(
                 request.params.resourceId,
-                request.params.resource,
                 request.params.relatedResource
             )
         )

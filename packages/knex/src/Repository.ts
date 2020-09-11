@@ -9,24 +9,23 @@ import { snakeCase, sentenceCase } from 'change-case'
 
 import {
     DatabaseRepositoryInterface,
-    User,
     SerializedResource,
     SerializedField,
     Config,
     ResourceContract,
     DataPayload,
     FetchAllRequestQuery,
-    resource,
+    ResourceHelpers
 } from '@tensei/common'
 
-export class SqlRepository implements DatabaseRepositoryInterface {
+export class SqlRepository extends ResourceHelpers implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
+
+    private migrationsTable: string = 'migrations'
 
     private config: Knex.Config = {}
 
     private bookshelfModels: any[] = []
-
-    private resources: Config['resources'] = []
 
     private connectionEstablished: boolean = false
 
@@ -47,13 +46,18 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         this.establishDatabaseConnection()
 
-        await this.performDatabaseSchemaSync(
-            config.resources.map((resource) => resource.serialize())
-        )
+        try {
+            await this.performDatabaseSchemaSync(
+                config.resources.map((resource) => resource.serialize())
+            )
 
-        await this.bootBookshelfModels()
+            await this.bootBookshelfModels()
 
-        await this.setupRolesAndPermissions()
+            await this.setupRolesAndPermissions()
+
+        } catch (errors) {
+            console.log('(********************', errors)
+        }
 
         return this.$db
     }
@@ -65,7 +69,7 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             return resource
         })
 
-    private getResourceBookshelfModel = (resource: ResourceContract) => {
+    private getResourceBookshelfModel = (resource: ResourceContract = this.getCurrentResource()) => {
         return this.bookshelfModels.find(
             (model) => model.resourceName === resource.data.name
         )
@@ -214,11 +218,11 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         this.bookshelfModels = bookshelfModels
     }
 
-    public handleBelongsToManyField = async (
+    private handleBelongsToManyField = async (
         trx: Knex.Transaction,
         resources: SerializedResource[],
         resource: SerializedResource,
-        schema: any
+        oldResource: SerializedResource|undefined
     ) => {
         const belongsToManyFields = resource.fields.filter(
             (field) => field.component === 'BelongsToManyField'
@@ -267,20 +271,18 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     relatedResource.name
                 )}_id`
 
-                const tableExists = schema ? schema[tableName] : false
-
-                const resourceColumnExists = tableExists
-                    ? schema[tableName][resourceColumnName]
-                    : false
-                const relatedResourceColumnExists = tableExists
-                    ? schema[tableName][relatedResourceColumnName]
-                    : false
+                const tableExists = !!oldResource
+                
+                if (this.config.client === 'sqlite3' && tableExists) {
+                    return
+                }
 
                 await trx.schema[tableExists ? 'alterTable' : 'createTable'](
                     tableName,
                     (t) => {
                         if (!tableExists) {
                             t.increments()
+                            t.timestamps()
                         }
 
                         let resourceMethod = t.integer(resourceColumnName)
@@ -288,16 +290,9 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                             relatedResourceColumnName
                         )
 
-                        if (resourceColumnExists) {
+                        if (tableExists) {
                             resourceMethod.alter()
-                        }
-
-                        if (relatedResourceColumnExists) {
                             relatedResourceMethod.alter()
-                        }
-
-                        if (!tableExists) {
-                            t.timestamps()
                         }
                     }
                 )
@@ -305,20 +300,33 @@ export class SqlRepository implements DatabaseRepositoryInterface {
         }
     }
 
-    public performDatabaseSchemaSync = async (
+    private performDatabaseSchemaSync = async (
         resources: SerializedResource[] = []
     ) => {
+
         const knex = this.$db!
 
-        const schema = await this.getDatabaseSchema()
+        const migrationsTableExists = await knex.schema.hasTable(this.migrationsTable)
+
+        const oldResources: SerializedResource[] = migrationsTableExists ? (await knex.select('*').from(this.migrationsTable)).map(row => JSON.parse(row.resource_data)) : []
+
+        if (! migrationsTableExists) {
+            await knex.schema.createTable(this.migrationsTable, table => {
+                table.increments()
+                table.string('resource_table')
+                table.json('resource_data')
+            })
+        }
 
         await knex.transaction(async (trx) => {
-            for (let index = 0; index < resources.length; index++) {
+            for(let index = 0; index < resources.length; index++) {
                 const resource = resources[index]
 
-                const tableExists = schema ? schema[resource.table] : false
+                const oldResource = oldResources.find(oldResource => oldResource.name === resource.name)
 
-                this.handleBelongsToManyField(trx, resources, resource, schema)
+                const tableExists = !!oldResource
+
+                await this.handleBelongsToManyField(trx, resources, resource, oldResource)
 
                 await trx.schema[tableExists ? 'alterTable' : 'createTable'](
                     resource.table,
@@ -338,10 +346,8 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                             return this.handleFieldUpdates(
                                 trx,
                                 t,
-                                schema,
+                                oldResource,
                                 field,
-                                resource,
-                                resources
                             )
                         })
 
@@ -351,39 +357,24 @@ export class SqlRepository implements DatabaseRepositoryInterface {
                     }
                 )
             }
-        })
-    }
 
-    private getDatabaseSchema = async () => {
-        try {
-            // TODO: Make sure this works for all supported databases. not just mysql.
-            return this.parseMysqlDatabaseSchema(
-                ...(await Promise.all([
-                    this.$db!('information_schema.columns').where(
-                        'table_schema',
-                        this.$db!.client.config.connection.database
-                    ),
-                    this.$db!('information_schema.statistics').where(
-                        'table_schema',
-                        this.$db!.client.config.connection.database
-                    ),
-                ]))
-            )
-        } catch (errors) {
-            return null
-        }
+            await trx.table(this.migrationsTable).truncate()
+
+            await trx.table(this.migrationsTable).insert(resources.map(resource => ({
+                resource_table: resource.table,
+                resource_data: JSON.stringify(resource)
+            })))
+        })
     }
 
     private handleFieldUpdates = (
         trx: Knex.Transaction,
         table: CreateTableBuilder | AlterTableBuilder,
-        schema: any = null,
+        oldResource: SerializedResource|undefined,
         field: SerializedField,
-        resource: SerializedResource,
-        resources: SerializedResource[]
     ) => {
         const knexMethodName = field.sqlDatabaseFieldType || ''
-        const tableExists = schema ? schema[resource.table] : false
+        const tableExists = !!oldResource
 
         // @ts-ignore
         if (!table[knexMethodName] && table[knexMethodName] !== 'undefined') {
@@ -393,39 +384,21 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             return
         }
 
-        const matchingDatabaseField = tableExists
-            ? schema[resource.table][field.databaseField]
+        const oldField = tableExists
+            ? oldResource?.fields.find(oldField => field.name === oldField.name)
             : null
 
-        const columnHasIndex = matchingDatabaseField
-            ? matchingDatabaseField.indexes.find((index: any) => {
-                  // TODO: If we allow custom index names in future, we'll check for the custom name here.
-                  return (
-                      index.INDEX_NAME ===
-                      `${resource.table}_${field.databaseField}_index`
-                  )
-              })
-            : false
-
-        const columnIsUnique = matchingDatabaseField
-            ? matchingDatabaseField.indexes.find((index: any) => {
-                  return (
-                      index.INDEX_NAME ===
-                      `${resource.table}_${field.databaseField}_unique`
-                  )
-              })
-            : false
-
-        // first let's handle all indexes. this includes primary keys, unique keys and search indexes
-        // next, let's handle
         if (['increments', 'bigIncrements'].includes(knexMethodName)) {
-            if (!tableExists) {
+            if (! tableExists) {
                 // @ts-ignore
                 table[knexMethodName](field.databaseField)
             }
 
             return
         }
+
+        // first let's handle all indexes. this includes primary keys, unique keys and search indexes
+        // next, let's handle
 
         let methodArguments: any[] = [field.databaseField]
 
@@ -436,16 +409,20 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             methodArguments = [field.databaseField, selectOptions]
         }
 
+        if (oldField && this.config.client === 'sqlite3') {
+            return
+        }
+
         // @ts-ignore
         let method: ColumnBuilder = table[knexMethodName](...methodArguments)
 
         // if old was unique, and new is not unique, drop unique
-        if (columnIsUnique && !field.isUnique) {
-            table.dropUnique(matchingDatabaseField.name)
+        if (oldField?.isUnique && !field.isUnique) {
+            table.dropUnique([field.databaseField])
         }
 
-        if (columnHasIndex && !field.isSearchable) {
-            table.dropIndex(matchingDatabaseField.name)
+        if (oldField?.isSearchable && !field.isSearchable) {
+            table.dropIndex(field.databaseField)
         }
 
         if (
@@ -463,11 +440,11 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             method.unsigned()
         }
 
-        if (field.isSearchable && !columnHasIndex) {
+        if (field.isSearchable && !oldField?.isSearchable) {
             table.index(field.databaseField)
         }
 
-        if (field.isUnique && !columnIsUnique) {
+        if (field.isUnique && !oldField?.isUnique) {
             method.unique()
         }
 
@@ -479,69 +456,22 @@ export class SqlRepository implements DatabaseRepositoryInterface {
 
         // if field already exists, we'll attach .alter() to it.
         // this won't work for sqlite, sigh.
-        if (matchingDatabaseField) {
+        if (oldField) {
             method.alter()
         }
     }
 
-    private parseMysqlDatabaseSchema = (
-        schema: any[],
-        schemaStatistics: any[] = []
-    ) => {
-        let tables: {
-            [key: string]: {
-                [key: string]: {}
-            }
-        } = {}
-
-        schema.forEach((column) => {
-            let fieldType = column.DATA_TYPE
-
-            let indexes =
-                schemaStatistics.filter(
-                    (columnData) =>
-                        column.COLUMN_NAME === columnData.COLUMN_NAME
-                ) || []
-
-            tables[column.TABLE_NAME] = {
-                ...(tables[column.TABLE_NAME] || {}),
-                [column.COLUMN_NAME]: {
-                    fieldType,
-                    indexes,
-                    name: column.COLUMN_NAME,
-                    isPrimaryKey: column.COLUMN_KEY === 'PRI',
-                    isNullable: column.IS_NULLABLE === 'YES',
-                    isUnique: column.COLUMN_KEY === 'UNI',
-                    numericPrecision: column.NUMERIC_PRECISION,
-                    autoIncrements: !!column.EXTRA.match(/auto_increment/),
-                    unsigned: !!column.COLUMN_TYPE.match(/unsigned/),
-                },
-            }
-        })
-
-        return tables
-    }
-
-    public findUserByEmail = async (email: string) => {
-        return this.$db!('administrators')
-            .where('email', email)
-            .limit(1)
-            .then(([administrator]) => {
-                return administrator || null
-            })
-    }
-
-    public getAdministratorsCount = async () => {
-        return this.$db!('administrators')
+    public findAllCount = async () => {
+        return this.$db!(this.getCurrentResource().data.table)
             .count()
             .then(([count]) => parseInt(count['count(*)'] as string))
     }
 
     public create = async (
-        resource: ResourceContract,
         payload: DataPayload,
         relationshipPayload: DataPayload
     ) => {
+        const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)
 
         const result = await Model.forge(payload).save()
@@ -591,12 +521,12 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public update = async (
-        resource: ResourceContract,
         id: number | string,
         payload: DataPayload = {},
         relationshipPayload: DataPayload = {},
         patch = true
     ) => {
+        const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)
 
         const result = await new Model({
@@ -687,40 +617,39 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public updateManyByIds = async (
-        resource: ResourceContract,
         ids: number[],
         valuesToUpdate: {}
     ) => {
+        const resource = this.getCurrentResource()
         return this.$db!(resource.data.table)
             .whereIn('id', ids)
             .update(valuesToUpdate)
     }
 
     public updateOneByField = async (
-        resource: ResourceContract,
         field: string,
         value: any,
         payload: DataPayload = {}
     ) => {
-        return this.$db!(resource.data.table)
+        return this.$db!(this.getCurrentResource().data.table)
             .where(field, value)
             .update(payload)
     }
 
     public updateManyWhere = async (
-        resource: ResourceContract,
         whereClause: {},
         valuesToUpdate: {}
     ) => {
+        const resource = this.getCurrentResource()
         return this.$db!(resource.data.table)
             .where(whereClause)
             .update(valuesToUpdate)
     }
 
     public deleteById = async (
-        resource: ResourceContract,
         id: number | string
     ) => {
+        const resource = this.getCurrentResource()
         const result = await this.$db!(resource.data.table)
             .where('id', id)
             .limit(1)
@@ -738,21 +667,23 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public findAllByIds = async (
-        resource: ResourceContract,
         ids: number[],
         fields?: FetchAllRequestQuery['fields']
     ) => {
+        const resource = this.getCurrentResource()
+
         return this.$db!.select(fields || '*')
             .from(resource.data.table)
             .whereIn('id', ids)
     }
 
     public findOneById = async (
-        resource: ResourceContract,
         id: number | string,
         fields?: FetchAllRequestQuery['fields'],
         withRelated: string[] = []
     ) => {
+        const resource = this.getCurrentResource()
+
         const Model = this.getResourceBookshelfModel(resource)
 
         let result = await new Model({ id }).fetch({
@@ -765,11 +696,12 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public findOneByField = async (
-        resource: ResourceContract,
         field: string,
         value: string,
         fields?: FetchAllRequestQuery['fields']
     ) => {
+        const resource = this.getCurrentResource()
+
         return (
             (
                 await this.$db!.select(fields || '*')
@@ -781,12 +713,13 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public findOneByFieldExcludingOne = async (
-        resource: ResourceContract,
         field: string,
         value: string,
         excludeId: string | number,
         fields?: FetchAllRequestQuery['fields']
     ) => {
+        const resource = this.getCurrentResource()
+
         return (
             (
                 await this.$db!.select(fields || '*')
@@ -799,11 +732,12 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public findAllBelongingToMany = async (
-        resource: ResourceContract,
         relatedResource: ResourceContract,
         resourceId: string | number,
         query: FetchAllRequestQuery
     ) => {
+        const resource = this.getCurrentResource()
+
         const Model = this.getResourceBookshelfModel(resource)
 
         const getBuilder = (builder: any) => {
@@ -945,9 +879,9 @@ export class SqlRepository implements DatabaseRepositoryInterface {
     }
 
     public findAll = async (
-        resource: ResourceContract,
         query: FetchAllRequestQuery
     ) => {
+        const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)
 
         const getBuilder = () => {
@@ -991,45 +925,6 @@ export class SqlRepository implements DatabaseRepositoryInterface {
             page: query.page,
             perPage: query.perPage,
             pageCount: Math.ceil(total / query.perPage),
-        }
-    }
-
-    public getAdministratorById = async (id: number | string) => {
-        const AdminModel = this.resources
-            .find((resource) => resource.data.slug === 'administrators')
-            ?.Model()
-
-        let admin = await new AdminModel({
-            id,
-        }).fetch({
-            withRelated: ['administrator-roles.administrator-permissions'],
-            require: false,
-        })
-
-        if (!admin) {
-            return null
-        }
-
-        admin = admin.toJSON()
-
-        return {
-            name: admin.name,
-            email: admin.email,
-            id: admin.id as number,
-            roles: (admin['administrator-roles'] || []).map((role: any) => ({
-                id: role.id,
-                name: role.name,
-                slug: role.slug,
-            })),
-            permissions: admin['administrator-roles'].reduce(
-                (acc: [], role: any) => [
-                    ...acc,
-                    ...(role['administrator-permissions'] || []).map(
-                        (permission: any) => permission.slug
-                    ),
-                ],
-                []
-            ),
         }
     }
 }

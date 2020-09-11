@@ -5,9 +5,7 @@ class DeleteResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        await request.manager.deleteById(
-            request,
-            request.params.resource,
+        await request.manager(request.params.resource).deleteById(
             request.params.resourceId
         )
 

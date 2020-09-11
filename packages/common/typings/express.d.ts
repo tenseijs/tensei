@@ -4,7 +4,7 @@ import { ManagerContract, ResourceContract } from '@tensei/common'
 declare global {
     namespace Express {
         export interface Request {
-            manager: ManagerContract
+            manager: (resourceSlugOrResource: string | ResourceContract) => ManagerContract
             resources: {
                 [key: string]: ResourceContract
             }

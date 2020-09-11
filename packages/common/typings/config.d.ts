@@ -100,79 +100,76 @@ declare module '@tensei/common/config' {
         abstract setResourceModels: (
             resources: ResourceContract[]
         ) => ResourceContract[]
+        abstract getFieldFromResource: (resource: ResourceContract, databaseField: string) => import("@tensei/common").FieldContract | undefined;
+        abstract setResource: (resourceOrSlug: ResourceContract | string) => this;
+        abstract findResource: (resourceSlug: string | ResourceContract) => ResourceContract<{}>;
         abstract establishDatabaseConnection: () => void
-        abstract findUserByEmail: (email: string) => Promise<Model | null>
-        abstract getAdministratorsCount: () => Promise<number>
         abstract create: (
-            ResourceContract: ResourceContract,
             payload: DataPayload,
             relationshipPayload: DataPayload
         ) => Promise<Model>
         abstract update: (
-            ResourceContract: ResourceContract,
             id: number | string,
             payload: DataPayload,
             relationshipPayload: DataPayload,
             patch: boolean
         ) => Promise<Model>
         abstract findAll: (
-            ResourceContract: ResourceContract,
             query: FetchAllRequestQuery
         ) => Promise<FetchAllResults>
         abstract findAllByIds: (
-            ResourceContract: ResourceContract,
             ids: number[],
             fields?: string[]
         ) => Promise<Model[]>
         abstract findAllBelongingToMany: (
-            ResourceContract: ResourceContract,
             relatedResourceContract: ResourceContract,
             ResourceContractId: number | string,
             query: FetchAllRequestQuery
         ) => Promise<FetchAllResults>
         abstract findOneById: (
-            ResourceContract: ResourceContract,
             id: number | string,
             fields?: string[],
             withRelationships?: string[]
         ) => Promise<Model | null>
         abstract findOneByField: (
-            ResourceContract: ResourceContract,
             field: string,
             value: string,
             fields?: string[]
         ) => Promise<Model | null>
         abstract findOneByFieldExcludingOne: (
-            ResourceContract: ResourceContract,
             field: string,
             value: string,
             excludeId: string | number,
             fields?: string[]
         ) => Promise<Model | null>
         abstract updateManyByIds: (
-            ResourceContract: ResourceContract,
             ids: number[],
             valuesToUpdate: {}
         ) => Promise<number>
         abstract updateOneByField: (
-            resource: ResourceContract,
             field: string,
             value: any,
             payload: DataPayload = {}
         ) => Promise<any>
         abstract deleteById: (
-            ResourceContract: ResourceContract,
             id: number | string
         ) => Promise<any>
         abstract updateManyWhere: (
-            ResourceContract: ResourceContract,
             whereClause: {
                 [key: string]: string | number
             },
             valuesToUpdate: {}
         ) => Promise<any>
-        abstract getAdministratorById: (
-            id: string | number
-        ) => Promise<User | null>
+        abstract findAllCount: (resource: ResourceContract) => Promise<number>
+    }
+
+    export class ResourceHelpers {
+        resources: ResourceContract[];
+        resource: ResourceContract | null;
+        constructor(resources: ResourceContract[]);
+        protected getCurrentResource: () => ResourceContract<{}>;
+        setResource: (resourceOrSlug: ResourceContract | string) => this;
+        findResource: (resourceSlug: string | ResourceContract) => ResourceContract<{}>;
+        getFieldFromResource: (resource: ResourceContract, databaseField: string) => import("@tensei/common").FieldContract | undefined;
     }
 }

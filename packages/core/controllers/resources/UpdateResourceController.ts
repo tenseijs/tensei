@@ -2,15 +2,13 @@ import Express from 'express'
 
 class UpdateResourceController {
     public update = async (
-        request: Express.Request,
+        { method, body, params, manager }: Express.Request,
         response: Express.Response
     ) => {
-        const updated = await request.manager.update(
-            request,
-            request.params.resource,
-            request.params.resourceId,
-            request.body,
-            request.method === 'PATCH'
+        const updated = await manager(params.resource).update(
+            params.resourceId,
+            body,
+            method === 'PATCH'
         )
 
         return response.json(updated)

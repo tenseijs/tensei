@@ -140,6 +140,8 @@ export class Tensei {
                     [plugin.slug]: extension,
                 }
             }
+
+            this.config.logger.success(`Booted ${plugin.name} plugin.`)
         }
 
         return this
@@ -220,12 +222,14 @@ export class Tensei {
         return this
     }
 
-    public manager = () => {
+    public manager = (request: Request) => {
         if (!this.databaseBooted) {
             return null
         }
 
-        return new Manager(this.config.resources, this.databaseRepository!)
+        return (
+            new Manager(request, this.config.resources, this.databaseRepository!)
+        ).setResource
     }
 
     public registerMiddleware() {
@@ -238,8 +242,7 @@ export class Tensei {
                 next: Express.NextFunction
             ) => {
                 request.resources = this.config.resourcesMap
-                request.administratorResource = this.administratorResource()
-                request.manager = this.manager()!
+                request.manager = this.manager(request)!
                 request.mailer = this.mailer
 
                 next()
@@ -289,7 +292,7 @@ export class Tensei {
             return next()
         }
 
-        const admin = await request.manager.getAdministratorById(
+        const admin = await request.manager('administrators').findOneById(
             request.session?.user
         )
 

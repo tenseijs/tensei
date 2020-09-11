@@ -8,96 +8,33 @@ import {
     ResourceContract,
     ManagerContract,
 } from '@tensei/common'
+import { ResourceHelpers } from '../helpers'
 
-export class Manager implements ManagerContract {
+export class Manager extends ResourceHelpers implements ManagerContract {
     constructor(
-        private resources: ResourceContract[],
-        public database: DatabaseRepositoryInterface
-    ) {}
-
-    public findResource = (resourceSlug: string | ResourceContract) => {
-        if (!resourceSlug) {
-            throw {
-                message: `Resource ${resourceSlug} not found.`,
-                status: 404,
-            }
-        }
-
-        if (typeof resourceSlug !== 'string') {
-            return resourceSlug
-        }
-
-        const resource = this.resources.find(
-            (resource) => resource.data.slug === resourceSlug
-        )
-
-        if (!resource) {
-            throw {
-                message: `Resource ${resourceSlug} not found.`,
-                status: 404,
-            }
-        }
-
-        return resource
+        private request: Request,
+        resources: ResourceContract[],
+        public repository: DatabaseRepositoryInterface
+    ) {
+        super(resources)
     }
 
     public async deleteById(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract,
         id: number | string
     ) {
-        const resource = this.findResource(resourceSlugOrResource)
-
-        await this.database.deleteById(resource, id)
+        return this.database().deleteById(id)
     }
 
-    public async createAdmin(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract,
-        payload: DataPayload
-    ) {
-        const resource = this.findResource(resourceSlugOrResource)
-
-        const roleResource = this.resources.find(
-            (resource) => resource.data.slug === 'administrator-roles'
-        )
-
-        if (!roleResource) {
-            throw {
-                message: `The role resource must be registered.`,
-                status: 422,
-            }
-        }
-
-        const superAdmin = await this.database.findOneByField(
-            roleResource,
-            'slug',
-            'super-admin'
-        )
-
-        if (!superAdmin) {
-            throw {
-                message: `The super-admin role must be setup before creating an administrator user.`,
-                status: 422,
-            }
-        }
-
-        const { id } = await this.create(request, resource, {
-            ...payload,
-            administrator_roles: [superAdmin.id],
-        })
-
-        return id
+    public database = (resource = this.getCurrentResource()) => {
+        return this.repository.setResource(resource)
     }
 
     public async create(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract,
         payload: DataPayload
     ) {
-        const resource = this.findResource(resourceSlugOrResource)
+        const resource = this.getCurrentResource()
 
-        let validatedPayload = await this.validate(payload, resource)
+        let validatedPayload = await this.validate(payload)
 
         const {
             nonRelationshipFieldsPayload,
@@ -108,15 +45,13 @@ export class Manager implements ManagerContract {
                     ...validatedPayload.parsedPayload,
                     ...validatedPayload.relationshipFieldsPayload,
                 },
-                request
+                this.request
             ),
-            resource
         )
 
         // TODO: Insert beforeCreate hook for fields here.
 
-        const model = await this.database.create(
-            resource,
+        const model = await this.database().create(
             nonRelationshipFieldsPayload,
             relationshipFieldsPayload
         )
@@ -125,13 +60,11 @@ export class Manager implements ManagerContract {
     }
 
     public async updateOneByField(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract,
         databaseField: string,
         value: any,
         payload: DataPayload
     ) {
-        const resource = this.findResource(resourceSlugOrResource)
+        const resource = this.getCurrentResource()
 
         const field = this.getFieldFromResource(resource, databaseField)
 
@@ -141,10 +74,9 @@ export class Manager implements ManagerContract {
             )
         }
 
-        let { parsedPayload } = await this.validate(payload, resource, false)
+        let { parsedPayload } = await this.validate(payload, false)
 
-        return this.database.updateOneByField(
-            resource,
+        return this.database().updateOneByField(
             field.databaseField,
             value,
             parsedPayload
@@ -152,27 +84,23 @@ export class Manager implements ManagerContract {
     }
 
     public async update(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract,
         id: number | string,
         payload: DataPayload,
         patch = true
     ) {
-        const resource = this.findResource(resourceSlugOrResource)
+        const resource = this.getCurrentResource()
 
         let { parsedPayload, relationshipFieldsPayload } = await this.validate(
             payload,
-            resource,
             false,
             id
         )
 
-        parsedPayload = resource.hooks.beforeUpdate(parsedPayload, request)
+        parsedPayload = resource.hooks.beforeUpdate(parsedPayload, this.request)
 
         // TODO: Add beforeUpdate hook for fields.
 
-        return this.database.update(
-            resource,
+        return this.database().update(
             id,
             parsedPayload,
             relationshipFieldsPayload,
@@ -181,15 +109,15 @@ export class Manager implements ManagerContract {
     }
 
     public async updateRelationshipFields(
-        resource: ResourceContract,
         payload: DataPayload,
         modelId: string | number
     ) {
+        const resource = this.getCurrentResource()
+
         const {
             relationshipFieldsPayload,
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload, resource),
-            resource
+            this.getResourceFieldsFromPayload(payload),
         )
 
         const relationshipFields = resource
@@ -227,15 +155,13 @@ export class Manager implements ManagerContract {
                 }
 
                 // go to posts table, find all related posts and update the user_id field to be the null
-                await this.database.updateManyWhere(
-                    relatedResource,
+                await this.database().updateManyWhere(
                     { [relatedBelongsToField.databaseField]: modelId },
                     { [relatedBelongsToField.databaseField]: null }
                 )
 
                 // finally, go to posts table, find all related posts (new ones from request body) and update the user_id field to be modelId
-                await this.database.updateManyByIds(
-                    relatedResource,
+                await this.database().updateManyByIds(
                     relationshipFieldsPayload[field.inputName],
                     {
                         [relatedBelongsToField.databaseField]: modelId,
@@ -246,15 +172,15 @@ export class Manager implements ManagerContract {
     }
 
     public async createRelationalFields(
-        resource: ResourceContract,
         payload: DataPayload,
         model: any
     ) {
+        const resource = this.getCurrentResource()
+
         const {
             relationshipFieldsPayload,
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload, resource),
-            resource
+            this.getResourceFieldsFromPayload(payload),
         )
 
         const relationshipFields = resource
@@ -294,8 +220,7 @@ export class Manager implements ManagerContract {
                 }
 
                 // go to posts table, find all related posts and update the user_id field to be the model.id
-                this.database.updateManyByIds(
-                    relatedResource,
+                this.database().updateManyByIds(
                     relationshipFieldsPayload[field.inputName],
                     valuesToUpdate
                 )
@@ -313,7 +238,7 @@ export class Manager implements ManagerContract {
             with: withRelationships,
             no_pagination: noPagination = 'false',
         }: Request['query'],
-        resource: ResourceContract
+        resource = this.getCurrentResource()
     ) {
         let filters: FetchAllRequestQuery['filters'] = []
 
@@ -385,11 +310,8 @@ export class Manager implements ManagerContract {
         return parsedQuery
     }
 
-    public async findAll(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract
-    ) {
-        const resource = this.findResource(resourceSlugOrResource)
+    public async findAll(query = undefined) {
+        const resource = this.getCurrentResource()
 
         const {
             perPage,
@@ -399,9 +321,9 @@ export class Manager implements ManagerContract {
             filters,
             noPagination,
             withRelationships,
-        } = await this.validateRequestQuery(request.query, resource)
+        } = await this.validateRequestQuery(query || this.request.query)
 
-        return this.database.findAll(resource, {
+        return this.database().findAll({
             perPage: perPage || resource.data.perPageOptions[0] || 10,
             page: page || 1,
             fields,
@@ -413,12 +335,10 @@ export class Manager implements ManagerContract {
     }
 
     public async findAllRelatedResource(
-        request: Request,
         resourceId: string | number,
-        resourceSlugOrResource: string | ResourceContract,
         relatedResourceSlugOrResource: string | ResourceContract
     ) {
-        const resource = this.findResource(resourceSlugOrResource)
+        const resource = this.getCurrentResource()
         const relatedResource = this.findResource(relatedResourceSlugOrResource)
 
         const relationField = resource.data.fields.find(
@@ -430,7 +350,7 @@ export class Manager implements ManagerContract {
             page = 1,
             filters,
             ...rest
-        } = await this.validateRequestQuery(request.query, relatedResource)
+        } = await this.validateRequestQuery(this.request.query, relatedResource)
 
         if (!relationField) {
             throw {
@@ -440,8 +360,7 @@ export class Manager implements ManagerContract {
         }
 
         if (relationField.component === 'BelongsToManyField') {
-            return this.database.findAllBelongingToMany(
-                resource,
+            return this.database().findAllBelongingToMany(
                 relatedResource,
                 resourceId,
                 {
@@ -465,7 +384,7 @@ export class Manager implements ManagerContract {
                 }
             }
 
-            return this.database.findAll(relatedResource, {
+            return this.database().findAll({
                 ...rest,
                 perPage,
                 page,
@@ -484,20 +403,16 @@ export class Manager implements ManagerContract {
     }
 
     public async findOneById(
-        request: Request,
-        resourceSlugOrResource: string | ResourceContract,
         id: number | string,
         withRelated?: string[]
     ) {
-        const resource = this.findResource(resourceSlugOrResource)
+        const resource = this.getCurrentResource()
 
         const { fields, withRelationships } = await this.validateRequestQuery(
-            request.query,
-            resource
+            this.request.query,
         )
 
-        const model = await this.database.findOneById(
-            resource,
+        const model = await this.database().findOneById(
             id,
             fields,
             withRelated ? withRelated : withRelationships
@@ -513,8 +428,8 @@ export class Manager implements ManagerContract {
         return model
     }
 
-    getValidationRules = (resource: ResourceContract, creationRules = true) => {
-        const fields = resource.data.fields.filter((field) =>
+    getValidationRules = (creationRules = true) => {
+        const fields = this.getCurrentResource().data.fields.filter((field) =>
             creationRules
                 ? field.showHideField.showOnCreation
                 : field.showHideField.showOnUpdate
@@ -546,11 +461,10 @@ export class Manager implements ManagerContract {
 
     getResourceFieldsFromPayload = (
         payload: DataPayload,
-        resource: ResourceContract
     ) => {
         let validPayload: DataPayload = {}
 
-        resource.data.fields.forEach((field) => {
+        this.getCurrentResource().data.fields.forEach((field) => {
             const serializedField = field.serialize()
 
             if (Object.keys(payload).includes(serializedField.inputName)) {
@@ -564,7 +478,7 @@ export class Manager implements ManagerContract {
 
     breakFieldsIntoRelationshipsAndNonRelationships = (
         payload: DataPayload,
-        resource: ResourceContract
+        resource = this.getCurrentResource()
     ) => {
         const relationshipFieldsPayload: DataPayload = {}
         const nonRelationshipFieldsPayload: DataPayload = {}
@@ -591,21 +505,20 @@ export class Manager implements ManagerContract {
 
     validate = async (
         payload: DataPayload,
-        resource: ResourceContract,
         creationRules: boolean = true,
-        modelId?: string | number
+        modelId?: string | number,
+        resource = this.getCurrentResource()
     ): Promise<DataPayload> => {
         const {
             relationshipFieldsPayload,
             nonRelationshipFieldsPayload,
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload, resource),
-            resource
+            this.getResourceFieldsFromPayload(payload),
         )
 
         const parsedPayload: DataPayload = await validateAll(
             nonRelationshipFieldsPayload,
-            this.getValidationRules(resource, creationRules),
+            this.getValidationRules(creationRules),
             resource.data.validationMessages
         )
 
@@ -650,15 +563,13 @@ export class Manager implements ManagerContract {
             }
 
             if (creationRules) {
-                exists = await this.database.findOneByField(
-                    resource,
+                exists = await this.database().findOneByField(
                     field.databaseField,
                     payload[field.inputName],
                     ['id']
                 )
             } else {
-                exists = await this.database.findOneByFieldExcludingOne(
-                    resource,
+                exists = await this.database().findOneByFieldExcludingOne(
                     field.databaseField,
                     payload[field.inputName],
                     modelId!,
@@ -681,9 +592,9 @@ export class Manager implements ManagerContract {
 
     validateRelationshipFields = async (
         payload: DataPayload,
-        resource: ResourceContract
+        resource = this.getCurrentResource()
     ) => {
-        const fields = resource.data.fields
+        const fields = this.getCurrentResource().data.fields
             .map((field) => field.serialize())
             .filter((field) => field.isRelationshipField)
 
@@ -707,8 +618,7 @@ export class Manager implements ManagerContract {
             }
 
             if (field.component === 'HasManyField') {
-                const allRelatedRows = await this.database.findAllByIds(
-                    relatedResource,
+                const allRelatedRows = await this.database().findAllByIds(
                     payload[field.inputName],
                     ['id']
                 )
@@ -725,8 +635,7 @@ export class Manager implements ManagerContract {
 
             if (field.component === 'BelongsToField') {
                 if (
-                    !(await this.database.findOneById(
-                        relatedResource,
+                    !(await this.database().findOneById(
                         payload[field.inputName],
                         ['id']
                     ))
@@ -738,11 +647,9 @@ export class Manager implements ManagerContract {
     }
 
     runAction = async (
-        request: Request,
-        resourceSlug: string,
         actionSlug: string
     ): Promise<ActionResponse> => {
-        const resource = this.findResource(resourceSlug)
+        const resource = this.getCurrentResource()
 
         const action = resource.data.actions.find(
             (action) => action.data.slug === actionSlug
@@ -750,14 +657,13 @@ export class Manager implements ManagerContract {
 
         if (!action) {
             throw {
-                message: `Action ${actionSlug} is not defined on ${resourceSlug} resource.`,
+                message: `Action ${actionSlug} is not defined on ${resource.data.slug} resource.`,
                 status: 404,
             }
         }
 
-        const models = await this.database.findAllByIds(
-            resource,
-            request.body.models || []
+        const models = await this.database().findAllByIds(
+            this.request.body.models || []
         )
 
         const actionResource = createResourceFn(action.name).fields(
@@ -765,12 +671,14 @@ export class Manager implements ManagerContract {
         )
 
         const { parsedPayload: payload } = await this.validate(
-            request.body.form || {},
+            this.request.body.form || {},
+            undefined,
+            undefined,
             actionResource
         )
 
         const response = await action.data.handler({
-            request,
+            request: this.request,
             models,
             payload,
             html: (html, status = 200) => ({
@@ -798,33 +706,15 @@ export class Manager implements ManagerContract {
         return response
     }
 
-    getAdministratorById = (id: number | string) => {
-        return this.database.getAdministratorById(id)
-    }
-
-    findUserByEmail = (email: string) => {
-        return this.database.findUserByEmail(email)
-    }
-
-    getAdministratorsCount = () => this.database.getAdministratorsCount()
-
-    getFieldFromResource = (
-        resource: ResourceContract,
-        databaseField: string
-    ) => {
-        return resource.data.fields.find(
-            (field) =>
-                field.name === databaseField ||
-                field.databaseField === databaseField
-        )
+    findAllCount = () => {
+        return this.database().findAllCount(this.getCurrentResource())
     }
 
     findOneByField = async (
-        resourceSlugNameOrResource: ResourceContract | string,
         databaseField: string,
         value: any
     ) => {
-        const resource = this.findResource(resourceSlugNameOrResource)
+        const resource = this.getCurrentResource()
 
         const field = this.getFieldFromResource(resource, databaseField)
 
@@ -834,8 +724,7 @@ export class Manager implements ManagerContract {
             )
         }
 
-        return this.database.findOneByField(
-            this.findResource(resource),
+        return this.database().findOneByField(
             field.databaseField,
             value
         )

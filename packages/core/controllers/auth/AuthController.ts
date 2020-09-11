@@ -29,7 +29,7 @@ class AuthController {
             })
         }
 
-        const user = await request.manager.findUserByEmail(request.body.email)
+        const user = await request.manager('administrators').findOneByField('email', request.body.email)
 
         if (request.body.rememberMe) {
             request.session!.cookie.maxAge = 30 * 24 * 60 * 60 * 1000
@@ -62,39 +62,43 @@ class AuthController {
     }
 
     public register = async (
-        request: Express.Request,
+        { manager, body, resources, session }: Express.Request,
         response: Express.Response
     ) => {
-        if ((await request.manager.getAdministratorsCount()) > 0) {
+        if ((await manager('administrators').findAllCount()) > 0) {
             return response.status(422).json({
                 message:
                     'An administrator user already exists. Please use the administration management dashboard to add more users.',
             })
         }
 
-        const [validationPassed, errors] = await this.validate(
-            request.body,
-            true
-        )
+        const roleResource = resources['administrator-roles']
 
-        if (!validationPassed) {
-            return response.status(422).json({
-                message: 'Validation failed.',
-                errors,
-            })
+        if (!roleResource) {
+            throw {
+                message: `The role resource must be registered.`,
+                status: 422,
+            }
         }
 
-        const userId = await request.manager.createAdmin(
-            request,
-            request.administratorResource,
-            {
-                name: request.body.name,
-                email: request.body.email,
-                password: request.body.password,
-            }
+        const superAdmin = await manager(roleResource.data.slug).findOneByField(
+            'slug',
+            'super-admin'
         )
 
-        request.session!.user = userId
+        if (!superAdmin) {
+            throw {
+                message: `The super-admin role must be setup before creating an administrator user.`,
+                status: 422,
+            }
+        }
+
+        const { id } = await manager('administrators').create({
+            ...body,
+            administrator_roles: [superAdmin.id],
+        })
+
+        session!.user = id
 
         return response.json({
             message: 'Registration and login successful.',
