@@ -12,11 +12,42 @@ import { ResourceHelpers } from '../helpers'
 
 export class Manager extends ResourceHelpers implements ManagerContract {
     constructor(
+<<<<<<< HEAD
         private request: Request,
         resources: ResourceContract[],
         public repository: DatabaseRepositoryInterface
     ) {
         super(resources)
+=======
+        private resources: ResourceContract[],
+        public database: DatabaseRepositoryInterface
+    ) { }
+
+    public findResource = (resourceSlug: string | ResourceContract) => {
+        if (!resourceSlug) {
+            throw {
+                message: `Resource ${resourceSlug} not found.`,
+                status: 404,
+            }
+        }
+
+        if (typeof resourceSlug !== 'string') {
+            return resourceSlug
+        }
+
+        const resource = this.resources.find(
+            (resource) => resource.data.slug === resourceSlug
+        )
+
+        if (!resource) {
+            throw {
+                message: `Resource ${resourceSlug} not found.`,
+                status: 404,
+            }
+        }
+
+        return resource
+>>>>>>> add tests for manager class
     }
 
     public async deleteById(
@@ -632,6 +663,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     ]
                 }
             }
+
+            //the code might never get here, because for it to get here the field must be a relationship component and BelongsToField is not a relationship component
 
             if (field.component === 'BelongsToField') {
                 if (
