@@ -11,7 +11,7 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_DATABASE: tensei
+          MYSQL_DATABASE: testdb
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
         ports:
           - 3306
@@ -33,7 +33,5 @@ jobs:
         run: yarn
       - name: Build packages
         run: yarn build
-      - name: Run @tensei/common tests
-        run: cd /home/runner/work/tensei/tensei/packages/common && yarn test
-      - name: Run @tensei/client tests
-        run: cd /home/runner/work/tensei/tensei/packages/client && yarn test
+      - name: Run package tests
+        run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
