@@ -191,10 +191,7 @@ declare module '@tensei/common/resources' {
             resource: ResourceContract,
             databaseField: string
         ) => import('@tensei/common').FieldContract | undefined
-        setResource: (
-            resourceOrSlug: ResourceContract | string,
-            request?: Request
-        ) => this
+        setResource: (resourceOrSlug: ResourceContract | string) => this
         findResource: (
             resourceSlug: string | ResourceContract
         ) => ResourceContract<{}>

@@ -222,7 +222,7 @@ export class Tensei {
         return this
     }
 
-    public manager = (request: Request) => {
+    public manager = (request: Express.Request) => {
         if (!this.databaseBooted) {
             return null
         }

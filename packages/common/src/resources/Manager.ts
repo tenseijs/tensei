@@ -661,17 +661,4 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
         return this.database().findOneByField(field.databaseField, value)
     }
-
-    setResource = (
-        resourceOrSlug: ResourceContract | string,
-        request?: Request
-    ) => {
-        this.resource = this.findResource(resourceOrSlug)
-
-        if (request) {
-            // this.request = request
-        }
-
-        return this
-    }
 }

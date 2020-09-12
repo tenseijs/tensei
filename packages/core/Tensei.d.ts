@@ -1,11 +1,11 @@
 declare module '@tensei/core' {
     import { SupportedDrivers } from '@tensei/mail'
-    import Express, { Application } from 'express'
+    import Express, { Application, Request } from 'express'
     import {
         PluginContract,
         ResourceContract,
         SetupFunctions,
-        Manager,
+        ManagerContract,
         SupportedDatabases,
         PluginSetupConfig,
     } from '@tensei/common'
@@ -23,7 +23,7 @@ declare module '@tensei/core' {
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this
-        manager: () => Manager | null
+        manager: (request?: Request) => ManagerContract | null
         registerMiddleware(): void
         authMiddleware: (
             request: Express.Request,
