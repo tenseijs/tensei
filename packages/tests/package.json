@@ -1,0 +1,33 @@
+{
+    "name": "@tensei/tests",
+    "version": "0.0.0",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/faker": "^4.1.12",
+        "@types/jest": "^25.2.3",
+        "@types/supertest": "^2.0.9",
+        "babel-jest": "^26.2.2",
+        "faker": "^4.1.0",
+        "jest": "^26.0.1",
+        "supertest": "^4.0.2",
+        "typescript": "^3.9.5"
+    },
+    "scripts": {
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "test": "jest --verbose --runInBand --forceExit"
+    },
+    "dependencies": {
+        "@tensei/common": "0.0.0",
+        "@tensei/mail": "0.0.0"
+    },
+    "config": {
+        "commitizen": {
+            "path": "cz-conventional-changelog"
+        }
+    },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
+    }
+}

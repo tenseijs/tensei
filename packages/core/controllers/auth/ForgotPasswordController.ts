@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import Express from 'express'
 import Dayjs from 'dayjs'
 import Uniqid from 'uniqid'
@@ -10,7 +12,7 @@ class ForgotPasswordController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const { body, resources, Mailer, manager } = request
+        const { body, resources, mailer, manager } = request
         const { email } = await validateAll(body, {
             email: 'required|email',
         })
@@ -55,17 +57,20 @@ class ForgotPasswordController {
             }).save()
         }
 
-        Mailer.to(email, existingUser.name).sendRaw(
-            `Some raw message to send with the token ${token}`
-        )
+        mailer
+            .to(email, existingUser.name)
+            .sendRaw(`Some raw message to send with the token ${token}`)
 
         return response.json({
             message: `Please check your email for steps to reset your password.`,
         })
     }
 
-    public resetPassword = async (request: Express.Request, response: Express.Response) => {
-        const { body, resources, manager, Mailer } = request
+    public resetPassword = async (
+        request: Express.Request,
+        response: Express.Response
+    ) => {
+        const { body, resources, manager, mailer } = request
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
@@ -73,7 +78,6 @@ class ForgotPasswordController {
         })
 
         const PasswordResetModel = resources['password-resets'].Model()
-
 
         let existingPasswordReset = await PasswordResetModel.where({
             token,
@@ -129,15 +133,14 @@ class ForgotPasswordController {
             id: existingPasswordReset.id,
         }).destroy()
 
-        Mailer.to(user.email, user.name).sendRaw(
-            `Your password has been changed successfully`
-        )
+        mailer
+            .to(user.email, user.name)
+            .sendRaw(`Your password has been changed successfully`)
 
         response.json({
             message: `Password reset successful.`,
         })
     }
-
 }
 
 export default new ForgotPasswordController()

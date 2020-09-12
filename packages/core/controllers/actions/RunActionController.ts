@@ -5,9 +5,9 @@ class RunActionController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const { status, ...rest } = await request.manager(request.params.resource).runAction(
-            request.params.action
-        )
+        const { status, ...rest } = await request
+            .manager(request.params.resource, request)
+            .runAction(request.params.action)
 
         return response.status(status).json(rest)
     }

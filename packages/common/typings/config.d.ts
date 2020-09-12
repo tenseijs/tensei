@@ -100,9 +100,16 @@ declare module '@tensei/common/config' {
         abstract setResourceModels: (
             resources: ResourceContract[]
         ) => ResourceContract[]
-        abstract getFieldFromResource: (resource: ResourceContract, databaseField: string) => import("@tensei/common").FieldContract | undefined;
-        abstract setResource: (resourceOrSlug: ResourceContract | string) => this;
-        abstract findResource: (resourceSlug: string | ResourceContract) => ResourceContract<{}>;
+        abstract getFieldFromResource: (
+            resource: ResourceContract,
+            databaseField: string
+        ) => import('@tensei/common').FieldContract | undefined
+        abstract setResource: (
+            resourceOrSlug: ResourceContract | string
+        ) => this
+        abstract findResource: (
+            resourceSlug: string | ResourceContract
+        ) => ResourceContract<{}>
         abstract establishDatabaseConnection: () => void
         abstract create: (
             payload: DataPayload,
@@ -151,9 +158,7 @@ declare module '@tensei/common/config' {
             value: any,
             payload: DataPayload = {}
         ) => Promise<any>
-        abstract deleteById: (
-            id: number | string
-        ) => Promise<any>
+        abstract deleteById: (id: number | string) => Promise<any>
         abstract updateManyWhere: (
             whereClause: {
                 [key: string]: string | number
@@ -164,12 +169,17 @@ declare module '@tensei/common/config' {
     }
 
     export class ResourceHelpers {
-        resources: ResourceContract[];
-        resource: ResourceContract | null;
-        constructor(resources: ResourceContract[]);
-        protected getCurrentResource: () => ResourceContract<{}>;
-        setResource: (resourceOrSlug: ResourceContract | string) => this;
-        findResource: (resourceSlug: string | ResourceContract) => ResourceContract<{}>;
-        getFieldFromResource: (resource: ResourceContract, databaseField: string) => import("@tensei/common").FieldContract | undefined;
+        resources: ResourceContract[]
+        resource: ResourceContract | null
+        constructor(resources: ResourceContract[])
+        protected getCurrentResource: () => ResourceContract<{}>
+        setResource: (resourceOrSlug: ResourceContract | string) => this
+        findResource: (
+            resourceSlug: string | ResourceContract
+        ) => ResourceContract<{}>
+        getFieldFromResource: (
+            resource: ResourceContract,
+            databaseField: string
+        ) => import('@tensei/common').FieldContract | undefined
     }
 }

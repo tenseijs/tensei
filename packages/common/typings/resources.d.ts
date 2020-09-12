@@ -8,7 +8,7 @@ declare module '@tensei/common/resources' {
         AuthorizeFunction,
         DatabaseRepositoryInterface,
         User,
-        ResourceHelpers
+        ResourceHelpers,
     } from '@tensei/common/config'
     export interface ValidationMessages {
         [key: string]: string
@@ -118,36 +118,87 @@ declare module '@tensei/common/resources' {
     ) => ResourceContract<{}>
 
     export abstract class ManagerContract {
-        repository: DatabaseRepositoryInterface;
-        constructor(request: Request, resources: ResourceContract[], database: DatabaseRepositoryInterface);
-        deleteById(id: number | string): Promise<any>;
-        create(payload: DataPayload): Promise<any>;
-        database(resource?: ResourceContract): DatabaseRepositoryInterface;
-        updateOneByField(databaseField: string, value: any, payload: DataPayload): Promise<any>;
-        update(id: number | string, payload: DataPayload, patch?: boolean): Promise<any>;
-        updateRelationshipFields(payload: DataPayload, modelId: string | number): Promise<void>;
-        createRelationalFields(payload: DataPayload, model: any): Promise<void>;
-        validateRequestQuery({ per_page: perPage, page, fields, search, filter, with: withRelationships, no_pagination: noPagination, }: Request['query'], resource?: ResourceContract<{}>): Promise<any>;
-        findAll(query?: undefined): Promise<import("@tensei/common").FetchAllResults<{}>>;
-        findAllRelatedResource(resourceId: string | number, relatedResourceSlugOrResource: string | ResourceContract): Promise<{}>;
-        findOneById(id: number | string, withRelated?: string[]): Promise<any>;
-        getValidationRules: (creationRules?: boolean) => {
-            [key: string]: string;
-        };
-        getResourceFieldsFromPayload: (payload: DataPayload) => DataPayload;
-        breakFieldsIntoRelationshipsAndNonRelationships: (payload: DataPayload) => {
-            relationshipFieldsPayload: DataPayload;
-            nonRelationshipFieldsPayload: DataPayload;
-        };
-        validate: (payload: DataPayload, creationRules?: boolean, modelId?: string | number | undefined, resource?: ResourceContract<{}>) => Promise<DataPayload>;
-        validateUniqueFields: (payload: DataPayload, resource: ResourceContract, creationRules?: boolean, modelId?: string | number | undefined) => Promise<void>;
-        validateRelationshipFields: (payload: DataPayload) => Promise<void>;
-        runAction: (actionSlug: string) => Promise<ActionResponse>;
-        findAllCount: () => Promise<number>;
-        getFieldFromResource: (resource: ResourceContract, databaseField: string) => import("@tensei/common").FieldContract | undefined;
-        setResource: (resourceOrSlug: ResourceContract | string) => this;
-        findResource: (resourceSlug: string | ResourceContract) => ResourceContract<{}>;
-        findOneByField: (databaseField: string, value: any) => Promise<any>;
+        repository: DatabaseRepositoryInterface
+        constructor(
+            request: Request,
+            resources: ResourceContract[],
+            database: DatabaseRepositoryInterface
+        )
+        deleteById(id: number | string): Promise<any>
+        create(payload: DataPayload): Promise<any>
+        database(resource?: ResourceContract): DatabaseRepositoryInterface
+        updateOneByField(
+            databaseField: string,
+            value: any,
+            payload: DataPayload
+        ): Promise<any>
+        update(
+            id: number | string,
+            payload: DataPayload,
+            patch?: boolean
+        ): Promise<any>
+        validateRequestQuery(
+            {
+                per_page: perPage,
+                page,
+                fields,
+                search,
+                filter,
+                with: withRelationships,
+                no_pagination: noPagination,
+            }: Request['query'],
+            resource?: ResourceContract<{}>
+        ): Promise<any>
+        findAll(
+            query?: undefined
+        ): Promise<import('@tensei/common').FetchAllResults<{}>>
+        findAllRelatedResource(
+            resourceId: string | number,
+            relatedResourceSlugOrResource: string | ResourceContract
+        ): Promise<{}>
+        findOneById(id: number | string, withRelated?: string[]): Promise<any>
+        getValidationRules: (
+            creationRules?: boolean
+        ) => {
+            [key: string]: string
+        }
+        getResourceFieldsFromPayload: (payload: DataPayload) => DataPayload
+        breakFieldsIntoRelationshipsAndNonRelationships: (
+            payload: DataPayload
+        ) => {
+            relationshipFieldsPayload: DataPayload
+            nonRelationshipFieldsPayload: DataPayload
+        }
+        validate: (
+            payload: DataPayload,
+            creationRules?: boolean,
+            modelId?: string | number | undefined,
+            resource?: ResourceContract<{}>
+        ) => Promise<DataPayload>
+        validateUniqueFields: (
+            payload: DataPayload,
+            creationRules?: boolean,
+            modelId?: string | number | undefined,
+            resource?: ResourceContract
+        ) => Promise<void>
+        validateRelationshipFields: (payload: DataPayload) => Promise<void>
+        runAction: (
+            actionSlug: string,
+            payload?: DataPayload
+        ) => Promise<ActionResponse>
+        findAllCount: () => Promise<number>
+        getFieldFromResource: (
+            resource: ResourceContract,
+            databaseField: string
+        ) => import('@tensei/common').FieldContract | undefined
+        setResource: (
+            resourceOrSlug: ResourceContract | string,
+            request?: Request
+        ) => this
+        findResource: (
+            resourceSlug: string | ResourceContract
+        ) => ResourceContract<{}>
+        findOneByField: (databaseField: string, value: any) => Promise<any>
     }
 
     export declare class Manager extends ManagerContract {}

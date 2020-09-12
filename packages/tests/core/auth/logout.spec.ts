@@ -1,5 +1,5 @@
 import Supertest from 'supertest'
-import { setup, createAdminUser, cleanup } from '../helpers'
+import { setup, createAdminUser, cleanup } from '../../helpers'
 
 test('can successfully logout when administrator is logged in', async () => {
     const { app, databaseClient } = await setup()

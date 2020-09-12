@@ -290,20 +290,23 @@ class Auth {
     }
 
     private register = async (request: Request, response: Response) => {
-        const { id } = await request.manager(this.userResource()).create(
-            request.body
-        )
+        const { id } = await request
+            .manager(this.userResource())
+            .create(request.body)
 
         const model = (
-            await request.manager(this.userResource()).database().findOneById(
-                id,
-                [],
-                [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
-                    }`,
-                ]
-            )
+            await request
+                .manager(this.userResource())
+                .database()
+                .findOneById(
+                    id,
+                    [],
+                    [
+                        `${this.roleResource().data.slug}.${
+                            this.permissionResource().data.slug
+                        }`,
+                    ]
+                )
         ).toJSON()
 
         const user = model.toJSON ? model.toJSON() : model
@@ -320,10 +323,9 @@ class Auth {
         const { manager } = request
         const { email, password, token } = await this.validate(request.body)
 
-        const userWithPassword = await manager(this.userResource()).findOneByField(
-            'email',
-            email
-        )
+        const userWithPassword = await manager(
+            this.userResource()
+        ).findOneByField('email', email)
 
         if (!userWithPassword) {
             throw {
@@ -339,15 +341,18 @@ class Auth {
             }
         }
 
-        const model = await request.manager(this.userResource()).database().findOneById(
-            userWithPassword.id,
-            [],
-            [
-                `${this.roleResource().data.slug}.${
-                    this.permissionResource().data.slug
-                }`,
-            ]
-        )
+        const model = await request
+            .manager(this.userResource())
+            .database()
+            .findOneById(
+                userWithPassword.id,
+                [],
+                [
+                    `${this.roleResource().data.slug}.${
+                        this.permissionResource().data.slug
+                    }`,
+                ]
+            )
 
         const user = model.toJSON ? model.toJSON() : model
 
@@ -413,14 +418,13 @@ class Auth {
                 id: number
             }
 
-            const model = await manager(this.userResource()).database().findOneById(
-                id,
-                [
+            const model = await manager(this.userResource())
+                .database()
+                .findOneById(id, [
                     `${this.roleResource().data.slug}.${
                         this.permissionResource().data.slug
                     }`,
-                ]
-            )
+                ])
 
             const user = {
                 ...model.toJSON(),
@@ -567,10 +571,9 @@ class Auth {
             'email',
             email
         )
-        const existingPasswordReset = await manager(this.passwordResetsResource()).findOneByField(
-            'email',
-            email
-        )
+        const existingPasswordReset = await manager(
+            this.passwordResetsResource()
+        ).findOneByField('email', email)
 
         if (!existingUser) {
             return response.status(422).json([
@@ -623,10 +626,9 @@ class Auth {
             password: 'required|string|min:8',
         })
 
-        let existingPasswordReset = await manager(this.passwordResetsResource()).findOneByField(
-            'token',
-            token
-        )
+        let existingPasswordReset = await manager(
+            this.passwordResetsResource()
+        ).findOneByField('token', token)
 
         if (!existingPasswordReset) {
             return response.status(422).json([
@@ -656,9 +658,9 @@ class Auth {
         )
 
         if (!user) {
-            await manager(this.passwordResetsResource()).database().deleteById(
-                existingPasswordReset.id
-            )
+            await manager(this.passwordResetsResource())
+                .database()
+                .deleteById(existingPasswordReset.id)
 
             return response.status(500).json({
                 message: 'User does not exist anymore.',
@@ -675,9 +677,9 @@ class Auth {
         )
 
         // TODO: Rename deleteById this to deleteOneById
-        await manager(this.passwordResetsResource()).database().deleteById(
-            existingPasswordReset.id
-        )
+        await manager(this.passwordResetsResource())
+            .database()
+            .deleteById(existingPasswordReset.id)
 
         // TODO: Send an email to the user notifying them
         // that their password was reset.

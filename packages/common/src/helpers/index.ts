@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { ResourceContract } from '@tensei/common'
 
 export class ResourceHelpers {
@@ -18,7 +19,9 @@ export class ResourceHelpers {
         }
 
         const resource = this.resources.find(
-            (resource) => resource.data.slug === resourceSlug || resource.data.name === resourceSlug
+            (resource) =>
+                resource.data.slug === resourceSlug ||
+                resource.data.name === resourceSlug
         )
 
         if (!resource) {
@@ -49,10 +52,10 @@ export class ResourceHelpers {
     }
 
     protected getCurrentResource = () => {
-        if (! this.resource) {
+        if (!this.resource) {
             throw {
                 message: `Missing resource for this operation.`,
-                status: 400
+                status: 400,
             }
         }
 

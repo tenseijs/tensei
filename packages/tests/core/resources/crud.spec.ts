@@ -1,7 +1,7 @@
 import Faker, { fake } from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../helpers'
+import { setup, fakePostData } from '../../helpers'
 
 test('can create a resource with correct values (posts)', async () => {
     const { app, manager } = await setup({
@@ -11,7 +11,7 @@ test('can create a resource with correct values (posts)', async () => {
     })
 
     const user = (
-        await manager().create({} as any, 'users', {
+        await manager({} as any)('User').create({
             email: Faker.internet.exampleEmail(),
             full_name: Faker.name.findName(),
             password: 'password',
@@ -67,7 +67,7 @@ test('can get multiple resources (users)', async () => {
         password: 'password',
     }
 
-    await manager().create({} as any, 'users', userDetails)
+    await await manager({} as any)('User').create(userDetails)
 
     const client = Supertest(app)
 
@@ -97,7 +97,7 @@ test('can update a resource (posts)', async () => {
     }
 
     const user = (
-        await manager().create({} as any, 'users', userDetails)
+        await await manager({} as any)('User').create(userDetails)
     ).toJSON()
 
     const client = Supertest(app)
@@ -125,7 +125,7 @@ test('can get a single resource (user)', async () => {
     }
 
     const user = (
-        await manager().create({} as any, 'users', userDetails)
+        await await manager({} as any)('User').create(userDetails)
     ).toJSON()
 
     const client = Supertest(app)

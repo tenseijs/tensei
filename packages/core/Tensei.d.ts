@@ -20,8 +20,6 @@ declare module '@tensei/core' {
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
-        database(database: SupportedDatabases): this
-        databaseUrl(databaseUrl: string): this
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this

@@ -24,7 +24,7 @@ import {
     SupportedDatabases,
     DatabaseRepositoryInterface,
     belongsToMany,
-    dateTime
+    dateTime,
 } from '@tensei/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
@@ -142,8 +142,6 @@ export class Tensei {
                     [plugin.slug]: extension,
                 }
             }
-
-            this.config.logger.success(`Booted ${plugin.name} plugin.`)
         }
 
         return this
@@ -229,8 +227,10 @@ export class Tensei {
             return null
         }
 
-        return (
-            new Manager(request, this.config.resources, this.databaseRepository!)
+        return new Manager(
+            request,
+            this.config.resources,
+            this.databaseRepository!
         ).setResource
     }
 
@@ -294,9 +294,9 @@ export class Tensei {
             return next()
         }
 
-        const admin = await request.manager('administrators').findOneById(
-            request.session?.user
-        )
+        const admin = await request
+            .manager('administrators')
+            .findOneById(request.session?.user)
 
         if (!admin) {
             return response.status(401).json({
@@ -556,8 +556,8 @@ export class Tensei {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email').unique().searchable(),
-                text('Password').hidden(),
+                text('Email').unique().searchable().rules('required', 'email'),
+                text('Password').hidden().rules('required', 'min:8'),
                 belongsToMany('Administrator Role'),
             ])
             .beforeCreate((payload) => ({

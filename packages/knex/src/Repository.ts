@@ -15,10 +15,11 @@ import {
     ResourceContract,
     DataPayload,
     FetchAllRequestQuery,
-    ResourceHelpers
+    ResourceHelpers,
 } from '@tensei/common'
 
-export class SqlRepository extends ResourceHelpers implements DatabaseRepositoryInterface {
+export class SqlRepository extends ResourceHelpers
+    implements DatabaseRepositoryInterface {
     private $db: Knex | null = null
 
     private migrationsTable: string = 'migrations'
@@ -54,7 +55,6 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
             await this.bootBookshelfModels()
 
             await this.setupRolesAndPermissions()
-
         } catch (errors) {
             console.log('(********************', errors)
         }
@@ -69,7 +69,9 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
             return resource
         })
 
-    private getResourceBookshelfModel = (resource: ResourceContract = this.getCurrentResource()) => {
+    private getResourceBookshelfModel = (
+        resource: ResourceContract = this.getCurrentResource()
+    ) => {
         return this.bookshelfModels.find(
             (model) => model.resourceName === resource.data.name
         )
@@ -95,12 +97,8 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
             })
         })
 
-        const roleResource = this.resources.find(
-            (resource) => resource.data.name === 'Administrator Role'
-        )
-        const permissionResource = this.resources.find(
-            (resource) => resource.data.name === 'Administrator Permission'
-        )
+        const roleResource = this.findResource('Administrator Role')
+        const permissionResource = this.findResource('Administrator Permission')
 
         if (!roleResource || !permissionResource) {
             throw {
@@ -222,7 +220,7 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
         trx: Knex.Transaction,
         resources: SerializedResource[],
         resource: SerializedResource,
-        oldResource: SerializedResource|undefined
+        oldResource: SerializedResource | undefined
     ) => {
         const belongsToManyFields = resource.fields.filter(
             (field) => field.component === 'BelongsToManyField'
@@ -272,7 +270,7 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
                 )}_id`
 
                 const tableExists = !!oldResource
-                
+
                 if (this.config.client === 'sqlite3' && tableExists) {
                     return
                 }
@@ -303,15 +301,20 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
     private performDatabaseSchemaSync = async (
         resources: SerializedResource[] = []
     ) => {
-
         const knex = this.$db!
 
-        const migrationsTableExists = await knex.schema.hasTable(this.migrationsTable)
+        const migrationsTableExists = await knex.schema.hasTable(
+            this.migrationsTable
+        )
 
-        const oldResources: SerializedResource[] = migrationsTableExists ? (await knex.select('*').from(this.migrationsTable)).map(row => JSON.parse(row.resource_data)) : []
+        const oldResources: SerializedResource[] = migrationsTableExists
+            ? (await knex.select('*').from(this.migrationsTable)).map((row) =>
+                  JSON.parse(row.resource_data)
+              )
+            : []
 
-        if (! migrationsTableExists) {
-            await knex.schema.createTable(this.migrationsTable, table => {
+        if (!migrationsTableExists) {
+            await knex.schema.createTable(this.migrationsTable, (table) => {
                 table.increments()
                 table.string('resource_table')
                 table.json('resource_data')
@@ -319,14 +322,21 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
         }
 
         await knex.transaction(async (trx) => {
-            for(let index = 0; index < resources.length; index++) {
+            for (let index = 0; index < resources.length; index++) {
                 const resource = resources[index]
 
-                const oldResource = oldResources.find(oldResource => oldResource.name === resource.name)
+                const oldResource = oldResources.find(
+                    (oldResource) => oldResource.name === resource.name
+                )
 
                 const tableExists = !!oldResource
 
-                await this.handleBelongsToManyField(trx, resources, resource, oldResource)
+                await this.handleBelongsToManyField(
+                    trx,
+                    resources,
+                    resource,
+                    oldResource
+                )
 
                 await trx.schema[tableExists ? 'alterTable' : 'createTable'](
                     resource.table,
@@ -347,7 +357,7 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
                                 trx,
                                 t,
                                 oldResource,
-                                field,
+                                field
                             )
                         })
 
@@ -360,18 +370,20 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
 
             await trx.table(this.migrationsTable).truncate()
 
-            await trx.table(this.migrationsTable).insert(resources.map(resource => ({
-                resource_table: resource.table,
-                resource_data: JSON.stringify(resource)
-            })))
+            await trx.table(this.migrationsTable).insert(
+                resources.map((resource) => ({
+                    resource_table: resource.table,
+                    resource_data: JSON.stringify(resource),
+                }))
+            )
         })
     }
 
     private handleFieldUpdates = (
         trx: Knex.Transaction,
         table: CreateTableBuilder | AlterTableBuilder,
-        oldResource: SerializedResource|undefined,
-        field: SerializedField,
+        oldResource: SerializedResource | undefined,
+        field: SerializedField
     ) => {
         const knexMethodName = field.sqlDatabaseFieldType || ''
         const tableExists = !!oldResource
@@ -385,11 +397,13 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
         }
 
         const oldField = tableExists
-            ? oldResource?.fields.find(oldField => field.name === oldField.name)
+            ? oldResource?.fields.find(
+                  (oldField) => field.name === oldField.name
+              )
             : null
 
         if (['increments', 'bigIncrements'].includes(knexMethodName)) {
-            if (! tableExists) {
+            if (!tableExists) {
                 // @ts-ignore
                 table[knexMethodName](field.databaseField)
             }
@@ -616,10 +630,7 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
         return result
     }
 
-    public updateManyByIds = async (
-        ids: number[],
-        valuesToUpdate: {}
-    ) => {
+    public updateManyByIds = async (ids: number[], valuesToUpdate: {}) => {
         const resource = this.getCurrentResource()
         return this.$db!(resource.data.table)
             .whereIn('id', ids)
@@ -636,19 +647,14 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
             .update(payload)
     }
 
-    public updateManyWhere = async (
-        whereClause: {},
-        valuesToUpdate: {}
-    ) => {
+    public updateManyWhere = async (whereClause: {}, valuesToUpdate: {}) => {
         const resource = this.getCurrentResource()
         return this.$db!(resource.data.table)
             .where(whereClause)
             .update(valuesToUpdate)
     }
 
-    public deleteById = async (
-        id: number | string
-    ) => {
+    public deleteById = async (id: number | string) => {
         const resource = this.getCurrentResource()
         const result = await this.$db!(resource.data.table)
             .where('id', id)
@@ -878,9 +884,7 @@ export class SqlRepository extends ResourceHelpers implements DatabaseRepository
         return builder
     }
 
-    public findAll = async (
-        query: FetchAllRequestQuery
-    ) => {
+    public findAll = async (query: FetchAllRequestQuery) => {
         const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)
 

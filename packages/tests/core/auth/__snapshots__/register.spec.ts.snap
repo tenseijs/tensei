@@ -37,11 +37,6 @@ Object {
       "message": "The password is required.",
       "validation": "required",
     },
-    Object {
-      "field": "name",
-      "message": "The name is required.",
-      "validation": "required",
-    },
   ],
   "message": "Validation failed.",
 }

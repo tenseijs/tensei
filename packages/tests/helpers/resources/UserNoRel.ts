@@ -1,6 +1,4 @@
-import { text } from '../../../fields/Text'
-import { hasMany } from '../../../fields/HasMany'
-import { resource } from '../../../resources/Resource'
+import { text, hasMany, resource } from '@tensei/common'
 
 export default resource('User')
     .fields([
@@ -21,7 +19,7 @@ export default resource('User')
             .hideOnDetail()
             .rules('required', 'min:8', 'max:24')
             .notNullable(),
-        hasMany('Post'),
+        hasMany('Pizza'),
     ])
     .displayField('full_name')
     .perPageOptions([2, 5, 10])

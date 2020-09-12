@@ -1,8 +1,6 @@
-import Knex from 'knex'
 import Supertest from 'supertest'
-import isAfter from 'date-fns/isAfter'
 
-import { setup, createAdminUser, cleanup } from '../helpers'
+import { setup } from '../../helpers'
 
 test('runs an action that returns html', async () => {
     const { app } = await setup({

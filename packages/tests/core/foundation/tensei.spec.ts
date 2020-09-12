@@ -2,7 +2,7 @@ import Path from 'path'
 import Supertest from 'supertest'
 import { plugin, resource, text } from '@tensei/common'
 
-import { setup, createAdminUser } from '../helpers'
+import { setup, createAdminUser } from '../../helpers'
 
 test('can configure custom dashboard path', async () => {
     const CUSTOM_DASHBOARD_PATH = 'custom-dashboard-path'
@@ -76,6 +76,7 @@ test('plugins can correctly register custom stylesheets and scripts before middl
                             Path.resolve(
                                 __dirname,
                                 '..',
+                                '..',
                                 'helpers',
                                 'assets',
                                 'app.js'
@@ -85,6 +86,7 @@ test('plugins can correctly register custom stylesheets and scripts before middl
                             'graphql.css',
                             Path.resolve(
                                 __dirname,
+                                '..',
                                 '..',
                                 'helpers',
                                 'assets',
@@ -213,6 +215,7 @@ test('the set auth middleware returns a 401 if the user does not exist in the da
             plugin: [
                 plugin('').beforeDatabaseSetup(async ({ app }) => {
                     app.use((request, response, next) => {
+                        // @ts-ignore
                         request.session = {
                             user: 3094892829,
                         } as any
@@ -221,7 +224,7 @@ test('the set auth middleware returns a 401 if the user does not exist in the da
                     })
                 }),
             ],
-        },
+        } as any,
         true
     )
 

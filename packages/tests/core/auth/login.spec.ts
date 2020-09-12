@@ -1,51 +1,50 @@
-import Path from 'path'
 import Knex from 'knex'
 import Supertest from 'supertest'
 import isAfter from 'date-fns/isAfter'
 
-import { setup, createAdminUser, cleanup } from '../helpers'
+import { setup, createAdminUser } from '../../helpers'
 
-test('validates registration data and returns error messages with a 422', async () => {
-    const { app } = await setup()
-
-    const client = Supertest(app)
-
-    const response = await client.post('/api/register').send({})
-
-    expect(response.status).toBe(422)
-    expect(response.body).toMatchSnapshot()
-})
-
-test('returns a 422 if there is already an administrator in the database', async () => {
+test('validates login data and returns error messages with a 422', async () => {
     const { app, databaseClient } = await setup()
 
     const client = Supertest(app)
 
-    await createAdminUser(databaseClient)
+    const response = await client.post('/api/login').send({})
 
-    const response = await client.post('/api/register').send({
+    expect(response.status).toBe(422)
+    expect(response.body).toMatchSnapshot()
+})
+
+test('returns a 422 if user does not exist in database', async () => {
+    const { app, databaseClient } = await setup()
+
+    const client = Supertest(app)
+
+    const response = await client.post('/api/login').send({
         email: 'hey@unknown-user.io',
         password: 'password',
+        rememberMe: true,
     })
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
 })
 
-test('correctly creates an administrator user, logs in the user and returns a success message', async () => {
-    const { app } = await setup()
+test('returns a 422 if user password is wrong', async () => {
+    const { app, databaseClient } = await setup()
 
     const client = Supertest(app)
 
-    const response = await client.post('/api/register').send({
-        email: 'hey@admin.io',
-        password: 'password',
-        name: 'Hey Admin io',
+    const user = await createAdminUser(databaseClient)
+
+    const response = await client.post('/api/login').send({
+        email: user.email,
+        password: 'WRONG_PASSWORD',
+        rememberMe: true,
     })
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
-    expect(response.header['set-cookie']).toHaveLength(1)
 })
 
 test('returns a 200, and creates a new session when correct credentials are passed', async () => {

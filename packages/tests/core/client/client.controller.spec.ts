@@ -1,6 +1,6 @@
 import Supertest from 'supertest'
 
-import { setup, createAdminUser, cleanup } from '../helpers'
+import { setup, createAdminUser } from '../../helpers'
 
 test('can fetch the index.html file on all subroutes of the dashboard page', async () => {
     const { app } = await setup()

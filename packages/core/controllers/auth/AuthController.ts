@@ -29,7 +29,9 @@ class AuthController {
             })
         }
 
-        const user = await request.manager('administrators').findOneByField('email', request.body.email)
+        const user = await request
+            .manager('administrators')
+            .findOneByField('email', request.body.email)
 
         if (request.body.rememberMe) {
             request.session!.cookie.maxAge = 30 * 24 * 60 * 60 * 1000

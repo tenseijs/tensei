@@ -12,47 +12,14 @@ import { ResourceHelpers } from '../helpers'
 
 export class Manager extends ResourceHelpers implements ManagerContract {
     constructor(
-<<<<<<< HEAD
         private request: Request,
         resources: ResourceContract[],
         public repository: DatabaseRepositoryInterface
     ) {
         super(resources)
-=======
-        private resources: ResourceContract[],
-        public database: DatabaseRepositoryInterface
-    ) { }
-
-    public findResource = (resourceSlug: string | ResourceContract) => {
-        if (!resourceSlug) {
-            throw {
-                message: `Resource ${resourceSlug} not found.`,
-                status: 404,
-            }
-        }
-
-        if (typeof resourceSlug !== 'string') {
-            return resourceSlug
-        }
-
-        const resource = this.resources.find(
-            (resource) => resource.data.slug === resourceSlug
-        )
-
-        if (!resource) {
-            throw {
-                message: `Resource ${resourceSlug} not found.`,
-                status: 404,
-            }
-        }
-
-        return resource
->>>>>>> add tests for manager class
     }
 
-    public async deleteById(
-        id: number | string
-    ) {
+    public async deleteById(id: number | string) {
         return this.database().deleteById(id)
     }
 
@@ -60,9 +27,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         return this.repository.setResource(resource)
     }
 
-    public async create(
-        payload: DataPayload
-    ) {
+    public async create(payload: DataPayload) {
         const resource = this.getCurrentResource()
 
         let validatedPayload = await this.validate(payload)
@@ -77,7 +42,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     ...validatedPayload.relationshipFieldsPayload,
                 },
                 this.request
-            ),
+            )
         )
 
         // TODO: Insert beforeCreate hook for fields here.
@@ -148,7 +113,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         const {
             relationshipFieldsPayload,
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload),
+            this.getResourceFieldsFromPayload(payload)
         )
 
         const relationshipFields = resource
@@ -197,63 +162,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     {
                         [relatedBelongsToField.databaseField]: modelId,
                     }
-                )
-            }
-        }
-    }
-
-    public async createRelationalFields(
-        payload: DataPayload,
-        model: any
-    ) {
-        const resource = this.getCurrentResource()
-
-        const {
-            relationshipFieldsPayload,
-        } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload),
-        )
-
-        const relationshipFields = resource
-            .serialize()
-            .fields.filter((field) => field.isRelationshipField)
-
-        for (let index = 0; index < relationshipFields.length; index++) {
-            const field = relationshipFields[index]
-            const relatedResource = this.resources.find(
-                (relatedResource) => relatedResource.data.name === field.name
-            )
-
-            if (!relatedResource) {
-                throw [
-                    {
-                        message: `The related resource ${field.name} was not found.`,
-                    },
-                ]
-            }
-
-            if (field.component === 'HasManyField') {
-                const relatedBelongsToField = relatedResource.data.fields.find(
-                    (field) =>
-                        field.component === 'BelongsToField' &&
-                        field.name === resource.data.name
-                )
-
-                if (!relatedBelongsToField) {
-                    throw [
-                        {
-                            message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`,
-                        },
-                    ]
-                }
-                const valuesToUpdate: DataPayload = {
-                    [relatedBelongsToField.databaseField]: model.id,
-                }
-
-                // go to posts table, find all related posts and update the user_id field to be the model.id
-                this.database().updateManyByIds(
-                    relationshipFieldsPayload[field.inputName],
-                    valuesToUpdate
                 )
             }
         }
@@ -433,14 +341,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         return {}
     }
 
-    public async findOneById(
-        id: number | string,
-        withRelated?: string[]
-    ) {
-        const resource = this.getCurrentResource()
-
+    public async findOneById(id: number | string, withRelated?: string[]) {
         const { fields, withRelationships } = await this.validateRequestQuery(
-            this.request.query,
+            this.request.query
         )
 
         const model = await this.database().findOneById(
@@ -459,8 +362,11 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         return model
     }
 
-    getValidationRules = (creationRules = true) => {
-        const fields = this.getCurrentResource().data.fields.filter((field) =>
+    getValidationRules = (
+        creationRules = true,
+        resource = this.getCurrentResource()
+    ) => {
+        const fields = resource.data.fields.filter((field) =>
             creationRules
                 ? field.showHideField.showOnCreation
                 : field.showHideField.showOnUpdate
@@ -477,7 +383,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 new Set([
                     ...serializedField.rules,
                     ...serializedField[
-                    creationRules ? 'creationRules' : 'updateRules'
+                        creationRules ? 'creationRules' : 'updateRules'
                     ],
                 ])
             ).join('|')
@@ -492,10 +398,11 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     getResourceFieldsFromPayload = (
         payload: DataPayload,
+        resource = this.getCurrentResource()
     ) => {
         let validPayload: DataPayload = {}
 
-        this.getCurrentResource().data.fields.forEach((field) => {
+        resource.data.fields.forEach((field) => {
             const serializedField = field.serialize()
 
             if (Object.keys(payload).includes(serializedField.inputName)) {
@@ -544,12 +451,13 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             relationshipFieldsPayload,
             nonRelationshipFieldsPayload,
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload),
+            this.getResourceFieldsFromPayload(payload, resource),
+            resource
         )
 
         const parsedPayload: DataPayload = await validateAll(
             nonRelationshipFieldsPayload,
-            this.getValidationRules(creationRules),
+            this.getValidationRules(creationRules, resource),
             resource.data.validationMessages
         )
 
@@ -560,9 +468,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
         await this.validateUniqueFields(
             nonRelationshipFieldsPayload,
-            resource,
             creationRules,
-            modelId
+            modelId,
+            resource
         )
 
         // then we need to validate all unique fields.
@@ -574,9 +482,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     validateUniqueFields = async (
         payload: DataPayload,
-        resource: ResourceContract,
         creationRules = true,
-        modelId?: string | number
+        modelId?: string | number,
+        resource = this.getCurrentResource()
     ) => {
         const uniqueFields = resource
             .serialize()
@@ -613,7 +521,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     {
                         message: `A ${resource.data.name.toLowerCase()} already exists with ${
                             field.inputName
-                            } ${payload[field.inputName]}.`,
+                        } ${payload[field.inputName]}.`,
                         field: field.inputName,
                     },
                 ]
@@ -625,7 +533,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         payload: DataPayload,
         resource = this.getCurrentResource()
     ) => {
-        const fields = this.getCurrentResource().data.fields
+        const fields = resource.data.fields
             .map((field) => field.serialize())
             .filter((field) => field.isRelationshipField)
 
@@ -680,7 +588,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     runAction = async (
-        actionSlug: string
+        actionSlug: string,
+        data: DataPayload = this.request.body
     ): Promise<ActionResponse> => {
         const resource = this.getCurrentResource()
 
@@ -695,22 +604,20 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             }
         }
 
-        const models = await this.database().findAllByIds(
-            this.request.body.models || []
-        )
+        const models = await this.database().findAllByIds(data.models || [])
 
         const actionResource = createResourceFn(action.name).fields(
             action.data.fields
         )
 
         const { parsedPayload: payload } = await this.validate(
-            this.request.body.form || {},
+            data.form || {},
             undefined,
             undefined,
             actionResource
         )
 
-        const response = await action.data.handler({
+        return action.data.handler({
             request: this.request,
             models,
             payload,
@@ -735,18 +642,13 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 route,
             }),
         })
-
-        return response
     }
 
     findAllCount = () => {
         return this.database().findAllCount(this.getCurrentResource())
     }
 
-    findOneByField = async (
-        databaseField: string,
-        value: any
-    ) => {
+    findOneByField = async (databaseField: string, value: any) => {
         const resource = this.getCurrentResource()
 
         const field = this.getFieldFromResource(resource, databaseField)
@@ -757,9 +659,19 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             )
         }
 
-        return this.database().findOneByField(
-            field.databaseField,
-            value
-        )
+        return this.database().findOneByField(field.databaseField, value)
+    }
+
+    setResource = (
+        resourceOrSlug: ResourceContract | string,
+        request?: Request
+    ) => {
+        this.resource = this.findResource(resourceOrSlug)
+
+        if (request) {
+            // this.request = request
+        }
+
+        return this
     }
 }

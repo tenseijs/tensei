@@ -32,5 +32,5 @@ module.exports = tensei()
             pass: '',
             database: 'flmg',
         },
-        debug: false
+        debug: false,
     })
