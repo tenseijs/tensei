@@ -1,7 +1,7 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
-import { Tensei, tensei, TenseiContract } from '@tensei/core'
+import { tensei, TenseiContract } from '@tensei/core'
 import { plugin, Plugin, User as IUser } from '@tensei/common'
 
 import { Tag, Comment, User, Post } from './resources'
@@ -10,6 +10,7 @@ interface ConfigureSetup {
     plugins?: Plugin[]
     admin?: IUser
     apiPath?: string
+    databaseClient?: 'mysql' | 'sqlite3' | 'pg'
     dashboardPath?: string
     createAndLoginAdmin?: boolean
 }
@@ -31,12 +32,13 @@ export const setup = async (
         plugins,
         admin,
         apiPath,
+        databaseClient,
         dashboardPath,
         createAndLoginAdmin,
     }: ConfigureSetup = {},
-    forceNewInstance = false
+    forceNewInstance = false,
 ) => {
-    const dbConfig = {
+    let dbConfig: Knex.Config = {
         client: 'mysql',
         connection: {
             host: '127.0.0.1',
@@ -44,6 +46,14 @@ export const setup = async (
             password: '',
             database: 'testdb',
         },
+    }
+
+    if (databaseClient === 'sqlite3') {
+        dbConfig = {
+            client: 'sqlite3',
+            connection: './tensei.sqlite',
+            useNullAsDefault: true
+        }
     }
 
     let instance = forceNewInstance
@@ -82,10 +92,13 @@ export const setup = async (
 
     const knex: Knex = instance.databaseClient
 
-    await knex('users').truncate()
-    await knex('posts').truncate()
     await knex('sessions').truncate()
-    await knex('administrators').truncate()
+
+    await Promise.all([
+        knex('users').truncate(),
+        knex('posts').truncate(),
+        knex('administrators').truncate()
+    ])
 
     return instance
 }

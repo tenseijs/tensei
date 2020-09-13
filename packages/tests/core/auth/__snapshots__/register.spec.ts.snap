@@ -1,30 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`can login correctly with remember me 1`] = `
-Object {
-  "message": "Login successful.",
-}
-`;
-
-exports[`correctly creates an administrator user, logs in the user and returns a success message 1`] = `
-Object {
-  "message": "Registration and login successful.",
-}
-`;
-
-exports[`returns a 200, and creates a new session when correct credentials are passed 1`] = `
-Object {
-  "message": "Login successful.",
-}
-`;
-
-exports[`returns a 422 if there is already an administrator in the database 1`] = `
-Object {
-  "message": "An administrator user already exists. Please use the administration management dashboard to add more users.",
-}
-`;
-
-exports[`validates registration data and returns error messages with a 422 1`] = `
+exports[`mysql -  validates registration data and returns error messages with a 422 1`] = `
 Object {
   "errors": Array [
     Object {
@@ -39,5 +15,71 @@ Object {
     },
   ],
   "message": "Validation failed.",
+}
+`;
+
+exports[`mysql - can login correctly with remember me 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`mysql - correctly creates an administrator user, logs in the user and returns a success message 1`] = `
+Object {
+  "message": "Registration and login successful.",
+}
+`;
+
+exports[`mysql - returns a 200, and creates a new session when correct credentials are passed 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`mysql - returns a 422 if there is already an administrator in the database 1`] = `
+Object {
+  "message": "An administrator user already exists. Please use the administration management dashboard to add more users.",
+}
+`;
+
+exports[`sqlite3 -  validates registration data and returns error messages with a 422 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "The email is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "password",
+      "message": "The password is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`sqlite3 - can login correctly with remember me 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`sqlite3 - correctly creates an administrator user, logs in the user and returns a success message 1`] = `
+Object {
+  "message": "Registration and login successful.",
+}
+`;
+
+exports[`sqlite3 - returns a 200, and creates a new session when correct credentials are passed 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`sqlite3 - returns a 422 if there is already an administrator in the database 1`] = `
+Object {
+  "message": "An administrator user already exists. Please use the administration management dashboard to add more users.",
 }
 `;

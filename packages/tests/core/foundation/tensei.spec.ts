@@ -147,7 +147,7 @@ test('plugins can correctly customise the express application with new routes', 
 
 test('plugins can push in new resources to the application', async () => {
     const TEST_FIELD_NAME = 'TEST_FIELD_NAME'
-    const TEST_RESOURCE_NAME = 'TEST_RESOURCE_NAME'
+    const TEST_RESOURCE_NAME = 'TEST_RESOURCE_NAME_' + Math.floor(Math.random() * (99999999999 - 1)) + 1
 
     const { app } = await setup(
         {

@@ -13,24 +13,27 @@ module.exports = tensei()
         require('./resources/Tag'),
     ])
     .plugins([
-        auth().name('Customer').twoFactorAuth().plugin(),
-        trix(),
-        cashier()
-            .customerResourceName('Customer')
-            .cardUpfront()
-            .plans([
-                plan('Basic Sub').monthly().price(29),
-                plan('Premium Sub').yearly().price(99),
-            ])
-            .plugin(),
+        // auth().name('Customer').twoFactorAuth().plugin(),
+        // trix(),
+        // cashier()
+        //     .customerResourceName('Customer')
+        //     .cardUpfront()
+        //     .plans([
+        //         plan('Basic Sub').monthly().price(29),
+        //         plan('Premium Sub').yearly().price(99),
+        //     ])
+        //     .plugin(),
     ])
     .databaseConfig({
-        client: 'mysql',
-        connection: {
-            host: '127.0.0.1',
-            user: 'root',
-            pass: '',
-            database: 'flmg',
-        },
+        // client: 'mysql',
+        // connection: {
+        //     host: '127.0.0.1',
+        //     user: 'root',
+        //     pass: '',
+        //     database: 'flmg',
+        // },
+        client: 'sqlite3',
+        connection: './blog.sqlite',
+        useNullAsDefault: true,
         debug: false,
     })

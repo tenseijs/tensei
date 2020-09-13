@@ -56,6 +56,7 @@ export class SqlRepository extends ResourceHelpers
 
             await this.setupRolesAndPermissions()
         } catch (errors) {
+            // TODO: Log these errors with this.logger
             console.log('(********************', errors)
         }
 
@@ -83,11 +84,6 @@ export class SqlRepository extends ResourceHelpers
         this.resources.forEach((resource) => {
             ;['create', 'read', 'update', 'delete'].forEach((operation) => {
                 permissions.push(`${operation}:${resource.data.slug}`)
-                resource.data.fields.forEach((field) => {
-                    permissions.push(
-                        `${operation}:${resource.data.slug}:${field.databaseField}`
-                    )
-                })
             })
 
             resource.data.actions.forEach((action) => {
@@ -121,12 +117,19 @@ export class SqlRepository extends ResourceHelpers
             (permission) => !existingPermissions.includes(permission)
         )
 
-        await PermissionModel.query().insert(
-            newPermissionsToCreate.map((permission) => ({
-                name: sentenceCase(permission.split(':').join(' ')),
-                slug: permission,
-            }))
-        )
+        const insertValues = newPermissionsToCreate.map((permission) => ({
+            name: sentenceCase(permission.split(':').join(' ')),
+            slug: permission,
+        }))
+
+        if (insertValues.length > 0) {
+            await PermissionModel.query().insert(
+                newPermissionsToCreate.map((permission) => ({
+                    name: sentenceCase(permission.split(':').join(' ')),
+                    slug: permission,
+                }))
+            )
+        }
 
         let superAdminRole = (
             await RoleModel.query().where('slug', 'super-admin').limit(1)
