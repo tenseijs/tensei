@@ -27,6 +27,11 @@ export const fakePostData = () => ({
     category: Faker.random.arrayElement(['javascript', 'angular'])
 })
 
+export const fakeTagData = () => ({
+    name: Faker.lorem.word(),
+    description: Faker.lorem.word(),
+})
+
 export const setup = async (
     {
         plugins,
@@ -71,8 +76,8 @@ export const setup = async (
     let instance = forceNewInstance
         ? tensei().databaseConfig(dbConfig)
         : cachedInstance
-        ? cachedInstance
-        : tensei().databaseConfig(dbConfig)
+            ? cachedInstance
+            : tensei().databaseConfig(dbConfig)
 
     cachedInstance = instance
 
@@ -80,15 +85,15 @@ export const setup = async (
         ...(plugins || []),
         ...(admin
             ? [
-                  plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
-                      app.use(async (request, response, next) => {
-                          // @ts-ignore
-                          request.admin = admin
+                plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
+                    app.use(async (request, response, next) => {
+                        // @ts-ignore
+                        request.admin = admin
 
-                          next()
-                      })
-                  })
-              ]
+                        next()
+                    })
+                })
+            ]
             : [])
     ])
 
