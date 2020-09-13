@@ -1,11 +1,12 @@
-import { ResourceContract, Permission } from '@tensei/common'
+import { ResourceContract, Permission, PluginSetupConfig } from '@tensei/common'
 import { sentenceCase } from 'change-case'
 
 import { AuthPluginConfig } from './config'
 
 export default async (
     resources: ResourceContract[],
-    config: AuthPluginConfig
+    config: AuthPluginConfig,
+    manager: PluginSetupConfig['manager']
 ) => {
     const UserResource = resources.find(
         (resource) => resource.data.name === config.nameResource
@@ -58,13 +59,17 @@ export default async (
             )
     )
 
-    await PermissionModel.query().insert(
-        Array.from(new Set(newPermissionsToCreate)).map((permission) => ({
+    const insertPermissions = Array.from(new Set(newPermissionsToCreate)).map(
+        (permission) => ({
             name:
                 typeof permission === 'string'
                     ? sentenceCase(permission.split(':').join(' '))
                     : permission.name,
             slug: permission,
-        }))
+        })
     )
+
+    if (insertPermissions.length > 0) {
+        await PermissionModel.query().insert(insertPermissions)
+    }
 }

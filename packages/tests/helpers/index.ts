@@ -36,7 +36,7 @@ export const setup = async (
         dashboardPath,
         createAndLoginAdmin,
     }: ConfigureSetup = {},
-    forceNewInstance = false,
+    forceNewInstance = false
 ) => {
     let dbConfig: Knex.Config = {
         client: 'mysql',
@@ -52,7 +52,7 @@ export const setup = async (
         dbConfig = {
             client: 'sqlite3',
             connection: './tensei.sqlite',
-            useNullAsDefault: true
+            useNullAsDefault: true,
         }
     }
 
@@ -97,7 +97,7 @@ export const setup = async (
     await Promise.all([
         knex('users').truncate(),
         knex('posts').truncate(),
-        knex('administrators').truncate()
+        knex('administrators').truncate(),
     ])
 
     return instance

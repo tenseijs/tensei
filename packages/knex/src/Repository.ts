@@ -486,7 +486,7 @@ export class SqlRepository extends ResourceHelpers
 
     public create = async (
         payload: DataPayload,
-        relationshipPayload: DataPayload
+        relationshipPayload: DataPayload = {}
     ) => {
         const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)

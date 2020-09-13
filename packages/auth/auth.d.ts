@@ -1,10 +1,10 @@
 import { Mail } from '@tensei/mail'
-import { UserWithTwoFactorAuth } from './src/config'
+import { UserWithAuth } from './src/config'
 
 declare global {
     namespace Express {
         export interface Request {
-            authUser?: UserWithTwoFactorAuth
+            authUser?: UserWithAuth
         }
     }
 }

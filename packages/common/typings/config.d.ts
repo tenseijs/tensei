@@ -113,7 +113,7 @@ declare module '@tensei/common/config' {
         abstract establishDatabaseConnection: () => void
         abstract create: (
             payload: DataPayload,
-            relationshipPayload: DataPayload
+            relationshipPayload?: DataPayload
         ) => Promise<Model>
         abstract update: (
             id: number | string,

@@ -13,6 +13,7 @@ import {
     belongsTo,
     belongsToMany,
     dateTime,
+    HookFunction,
 } from '@tensei/common'
 
 import { AuthPluginConfig, AuthData } from './config'
@@ -34,10 +35,60 @@ class Auth {
         teams: false,
         teamFields: [],
         twoFactorAuth: false,
+        verifyEmails: false,
+        skipWelcomeEmail: false,
+        // beforeCreateUser?: HookFunction
+        // afterCreateUser?: HookFunction
+        // beforeUpdateUser?: HookFunction
+        // afterUpdateUser?: HookFunction
+        // beforeLoginUser?: HookFunction
+        // afterLoginUser?: HookFunction
+    }
+
+    public beforeCreateUser(hook: HookFunction) {
+        this.config.beforeCreateUser = hook
+
+        return this
+    }
+
+    public afterCreateUser(hook: HookFunction) {
+        this.config.afterCreateUser = hook
+
+        return this
+    }
+
+    public beforeUpdateUser(hook: HookFunction) {
+        this.config.beforeUpdateUser = hook
+
+        return this
+    }
+
+    public afterUpdateUser(hook: HookFunction) {
+        this.config.afterUpdateUser = hook
+
+        return this
+    }
+
+    public beforeLoginUser(hook: HookFunction) {
+        this.config.beforeLoginUser = hook
+
+        return this
+    }
+
+    public afterLoginUser(hook: HookFunction) {
+        this.config.afterLoginUser = hook
+
+        return this
     }
 
     public name(name: string) {
         this.config.nameResource = name
+
+        return this
+    }
+
+    public verifyEmails() {
+        this.config.verifyEmails = true
 
         return this
     }
@@ -131,20 +182,44 @@ class Auth {
                       ]
                     : []),
                 ...this.config.fields,
+                ...(this.config.verifyEmails
+                    ? [
+                          dateTime('Email Verified At')
+                              .hideOnCreate()
+                              .hideOnIndex()
+                              .hideOnUpdate()
+                              .hideOnDetail(),
+                          text('Email Verification Token').hidden(),
+                      ]
+                    : []),
             ])
-            .beforeCreate((payload) => ({
-                ...payload,
-                password: Bcrypt.hashSync(payload.password),
-            }))
-            .beforeUpdate((payload) => {
+            .beforeCreate((payload, request) => {
+                const parsedPayload = {
+                    ...payload,
+                    password: Bcrypt.hashSync(payload.password),
+                }
+
+                if (this.config.beforeCreateUser) {
+                    return this.config.beforeCreateUser(parsedPayload, request)
+                }
+
+                return parsedPayload
+            })
+            .beforeUpdate((payload, request) => {
+                let parsedPayload = payload
+
                 if (payload.password) {
-                    return {
+                    parsedPayload = {
                         ...payload,
                         password: Bcrypt.hashSync(payload.password),
                     }
                 }
 
-                return payload
+                if (this.config.beforeUpdateUser) {
+                    return this.config.beforeUpdateUser(parsedPayload, request)
+                }
+
+                return parsedPayload
             })
             .group('Users & Permissions')
     }
@@ -238,8 +313,8 @@ class Auth {
                 })
 
                 // TODO: If we support more databases, add a setup method for each database.
-                .afterDatabaseSetup(({ resources }) =>
-                    SetupSql(resources, this.config)
+                .afterDatabaseSetup(async ({ resources, manager }) =>
+                    SetupSql(resources, this.config, manager)
                 )
 
                 .beforeCoreRoutesSetup(async ({ app }) => {
@@ -280,6 +355,15 @@ class Auth {
                         )
                     }
 
+                    if (this.config.verifyEmails) {
+                        app.post(
+                            this.getApiPath('emails/confirm'),
+                            this.setAuthMiddleware,
+                            this.authMiddleware,
+                            AsyncHandler(this.confirmEmail)
+                        )
+                    }
+
                     return {}
                 })
         )
@@ -289,33 +373,76 @@ class Auth {
         return `/${this.config.apiPath}/${path}`
     }
 
-    private register = async (request: Request, response: Response) => {
-        const { id } = await request
-            .manager(this.userResource())
-            .create(request.body)
+    private register = async (
+        { manager, mailer, body }: Request,
+        response: Response
+    ) => {
+        let email_verification_token = null
 
-        const model = (
-            await request
-                .manager(this.userResource())
-                .database()
-                .findOneById(
-                    id,
-                    [],
-                    [
-                        `${this.roleResource().data.slug}.${
-                            this.permissionResource().data.slug
-                        }`,
-                    ]
-                )
-        ).toJSON()
+        let createUserPayload = body
+
+        if (this.config.verifyEmails) {
+            email_verification_token = this.generateRandomToken()
+
+            createUserPayload = {
+                ...createUserPayload,
+                email_verification_token,
+            }
+        }
+
+        const { id } = await manager(this.userResource()).create(
+            createUserPayload
+        )
+
+        const model = await manager(this.userResource())
+            .database()
+            .findOneById(
+                id,
+                [],
+                [
+                    `${this.roleResource().data.slug}.${
+                        this.permissionResource().data.slug
+                    }`,
+                ]
+            )
 
         const user = model.toJSON ? model.toJSON() : model
+
+        if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
+            mailer.to(user.email).sendRaw(`
+                    Please verify your email using this link: ${email_verification_token}
+                `)
+        }
 
         return response.status(201).json({
             token: this.generateJwt({
                 id: user.id,
             }),
             user,
+        })
+    }
+
+    private confirmEmail = async (
+        { manager, body, authUser }: Request,
+        response: Response
+    ) => {
+        if (
+            authUser?.email_verification_token === body.email_verification_token
+        ) {
+            await manager(this.userResource())
+                .database()
+                .updateOneByField('id', authUser?.id, {
+                    email_verification_token: null,
+                    email_verified_at: Dayjs().format('YYYY-MM-DD HH:mm:ss'),
+                })
+
+            return response.status(200).json({
+                message: `Email has been verified.`,
+            })
+        }
+
+        return response.status(400).json({
+            message: 'Invalid email verification token.',
         })
     }
 
@@ -401,6 +528,20 @@ class Auth {
         next()
     }
 
+    private verifiedMiddleware = async (
+        request: Request,
+        response: Response,
+        next: NextFunction
+    ) => {
+        if (!request.authUser?.email_verified_at) {
+            return response.status(400).json({
+                message: 'Unverified.',
+            })
+        }
+
+        next()
+    }
+
     private setAuthMiddleware = async (
         request: Request,
         response: Response,
@@ -420,16 +561,27 @@ class Auth {
 
             const model = await manager(this.userResource())
                 .database()
-                .findOneById(id, [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
-                    }`,
-                ])
+                .findOneById(
+                    id,
+                    [],
+                    [
+                        `${this.roleResource().data.slug}.${
+                            this.permissionResource().data.slug
+                        }`,
+                    ]
+                )
 
             const user = {
                 ...model.toJSON(),
-                two_factor_secret: model.get('two_factor_secret'),
-                two_factor_enabled: model.get('two_factor_enabled') === '1',
+                two_factor_secret: model.get
+                    ? model.get('two_factor_secret')
+                    : model.two_factor_secret,
+                two_factor_enabled: model.get
+                    ? model.get('two_factor_enabled') === '1'
+                    : model.two_factor_enabled,
+                email_verification_token: model.get
+                    ? model.get('email_verification_token')
+                    : model.email_verification_token,
             }
 
             user.permissions = user[this.roleResource().data.slug].reduce(
@@ -562,7 +714,7 @@ class Auth {
     }
 
     private forgotPassword = async (request: Request, response: Response) => {
-        const { body, resources, mailer, manager } = request
+        const { body, mailer, manager } = request
         const { email } = await validateAll(body, {
             email: 'required|email',
         })
@@ -584,8 +736,7 @@ class Auth {
             ])
         }
 
-        const token =
-            Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
+        const token = this.generateRandomToken()
 
         const expiresAt = Dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
 
@@ -600,13 +751,10 @@ class Auth {
                 }
             )
         } else {
-            await manager(this.passwordResetsResource()).database().create(
-                {
-                    email,
-                    token,
-                },
-                {}
-            )
+            await manager(this.passwordResetsResource()).database().create({
+                email,
+                token,
+            })
         }
 
         mailer
@@ -712,6 +860,10 @@ class Auth {
         return Jwt.sign(payload, this.config.jwt.secretKey, {
             expiresIn: this.config.jwt.expiresIn,
         })
+    }
+
+    public generateRandomToken() {
+        return Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
     }
 }
 

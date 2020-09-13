@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "vuepress build",
-    "dev": "vuepress dev"
+    "build:docs": "vuepress build",
+    "dev:docs": "vuepress dev"
   },
   "devDependencies": {
     "vuepress": "^1.5.4"

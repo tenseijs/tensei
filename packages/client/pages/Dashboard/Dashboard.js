@@ -205,9 +205,7 @@ class DashboardPage extends React.Component {
                     </div>
                 </div>
 
-                <PageLayout>
-                    
-                </PageLayout>
+                <PageLayout></PageLayout>
 
                 <div
                     className="w-full flex flex-wrap"

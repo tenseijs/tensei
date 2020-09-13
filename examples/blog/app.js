@@ -13,16 +13,16 @@ module.exports = tensei()
         require('./resources/Tag'),
     ])
     .plugins([
-        // auth().name('Customer').twoFactorAuth().plugin(),
-        // trix(),
-        // cashier()
-        //     .customerResourceName('Customer')
-        //     .cardUpfront()
-        //     .plans([
-        //         plan('Basic Sub').monthly().price(29),
-        //         plan('Premium Sub').yearly().price(99),
-        //     ])
-        //     .plugin(),
+        auth().name('Customer').twoFactorAuth().verifyEmails().plugin(),
+        trix(),
+        cashier()
+            .customerResourceName('Customer')
+            .cardUpfront()
+            .plans([
+                plan('Basic Sub').monthly().price(29),
+                plan('Premium Sub').yearly().price(99),
+            ])
+            .plugin(),
     ])
     .databaseConfig({
         // client: 'mysql',

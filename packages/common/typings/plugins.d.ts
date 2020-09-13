@@ -1,7 +1,7 @@
 declare module '@tensei/common/plugins' {
     import { Application } from 'express'
     import { Asset } from '@tensei/common/config'
-    import { ResourceContract } from '@tensei/common/resources'
+    import { ResourceContract, ManagerContract } from '@tensei/common/resources'
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
 
@@ -20,6 +20,7 @@ declare module '@tensei/common/plugins' {
         resourcesMap: {
             [key: string]: ResourceContract
         }
+        manager: ManagerContract['setResource']
         pushResource: (resource: ResourceContract) => void
         style: (name: Asset['name'], path: Asset['path']) => void
         script: (name: Asset['name'], path: Asset['path']) => void
