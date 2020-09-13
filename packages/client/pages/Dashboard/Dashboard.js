@@ -16,6 +16,7 @@ import { withResources } from '~/store/resources'
 import { mustBeAuthenticated } from '~/store/auth'
 
 import ArrowIcon from '~/components/ArrowIcon'
+import PageLayout from '~/components/PageLayout'
 
 class DashboardPage extends React.Component {
     state = this.defaultState()
@@ -204,9 +205,13 @@ class DashboardPage extends React.Component {
                     </div>
                 </div>
 
+                <PageLayout>
+                    
+                </PageLayout>
+
                 <div
                     className="w-full flex flex-wrap"
-                    style={{ height: 'calc(100vh - 4.375rem)' }}
+                    style={{ height: 'calc(100vh - 8.75rem)' }}
                 >
                     <div className="border-r border-gray-lighter h-full bg-gray-lightest w-full md:w-18-percent">
                         {this.renderGroups()}

@@ -295,13 +295,12 @@ export class Tensei {
         }
 
         const admin = await request
-            .manager('administrators')
+            .manager(this.administratorResource())
+            .database()
             .findOneById(request.session?.user)
 
         if (!admin) {
-            return response.status(401).json({
-                message: `Unauthenticated.`,
-            })
+            return next()
         }
 
         request.admin = admin
@@ -540,7 +539,7 @@ export class Tensei {
     }
 
     private passwordResetsResource() {
-        return resource('Password Reset')
+        return resource('Administrator Password Reset')
             .hideFromNavigation()
             .fields([
                 text('Email').searchable().unique().notNullable(),

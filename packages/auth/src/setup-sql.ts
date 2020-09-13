@@ -35,12 +35,6 @@ export default async (
     resources.forEach((resource) => {
         ;['create', 'read', 'update', 'delete'].forEach((operation) => {
             permissions.push(`${operation}:${resource.data.slug}`)
-
-            resource.data.fields.forEach((field) => {
-                permissions.push(
-                    `${operation}:${resource.data.slug}:${field.databaseField}`
-                )
-            })
         })
 
         resource.data.actions.forEach((action) => {
@@ -48,11 +42,7 @@ export default async (
         })
 
         resource.data.permissions.forEach((permission) => {
-            if (typeof permission === 'string') {
-                permissions.push(permission)
-            } else {
-                permissions.push(permission)
-            }
+            permissions.push(permission)
         })
     })
 
@@ -69,7 +59,7 @@ export default async (
     )
 
     await PermissionModel.query().insert(
-        newPermissionsToCreate.map((permission) => ({
+        Array.from(new Set(newPermissionsToCreate)).map((permission) => ({
             name:
                 typeof permission === 'string'
                     ? sentenceCase(permission.split(':').join(' '))

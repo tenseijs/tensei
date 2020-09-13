@@ -218,7 +218,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             .fields.filter((field) => field.isRelationshipField)
             .map((field) => field.inputName)
 
-        const parsedQuery = await validateAll(
+        return validateAll(
             {
                 perPage,
                 page,
@@ -245,8 +245,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     'required|string|in:' + supportedOperators.join(','),
             }
         )
-
-        return parsedQuery
     }
 
     public async findAll(query = undefined) {
@@ -323,7 +321,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 }
             }
 
-            return this.database().findAll({
+            return this.database(relatedResource).findAll({
                 ...rest,
                 perPage,
                 page,
