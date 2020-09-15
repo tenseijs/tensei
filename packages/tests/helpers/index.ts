@@ -104,7 +104,7 @@ export const setup = async (
 
     const knex: Knex = instance.databaseClient
 
-    await knex('sessions').truncate()
+    await knex.schema.hasTable('sessions') ? await knex('sessions').truncate() : null
 
     await Promise.all([
         knex('users').truncate(),

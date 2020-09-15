@@ -26,6 +26,7 @@ declare module '@tensei/common/resources' {
         noTimeStamps: boolean
         perPageOptions: number[]
         permissions: Permission[]
+        camelCaseNamePlural: string
         displayInNavigation: boolean
         validationMessages: ValidationMessages
     }

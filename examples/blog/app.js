@@ -1,6 +1,7 @@
 require('dotenv').config()
 const { auth } = require('@tensei/auth')
 const { tensei } = require('@tensei/core')
+const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
 const { cashier, plan } = require('@tensei/cashier')
 
@@ -23,6 +24,8 @@ module.exports = tensei()
                 plan('Premium Sub').yearly().price(99),
             ])
             .plugin(),
+        graphql()
+            .plugin()
     ])
     .databaseConfig({
         // client: 'mysql',

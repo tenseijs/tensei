@@ -60,6 +60,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         this.setValue('slug', Pluralize(paramCase(name)))
         this.setValue('label', Pluralize(name))
         this.setValue('camelCaseName', camelCase(name))
+        this.setValue('camelCaseNamePlural', Pluralize(camelCase(name)))
         this.setValue('table', tableName || Pluralize(snakeCase(name)))
     }
 
@@ -81,6 +82,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         valueField: 'id',
         noTimeStamps: false,
         camelCaseName: '',
+        camelCaseNamePlural: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
             email: 'The {{ field }} must be a valid email address.',

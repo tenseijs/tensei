@@ -4,55 +4,55 @@ import { GraphQLSchema, GraphQLObjectType } from 'graphql'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 
 export interface GraphQlPluginConfig {
-    graphiql?: boolean
-    graphqlPath?: string
+    graphiql: boolean
+    graphqlPath: string
 }
 
-const generateSchemaFromResources = (resources: Resource[]) => {
-    const fields: {
-        [key: string]: any
-    } = {}
+class Graphql {
+    private config: GraphQlPluginConfig = {
+        graphiql: true,
+        graphqlPath: '/graphql'
+    }
 
-    resources.forEach((resource) => {
-        fields[resource.data.slug] = {}
-    })
+    generateSchemaFromResources = (resources: Resource[]) => {
+        const fields: {
+            [key: string]: any
+        } = {}
+    
+        resources.forEach((resource) => {
+            fields[resource.data.slug] = {}
+        })
 
-    return new GraphQLSchema({
-        query: new GraphQLObjectType({
-            name: 'RootQueryType',
-            fields,
-        }),
-    })
+        return new GraphQLSchema({
+            query: new GraphQLObjectType({
+                name: 'RootQueryType',
+                fields,
+            }),
+        })
+    }
+
+    plugin() {
+        return plugin('Graph QL').afterDatabaseSetup(async ({ app, resources }) => {
+            const schema = this.generateSchemaFromResources(resources)
+
+            app.post(
+                this.config.graphqlPath,
+                graphqlHTTP({
+                    schema,
+                    graphiql: this.config.graphiql,
+                })
+            )
+    
+            app.get(
+                this.config.graphqlPath,
+                GraphqlPlayground({
+                    endpoint: this.config.graphqlPath,
+                })
+            )
+    
+            return {}
+        })
+    }
 }
 
-export const graphql = (customConfig?: GraphQlPluginConfig) =>
-    plugin('Graph QL').setup(async ({ app, resources }) => {
-        const defaultConfig = {
-            graphiql: true,
-            graphqlPath: '/graphql',
-        }
-
-        const config = {
-            ...defaultConfig,
-            ...customConfig,
-        }
-
-        const schema = generateSchemaFromResources(resources)
-
-        app.post(
-            config.graphqlPath,
-            graphqlHTTP({
-                schema,
-                graphiql: false,
-            })
-        )
-
-        app.get(
-            config.graphqlPath,
-            GraphqlPlayground({
-                endpoint: config.graphqlPath,
-            })
-        )
-
-        return {}
-    })
+export const graphql = () => new Graphql()
