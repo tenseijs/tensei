@@ -7,7 +7,7 @@ declare module '@tensei/core' {
         SetupFunctions,
         ManagerContract,
         SupportedDatabases,
-        PluginSetupConfig,
+        PluginSetupConfig
     } from '@tensei/common'
 
     export interface TenseiContract {

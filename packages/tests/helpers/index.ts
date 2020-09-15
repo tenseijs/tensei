@@ -24,7 +24,7 @@ export const fakePostData = () => ({
     av_cpc: Faker.random.number(),
     published_at: Faker.date.future(),
     scheduled_for: Faker.date.future(),
-    category: Faker.random.arrayElement(['javascript', 'angular']),
+    category: Faker.random.arrayElement(['javascript', 'angular'])
 })
 
 export const setup = async (
@@ -34,7 +34,7 @@ export const setup = async (
         apiPath,
         databaseClient,
         dashboardPath,
-        createAndLoginAdmin,
+        createAndLoginAdmin
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -44,15 +44,27 @@ export const setup = async (
             host: '127.0.0.1',
             user: 'root',
             password: '',
-            database: 'testdb',
-        },
+            database: 'testdb'
+        }
     }
 
     if (databaseClient === 'sqlite3') {
         dbConfig = {
             client: 'sqlite3',
             connection: './tensei.sqlite',
-            useNullAsDefault: true,
+            useNullAsDefault: true
+        }
+    }
+
+    if (databaseClient === 'pg') {
+        dbConfig = {
+            client: 'pg',
+            connection: {
+                host: '127.0.0.1',
+                user: 'root',
+                password: '',
+                database: 'tensei'
+            }
         }
     }
 
@@ -75,9 +87,9 @@ export const setup = async (
 
                           next()
                       })
-                  }),
+                  })
               ]
-            : []),
+            : [])
     ])
 
     if (apiPath) {
@@ -97,7 +109,7 @@ export const setup = async (
     await Promise.all([
         knex('users').truncate(),
         knex('posts').truncate(),
-        knex('administrators').truncate(),
+        knex('administrators').truncate()
     ])
 
     return instance
@@ -111,17 +123,17 @@ export const createAdminUser = async (knex: Knex) => {
     const user = {
         name: Faker.name.findName(),
         email: Faker.internet.email(),
-        password: 'password',
+        password: 'password'
     }
 
     const id = await knex('administrators').insert({
         name: user.name,
         email: user.email,
-        password: Bcrypt.hashSync(user.password),
+        password: Bcrypt.hashSync(user.password)
     })
 
     return {
         id: id[0],
-        ...user,
+        ...user
     }
 }

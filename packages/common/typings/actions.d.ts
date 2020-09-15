@@ -18,7 +18,7 @@ declare module '@tensei/common/actions' {
         route?: string
     }
     type ActionParams = {
-        request: Express.Request
+        request: Express.Request | null
         models: any[]
         payload?: DataPayload
         html: (

@@ -14,7 +14,7 @@ class ForgotPasswordController {
     ) => {
         const { body, resources, mailer, manager } = request
         const { email } = await validateAll(body, {
-            email: 'required|email',
+            email: 'required|email'
         })
 
         const PasswordResetModel = resources['password-resets'].Model()
@@ -22,38 +22,40 @@ class ForgotPasswordController {
         const existingUser = await manager.findUserByEmail(email)
 
         const existingPasswordReset = await PasswordResetModel.where({
-            email,
+            email
         }).fetch({
-            require: false,
+            require: false
         })
 
         if (!existingUser) {
             return response.status(422).json([
                 {
                     field: 'email',
-                    message: 'Invalid email address.',
-                },
+                    message: 'Invalid email address.'
+                }
             ])
         }
 
         const token =
             Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
 
-        const expiresAt = Dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
+        const expiresAt = Dayjs()
+            .add(1, 'hour')
+            .format('YYYY-MM-DD HH:mm:ss')
 
         if (existingPasswordReset) {
             await PasswordResetModel.query()
                 .where({
-                    email,
+                    email
                 })
                 .update({
                     token,
-                    expires_at: expiresAt,
+                    expires_at: expiresAt
                 })
         } else {
             await PasswordResetModel.forge({
                 email,
-                token,
+                token
             }).save()
         }
 
@@ -62,7 +64,7 @@ class ForgotPasswordController {
             .sendRaw(`Some raw message to send with the token ${token}`)
 
         return response.json({
-            message: `Please check your email for steps to reset your password.`,
+            message: `Please check your email for steps to reset your password.`
         })
     }
 
@@ -74,23 +76,23 @@ class ForgotPasswordController {
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
-            password: 'required|string|min:8',
+            password: 'required|string|min:8'
         })
 
         const PasswordResetModel = resources['password-resets'].Model()
 
         let existingPasswordReset = await PasswordResetModel.where({
-            token,
+            token
         }).fetch({
-            require: false,
+            require: false
         })
 
         if (!existingPasswordReset) {
             return response.status(401).json([
                 {
                     field: 'token',
-                    message: 'Invalid reset token.',
-                },
+                    message: 'Invalid reset token.'
+                }
             ])
         }
 
@@ -100,8 +102,8 @@ class ForgotPasswordController {
             return response.status(401).json([
                 {
                     field: 'token',
-                    message: 'Invalid reset token.',
-                },
+                    message: 'Invalid reset token.'
+                }
             ])
         }
 
@@ -109,13 +111,13 @@ class ForgotPasswordController {
 
         if (!user) {
             await new PasswordResetModel({
-                id: existingPasswordReset.id,
+                id: existingPasswordReset.id
             }).destroy({
-                require: false,
+                require: false
             })
 
             return response.status(500).json({
-                message: 'User does not exist anymore.',
+                message: 'User does not exist anymore.'
             })
         }
 
@@ -124,13 +126,13 @@ class ForgotPasswordController {
             resources['administrators'],
             user.id,
             {
-                password,
+                password
             },
             true
         )
 
         await new PasswordResetModel({
-            id: existingPasswordReset.id,
+            id: existingPasswordReset.id
         }).destroy()
 
         mailer
@@ -138,7 +140,7 @@ class ForgotPasswordController {
             .sendRaw(`Your password has been changed successfully`)
 
         response.json({
-            message: `Password reset successful.`,
+            message: `Password reset successful.`
         })
     }
 }

@@ -24,7 +24,7 @@ import {
     SupportedDatabases,
     DatabaseRepositoryInterface,
     belongsToMany,
-    dateTime,
+    dateTime
 } from '@tensei/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
@@ -56,23 +56,23 @@ export class Tensei {
         scripts: [
             {
                 name: 'tensei.js',
-                path: Path.resolve(__dirname, 'client', 'index.js'),
-            },
+                path: Path.resolve(__dirname, 'client', 'index.js')
+            }
         ],
         styles: [
             {
                 name: 'tensei.css',
-                path: Path.resolve(__dirname, 'client', 'index.css'),
-            },
+                path: Path.resolve(__dirname, 'client', 'index.css')
+            }
         ],
         env: {
             port: process.env.PORT || 1377,
             database: (process.env.DATABASE as SupportedDatabases) || 'sqlite',
             sessionSecret: process.env.SESSION_SECRET || 'test-session-secret',
             databaseUrl:
-                process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg',
+                process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg'
         },
-        logger: new Signale(),
+        logger: new Signale()
     }
 
     public async register() {
@@ -109,8 +109,8 @@ export class Tensei {
                     ...this.config.styles,
                     {
                         name,
-                        path,
-                    },
+                        path
+                    }
                 ]
             },
             script: (name: Asset['name'], path: Asset['path']) => {
@@ -118,8 +118,8 @@ export class Tensei {
                     ...this.config.scripts,
                     {
                         name,
-                        path,
-                    },
+                        path
+                    }
                 ]
             },
             resources: this.config.resources,
@@ -127,6 +127,8 @@ export class Tensei {
                 this.config.resources.push(resource)
             },
             resourcesMap: this.config.resourcesMap,
+            // TODO: Make request option in manager. That way manager can be used in CLI, tests, anywhere.
+            manager: this.manager({} as any)!
         }
     }
 
@@ -139,7 +141,7 @@ export class Tensei {
             if (hook === 'setup') {
                 this.extensions = {
                     ...this.extensions,
-                    [plugin.slug]: extension,
+                    [plugin.slug]: extension
                 }
             }
         }
@@ -257,10 +259,10 @@ export class Tensei {
             ExpressSession({
                 secret: this.config.env.sessionSecret,
                 store: new Store({
-                    knex: this.databaseClient,
+                    knex: this.databaseClient
                 }),
                 resave: false,
-                saveUninitialized: false,
+                saveUninitialized: false
             })
         )
 
@@ -278,7 +280,7 @@ export class Tensei {
     ) => {
         if (!request.admin) {
             return response.status(401).json({
-                message: 'Unauthenticated.',
+                message: 'Unauthenticated.'
             })
         }
 
@@ -399,19 +401,19 @@ export class Tensei {
                 if (Array.isArray(error)) {
                     return response.status(422).json({
                         message: 'Validation failed.',
-                        errors: error,
+                        errors: error
                     })
                 }
 
                 if (error.status === 404) {
                     return response.status(404).json({
-                        message: error.message,
+                        message: error.message
                     })
                 }
 
                 if (error.status) {
                     return response.status(error.status).json({
-                        message: error.message || 'Internal server error.',
+                        message: error.message || 'Internal server error.'
                     })
                 }
 
@@ -419,7 +421,7 @@ export class Tensei {
 
                 response.status(500).json({
                     message: 'Internal server error.',
-                    error,
+                    error
                 })
             }
         )
@@ -441,7 +443,7 @@ export class Tensei {
             }
         )
 
-        this.config.scripts.concat(this.config.styles).forEach((asset) => {
+        this.config.scripts.concat(this.config.styles).forEach(asset => {
             this.app.get(
                 `/${asset.name}`,
                 this.asyncHandler(
@@ -477,7 +479,7 @@ export class Tensei {
     private setValue(key: keyof Config, value: any) {
         this.config = {
             ...this.config,
-            [key]: value,
+            [key]: value
         }
 
         return this
@@ -490,15 +492,15 @@ export class Tensei {
             this.roleResource(),
             this.permissionResource(),
             this.passwordResetsResource(),
-            ...resources,
+            ...resources
         ]
 
         const uniqueResources = Array.from(
-            new Set(updatedResources.map((resource) => resource.data.name))
+            new Set(updatedResources.map(resource => resource.data.name))
         )
-            .map((resourceName) =>
+            .map(resourceName =>
                 updatedResources.find(
-                    (resource) => resource.data.name === resourceName
+                    resource => resource.data.name === resourceName
                 )
             )
             .filter(Boolean) as ResourceContract[]
@@ -507,7 +509,7 @@ export class Tensei {
 
         const resourcesMap: Config['resourcesMap'] = {}
 
-        uniqueResources.forEach((resource) => {
+        uniqueResources.forEach(resource => {
             resourcesMap[resource.data.slug] = resource
         })
 
@@ -520,11 +522,15 @@ export class Tensei {
         return resource('Administrator Role')
             .hideFromNavigation()
             .fields([
-                text('Name').rules('required').unique(),
-                text('Slug').rules('required').unique(),
+                text('Name')
+                    .rules('required')
+                    .unique(),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
 
                 belongsToMany('Administrator'),
-                belongsToMany('Administrator Permission'),
+                belongsToMany('Administrator Permission')
             ])
     }
 
@@ -533,8 +539,10 @@ export class Tensei {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Slug').rules('required').unique(),
-                belongsToMany('Administrator Role'),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
+                belongsToMany('Administrator Role')
             ])
     }
 
@@ -542,9 +550,14 @@ export class Tensei {
         return resource('Administrator Password Reset')
             .hideFromNavigation()
             .fields([
-                text('Email').searchable().unique().notNullable(),
-                text('Token').unique().notNullable(),
-                dateTime('Expires At'),
+                text('Email')
+                    .searchable()
+                    .unique()
+                    .notNullable(),
+                text('Token')
+                    .unique()
+                    .notNullable(),
+                dateTime('Expires At')
             ])
     }
 
@@ -555,17 +568,22 @@ export class Tensei {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email').unique().searchable().rules('required', 'email'),
-                text('Password').hidden().rules('required', 'min:8'),
-                belongsToMany('Administrator Role'),
+                text('Email')
+                    .unique()
+                    .searchable()
+                    .rules('required', 'email'),
+                text('Password')
+                    .hidden()
+                    .rules('required', 'min:8'),
+                belongsToMany('Administrator Role')
             ])
-            .beforeCreate((payload) => ({
+            .beforeCreate(payload => ({
                 ...payload,
-                password: Bcrypt.hashSync(payload.password),
+                password: Bcrypt.hashSync(payload.password)
             }))
-            .beforeUpdate((payload) => ({
+            .beforeUpdate(payload => ({
                 ...payload,
-                password: Bcrypt.hashSync(payload.password),
+                password: Bcrypt.hashSync(payload.password)
             }))
     }
 
@@ -576,7 +594,9 @@ export class Tensei {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail().connection(driverName).config(mailConfig)
+        this.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }

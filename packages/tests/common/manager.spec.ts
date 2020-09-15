@@ -8,8 +8,8 @@ const setup = (
     resources = [],
     request = {
         body: {
-            form: {},
-        },
+            form: {}
+        }
     } as any,
     instance = db
 ) =>
@@ -35,19 +35,19 @@ describe('Manager', () => {
 
         test('throws an error if the resource is not found', () => {
             expect(() => setup().findResource('unknown-resource')).toThrow({
-                message: 'Resource unknown-resource not found.',
+                message: 'Resource unknown-resource not found.'
             } as any)
         })
 
         test('throws an error if the slug is not passed in', () => {
             expect(() => setup().findResource(undefined as any)).toThrow({
-                message: 'Resource undefined not found.',
+                message: 'Resource undefined not found.'
             } as any)
         })
     })
 
     describe('create', () => {
-        ;['posts', 'comments', 'users', 'tags'].forEach((slug) => {
+        ;['posts', 'comments', 'users', 'tags'].forEach(slug => {
             test(`validates payload before creating any record (${slug})`, async () => {
                 db.create.mockClear()
                 expect.assertions(2)
@@ -67,37 +67,37 @@ describe('Manager', () => {
         test('correctly breaks payload into relationship fields and non relationships fields', () => {
             const {
                 relationshipFieldsPayload,
-                nonRelationshipFieldsPayload,
+                nonRelationshipFieldsPayload
             } = setup('posts').breakFieldsIntoRelationshipsAndNonRelationships({
                 tags: [1, 2],
                 title: 'TEST_TITLE',
-                description: 'TEST_DESCRIPTION',
+                description: 'TEST_DESCRIPTION'
             })
 
             expect(relationshipFieldsPayload).toEqual({
-                tags: [1, 2],
+                tags: [1, 2]
             })
 
             expect(nonRelationshipFieldsPayload).toEqual({
                 title: 'TEST_TITLE',
-                description: 'TEST_DESCRIPTION',
+                description: 'TEST_DESCRIPTION'
             })
         })
 
         test('ignores fields not in payload', () => {
             const {
                 relationshipFieldsPayload,
-                nonRelationshipFieldsPayload,
+                nonRelationshipFieldsPayload
             } = setup(Post).breakFieldsIntoRelationshipsAndNonRelationships({
                 tags: [1, 2],
                 title: 'TEST_TITLE',
-                description: 'TEST_DESCRIPTION',
+                description: 'TEST_DESCRIPTION'
             })
 
             expect(
                 Object.keys({
                     ...relationshipFieldsPayload,
-                    ...nonRelationshipFieldsPayload,
+                    ...nonRelationshipFieldsPayload
                 }).includes('content')
             ).toBeFalsy()
         })
@@ -122,7 +122,7 @@ describe('Manager', () => {
                 category: 'food',
                 user_id: 1,
                 published_at: new Date(),
-                scheduled_for: new Date(),
+                scheduled_for: new Date()
             })
 
             expect(db.updateOneByField).toHaveBeenCalled()
@@ -136,7 +136,7 @@ describe('Manager', () => {
                 category: 'food',
                 user_id: 1,
                 published_at: new Date(),
-                scheduled_for: new Date(),
+                scheduled_for: new Date()
             })
             await expect(s).rejects.toThrow(
                 'The field version does not exist on resource Post.'
@@ -154,7 +154,7 @@ describe('Manager', () => {
                 category: 'food',
                 user_id: 1,
                 published_at: new Date(),
-                scheduled_for: new Date(),
+                scheduled_for: new Date()
             })
 
             expect(db.update).toHaveBeenCalled()
@@ -169,15 +169,15 @@ describe('Manager', () => {
 
             try {
                 await setup(User).validateUniqueFields({
-                    email: 'dodo@email.com',
+                    email: 'dodo@email.com'
                 })
             } catch (error) {
                 expect(error).toEqual([
                     {
                         field: 'email',
                         message:
-                            'A user already exists with email dodo@email.com.',
-                    },
+                            'A user already exists with email dodo@email.com.'
+                    }
                 ] as any)
             }
             expect(db.findOneByField).toHaveBeenCalled()
@@ -204,7 +204,7 @@ describe('Manager', () => {
             db.findAllByIds = jest.fn(() => [{}, {}]) as any
 
             await setup(User, [], {}, db).validateRelationshipFields({
-                posts: [1, 2],
+                posts: [1, 2]
             })
             expect(db.findAllByIds).toHaveBeenCalled()
         })
@@ -213,15 +213,15 @@ describe('Manager', () => {
 
             try {
                 await setup(User).validateRelationshipFields({
-                    posts: [1, 2, 3],
+                    posts: [1, 2, 3]
                 })
             } catch (error) {
                 expect(error).toEqual([
                     {
                         field: 'posts',
                         message:
-                            'Invalid values were provided for the related resource. Make sure all values provided exist in the database table posts',
-                    },
+                            'Invalid values were provided for the related resource. Make sure all values provided exist in the database table posts'
+                    }
                 ] as any)
             }
         })
@@ -248,9 +248,9 @@ describe('Manager', () => {
                     form: {
                         published_at: new Date().toISOString(),
                         reason: 'reason',
-                        content: 'content -example- content',
-                    },
-                },
+                        content: 'content -example- content'
+                    }
+                }
             }).runAction('publish-on')
             expect(db.findAllByIds).toHaveBeenCalled()
             expect(response4).toMatchSnapshot()
@@ -264,7 +264,7 @@ describe('Manager', () => {
             } catch (error) {
                 expect(error).toEqual({
                     message: `Action delete is not defined on posts resource.`,
-                    status: 404,
+                    status: 404
                 })
             }
         })
@@ -298,7 +298,7 @@ describe('Manager', () => {
                         fields: 'email',
                         search: '',
                         filter: { 'email:contains': 'example@email.com' },
-                        with: 'posts',
+                        with: 'posts'
                     } as any,
                     User
                 )
@@ -310,12 +310,12 @@ describe('Manager', () => {
                     {
                         field: 'email',
                         operator: 'contains',
-                        value: 'example@email.com',
-                    },
+                        value: 'example@email.com'
+                    }
                 ],
                 noPagination: 'false',
                 fields: ['email'],
-                withRelationships: ['posts'],
+                withRelationships: ['posts']
             })
         })
     })
@@ -330,8 +330,8 @@ describe('Manager', () => {
                     search: '',
                     filters: [{ 'email:contains': 'example@email.com' }],
                     noPagination: false,
-                    withRelationships: ['posts'],
-                },
+                    withRelationships: ['posts']
+                }
             } as any)
 
             expect(db.findAll).toHaveBeenCalled()
@@ -344,11 +344,11 @@ describe('Manager', () => {
             expect.assertions(1)
 
             db.findOneById = jest.fn(() => ({
-                id: 1,
+                id: 1
             }))
 
             await setup(User, [], {
-                query: {},
+                query: {}
             }).findOneById(1)
 
             expect(db.findOneById).toHaveBeenCalled()
@@ -360,12 +360,12 @@ describe('Manager', () => {
 
             try {
                 await setup(User, [], {
-                    query: {},
+                    query: {}
                 }).findOneById(1)
             } catch (error) {
                 expect(error).toEqual({
                     message: `Could not find a resource with id 1`,
-                    status: 404,
+                    status: 404
                 } as any)
             }
         })
@@ -378,8 +378,8 @@ describe('Manager', () => {
                 query: {
                     perPage: 10,
                     page: 1,
-                    filters: [{ 'email:contains': 'example@email.com' }],
-                },
+                    filters: [{ 'email:contains': 'example@email.com' }]
+                }
             }).findAllRelatedResource(1, Post)
 
             expect(db.findAll).toHaveBeenCalled()
@@ -394,13 +394,13 @@ describe('Manager', () => {
                     query: {
                         perPage: 10,
                         page: 1,
-                        filters: [{ 'email:contains': 'example@email.com' }],
-                    },
+                        filters: [{ 'email:contains': 'example@email.com' }]
+                    }
                 }).findAllRelatedResource(1, Post)
             } catch (error) {
                 expect(error).toEqual({
                     message: 'Related field not found between User and postas.',
-                    status: 404,
+                    status: 404
                 })
             }
 
@@ -413,8 +413,8 @@ describe('Manager', () => {
                 query: {
                     perPage: 10,
                     page: 1,
-                    filters: [{ 'email:contains': 'example@email.com' }],
-                },
+                    filters: [{ 'email:contains': 'example@email.com' }]
+                }
             }).findAllRelatedResource(1, Tag)
 
             expect(db.findAllBelongingToMany).toHaveBeenCalled()
@@ -449,7 +449,7 @@ describe('Manager', () => {
                     fields: 'email',
                     search: '',
                     filter: { 'email:contains': 'example@email.com' },
-                    with: 'posts',
+                    with: 'posts'
                 } as any)
             ).toEqual({
                 perPage: 5,
@@ -459,12 +459,12 @@ describe('Manager', () => {
                     {
                         field: 'email',
                         operator: 'contains',
-                        value: 'example@email.com',
-                    },
+                        value: 'example@email.com'
+                    }
                 ],
                 noPagination: 'false',
                 fields: ['email'],
-                withRelationships: ['posts'],
+                withRelationships: ['posts']
             })
         })
     })
@@ -480,8 +480,8 @@ describe('Manager', () => {
                     search: '',
                     filters: [{ 'email:contains': 'example@email.com' }],
                     noPagination: false,
-                    withRelationships: ['posts'],
-                },
+                    withRelationships: ['posts']
+                }
             } as any)
 
             expect(db.findAll).toHaveBeenCalled()
@@ -492,12 +492,12 @@ describe('Manager', () => {
         test('calls findOneById method from db', async () => {
             db.findOneById.mockClear()
             db.findOneById = jest.fn(() => ({
-                id: 1,
+                id: 1
             }))
             expect.assertions(1)
 
             await setup(User, [], {
-                query: {},
+                query: {}
             }).findOneById(1)
 
             expect(db.findOneById).toHaveBeenCalled()
@@ -511,8 +511,8 @@ describe('Manager', () => {
                 query: {
                     perPage: 10,
                     page: 1,
-                    filters: [{ 'email:contains': 'example@email.com' }],
-                },
+                    filters: [{ 'email:contains': 'example@email.com' }]
+                }
             }).findAllRelatedResource(1, Post)
 
             expect(db.findAll).toHaveBeenCalled()
@@ -527,13 +527,13 @@ describe('Manager', () => {
                     query: {
                         perPage: 10,
                         page: 1,
-                        filters: [{ 'email:contains': 'example@email.com' }],
-                    },
+                        filters: [{ 'email:contains': 'example@email.com' }]
+                    }
                 }).findAllRelatedResource(1, Post)
             } catch (error) {
                 expect(error).toEqual({
                     message: 'Related field not found between User and postas.',
-                    status: 404,
+                    status: 404
                 })
             }
             Post.data.name = 'Post'
@@ -545,8 +545,8 @@ describe('Manager', () => {
                 query: {
                     perPage: 10,
                     page: 1,
-                    filters: [{ 'email:contains': 'example@email.com' }],
-                },
+                    filters: [{ 'email:contains': 'example@email.com' }]
+                }
             }).findAllRelatedResource(1, Tag)
 
             expect(db.findAllBelongingToMany).toHaveBeenCalled()

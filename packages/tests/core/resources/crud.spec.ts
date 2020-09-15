@@ -2,26 +2,26 @@ import Faker, { fake } from 'faker'
 import Supertest from 'supertest'
 
 import { setup, fakePostData } from '../../helpers'
-;['sqlite3', 'mysql'].forEach((databaseClient: any) => {
+;['sqlite3', 'mysql', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - can create a resource with correct values (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
-                permissions: ['create:posts'],
+                permissions: ['create:posts']
             } as any,
-            databaseClient,
+            databaseClient
         })
 
         const user = (
             await manager({} as any)('User').create({
                 email: Faker.internet.exampleEmail(),
                 full_name: Faker.name.findName(),
-                password: 'password',
+                password: 'password'
             })
         ).toJSON()
 
         const post = {
             ...fakePostData(),
-            user_id: user.id,
+            user_id: user.id
         }
 
         const client = Supertest(app)
@@ -36,15 +36,15 @@ import { setup, fakePostData } from '../../helpers'
     test(`${databaseClient} - can create a resource with correct values (user)`, async () => {
         const { app } = await setup({
             admin: {
-                permissions: ['create:users'],
+                permissions: ['create:users']
             } as any,
-            databaseClient,
+            databaseClient
         })
 
         const userDetails = {
             email: Faker.internet.exampleEmail(),
             full_name: Faker.name.findName(),
-            password: 'password',
+            password: 'password'
         }
 
         const client = Supertest(app)
@@ -61,15 +61,15 @@ import { setup, fakePostData } from '../../helpers'
     test(`${databaseClient} - can get multiple resources (users)`, async () => {
         const { app, manager } = await setup({
             admin: {
-                permissions: ['create:users'],
+                permissions: ['create:users']
             } as any,
-            databaseClient,
+            databaseClient
         })
 
         const userDetails = {
             email: Faker.internet.exampleEmail(),
             full_name: Faker.name.findName(),
-            password: 'password',
+            password: 'password'
         }
 
         await await manager({} as any)('User').create(userDetails)
@@ -88,20 +88,20 @@ import { setup, fakePostData } from '../../helpers'
     test(`${databaseClient} - can update a resource (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
-                permissions: ['update:users'],
+                permissions: ['update:users']
             } as any,
-            databaseClient,
+            databaseClient
         })
 
         const userDetails = {
             email: Faker.internet.exampleEmail(),
             full_name: Faker.name.findName(),
-            password: 'password',
+            password: 'password'
         }
 
         const updateDetails = {
             email: Faker.internet.exampleEmail(),
-            full_name: Faker.name.findName(),
+            full_name: Faker.name.findName()
         }
 
         const user = (
@@ -122,15 +122,15 @@ import { setup, fakePostData } from '../../helpers'
     test(`${databaseClient} - can get a single resource (user)`, async () => {
         const { app, manager } = await setup({
             admin: {
-                permissions: ['create:users'],
+                permissions: ['create:users']
             } as any,
-            databaseClient,
+            databaseClient
         })
 
         const userDetails = {
             email: Faker.internet.exampleEmail(),
             full_name: Faker.name.findName(),
-            password: 'password',
+            password: 'password'
         }
 
         const user = (

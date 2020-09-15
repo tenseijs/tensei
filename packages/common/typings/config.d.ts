@@ -52,7 +52,10 @@ declare module '@tensei/common/config' {
         permissions: string[]
     }
     type AuthorizeFunction = (request: Request) => boolean | Promise<boolean>
-    type HookFunction = (payload: DataPayload, request: Request) => DataPayload
+    type HookFunction = (
+        payload: DataPayload,
+        request: Request | null
+    ) => DataPayload
     type FieldHookFunction<FieldValueType = any> = (
         payload: DataPayload,
         request: Request
@@ -165,7 +168,7 @@ declare module '@tensei/common/config' {
             },
             valuesToUpdate: {}
         ) => Promise<any>
-        abstract findAllCount: (resource: ResourceContract) => Promise<number>
+        abstract findAllCount: () => Promise<number>
     }
 
     export class ResourceHelpers {

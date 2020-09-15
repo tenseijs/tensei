@@ -11,7 +11,7 @@ class FindResourceController {
 
         if (!model) {
             return response.status(404).json({
-                message: `Resource with id ${request.params.resourceId} was not found.`,
+                message: `Resource with id ${request.params.resourceId} was not found.`
             })
         }
 

@@ -9,7 +9,7 @@ test('can configure custom dashboard path', async () => {
 
     const instance = await setup(
         {
-            dashboardPath: CUSTOM_DASHBOARD_PATH,
+            dashboardPath: CUSTOM_DASHBOARD_PATH
         },
         true
     )
@@ -30,7 +30,7 @@ test('can configure custom api path', async () => {
 
     const { app } = await setup(
         {
-            apiPath: CUSTOM_API_PATH,
+            apiPath: CUSTOM_API_PATH
         },
         true
     )
@@ -94,8 +94,8 @@ test('plugins can correctly register custom stylesheets and scripts before middl
                             )
                         )
                     }
-                ),
-            ],
+                )
+            ]
         },
         true
     )
@@ -128,11 +128,11 @@ test('plugins can correctly customise the express application with new routes', 
                 plugin('Graphql').setup(async ({ app }) => {
                     app.post('/graphql', (req, res) =>
                         res.status(212).json({
-                            message: TEST_GRAPHQL_MESSAGE,
+                            message: TEST_GRAPHQL_MESSAGE
                         })
                     )
-                }),
-            ],
+                })
+            ]
         },
         true
     )
@@ -159,12 +159,12 @@ test('plugins can push in new resources to the application', async () => {
                     async ({ pushResource }) => {
                         pushResource(
                             resource(TEST_RESOURCE_NAME).fields([
-                                text(TEST_FIELD_NAME),
+                                text(TEST_FIELD_NAME)
                             ])
                         )
                     }
-                ),
-            ],
+                )
+            ]
         },
         true
     )
@@ -187,7 +187,7 @@ test('the auth middleware passes if the admin is correctly logged in', async () 
     const cookie = (
         await client.post('/api/login').send({
             email: user.email,
-            password: 'password',
+            password: 'password'
         })
     ).header['set-cookie'][0]
         .split(';')[0]
@@ -220,13 +220,13 @@ test('the set auth middleware returns a 401 if the user does not exist in the da
                     app.use((request, response, next) => {
                         // @ts-ignore
                         request.session = {
-                            user: 3094892829,
+                            user: 3094892829
                         } as any
 
                         next()
                     })
-                }),
-            ],
+                })
+            ]
         } as any,
         true
     )

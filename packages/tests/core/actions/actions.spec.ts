@@ -4,7 +4,7 @@ import { setup } from '../../helpers'
 
 test('runs an action that returns html', async () => {
     const { app } = await setup({
-        admin: {} as any,
+        admin: {} as any
     })
 
     const client = Supertest(app)
@@ -19,7 +19,7 @@ test('runs an action that returns html', async () => {
 
 test('validates an action with input fields', async () => {
     const { app } = await setup({
-        admin: {} as any,
+        admin: {} as any
     })
 
     const client = Supertest(app)
@@ -34,7 +34,7 @@ test('validates an action with input fields', async () => {
 
 test('runs an action with fields that returns a push', async () => {
     const { app } = await setup({
-        admin: {} as any,
+        admin: {} as any
     })
 
     const client = Supertest(app)
@@ -47,7 +47,7 @@ test('runs an action with fields that returns a push', async () => {
 
 test('runs an action with fields that returns an array of validation errors', async () => {
     const { app } = await setup({
-        admin: {} as any,
+        admin: {} as any
     })
 
     const client = Supertest(app)

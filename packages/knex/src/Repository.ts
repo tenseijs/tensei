@@ -1,7 +1,7 @@
 import Knex, {
     CreateTableBuilder,
     ColumnBuilder,
-    AlterTableBuilder,
+    AlterTableBuilder
 } from 'knex'
 import Pluralize from 'pluralize'
 import Bookshelf from 'bookshelf'
@@ -15,7 +15,7 @@ import {
     ResourceContract,
     DataPayload,
     FetchAllRequestQuery,
-    ResourceHelpers,
+    ResourceHelpers
 } from '@tensei/common'
 
 export class SqlRepository extends ResourceHelpers
@@ -49,7 +49,7 @@ export class SqlRepository extends ResourceHelpers
 
         try {
             await this.performDatabaseSchemaSync(
-                config.resources.map((resource) => resource.serialize())
+                config.resources.map(resource => resource.serialize())
             )
 
             await this.bootBookshelfModels()
@@ -58,6 +58,7 @@ export class SqlRepository extends ResourceHelpers
         } catch (errors) {
             // TODO: Log these errors with this.logger
             console.log('(********************', errors)
+            process.exit(1)
         }
 
         return this.$db
@@ -74,19 +75,19 @@ export class SqlRepository extends ResourceHelpers
         resource: ResourceContract = this.getCurrentResource()
     ) => {
         return this.bookshelfModels.find(
-            (model) => model.resourceName === resource.data.name
+            model => model.resourceName === resource.data.name
         )
     }
 
     private setupRolesAndPermissions = async () => {
         const permissions: string[] = []
 
-        this.resources.forEach((resource) => {
-            ;['create', 'read', 'update', 'delete'].forEach((operation) => {
+        this.resources.forEach(resource => {
+            ;['create', 'read', 'update', 'delete'].forEach(operation => {
                 permissions.push(`${operation}:${resource.data.slug}`)
             })
 
-            resource.data.actions.forEach((action) => {
+            resource.data.actions.forEach(action => {
                 permissions.push(
                     `run:${resource.data.slug}:${action.data.slug}`
                 )
@@ -99,7 +100,7 @@ export class SqlRepository extends ResourceHelpers
         if (!roleResource || !permissionResource) {
             throw {
                 message: 'Role and Permission resources must be defined.',
-                status: 500,
+                status: 500
             }
         }
 
@@ -114,48 +115,52 @@ export class SqlRepository extends ResourceHelpers
         ).map((permission: any) => permission.slug)
 
         const newPermissionsToCreate = permissions.filter(
-            (permission) => !existingPermissions.includes(permission)
+            permission => !existingPermissions.includes(permission)
         )
 
-        const insertValues = newPermissionsToCreate.map((permission) => ({
+        const insertValues = newPermissionsToCreate.map(permission => ({
             name: sentenceCase(permission.split(':').join(' ')),
-            slug: permission,
+            slug: permission
         }))
 
         if (insertValues.length > 0) {
             await PermissionModel.query().insert(
-                newPermissionsToCreate.map((permission) => ({
+                newPermissionsToCreate.map(permission => ({
                     name: sentenceCase(permission.split(':').join(' ')),
-                    slug: permission,
+                    slug: permission
                 }))
             )
         }
 
         let superAdminRole = (
-            await RoleModel.query().where('slug', 'super-admin').limit(1)
+            await RoleModel.query()
+                .where('slug', 'super-admin')
+                .limit(1)
         )[0]
 
         if (!superAdminRole) {
             await RoleModel.query().insert({
                 name: 'Super Admin',
-                slug: 'super-admin',
+                slug: 'super-admin'
             })
 
             superAdminRole = (
-                await RoleModel.query().where('slug', 'super-admin').limit(1)
+                await RoleModel.query()
+                    .where('slug', 'super-admin')
+                    .limit(1)
             )[0]
         }
 
         const allPermissions = await PermissionModel.query()
 
         await new RoleModel({
-            id: superAdminRole.id,
+            id: superAdminRole.id
         })
             [permissionResource.data.slug]()
             .detach()
 
         await new RoleModel({
-            id: superAdminRole.id,
+            id: superAdminRole.id
         })
             [permissionResource.data.slug]()
             .attach(allPermissions.map((permission: any) => permission.id))
@@ -164,22 +169,21 @@ export class SqlRepository extends ResourceHelpers
     private bootBookshelfModels = async () => {
         const bookshelfInstance = Bookshelf(this.$db!)
 
-        const bookshelfModels = this.resources.map((resource) => {
+        const bookshelfModels = this.resources.map(resource => {
             const hiddenFields = resource
                 .serialize()
-                .fields.filter((field) => field.hidden)
-                .map((field) => field.databaseField)
+                .fields.filter(field => field.hidden)
+                .map(field => field.databaseField)
 
             const model: any = {
                 hidden: hiddenFields,
                 tableName: resource.data.table,
-                hasTimestamps: !resource.data.noTimeStamps,
+                hasTimestamps: !resource.data.noTimeStamps
             }
 
-            resource.data.fields.forEach((field) => {
+            resource.data.fields.forEach(field => {
                 const relatedResource = this.resources.find(
-                    (relatedResource) =>
-                        field.name === relatedResource.data.name
+                    relatedResource => field.name === relatedResource.data.name
                 )
                 if (!relatedResource) {
                     return
@@ -188,19 +192,19 @@ export class SqlRepository extends ResourceHelpers
                 if (field.component === 'BelongsToField') {
                     model[
                         relatedResource.data.name.toLowerCase()
-                    ] = function () {
+                    ] = function() {
                         return this.belongsTo(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'HasManyField') {
-                    model[relatedResource.data.slug] = function () {
+                    model[relatedResource.data.slug] = function() {
                         return this.hasMany(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'BelongsToManyField') {
-                    model[relatedResource.data.slug] = function () {
+                    model[relatedResource.data.slug] = function() {
                         return this.belongsToMany(relatedResource.data.name)
                     }
                 }
@@ -226,7 +230,7 @@ export class SqlRepository extends ResourceHelpers
         oldResource: SerializedResource | undefined
     ) => {
         const belongsToManyFields = resource.fields.filter(
-            (field) => field.component === 'BelongsToManyField'
+            field => field.component === 'BelongsToManyField'
         )
 
         for (let index = 0; index < belongsToManyFields.length; index++) {
@@ -234,15 +238,15 @@ export class SqlRepository extends ResourceHelpers
 
             if (field.component === 'BelongsToManyField') {
                 const relatedResource = resources.find(
-                    (relatedResource) => field.name === relatedResource.name
+                    relatedResource => field.name === relatedResource.name
                 )
 
                 const indexOfResource = resources.findIndex(
-                    (indexResource) => resource.name === indexResource.name
+                    indexResource => resource.name === indexResource.name
                 )
 
                 const indexOfRelatedResource = resources.findIndex(
-                    (relatedResource) => field.name === relatedResource.name
+                    relatedResource => field.name === relatedResource.name
                 )
 
                 const migrationHasAlreadyBeenRunForRelatedField =
@@ -262,7 +266,7 @@ export class SqlRepository extends ResourceHelpers
 
                 const tableName = [
                     Pluralize(snakeCase(relatedResource.name)),
-                    Pluralize(snakeCase(resource.name)),
+                    Pluralize(snakeCase(resource.name))
                 ]
                     .sort()
                     .join('_')
@@ -280,7 +284,7 @@ export class SqlRepository extends ResourceHelpers
 
                 await trx.schema[tableExists ? 'alterTable' : 'createTable'](
                     tableName,
-                    (t) => {
+                    t => {
                         if (!tableExists) {
                             t.increments()
                             t.timestamps()
@@ -311,25 +315,29 @@ export class SqlRepository extends ResourceHelpers
         )
 
         const oldResources: SerializedResource[] = migrationsTableExists
-            ? (await knex.select('*').from(this.migrationsTable)).map((row) =>
-                  JSON.parse(row.resource_data)
-              )
+            ? (await knex.select('*').from(this.migrationsTable)).map(row => {
+                  try {
+                      return JSON.parse(row.resource_data)
+                  } catch (error) {
+                      return row.resource_data
+                  }
+              })
             : []
 
         if (!migrationsTableExists) {
-            await knex.schema.createTable(this.migrationsTable, (table) => {
+            await knex.schema.createTable(this.migrationsTable, table => {
                 table.increments()
                 table.string('resource_table')
                 table.json('resource_data')
             })
         }
 
-        await knex.transaction(async (trx) => {
+        await knex.transaction(async trx => {
             for (let index = 0; index < resources.length; index++) {
                 const resource = resources[index]
 
                 const oldResource = oldResources.find(
-                    (oldResource) => oldResource.name === resource.name
+                    oldResource => oldResource.name === resource.name
                 )
 
                 const tableExists = !!oldResource
@@ -343,11 +351,11 @@ export class SqlRepository extends ResourceHelpers
 
                 await trx.schema[tableExists ? 'alterTable' : 'createTable'](
                     resource.table,
-                    (t) => {
+                    t => {
                         // if column exists on schema, but cannot be found here on fields,
                         // then it should be dropped
 
-                        resource.fields.forEach((field) => {
+                        resource.fields.forEach(field => {
                             if (field.component === 'HasManyField') {
                                 return
                             }
@@ -374,9 +382,9 @@ export class SqlRepository extends ResourceHelpers
             await trx.table(this.migrationsTable).truncate()
 
             await trx.table(this.migrationsTable).insert(
-                resources.map((resource) => ({
+                resources.map(resource => ({
                     resource_table: resource.table,
-                    resource_data: JSON.stringify(resource),
+                    resource_data: JSON.stringify(resource)
                 }))
             )
         })
@@ -388,6 +396,16 @@ export class SqlRepository extends ResourceHelpers
         oldResource: SerializedResource | undefined,
         field: SerializedField
     ) => {
+        if (
+            field.sqlDatabaseFieldType === 'enu' &&
+            this.config.client === 'pg'
+        ) {
+            // TODO: Remove this when the enu alter() bug is fixed from the knex team.
+            // This will allow any string, but we will add application
+            // level validation to make sure the value
+            field.sqlDatabaseFieldType = 'string'
+        }
+
         const knexMethodName = field.sqlDatabaseFieldType || ''
         const tableExists = !!oldResource
 
@@ -400,9 +418,7 @@ export class SqlRepository extends ResourceHelpers
         }
 
         const oldField = tableExists
-            ? oldResource?.fields.find(
-                  (oldField) => field.name === oldField.name
-              )
+            ? oldResource?.fields.find(oldField => field.name === oldField.name)
             : null
 
         if (['increments', 'bigIncrements'].includes(knexMethodName)) {
@@ -424,6 +440,16 @@ export class SqlRepository extends ResourceHelpers
                 (option: { label: string; value: string }) => option.value
             )
             methodArguments = [field.databaseField, selectOptions]
+
+            if (this.config.client === 'pg') {
+                methodArguments = [
+                    ...methodArguments,
+                    {
+                        useNative: true,
+                        enumName: field.databaseField
+                    }
+                ]
+            }
         }
 
         if (oldField && this.config.client === 'sqlite3') {
@@ -495,13 +521,12 @@ export class SqlRepository extends ResourceHelpers
 
         const relationshipFields = resource
             .serialize()
-            .fields.filter((field) => field.isRelationshipField)
+            .fields.filter(field => field.isRelationshipField)
 
         await Promise.all(
-            relationshipFields.map((field) => {
+            relationshipFields.map(field => {
                 const relatedResource = this.resources.find(
-                    (relatedResource) =>
-                        relatedResource.data.name === field.name
+                    relatedResource => relatedResource.data.name === field.name
                 )
 
                 if (!relatedResource) {
@@ -513,7 +538,7 @@ export class SqlRepository extends ResourceHelpers
                     relationshipPayload[field.databaseField]
                 ) {
                     const builder = new Model({
-                        id: result.id,
+                        id: result.id
                     })
 
                     return builder[relatedResource.data.slug]().attach(
@@ -547,22 +572,21 @@ export class SqlRepository extends ResourceHelpers
         const Model = this.getResourceBookshelfModel(resource)
 
         const result = await new Model({
-            id,
+            id
         }).save(payload, {
             patch,
             autoRefresh: true,
-            method: 'update',
+            method: 'update'
         })
 
         const relationshipFields = resource
             .serialize()
-            .fields.filter((field) => field.isRelationshipField)
+            .fields.filter(field => field.isRelationshipField)
 
         await Promise.all(
-            relationshipFields.map((field) => {
+            relationshipFields.map(field => {
                 const relatedResource = this.resources.find(
-                    (relatedResource) =>
-                        relatedResource.data.name === field.name
+                    relatedResource => relatedResource.data.name === field.name
                 )
 
                 if (!relatedResource) {
@@ -578,7 +602,7 @@ export class SqlRepository extends ResourceHelpers
                     relationshipPayload[field.databaseField]
                 ) {
                     const builder = new Model({
-                        id: result.id,
+                        id: result.id
                     })
 
                     return (async () => {
@@ -595,7 +619,7 @@ export class SqlRepository extends ResourceHelpers
                     relationshipPayload[field.databaseField]
                 ) {
                     const relatedBelongsToField = relatedResource.data.fields.find(
-                        (field) =>
+                        field =>
                             field.component === 'BelongsToField' &&
                             field.name === resource.data.name
                     )
@@ -607,11 +631,11 @@ export class SqlRepository extends ResourceHelpers
                         return
                     }
 
-                    return (async function () {
+                    return (async function() {
                         await RelatedModel.query()
                             .where(relatedBelongsToField.databaseField, id)
                             .update({
-                                [relatedBelongsToField.databaseField]: null,
+                                [relatedBelongsToField.databaseField]: null
                             })
 
                         await RelatedModel.query()
@@ -620,8 +644,7 @@ export class SqlRepository extends ResourceHelpers
                                 relationshipPayload[field.databaseField]
                             )
                             .update({
-                                [relatedBelongsToField.databaseField]:
-                                    result.id,
+                                [relatedBelongsToField.databaseField]: result.id
                             })
                     })()
                 }
@@ -667,8 +690,8 @@ export class SqlRepository extends ResourceHelpers
         if (result === 0) {
             throw [
                 {
-                    message: `${resource.data.name} resource with id ${id} was not found.`,
-                },
+                    message: `${resource.data.name} resource with id ${id} was not found.`
+                }
             ]
         }
 
@@ -698,7 +721,7 @@ export class SqlRepository extends ResourceHelpers
         let result = await new Model({ id }).fetch({
             require: false,
             columns: fields,
-            withRelated,
+            withRelated
         })
 
         return result
@@ -752,7 +775,7 @@ export class SqlRepository extends ResourceHelpers
         const getBuilder = (builder: any) => {
             if (query.search) {
                 const searchableFields = relatedResource.data.fields.filter(
-                    (field) => field.isSearchable
+                    field => field.isSearchable
                 )
 
                 builder.where((qb: any) => {
@@ -778,7 +801,7 @@ export class SqlRepository extends ResourceHelpers
 
         const tableName = [
             Pluralize(snakeCase(relatedResource.data.name)),
-            Pluralize(snakeCase(resource.data.name)),
+            Pluralize(snakeCase(resource.data.name))
         ]
             .sort()
             .join('_')
@@ -796,23 +819,23 @@ export class SqlRepository extends ResourceHelpers
         )[0]['count(*)']
 
         const data = await Model.forge({
-            id: resourceId,
+            id: resourceId
         }).fetch({
             withRelated: [
                 {
-                    [relatedResource.data.slug]: function (builder: any) {
+                    [relatedResource.data.slug]: function(builder: any) {
                         return getBuilder(builder)
                             .select(
                                 query.fields.map(
-                                    (field) =>
+                                    field =>
                                         `${relatedResource.data.table}.${field}`
                                 )
                             )
                             .limit(query.perPage)
                             .offset((query.page - 1) * query.perPage)
-                    },
-                },
-            ],
+                    }
+                }
+            ]
         })
 
         return {
@@ -820,7 +843,7 @@ export class SqlRepository extends ResourceHelpers
             perPage: query.perPage,
             total: count as number,
             pageCount: Math.ceil((count as number) / query.perPage),
-            data: data.relations[relatedResource.data.slug].models,
+            data: data.relations[relatedResource.data.slug].models
         }
     }
 
@@ -828,7 +851,7 @@ export class SqlRepository extends ResourceHelpers
         filters: FetchAllRequestQuery['filters'],
         builder: Knex
     ): Knex => {
-        filters.forEach((filter) => {
+        filters.forEach(filter => {
             if (filter.operator === 'null') {
                 builder.whereNull(filter.field)
 
@@ -896,7 +919,7 @@ export class SqlRepository extends ResourceHelpers
 
             if (query.search) {
                 const searchableFields = resource.data.fields.filter(
-                    (field) => field.isSearchable
+                    field => field.isSearchable
                 )
 
                 builder.where((qb: any) => {
@@ -931,7 +954,7 @@ export class SqlRepository extends ResourceHelpers
             data: results,
             page: query.page,
             perPage: query.perPage,
-            pageCount: Math.ceil(total / query.perPage),
+            pageCount: Math.ceil(total / query.perPage)
         }
     }
 }

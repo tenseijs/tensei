@@ -120,7 +120,7 @@ declare module '@tensei/common/resources' {
     export abstract class ManagerContract {
         repository: DatabaseRepositoryInterface
         constructor(
-            request: Request,
+            request: Request | null,
             resources: ResourceContract[],
             database: DatabaseRepositoryInterface
         )

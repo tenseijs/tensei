@@ -79,6 +79,10 @@ module.exports = resource('Post')
                     label: 'Postgresql',
                     value: 'pg',
                 },
+                {
+                    label: 'Sequelize',
+                    value: 'sequelize',
+                },
             ])
             .rules('required')
             .searchable(),

@@ -3,10 +3,10 @@ import Supertest from 'supertest'
 import isAfter from 'date-fns/isAfter'
 
 import { setup, createAdminUser } from '../../helpers'
-;['mysql', 'sqlite3'].forEach((databaseClient: any) => {
+;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - validates login data and returns error messages with a 422`, async () => {
         const { app } = await setup({
-            databaseClient,
+            databaseClient
         })
 
         const client = Supertest(app)
@@ -25,7 +25,7 @@ import { setup, createAdminUser } from '../../helpers'
         const response = await client.post('/api/login').send({
             email: 'hey@unknown-user.io',
             password: 'password',
-            rememberMe: true,
+            rememberMe: true
         })
 
         expect(response.status).toBe(422)
@@ -42,7 +42,7 @@ import { setup, createAdminUser } from '../../helpers'
         const response = await client.post('/api/login').send({
             email: user.email,
             password: 'WRONG_PASSWORD',
-            rememberMe: true,
+            rememberMe: true
         })
 
         expect(response.status).toBe(422)
@@ -62,7 +62,7 @@ import { setup, createAdminUser } from '../../helpers'
 
         const response = await client.post('/api/login').send({
             email: user.email,
-            password: user.password,
+            password: user.password
         })
 
         expect(response.status).toBe(200)
@@ -91,7 +91,7 @@ import { setup, createAdminUser } from '../../helpers'
         const response = await client.post('/api/login').send({
             email: user.email,
             password: user.password,
-            rememberMe: true,
+            rememberMe: true
         })
 
         expect(response.status).toBe(200)

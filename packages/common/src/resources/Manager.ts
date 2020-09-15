@@ -12,7 +12,7 @@ import { ResourceHelpers } from '../helpers'
 
 export class Manager extends ResourceHelpers implements ManagerContract {
     constructor(
-        private request: Request,
+        private request: Request | null,
         resources: ResourceContract[],
         public repository: DatabaseRepositoryInterface
     ) {
@@ -258,7 +258,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             filters,
             noPagination,
             withRelationships,
-        } = await this.validateRequestQuery(query || this.request.query)
+        } = await this.validateRequestQuery(query || this.request?.query || {})
 
         return this.database().findAll({
             perPage: perPage || resource.data.perPageOptions[0] || 10,
@@ -287,7 +287,10 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             page = 1,
             filters,
             ...rest
-        } = await this.validateRequestQuery(this.request.query, relatedResource)
+        } = await this.validateRequestQuery(
+            this.request?.query || {},
+            relatedResource
+        )
 
         if (!relationField) {
             throw {
@@ -341,7 +344,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     public async findOneById(id: number | string, withRelated?: string[]) {
         const { fields, withRelationships } = await this.validateRequestQuery(
-            this.request.query
+            this.request?.query || {}
         )
 
         const model = await this.database().findOneById(
@@ -587,7 +590,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     runAction = async (
         actionSlug: string,
-        data: DataPayload = this.request.body
+        data: DataPayload = this.request?.body || {}
     ): Promise<ActionResponse> => {
         const resource = this.getCurrentResource()
 
@@ -643,7 +646,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     findAllCount = () => {
-        return this.database().findAllCount(this.getCurrentResource())
+        return this.database().findAllCount()
     }
 
     findOneByField = async (databaseField: string, value: any) => {

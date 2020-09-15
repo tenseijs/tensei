@@ -26,7 +26,7 @@ export type ActionResponse = Partial<ActionFlashMessage> & {
 }
 
 export type ActionParams = {
-    request: Express.Request
+    request: Express.Request | null
     models: any[]
     payload?: DataPayload
     html: (

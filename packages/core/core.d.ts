@@ -5,7 +5,7 @@ import {
     User,
     Config,
     Asset,
-    ManagerContract,
+    ManagerContract
 } from '@tensei/common'
 
 declare module '@tensei/common' {

@@ -5,7 +5,7 @@ import {
     Config,
     ResourceContract,
     DataPayload,
-    FetchAllRequestQuery,
+    FetchAllRequestQuery
 } from '@tensei/common'
 
 declare module '@tensei/core' {

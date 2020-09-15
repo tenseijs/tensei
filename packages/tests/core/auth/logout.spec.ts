@@ -1,6 +1,6 @@
 import Supertest from 'supertest'
 import { setup, createAdminUser } from '../../helpers'
-;['mysql', 'sqlite'].forEach((databaseClient: any) => {
+;['mysql', 'sqlite', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - can successfully logout when administrator is logged in`, async () => {
         const { app, databaseClient: knex } = await setup()
 
@@ -11,7 +11,7 @@ import { setup, createAdminUser } from '../../helpers'
         const cookie = (
             await client.post('/api/login').send({
                 ...user,
-                password: 'password',
+                password: 'password'
             })
         ).header['set-cookie'][0]
             .split('=')[1]

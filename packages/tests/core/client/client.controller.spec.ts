@@ -38,7 +38,7 @@ test('passes user to view if user is logged in', async () => {
     const cookie = (
         await client.post('/api/login').send({
             email: admin.email,
-            password: 'password',
+            password: 'password'
         })
     ).header['set-cookie'][0]
         .split('=')[1]
