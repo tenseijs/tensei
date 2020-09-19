@@ -156,13 +156,13 @@ export class SqlRepository extends ResourceHelpers
         await new RoleModel({
             id: superAdminRole.id
         })
-            [permissionResource.data.slug]()
+        [permissionResource.data.slug]()
             .detach()
 
         await new RoleModel({
             id: superAdminRole.id
         })
-            [permissionResource.data.slug]()
+        [permissionResource.data.slug]()
             .attach(allPermissions.map((permission: any) => permission.id))
     }
 
@@ -192,19 +192,19 @@ export class SqlRepository extends ResourceHelpers
                 if (field.component === 'BelongsToField') {
                     model[
                         relatedResource.data.name.toLowerCase()
-                    ] = function() {
+                    ] = function () {
                         return this.belongsTo(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'HasManyField') {
-                    model[relatedResource.data.slug] = function() {
+                    model[relatedResource.data.slug] = function () {
                         return this.hasMany(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'BelongsToManyField') {
-                    model[relatedResource.data.slug] = function() {
+                    model[relatedResource.data.slug] = function () {
                         return this.belongsToMany(relatedResource.data.name)
                     }
                 }
@@ -316,12 +316,12 @@ export class SqlRepository extends ResourceHelpers
 
         const oldResources: SerializedResource[] = migrationsTableExists
             ? (await knex.select('*').from(this.migrationsTable)).map(row => {
-                  try {
-                      return JSON.parse(row.resource_data)
-                  } catch (error) {
-                      return row.resource_data
-                  }
-              })
+                try {
+                    return JSON.parse(row.resource_data)
+                } catch (error) {
+                    return row.resource_data
+                }
+            })
             : []
 
         if (!migrationsTableExists) {
@@ -631,7 +631,7 @@ export class SqlRepository extends ResourceHelpers
                         return
                     }
 
-                    return (async function() {
+                    return (async function () {
                         await RelatedModel.query()
                             .where(relatedBelongsToField.databaseField, id)
                             .update({
@@ -823,7 +823,7 @@ export class SqlRepository extends ResourceHelpers
         }).fetch({
             withRelated: [
                 {
-                    [relatedResource.data.slug]: function(builder: any) {
+                    [relatedResource.data.slug]: function (builder: any) {
                         return getBuilder(builder)
                             .select(
                                 query.fields.map(
@@ -948,6 +948,8 @@ export class SqlRepository extends ResourceHelpers
             .offset((query.page - 1) * query.perPage)
 
         const total = count[0]['count(*)']
+
+        // we need to also implement the logic for no pagination
 
         return {
             total,

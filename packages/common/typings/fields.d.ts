@@ -402,6 +402,10 @@ declare module '@tensei/common/fields' {
         trueLabel(value: string): this
         falseLabel(value: string): this
     }
+    const boolean: (
+        name: string,
+        databaseField?: string | undefined
+    ) => BooleanFieldContract
     interface BelongsToContract extends IntegerContract {}
     interface DateTimeContract extends DateFieldContract {}
     interface BigIntegerContract extends IntegerContract {}

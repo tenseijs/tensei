@@ -1,4 +1,4 @@
-import Faker, { fake } from 'faker'
+import Faker from 'faker'
 import Supertest from 'supertest'
 
 import { setup, fakePostData } from '../../helpers'
