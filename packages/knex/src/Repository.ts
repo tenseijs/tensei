@@ -41,7 +41,7 @@ export class SqlRepository extends ResourceHelpers
     }
 
     public setup = async (config: Config) => {
-        this.config = config.databaseConfig
+        this.config = config.databaseConfig[0]
 
         this.resources = config.resources
 
@@ -397,22 +397,22 @@ export class SqlRepository extends ResourceHelpers
         field: SerializedField
     ) => {
         if (
-            field.sqlDatabaseFieldType === 'enu' &&
+            field.databaseFieldType === 'enu' &&
             this.config.client === 'pg'
         ) {
             // TODO: Remove this when the enu alter() bug is fixed from the knex team.
             // This will allow any string, but we will add application
             // level validation to make sure the value
-            field.sqlDatabaseFieldType = 'string'
+            field.databaseFieldType = 'string'
         }
 
-        const knexMethodName = field.sqlDatabaseFieldType || ''
+        const knexMethodName = field.databaseFieldType || ''
         const tableExists = !!oldResource
 
         // @ts-ignore
         if (!table[knexMethodName] && table[knexMethodName] !== 'undefined') {
             console.warn(
-                `The field ${field.name} is making use of an invalid database method ${field.sqlDatabaseFieldType}. Make sure this method is supported by knex.`
+                `The field ${field.name} is making use of an invalid database method ${field.databaseFieldType}. Make sure this method is supported by knex.`
             )
             return
         }

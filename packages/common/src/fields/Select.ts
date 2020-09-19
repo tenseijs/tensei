@@ -8,7 +8,7 @@ export interface Option {
 export class Select extends Field {
     public selectOptions: Array<Option> = []
 
-    protected sqlDatabaseFieldType: string = 'enu'
+    public databaseFieldType: string = 'enu'
 
     /**
      * Set the min value for this number field.

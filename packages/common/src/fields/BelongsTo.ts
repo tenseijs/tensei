@@ -10,7 +10,7 @@ export class BelongsTo extends Integer {
      */
     public component = 'BelongsToField'
 
-    protected sqlDatabaseFieldType: string = 'integer'
+    public databaseFieldType: string = 'integer'
 
     protected isRelationshipField: boolean = false
 

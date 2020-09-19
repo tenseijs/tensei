@@ -23,7 +23,7 @@ export class ID extends Field implements IDContract {
      */
     public objectId: boolean = true
 
-    protected sqlDatabaseFieldType: string = 'increments'
+    public databaseFieldType: string = 'increments'
 
     /**
      * When a new ID field is created, by default,

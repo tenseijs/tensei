@@ -20,7 +20,7 @@ declare module '@tensei/common' {
     }
 
     export interface Config {
-        databaseConfig: Knex
+        databaseConfig: [Knex]
     }
 }
 

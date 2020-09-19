@@ -10,7 +10,7 @@ export class HasMany extends Integer {
      */
     public component = 'HasManyField'
 
-    protected sqlDatabaseFieldType: string = 'undefined'
+    public databaseFieldType: string = 'undefined'
 
     protected isRelationshipField: boolean = true
 

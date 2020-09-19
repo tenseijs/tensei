@@ -8,7 +8,7 @@ export class Integer extends Number {
      * This would match the knex method name
      * on the create builder.
      */
-    protected sqlDatabaseFieldType: string = 'integer'
+    public databaseFieldType: string = 'integer'
 
     public component: string = `${this.constructor.name}Field`
 

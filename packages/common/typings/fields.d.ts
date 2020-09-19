@@ -26,7 +26,7 @@ declare module '@tensei/common/fields' {
         fieldName: string
         camelCaseName: string
         databaseField: string
-        sqlDatabaseFieldType: string | undefined
+        databaseFieldType: string
         attributes: {
             [key: string]: string
         }
@@ -80,6 +80,7 @@ declare module '@tensei/common/fields' {
             afterCreate: FieldHookFunction
             afterUpdate: FieldHookFunction
         }
+        databaseFieldType: string
         beforeCreate(hook: FieldHookFunction): this
         beforeUpdate(hook: FieldHookFunction): this
         afterCreate(hook: FieldHookFunction): this
@@ -491,7 +492,7 @@ declare module '@tensei/common/fields' {
          * field labels etc
          */
         name: string
-        protected sqlDatabaseFieldType: string | undefined
+        public databaseFieldType: string
         /**
          *
          * Define validation rules to be used to validate
@@ -713,9 +714,9 @@ declare module '@tensei/common/fields' {
         serialize(): SerializedField
     }
     export declare class Text extends Field {
-        protected sqlDatabaseFieldType: string
+        public databaseFieldType: string
     }
     export declare class Textarea extends Text {
-        protected sqlDatabaseFieldType: string
+        public databaseFieldType: string
     }
 }

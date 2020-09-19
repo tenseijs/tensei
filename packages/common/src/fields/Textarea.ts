@@ -1,7 +1,7 @@
 import Text from './Text'
 
 export class Textarea extends Text {
-    protected sqlDatabaseFieldType: string = 'text'
+    public databaseFieldType: string = 'text'
 }
 
 export const textarea = (name: string, databaseField?: string) =>

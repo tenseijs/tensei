@@ -21,7 +21,7 @@ export class DateField extends Field {
 
     protected pickerFormat: string = 'MM/dd/yyyy'
 
-    protected sqlDatabaseFieldType: string = 'date'
+    public databaseFieldType: string = 'date'
 
     protected shouldDefaultToNow: boolean = false
 

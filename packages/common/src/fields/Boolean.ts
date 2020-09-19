@@ -1,7 +1,7 @@
 import Field from './Field'
 
 export class BooleanField extends Field {
-    protected sqlDatabaseFieldType: string = 'boolean'
+    public databaseFieldType: string = 'boolean'
 
     public component = 'BooleanField'
 

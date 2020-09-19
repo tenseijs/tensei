@@ -31,7 +31,7 @@ const field = {
     showOnDetail: true,
     showOnIndex: true,
     showOnUpdate: true,
-    sqlDatabaseFieldType: 'string',
+    databaseFieldType: 'string',
     updateRules: [],
 }
 
@@ -64,7 +64,7 @@ const selectField = {
     showOnDetail: true,
     showOnIndex: true,
     showOnUpdate: true,
-    sqlDatabaseFieldType: 'enu',
+    databaseFieldType: 'enu',
     updateRules: [],
 }
 
@@ -88,7 +88,7 @@ const hasManyField = {
     showOnDetail: true,
     showOnIndex: false,
     showOnUpdate: true,
-    sqlDatabaseFieldType: 'undefined',
+    databaseFieldType: 'undefined',
     updateRules: [],
 }
 
@@ -122,7 +122,7 @@ const belongsToManyField = {
     showOnDetail: true,
     showOnIndex: true,
     showOnUpdate: true,
-    sqlDatabaseFieldType: 'enu',
+    databaseFieldType: 'enu',
     updateRules: [],
 }
 
@@ -159,7 +159,7 @@ const dataTimeField = {
     showOnDetail: true,
     showOnIndex: true,
     showOnUpdate: true,
-    sqlDatabaseFieldType: 'datetime',
+    databaseFieldType: 'datetime',
     updateRules: [],
 }
 

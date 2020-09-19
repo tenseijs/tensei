@@ -1,7 +1,7 @@
 import Field from './Field'
 
 export class Text extends Field {
-    protected sqlDatabaseFieldType: string = 'string'
+    public databaseFieldType: string = 'string'
 }
 
 export const text = (name: string, databaseField?: string) =>

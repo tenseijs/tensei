@@ -155,9 +155,9 @@ export class Tensei {
         return this
     }
 
-    public databaseConfig(config: any) {
+    public databaseConfig(...allArguments: any) {
         // @ts-ignore
-        this.config.databaseConfig = config
+        this.config.databaseConfig = allArguments
 
         return this
     }

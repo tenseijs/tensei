@@ -6,7 +6,7 @@ export class BigInteger extends Integer {
      * This would match the knex method name
      * on the create builder.
      */
-    protected sqlDatabaseFieldType: string = 'bigInteger'
+    public databaseFieldType: string = 'bigInteger'
 
     protected isRelationshipField: boolean = true
 

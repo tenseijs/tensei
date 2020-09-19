@@ -1,7 +1,7 @@
 import Field from './Field'
 
 export class Json extends Field {
-    protected sqlDatabaseFieldType: string = 'json'
+    public databaseFieldType: string = 'json'
 }
 
 const stringifyValue = (value: string) =>

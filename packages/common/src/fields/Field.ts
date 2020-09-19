@@ -120,7 +120,7 @@ export class Field implements FieldContract {
      */
     public name: string
 
-    protected sqlDatabaseFieldType: string | undefined = undefined
+    public databaseFieldType: string = ''
 
     /**
      *
@@ -561,7 +561,7 @@ export class Field implements FieldContract {
             creationRules: this.creationValidationRules,
             fieldName: this.constructor.name,
             databaseField: this.databaseField,
-            sqlDatabaseFieldType: this.sqlDatabaseFieldType,
+            databaseFieldType: this.databaseFieldType,
             isRelationshipField: this.isRelationshipField,
         }
     }
