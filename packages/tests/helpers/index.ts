@@ -4,7 +4,7 @@ import Bcrypt from 'bcryptjs'
 import { tensei, TenseiContract } from '@tensei/core'
 import { plugin, Plugin, User as IUser } from '@tensei/common'
 
-import { Tag, Comment, User, Post } from './resources'
+import { Tag, Comment, User, Post, Reaction } from './resources'
 
 interface ConfigureSetup {
     plugins?: Plugin[]
@@ -20,11 +20,16 @@ let cachedInstance: TenseiContract | null = null
 export const fakePostData = () => ({
     title: Faker.lorem.word(),
     description: Faker.lorem.word(),
-    content: Faker.lorem.sentence(),
+    content: Faker.lorem.sentence(20),
     av_cpc: Faker.random.number(),
     published_at: Faker.date.future(),
     scheduled_for: Faker.date.future(),
     category: Faker.random.arrayElement(['javascript', 'angular'])
+})
+
+export const fakeTagData = () => ({
+    name: Faker.lorem.word(),
+    description: Faker.lorem.word()
 })
 
 export const setup = async (
@@ -41,10 +46,10 @@ export const setup = async (
     let dbConfig: Knex.Config = {
         client: 'mysql',
         connection: {
-            host: '127.0.0.1',
-            user: 'root',
-            password: '',
-            database: 'testdb'
+            host: process.env.DATABASE_HOST || '127.0.0.1',
+            user: process.env.DATABASE_USER || 'root',
+            password: process.env.DATABASE_PASSSWORD || '',
+            database: process.env.DATABASE_DB || 'testdb'
         }
     }
 
@@ -60,10 +65,10 @@ export const setup = async (
         dbConfig = {
             client: 'pg',
             connection: {
-                host: '127.0.0.1',
-                user: 'root',
-                password: '',
-                database: 'tensei'
+                host: process.env.DATABASE_HOST || '127.0.0.1',
+                user: process.env.DATABASE_USER || 'root',
+                password: process.env.DATABASE_PASSWORD || '',
+                database: process.env.DATABASE_DB || 'tensei'
             }
         }
     }
@@ -100,11 +105,15 @@ export const setup = async (
         instance.dashboardPath(dashboardPath)
     }
 
-    instance = await instance.resources([Post, Tag, User, Comment]).register()
+    instance = await instance
+        .resources([Post, Tag, User, Comment, Reaction])
+        .register()
 
     const knex: Knex = instance.databaseClient
 
-    await knex.schema.hasTable('sessions') ? await knex('sessions').truncate() : null
+    ;(await knex.schema.hasTable('sessions'))
+        ? await knex('sessions').truncate()
+        : null
 
     await Promise.all([
         knex('users').truncate(),
