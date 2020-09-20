@@ -205,8 +205,6 @@ class DashboardPage extends React.Component {
                     </div>
                 </div>
 
-                <PageLayout></PageLayout>
-
                 <div
                     className="w-full flex flex-wrap"
                     style={{ height: 'calc(100vh - 8.75rem)' }}
