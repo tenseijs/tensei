@@ -19,7 +19,7 @@ import BelongsToManyDetailField from './detail-fields/BelongsToManyField'
 
 import TextIndexField from './index-fields/Text'
 
-class Tensei {
+export default class Tensei {
     state = (() => {
         let user = null
         let resources = []

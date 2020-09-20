@@ -11,7 +11,10 @@ import {
 
 declare module '@tensei/core' {
     export interface TenseiContract {
-        databaseConfig: (uri: string, config: Mongoose.ConnectionOptions) => this
+        databaseConfig: (
+            uri: string,
+            config: Mongoose.ConnectionOptions
+        ) => this
     }
 }
 

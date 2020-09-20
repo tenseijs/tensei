@@ -24,8 +24,7 @@ module.exports = tensei()
                 plan('Premium Sub').yearly().price(99),
             ])
             .plugin(),
-        graphql()
-            .plugin()
+        graphql().plugin(),
     ])
     .databaseConfig({
         // client: 'mysql',

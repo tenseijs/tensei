@@ -31,7 +31,9 @@
             "examples/*"
         ],
         "nohoist": [
-            "**/react-trix-editor"
+            "**/react-trix-editor",
+            "**/laravel-mix",
+            "**/node-sass"
         ]
     }
 }

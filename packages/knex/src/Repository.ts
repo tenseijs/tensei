@@ -156,13 +156,13 @@ export class SqlRepository extends ResourceHelpers
         await new RoleModel({
             id: superAdminRole.id
         })
-        [permissionResource.data.slug]()
+            [permissionResource.data.slug]()
             .detach()
 
         await new RoleModel({
             id: superAdminRole.id
         })
-        [permissionResource.data.slug]()
+            [permissionResource.data.slug]()
             .attach(allPermissions.map((permission: any) => permission.id))
     }
 
@@ -192,19 +192,19 @@ export class SqlRepository extends ResourceHelpers
                 if (field.component === 'BelongsToField') {
                     model[
                         relatedResource.data.name.toLowerCase()
-                    ] = function () {
+                    ] = function() {
                         return this.belongsTo(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'HasManyField') {
-                    model[relatedResource.data.slug] = function () {
+                    model[relatedResource.data.slug] = function() {
                         return this.hasMany(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'BelongsToManyField') {
-                    model[relatedResource.data.slug] = function () {
+                    model[relatedResource.data.slug] = function() {
                         return this.belongsToMany(relatedResource.data.name)
                     }
                 }
@@ -316,12 +316,12 @@ export class SqlRepository extends ResourceHelpers
 
         const oldResources: SerializedResource[] = migrationsTableExists
             ? (await knex.select('*').from(this.migrationsTable)).map(row => {
-                try {
-                    return JSON.parse(row.resource_data)
-                } catch (error) {
-                    return row.resource_data
-                }
-            })
+                  try {
+                      return JSON.parse(row.resource_data)
+                  } catch (error) {
+                      return row.resource_data
+                  }
+              })
             : []
 
         if (!migrationsTableExists) {
@@ -396,10 +396,7 @@ export class SqlRepository extends ResourceHelpers
         oldResource: SerializedResource | undefined,
         field: SerializedField
     ) => {
-        if (
-            field.databaseFieldType === 'enu' &&
-            this.config.client === 'pg'
-        ) {
+        if (field.databaseFieldType === 'enu' && this.config.client === 'pg') {
             // TODO: Remove this when the enu alter() bug is fixed from the knex team.
             // This will allow any string, but we will add application
             // level validation to make sure the value
@@ -505,9 +502,9 @@ export class SqlRepository extends ResourceHelpers
     }
 
     public findAllCount = async () => {
-        return this.$db!(this.getCurrentResource().data.table)
-            .count()
-            .then(([count]) => parseInt(count['count(*)'] as string))
+        const Model = this.getResourceBookshelfModel(this.getCurrentResource())
+
+        return Model.count()
     }
 
     public create = async (
@@ -631,7 +628,7 @@ export class SqlRepository extends ResourceHelpers
                         return
                     }
 
-                    return (async function () {
+                    return (async function() {
                         await RelatedModel.query()
                             .where(relatedBelongsToField.databaseField, id)
                             .update({
@@ -806,24 +803,24 @@ export class SqlRepository extends ResourceHelpers
             .sort()
             .join('_')
 
-        const count = (
-            await getBuilder(
-                this.$db!(relatedResource.data.table)
-                    .count()
-                    .innerJoin(
-                        tableName,
-                        `${tableName}.${relatedResourceColumnName}`,
-                        `${relatedResource.data.table}.id`
-                    )
-            ).andWhere(`${tableName}.${resourceColumnName}`, resourceId)
-        )[0]['count(*)']
+        const countResult = await getBuilder(
+            this.$db!(relatedResource.data.table)
+                .count()
+                .innerJoin(
+                    tableName,
+                    `${tableName}.${relatedResourceColumnName}`,
+                    `${relatedResource.data.table}.id`
+                )
+        ).andWhere(`${tableName}.${resourceColumnName}`, resourceId)
+
+        const count = countResult[0]['count(*)'] || countResult[0]['count']
 
         const data = await Model.forge({
             id: resourceId
         }).fetch({
             withRelated: [
                 {
-                    [relatedResource.data.slug]: function (builder: any) {
+                    [relatedResource.data.slug]: function(builder: any) {
                         return getBuilder(builder)
                             .select(
                                 query.fields.map(
@@ -947,14 +944,14 @@ export class SqlRepository extends ResourceHelpers
             .limit(query.perPage)
             .offset((query.page - 1) * query.perPage)
 
-        const total = count[0]['count(*)']
+        const total = count[0]['count(*)'] || count[0]['count']
 
         // we need to also implement the logic for no pagination
 
         return {
-            total,
             data: results,
             page: query.page,
+            total: parseInt(total),
             perPage: query.perPage,
             pageCount: Math.ceil(total / query.perPage)
         }

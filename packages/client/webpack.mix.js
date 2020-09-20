@@ -1,10 +1,10 @@
 const Path = require('path')
 const mix = require('laravel-mix')
 
-require('laravel-mix-bundle-analyzer')
+// require('laravel-mix-bundle-analyzer')
 
 if (!mix.inProduction()) {
-    mix.bundleAnalyzer()
+    // mix.bundleAnalyzer()
 }
 
 mix.options({
@@ -13,8 +13,7 @@ mix.options({
     },
 })
 
-mix.react('index.js', './../server/build/index.client.js').postCss(
-    'index.css',
-    './../server/build/index.min.css',
-    [require('tailwindcss')]
-)
+mix
+    .setPublicPath('../core/build/client')
+    .react('index.js', 'index.js')
+    .postCss('css/index.css', 'index.css', [require('tailwindcss')])

@@ -1,8 +1,21 @@
 import { sentenceCase } from 'change-case'
-import Mongoose, { Connection, ConnectionOptions, Model, Mongoose as MongooseType } from 'mongoose'
-import { DatabaseRepositoryInterface, ResourceHelpers, Config, ResourceContract, DataPayload, FetchAllRequestQuery } from '@tensei/common'
+import Mongoose, {
+    Connection,
+    ConnectionOptions,
+    Model,
+    Mongoose as MongooseType
+} from 'mongoose'
+import {
+    DatabaseRepositoryInterface,
+    ResourceHelpers,
+    Config,
+    ResourceContract,
+    DataPayload,
+    FetchAllRequestQuery
+} from '@tensei/common'
 
-export class Repository extends ResourceHelpers implements DatabaseRepositoryInterface {
+export class Repository extends ResourceHelpers
+    implements DatabaseRepositoryInterface {
     private $db: MongooseType | null = null
 
     private connectionString: string = ''
@@ -42,7 +55,7 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
     ) => this.mongooseModels.find(Model => resource.data.name === Model.name)
 
     private bootMongooseModels() {
-         this.mongooseModels = this.resources.map(resource => {
+        this.mongooseModels = this.resources.map(resource => {
             const schemaDefinition: Mongoose.SchemaDefinition = {}
 
             resource.data.fields.forEach(field => {
@@ -54,7 +67,11 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
                     type = Mongoose.Schema.Types.String
                 }
 
-                if (['datetime', 'date', 'timestamp'].includes(field.databaseFieldType)) {
+                if (
+                    ['datetime', 'date', 'timestamp'].includes(
+                        field.databaseFieldType
+                    )
+                ) {
                     type = Mongoose.Schema.Types.Date
                 }
 
@@ -62,7 +79,9 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
                     type = Mongoose.Schema.Types.Boolean
                 }
 
-                if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
+                if (
+                    ['integer', 'bigInteger'].includes(field.databaseFieldType)
+                ) {
                     type = Mongoose.Schema.Types.Number
                 }
 
@@ -78,10 +97,14 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
                     type,
                     unique: field.isUnique,
                     index: field.isSearchable,
-                    default: serializedField.defaultToNow ? Date.now : serializedField.defaultValue,
+                    default: serializedField.defaultToNow
+                        ? Date.now
+                        : serializedField.defaultValue
                 }
 
-                if (['BelongsToField', 'HasManyField'].includes(field.component)) {
+                if (
+                    ['BelongsToField', 'HasManyField'].includes(field.component)
+                ) {
                     schemaDefinition[field.databaseField] = {
                         ...schemaDefinition[field.databaseField],
                         ref: field.name
@@ -185,10 +208,7 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
     }
 
     async establishDatabaseConnection() {
-         this.$db = await Mongoose.connect(
-            this.connectionString,
-            this.config
-        )
+        this.$db = await Mongoose.connect(this.connectionString, this.config)
     }
 
     create(payload: DataPayload, relationshipPayload?: DataPayload) {
@@ -197,9 +217,9 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
 
     update(
         id: number | string,
-            payload: DataPayload,
-            relationshipPayload: DataPayload,
-            patch: boolean
+        payload: DataPayload,
+        relationshipPayload: DataPayload,
+        patch: boolean
     ) {
         return Promise.resolve()
     }
@@ -222,17 +242,13 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
 
     findOneById(
         id: number | string,
-            fields?: string[],
-            withRelationships?: string[]
+        fields?: string[],
+        withRelationships?: string[]
     ) {
         return Promise.resolve(null)
     }
 
-    findOneByField(
-        field: string,
-        value: string,
-        fields?: string[]
-    ) {
+    findOneByField(field: string, value: string, fields?: string[]) {
         return Promise.resolve(null)
     }
 
@@ -245,18 +261,11 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
         return Promise.resolve(null)
     }
 
-    updateManyByIds(
-        ids: number[],
-        valuesToUpdate: {}
-    ) {
+    updateManyByIds(ids: number[], valuesToUpdate: {}) {
         return Promise.resolve(1)
     }
 
-    updateOneByField(
-        field: string,
-            value: any,
-            payload: DataPayload = {}
-    ) {
+    updateOneByField(field: string, value: any, payload: DataPayload = {}) {
         return Promise.resolve(null)
     }
 
@@ -264,10 +273,12 @@ export class Repository extends ResourceHelpers implements DatabaseRepositoryInt
         return Promise.resolve()
     }
 
-    updateManyWhere(whereClause: {
-        [key: string]: string | number
-    },
-    valuesToUpdate: {}) {
+    updateManyWhere(
+        whereClause: {
+            [key: string]: string | number
+        },
+        valuesToUpdate: {}
+    ) {
         return Promise.resolve()
     }
 

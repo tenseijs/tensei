@@ -1,0 +1,63 @@
+Arguments: 
+  /usr/local/bin/node /Users/bahdcoder/.yarn/bin/yarn.js
+
+PATH: 
+  /usr/local/lib/ruby/gems/2.6.0/bin:/Users/bahdcoder/.yarn/bin:/Users/bahdcoder/.config/yarn/global/node_modules/.bin:/usr/local/opt/mysql@5.7/bin:/Users/bahdcoder/.composer/vendor/bin:/Users/bahdcoder/.composer/vendor/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/lib/ruby/gems/2.6.0/bin:/Users/bahdcoder/.yarn/bin:/Users/bahdcoder/.config/yarn/global/node_modules/.bin:/usr/local/opt/mysql@5.7/bin:/Users/bahdcoder/.composer/vendor/bin
+
+Yarn version: 
+  1.22.4
+
+Node version: 
+  12.17.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.756.0.tgz: unexpected end of file
+      at Zlib.zlibOnError [as onerror] (zlib.js:180:17)
+
+npm manifest: 
+  {
+      "name": "@tensei/main",
+      "version": "0.0.0",
+      "main": "./build/server/index.js",
+      "license": "MIT",
+      "types": "./build/typings/index.d.ts",
+      "devDependencies": {
+          "lerna": "^3.22.1",
+          "prettier": "^2.0.5"
+      },
+      "scripts": {
+          "test": "yarn lerna run test",
+          "build": "yarn lerna run build",
+          "dev": "yarn lerna run dev",
+          "prettier": "yarn lerna run prettier"
+      },
+      "config": {
+          "commitizen": {
+              "path": "cz-conventional-changelog"
+          }
+      },
+      "husky": {
+          "hooks": {
+              "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+          }
+      },
+      "private": true,
+      "workspaces": {
+          "packages": [
+              "packages/*",
+              "examples/*"
+          ],
+          "nohoist": [
+              "**/react-trix-editor"
+          ]
+      }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

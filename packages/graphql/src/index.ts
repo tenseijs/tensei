@@ -11,14 +11,14 @@ export interface GraphQlPluginConfig {
 class Graphql {
     private config: GraphQlPluginConfig = {
         graphiql: true,
-        graphqlPath: '/graphql'
+        graphqlPath: '/graphql',
     }
 
     generateSchemaFromResources = (resources: Resource[]) => {
         const fields: {
             [key: string]: any
         } = {}
-    
+
         resources.forEach((resource) => {
             fields[resource.data.slug] = {}
         })
@@ -32,26 +32,28 @@ class Graphql {
     }
 
     plugin() {
-        return plugin('Graph QL').afterDatabaseSetup(async ({ app, resources }) => {
-            const schema = this.generateSchemaFromResources(resources)
+        return plugin('Graph QL').afterDatabaseSetup(
+            async ({ app, resources }) => {
+                const schema = this.generateSchemaFromResources(resources)
 
-            app.post(
-                this.config.graphqlPath,
-                graphqlHTTP({
-                    schema,
-                    graphiql: this.config.graphiql,
-                })
-            )
-    
-            app.get(
-                this.config.graphqlPath,
-                GraphqlPlayground({
-                    endpoint: this.config.graphqlPath,
-                })
-            )
-    
-            return {}
-        })
+                app.post(
+                    this.config.graphqlPath,
+                    graphqlHTTP({
+                        schema,
+                        graphiql: this.config.graphiql,
+                    })
+                )
+
+                app.get(
+                    this.config.graphqlPath,
+                    GraphqlPlayground({
+                        endpoint: this.config.graphqlPath,
+                    })
+                )
+
+                return {}
+            }
+        )
     }
 }
 

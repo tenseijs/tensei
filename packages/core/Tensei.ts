@@ -296,10 +296,26 @@ export class Tensei {
             return next()
         }
 
-        const admin = await request
+        let admin = await request
             .manager(this.administratorResource())
             .database()
-            .findOneById(request.session?.user)
+            .findOneById(request.session?.user, [], [
+                `administrator-roles.administrator-permissions`
+            ])
+
+        if (admin.toJSON()) {
+            admin = admin.toJSON()
+        }
+
+        admin.permissions = admin['administrator-roles'].reduce(
+            (acc: [], role: any) => [
+                ...acc,
+                ...(role['administrator-permissions'] || []).map(
+                    (permission: any) => permission.slug
+                ),
+            ],
+            []
+        )
 
         if (!admin) {
             return next()
