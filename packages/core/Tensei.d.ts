@@ -7,7 +7,8 @@ declare module '@tensei/core' {
         SetupFunctions,
         ManagerContract,
         SupportedDatabases,
-        PluginSetupConfig
+        PluginSetupConfig,
+        DashboardContract
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -46,6 +47,7 @@ declare module '@tensei/core' {
             import('qs').ParsedQs
         >
         resources(resources: ResourceContract[]): this
+        dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this
         mail(driverName: SupportedDrivers, mailConfig?: {}): this
     }

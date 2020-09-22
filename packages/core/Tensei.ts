@@ -30,6 +30,8 @@ import CreateResourceController from './controllers/resources/CreateResourceCont
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
+import { DashboardContract } from '@tensei/common'
+import MetricController from './controllers/MetricController'
 
 export class Tensei {
     public app: Application = Express()
@@ -49,7 +51,9 @@ export class Tensei {
     private config: Config = {
         resources: [],
         plugins: [],
+        dashboards: [],
         resourcesMap: {},
+        dashboardsMap: {},
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
@@ -245,6 +249,7 @@ export class Tensei {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
+                request.dashboards = this.config.dashboardsMap
                 request.resources = this.config.resourcesMap
                 request.manager = this.manager(request)!
                 request.mailer = this.mailer
@@ -299,9 +304,11 @@ export class Tensei {
         let admin = await request
             .manager(this.administratorResource())
             .database()
-            .findOneById(request.session?.user, [], [
-                `administrator-roles.administrator-permissions`
-            ])
+            .findOneById(
+                request.session?.user,
+                [],
+                [`administrator-roles.administrator-permissions`]
+            )
 
         if (admin.toJSON()) {
             admin = admin.toJSON()
@@ -312,7 +319,7 @@ export class Tensei {
                 ...acc,
                 ...(role['administrator-permissions'] || []).map(
                     (permission: any) => permission.slug
-                ),
+                )
             ],
             []
         )
@@ -381,6 +388,12 @@ export class Tensei {
             this.getApiPath(`resources/:resource/:resourceId`),
             this.authMiddleware,
             this.asyncHandler(UpdateResourceController.update)
+        )
+
+        this.app.get(
+            this.getApiPath(`metrics/:dashboard/:metric`),
+            this.authMiddleware,
+            this.asyncHandler(MetricController.index)
         )
 
         this.app.patch(
@@ -530,6 +543,26 @@ export class Tensei {
         })
 
         this.setValue('resourcesMap', resourcesMap)
+
+        return this
+    }
+
+    public dashboards(dashboards: DashboardContract[]) {
+        const updatedDashboards = [...this.config.dashboards, ...dashboards]
+
+        this.config.dashboards = Array.from(
+            new Set(updatedDashboards.map(dashboard => dashboard.config.name))
+        )
+            .map(resourceName =>
+                updatedDashboards.find(
+                    dashboard => dashboard.config.name === resourceName
+                )
+            )
+            .filter(Boolean) as DashboardContract[]
+
+        this.config.dashboards.forEach(dashboard => {
+            this.config.dashboardsMap[dashboard.config.slug] = dashboard
+        })
 
         return this
     }

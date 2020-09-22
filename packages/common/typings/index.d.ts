@@ -5,3 +5,4 @@
 /// <reference path="resources.d.ts" />
 /// <reference path="common.d.ts" />
 /// <reference path="express.d.ts" />
+/// <reference path="dashboards.d.ts" />

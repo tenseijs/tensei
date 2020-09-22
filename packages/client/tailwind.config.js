@@ -27,7 +27,9 @@ module.exports = {
                 'gray-lightest-200': '#d3dce0',
                 'blue-lightest': '#e8f7ff',
             },
-            fontFamily: {},
+            fontFamily: {
+                // sans: ['IBM Plex Sans'],
+            },
             width: (theme) => ({
                 ...theme('spacing'),
                 '1/7': '14.30%',

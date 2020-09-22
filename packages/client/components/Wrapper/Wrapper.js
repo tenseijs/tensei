@@ -13,6 +13,7 @@ class Wrapper extends React.Component {
         booted: false,
         user: window.Tensei.state.user,
         resources: window.Tensei.state.resources,
+        dashboards: window.Tensei.state.dashboards,
         appConfig: window.Tensei.state.appConfig,
         permissions: window.Tensei.state.permissions,
         shouldShowRegistrationScreen:
@@ -34,6 +35,7 @@ class Wrapper extends React.Component {
             user,
             booted,
             resources,
+            dashboards,
             permissions,
             shouldShowRegistrationScreen,
         } = this.state
@@ -67,6 +69,7 @@ class Wrapper extends React.Component {
                     <Resources.Provider
                         value={{
                             resources,
+                            dashboards,
                         }}
                     >
                         <Route

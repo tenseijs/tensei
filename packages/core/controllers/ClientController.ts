@@ -28,6 +28,11 @@ class ClientController {
                         request.resources[key].serialize()
                     )
                 ),
+                dashboards: JSON.stringify(
+                    Object.keys(request.dashboards).map(key =>
+                        request.dashboards[key].serialize()
+                    )
+                ),
                 appConfig: JSON.stringify({
                     dashboardPath: request.appConfig.dashboardPath
                 }),

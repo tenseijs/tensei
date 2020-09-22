@@ -13,7 +13,6 @@ mix.options({
     },
 })
 
-mix
-    .setPublicPath('../core/build/client')
+mix.setPublicPath('../core/build/client')
     .react('index.js', 'index.js')
     .postCss('css/index.css', 'index.css', [require('tailwindcss')])

@@ -1,6 +1,8 @@
 import Axios from 'axios'
 import { Notification } from '@contentful/forma-36-react-components'
 
+import ValueMetric from './cards/ValueMetric'
+
 import TextField from './fields/Text'
 import SelectField from './fields/Select'
 import BooleanField from './fields/Boolean'
@@ -25,11 +27,13 @@ export default class Tensei {
         let resources = []
         let appConfig = {}
         let permissions = {}
+        let dashboards = []
         let shouldShowRegistrationScreen = false
 
         try {
             appConfig = JSON.parse(window.tenseiDefaultState.appConfig)
             resources = JSON.parse(window.tenseiDefaultState.resources)
+            dashboards = JSON.parse(window.tenseiDefaultState.dashboards)
             shouldShowRegistrationScreen =
                 window.tenseiDefaultState.shouldShowRegistrationScreen ===
                 'true'
@@ -45,6 +49,7 @@ export default class Tensei {
             user,
             resources,
             appConfig,
+            dashboards,
             permissions,
             shouldShowRegistrationScreen,
         }
@@ -77,6 +82,10 @@ export default class Tensei {
         NumberField: TextField,
         IntegerField: TextField,
         DateField: DateTimeField,
+    }
+
+    cardComponents = {
+        ValueMetric
     }
 
     indexFieldComponents = {

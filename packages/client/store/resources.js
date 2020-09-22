@@ -9,7 +9,11 @@ export const withResources = (Component) => {
         return (
             <Resources.Consumer>
                 {(value) => (
-                    <Component resources={value.resources} {...props} />
+                    <Component
+                        resources={value.resources}
+                        dashboards={value.dashboards}
+                        {...props}
+                    />
                 )}
             </Resources.Consumer>
         )

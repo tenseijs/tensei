@@ -14,6 +14,7 @@ import {
     belongsToMany,
     dateTime,
     HookFunction,
+    DataPayload,
 } from '@tensei/common'
 
 import { AuthPluginConfig, AuthData } from './config'
@@ -189,14 +190,24 @@ class Auth {
                               .hideOnIndex()
                               .hideOnUpdate()
                               .hideOnDetail(),
-                          text('Email Verification Token').hidden(),
+                          text('Email Verification Token')
+                            .hidden()
+                            .hideOnCreate()
+                            .hideOnIndex()
+                            .hideOnUpdate()
+                            .hideOnDetail()
+                            ,
                       ]
                     : []),
             ])
             .beforeCreate((payload, request) => {
-                const parsedPayload = {
+                const parsedPayload: DataPayload = {
                     ...payload,
                     password: Bcrypt.hashSync(payload.password),
+                }
+
+                if (this.config.verifyEmails) {
+                    parsedPayload.email_verification_token = this.generateRandomToken()
                 }
 
                 if (this.config.beforeCreateUser) {
@@ -377,18 +388,7 @@ class Auth {
         { manager, mailer, body }: Request,
         response: Response
     ) => {
-        let email_verification_token = null
-
         let createUserPayload = body
-
-        if (this.config.verifyEmails) {
-            email_verification_token = this.generateRandomToken()
-
-            createUserPayload = {
-                ...createUserPayload,
-                email_verification_token,
-            }
-        }
 
         const { id } = await manager(this.userResource()).create(
             createUserPayload
@@ -410,7 +410,7 @@ class Auth {
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
             mailer.to(user.email).sendRaw(`
-                    Please verify your email using this link: ${email_verification_token}
+                    Please verify your email using this link: ${user.email_verification_token}
                 `)
         }
 

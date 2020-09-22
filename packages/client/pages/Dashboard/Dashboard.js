@@ -11,6 +11,7 @@ import {
 import ShowResource from '~/pages/ShowResource'
 import ResourceIndex from '~/pages/ResourceIndex'
 import CreateResource from '~/pages/CreateResource'
+import DashboardIndex from '~/pages/DashboardIndex'
 
 import { withResources } from '~/store/resources'
 import { mustBeAuthenticated } from '~/store/auth'
@@ -22,68 +23,58 @@ class DashboardPage extends React.Component {
     state = this.defaultState()
 
     defaultState() {
-        const resources = this.props.resources.filter(
-            (resource) => resource.displayInNavigation
-        )
+        let groups = []
 
-        const groups = [
-            {
-                name: 'Dashboard',
-                open: true,
-                slug: 'dashboard',
-                items: [
-                    {
-                        slug: 'home',
-                        label: 'Home',
-                        to: Tensei.getPath('dashboard'),
-                    },
-                ],
-            },
-        ]
-
-        resources.forEach((resource) => {
-            const navItem = {
-                slug: resource.slug,
-                to: Tensei.getPath(`resources/${resource.slug}`),
-                label: resource.label,
-            }
-
-            const groupExists = groups.findIndex(
-                (group) => group.name === resource.group
-            )
-
-            if (groupExists === -1) {
-                groups.push({
-                    open: true,
-                    slug: resource.groupSlug,
-                    name: resource.group,
-                    items: [
-                        {
-                            slug: resource.slug,
-                            label: resource.label,
-                            to: Tensei.getPath(`resources/${resource.slug}`),
-                        },
-                    ],
-                })
-            } else {
-                groups[groupExists] = {
-                    ...groups[groupExists],
-                    items: [
-                        ...groups[groupExists].items,
-                        {
-                            slug: resource.slug,
-                            label: resource.label,
-                            to: Tensei.getPath(`resources/${resource.slug}`),
-                        },
-                    ],
-                }
-            }
-        })
+        groups = this.populateGroups('dashboards', groups)
+        groups = this.populateGroups('resources', groups)
 
         return {
             groups,
             accountMenuOpen: false,
         }
+    }
+
+    populateGroups(elementName, groups) {
+        this.props[elementName]
+            .filter((resource) => resource.displayInNavigation)
+            .forEach((element) => {
+                const groupExists = groups.findIndex(
+                    (group) => group.name === element.group
+                )
+
+                if (groupExists === -1) {
+                    groups.push({
+                        open: true,
+                        slug: element.groupSlug,
+                        name: element.group,
+                        items: [
+                            {
+                                slug: element.slug,
+                                label: element.label || element.name,
+                                to: Tensei.getPath(
+                                    `${elementName}/${element.slug}`
+                                ),
+                            },
+                        ],
+                    })
+                } else {
+                    groups[groupExists] = {
+                        ...groups[groupExists],
+                        items: [
+                            ...groups[groupExists].items,
+                            {
+                                slug: element.slug,
+                                label: element.label,
+                                to: Tensei.getPath(
+                                    `${elementName}/${element.slug}`
+                                ),
+                            },
+                        ],
+                    }
+                }
+            })
+
+        return groups
     }
 
     logout = () => {
@@ -207,7 +198,7 @@ class DashboardPage extends React.Component {
 
                 <div
                     className="w-full flex flex-wrap"
-                    style={{ height: 'calc(100vh - 8.75rem)' }}
+                    style={{ height: 'calc(100vh - 4.375rem)' }}
                 >
                     <div className="border-r border-gray-lighter h-full bg-gray-lightest w-full md:w-18-percent">
                         {this.renderGroups()}
@@ -217,8 +208,13 @@ class DashboardPage extends React.Component {
                             <Switch>
                                 <Route
                                     exact
-                                    path={Tensei.getPath('resources/:resource')}
                                     component={ResourceIndex}
+                                    path={Tensei.getPath('resources/:resource')}
+                                />
+                                <Route
+                                    exact
+                                    component={DashboardIndex}
+                                    path={Tensei.getPath('dashboards/:dashboard')}
                                 />
                                 <Route
                                     path={Tensei.getPath(

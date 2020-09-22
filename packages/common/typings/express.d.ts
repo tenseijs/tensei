@@ -1,6 +1,10 @@
 import { Request } from 'express'
 import { Mail } from '@tensei/mail'
-import { ManagerContract, ResourceContract } from '@tensei/common'
+import {
+    ManagerContract,
+    ResourceContract,
+    DashboardContract,
+} from '@tensei/common'
 
 declare global {
     namespace Express {
@@ -11,6 +15,9 @@ declare global {
             ) => ManagerContract
             resources: {
                 [key: string]: ResourceContract
+            }
+            dashboards: {
+                [key: string]: DashboardContract
             }
             mailer: Mail
         }

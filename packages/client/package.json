@@ -34,7 +34,7 @@
         "test": "jest --verbose --runInBand --env=jest-environment-jsdom-sixteen",
         "dev:css": "NODE_ENV=development yarn build:css",
         "build:css": "tailwind build css/index.css -o css/index.output.css",
-        "dev": "webpack --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+        "dev": "yarn dev:css && webpack --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
         "build": "NODE_ENV=production yarn build:css && parcel build index.js --no-source-maps -d './../core/build/client'"
     },
     "dependencies": {

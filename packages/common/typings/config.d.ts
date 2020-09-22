@@ -2,6 +2,8 @@ declare module '@tensei/common/config' {
     import { Request } from 'express'
     import { PluginContract } from '@tensei/common/plugins'
     import { ResourceContract } from '@tensei/common/resources'
+    import { DashboardContract } from '@tensei/common/dashboards'
+
     enum noPagination {
         true = 'true',
         false = 'false',
@@ -73,6 +75,7 @@ declare module '@tensei/common/config' {
     }
     export interface Config {
         plugins: PluginContract[]
+        dashboards: DashboardContract[]
         resources: ResourceContract[]
         scripts: Asset[]
         styles: Asset[]
@@ -82,6 +85,9 @@ declare module '@tensei/common/config' {
         adminTable: string
         resourcesMap: {
             [key: string]: ResourceContract
+        }
+        dashboardsMap: {
+            [key: string]: DashboardContract
         }
     }
     type Permission =
