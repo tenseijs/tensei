@@ -49,6 +49,7 @@
         "date-fns": "^2.14.0",
         "jest-environment-jsdom-sixteen": "^1.0.3",
         "pluralize": "^8.0.0",
+        "react-paginate": "^6.5.0",
         "react-popper": "^2.2.3",
         "react-router-dom": "^5.2.0",
         "throttle-debounce": "^2.2.1"
