@@ -48,8 +48,10 @@ declare module '@tensei/common/resources' {
         }
         hooks: {
             beforeCreate: HookFunction
+            beforeDelete: HookFunction
             beforeUpdate: HookFunction
             afterCreate: HookFunction
+            afterDelete: HookFunction
             afterUpdate: HookFunction
         }
         data: ResourceDataWithFields
@@ -71,8 +73,10 @@ declare module '@tensei/common/resources' {
         label(label: string): this
         serialize(): SerializedResource
         beforeCreate(hook: HookFunction): this
+        beforeDelete(hook: HookFunction): this
         beforeUpdate(hook: HookFunction): this
         afterCreate(hook: HookFunction): this
+        afterDelete(hook: HookFunction): this
         afterUpdate(hook: HookFunction): this
     }
 
@@ -85,8 +89,10 @@ declare module '@tensei/common/resources' {
         }
         hooks: {
             beforeCreate: HookFunction
+            beforeDelete: HookFunction
             beforeUpdate: HookFunction
             afterCreate: HookFunction
+            afterDelete: HookFunction
             afterUpdate: HookFunction
         }
         data: ResourceDataWithFields
@@ -109,7 +115,9 @@ declare module '@tensei/common/resources' {
         serialize(): SerializedResource
         beforeCreate(hook: HookFunction): this
         beforeUpdate(hook: HookFunction): this
+        beforeUpdate(hook: HookFunction): this
         afterCreate(hook: HookFunction): this
+        afterUpdate(hook: HookFunction): this
         afterUpdate(hook: HookFunction): this
     }
 
@@ -199,5 +207,5 @@ declare module '@tensei/common/resources' {
         findOneByField: (databaseField: string, value: any) => Promise<any>
     }
 
-    export declare class Manager extends ManagerContract {}
+    export declare class Manager extends ManagerContract { }
 }
