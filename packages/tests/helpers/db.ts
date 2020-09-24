@@ -13,7 +13,7 @@ export default new (class DB {
     findOneByField = jest.fn(() => true)
     findOneByFieldExcludingOne = jest.fn()
     updateManyByIds = jest.fn()
-    deleteById = jest.fn()
+    deleteOneById = jest.fn()
     updateOneByField = jest.fn()
     updateManyWhere = jest.fn()
     getAdministratorById = jest.fn()

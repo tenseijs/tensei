@@ -2,7 +2,7 @@ import {
     ValueMetricRangeSetter,
     ValueMetricCalculatorFunction,
     ValueMetricConfig,
-    MetricContract
+    MetricContract,
 } from '@tensei/common'
 import { paramCase, pascalCase } from 'change-case'
 
@@ -16,16 +16,16 @@ class ValueMetricResult {
 
 export class ValueMetrics extends Card implements MetricContract {
     public config: ValueMetricConfig = {
-            ...super.config,
-            ranges: {
-                '30d': '30 Days',
-                '60d': '60 Days',
-                '90d': '90 Days',
-                'today': 'Today',
-            },
-            calculator: async () => {
-                return 23
-            },
+        ...super.config,
+        ranges: {
+            '30d': '30 Days',
+            '60d': '60 Days',
+            '90d': '90 Days',
+            today: 'Today',
+        },
+        calculator: async () => {
+            return 23
+        },
     }
 
     ranges(rangeSetter: ValueMetricRangeSetter) {
@@ -43,7 +43,7 @@ export class ValueMetrics extends Card implements MetricContract {
     public serialize() {
         return {
             ...super.serialize(),
-            ranges: this.config.ranges
+            ranges: this.config.ranges,
         }
     }
 }

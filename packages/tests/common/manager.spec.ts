@@ -103,11 +103,14 @@ describe('Manager', () => {
         })
     })
 
-    describe('deleteById', () => {
-        test('calls deleteById method from the db', () => {
-            setup(Post).deleteById('1')
+    describe('deleteOneById', () => {
+        test('calls deleteOneById method from the db', async () => {
+            db.findOneById = jest.fn(() => ({
+                id: 1
+            }))
+            await setup(Post).deleteOneById('1')
 
-            expect(db.deleteById).toHaveBeenCalled()
+            expect(db.deleteOneById).toHaveBeenCalled()
         })
     })
 

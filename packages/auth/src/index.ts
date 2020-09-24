@@ -169,35 +169,34 @@ class Auth {
                 belongsToMany(this.config.roleResource),
                 ...(this.config.twoFactorAuth
                     ? [
-                          text('Two Factor Enabled')
-                              .hideOnCreate()
-                              .hideOnUpdate()
-                              .hideOnIndex()
-                              .hideOnDetail(),
-                          text('Two Factor Secret')
-                              .hidden()
-                              .hideOnIndex()
-                              .hideOnCreate()
-                              .hideOnUpdate()
-                              .hideOnDetail(),
-                      ]
+                        text('Two Factor Enabled')
+                            .hideOnCreate()
+                            .hideOnUpdate()
+                            .hideOnIndex()
+                            .hideOnDetail(),
+                        text('Two Factor Secret')
+                            .hidden()
+                            .hideOnIndex()
+                            .hideOnCreate()
+                            .hideOnUpdate()
+                            .hideOnDetail(),
+                    ]
                     : []),
                 ...this.config.fields,
                 ...(this.config.verifyEmails
                     ? [
-                          dateTime('Email Verified At')
-                              .hideOnCreate()
-                              .hideOnIndex()
-                              .hideOnUpdate()
-                              .hideOnDetail(),
-                          text('Email Verification Token')
+                        dateTime('Email Verified At')
+                            .hideOnCreate()
+                            .hideOnIndex()
+                            .hideOnUpdate()
+                            .hideOnDetail(),
+                        text('Email Verification Token')
                             .hidden()
                             .hideOnCreate()
                             .hideOnIndex()
                             .hideOnUpdate()
-                            .hideOnDetail()
-                            ,
-                      ]
+                            .hideOnDetail(),
+                    ]
                     : []),
             ])
             .beforeCreate((payload, request) => {
@@ -401,7 +400,7 @@ class Auth {
                 [],
                 [
                     `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
+                    this.permissionResource().data.slug
                     }`,
                 ]
             )
@@ -476,7 +475,7 @@ class Auth {
                 [],
                 [
                     `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
+                    this.permissionResource().data.slug
                     }`,
                 ]
             )
@@ -566,7 +565,7 @@ class Auth {
                     [],
                     [
                         `${this.roleResource().data.slug}.${
-                            this.permissionResource().data.slug
+                        this.permissionResource().data.slug
                         }`,
                     ]
                 )
@@ -808,7 +807,7 @@ class Auth {
         if (!user) {
             await manager(this.passwordResetsResource())
                 .database()
-                .deleteById(existingPasswordReset.id)
+                .deleteOneById(existingPasswordReset.id)
 
             return response.status(500).json({
                 message: 'User does not exist anymore.',
@@ -824,10 +823,10 @@ class Auth {
             true
         )
 
-        // TODO: Rename deleteById this to deleteOneById
+        // TODO: Rename deleteOneById this to deleteOneById
         await manager(this.passwordResetsResource())
             .database()
-            .deleteById(existingPasswordReset.id)
+            .deleteOneById(existingPasswordReset.id)
 
         // TODO: Send an email to the user notifying them
         // that their password was reset.

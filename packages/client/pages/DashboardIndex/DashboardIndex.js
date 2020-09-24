@@ -22,7 +22,8 @@ class DashboardIndex extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (
-            prevProps.match.params.dashboard !== this.props.match.params.dashboard
+            prevProps.match.params.dashboard !==
+            this.props.match.params.dashboard
         ) {
             this.bootComponent()
         }
@@ -32,10 +33,10 @@ class DashboardIndex extends React.Component {
         this.setState(this.defaultState())
     }
 
-    renderCard = card => {
+    renderCard = (card) => {
         const Card = Tensei.cardComponents[card.component]
 
-        if (! Card) {
+        if (!Card) {
             return null
         }
 
@@ -47,19 +48,21 @@ class DashboardIndex extends React.Component {
         const { dashboard } = this.state
 
         // TODO: Redirect to 404 page
-        if (! dashboard) return null
+        if (!dashboard) return null
 
         return (
             <>
                 <div className="p-3">
-                    <Heading>
-                        {dashboard.name} dashboard
-                    </Heading>
+                    <Heading>{dashboard.name} dashboard</Heading>
                 </div>
 
                 <div className="flex flex-wrap mt-3">
-                    {dashboard.cards.map(card => (
-                        <div key={card.slug} style={{ height: '11.375rem' }} className={`p-2 w-${card.width}`}>
+                    {dashboard.cards.map((card) => (
+                        <div
+                            key={card.slug}
+                            style={{ height: '11.375rem' }}
+                            className={`p-2 w-${card.width}`}
+                        >
                             {this.renderCard(card)}
                         </div>
                     ))}

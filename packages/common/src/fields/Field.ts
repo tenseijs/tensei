@@ -56,11 +56,17 @@ export class Field implements FieldContract {
 
     public hooks: {
         beforeCreate: FieldHookFunction
+        beforeDelete: FieldHookFunction
         beforeUpdate: FieldHookFunction
         afterCreate: FieldHookFunction
+        afterDelete: FieldHookFunction
         afterUpdate: FieldHookFunction
     } = {
         beforeCreate: (payload, request) => {
+            return payload
+        },
+
+        beforeDelete: (payload, request) => {
             return payload
         },
 
@@ -69,6 +75,10 @@ export class Field implements FieldContract {
         },
 
         afterCreate: (payload, request) => {
+            return payload
+        },
+
+        afterDelete: (payload, request) => {
             return payload
         },
 
@@ -81,6 +91,15 @@ export class Field implements FieldContract {
         this.hooks = {
             ...this.hooks,
             beforeCreate: hook,
+        }
+
+        return this
+    }
+
+    public beforeDelete(hook: FieldHookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            beforeDelete: hook,
         }
 
         return this
@@ -99,6 +118,15 @@ export class Field implements FieldContract {
         this.hooks = {
             ...this.hooks,
             afterCreate: hook,
+        }
+
+        return this
+    }
+
+    public afterDelete(hook: FieldHookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            afterDelete: hook,
         }
 
         return this

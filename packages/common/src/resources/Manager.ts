@@ -19,8 +19,26 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         super(resources)
     }
 
-    public async deleteById(id: number | string) {
-        return this.database().deleteById(id)
+    public async deleteOneById(id: number | string) {
+        const model = this.findOneById(id)
+        const resource = this.getCurrentResource()
+
+        const fields = resource.data.fields
+            .map((field) => field.serialize())
+            .filter((field) => field.isRelationshipField)
+
+        for (let index = 0; index < fields.length; index++) {
+            const field = fields[index]
+
+            if (field.component === 'BelongsToField') {
+                // delete record from the pivot table
+            }
+            if (field.component === 'BelongsToManyField') {
+                // delete record from the pivot table
+            }
+        }
+        await resource.hooks.beforeDelete(model, this.request)
+        return this.database().deleteOneById(id)
     }
 
     public database = (resource = this.getCurrentResource()) => {
@@ -384,7 +402,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 new Set([
                     ...serializedField.rules,
                     ...serializedField[
-                        creationRules ? 'creationRules' : 'updateRules'
+                    creationRules ? 'creationRules' : 'updateRules'
                     ],
                 ])
             ).join('|')
@@ -522,7 +540,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     {
                         message: `A ${resource.data.name.toLowerCase()} already exists with ${
                             field.inputName
-                        } ${payload[field.inputName]}.`,
+                            } ${payload[field.inputName]}.`,
                         field: field.inputName,
                     },
                 ]

@@ -13,12 +13,14 @@ module.exports = tensei()
         require('./resources/Comment'),
         require('./resources/Tag'),
     ])
-    .dashboards([dashboard('Main').cards([
-        valueMetric('New Tags').width('1/3'),
-        valueMetric('New Users').width('1/3'),
-        valueMetric('New Posts').width('1/3'),
-        valueMetric('New Comments').width('1/3'),
-    ])])
+    .dashboards([
+        dashboard('Main').cards([
+            valueMetric('New Tags').width('1/3'),
+            valueMetric('New Users').width('1/3'),
+            valueMetric('New Posts').width('1/3'),
+            valueMetric('New Comments').width('1/3'),
+        ]),
+    ])
     .plugins([
         auth().name('Customer').twoFactorAuth().verifyEmails().plugin(),
         trix(),

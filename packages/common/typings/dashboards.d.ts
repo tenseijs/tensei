@@ -6,7 +6,7 @@ declare module '@tensei/common/dashboards' {
         slug: string
         group: string
         displayInNavigation: boolean
-        cards: (CardContract|MetricContract)[]
+        cards: (CardContract | MetricContract)[]
     }
 
     interface CardContract {
@@ -36,7 +36,7 @@ declare module '@tensei/common/dashboards' {
 
     export interface DashboardContract {
         config: DashboardConfig
-        cards: (cards: (CardContract|MetricContract)[]) => this
+        cards: (cards: (CardContract | MetricContract)[]) => this
 
         serialize: () => SerializedDashboardContract
     }

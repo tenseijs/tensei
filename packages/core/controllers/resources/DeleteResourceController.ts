@@ -7,7 +7,7 @@ class DeleteResourceController {
     ) => {
         await request
             .manager(request.params.resource)
-            .deleteById(request.params.resourceId)
+            .deleteOneById(request.params.resourceId)
 
         return response.status(204).json({})
     }

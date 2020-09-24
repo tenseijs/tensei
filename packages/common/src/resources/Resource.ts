@@ -26,11 +26,11 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToUpdate: AuthorizeFunction
         authorizedToDelete: AuthorizeFunction
     } = {
-            authorizedToSee: (request) => true,
-            authorizedToCreate: (request) => true,
-            authorizedToUpdate: (request) => true,
-            authorizedToDelete: (request) => true,
-        }
+        authorizedToSee: (request) => true,
+        authorizedToCreate: (request) => true,
+        authorizedToUpdate: (request) => true,
+        authorizedToDelete: (request) => true,
+    }
 
     public hooks: {
         beforeCreate: HookFunction
@@ -40,30 +40,30 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         afterDelete: HookFunction
         afterUpdate: HookFunction
     } = {
-            beforeCreate: (payload, request) => {
-                return payload
-            },
+        beforeCreate: (payload, request) => {
+            return payload
+        },
 
-            beforeDelete: (payload, request) => {
-                return payload
-            },
+        beforeDelete: async (payload, request) => {
+            return payload
+        },
 
-            beforeUpdate: (payload, request) => {
-                return payload
-            },
+        beforeUpdate: (payload, request) => {
+            return payload
+        },
 
-            afterCreate: (payload, request) => {
-                return payload
-            },
+        afterCreate: (payload, request) => {
+            return payload
+        },
 
-            afterUpdate: (payload, request) => {
-                return payload
-            },
+        afterUpdate: (payload, request) => {
+            return payload
+        },
 
-            afterDelete: (payload, request) => {
-                return payload
-            },
-        }
+        afterDelete: async (payload, request) => {
+            return payload
+        },
+    }
 
     constructor(name: string, tableName?: string) {
         this.setValue('name', name)

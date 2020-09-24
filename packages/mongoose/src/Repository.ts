@@ -269,7 +269,7 @@ export class Repository extends ResourceHelpers
         return Promise.resolve(null)
     }
 
-    deleteById(id: number | string) {
+    deleteOneById(id: number | string) {
         return Promise.resolve()
     }
 

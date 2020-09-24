@@ -18,18 +18,18 @@ declare module '@tensei/common/config' {
             field: string
             value: string
             operator:
-                | 'equals'
-                | 'contains'
-                | 'not_equals'
-                | 'null'
-                | 'not_null'
-                | 'gt'
-                | 'gte'
-                | 'lt'
-                | 'lte'
-                | 'matches'
-                | 'in'
-                | 'not_in'
+            | 'equals'
+            | 'contains'
+            | 'not_equals'
+            | 'null'
+            | 'not_null'
+            | 'gt'
+            | 'gte'
+            | 'lt'
+            | 'lte'
+            | 'matches'
+            | 'in'
+            | 'not_in'
         }>
         withRelationships: string[]
     }
@@ -58,6 +58,10 @@ declare module '@tensei/common/config' {
         payload: DataPayload,
         request: Request | null
     ) => DataPayload
+    type AsyncHookFunction = (
+        payload: DataPayload,
+        request: Request | null
+    ) => Promise<any>
     type FieldHookFunction<FieldValueType = any> = (
         payload: DataPayload,
         request: Request
@@ -92,9 +96,9 @@ declare module '@tensei/common/config' {
     }
     type Permission =
         | {
-              name: string
-              slug: string
-          }
+            name: string
+            slug: string
+        }
         | string
     interface DataPayload {
         [key: string]: any
@@ -167,7 +171,7 @@ declare module '@tensei/common/config' {
             value: any,
             payload: DataPayload = {}
         ) => Promise<any>
-        abstract deleteById: (id: number | string) => Promise<any>
+        abstract deleteOneById: (id: number | string) => Promise<any>
         abstract updateManyWhere: (
             whereClause: {
                 [key: string]: string | number

@@ -4,6 +4,7 @@ declare module '@tensei/common/resources' {
     import { SerializedAction, ActionContract } from '@tensei/common/actions'
     import {
         HookFunction,
+        AsyncHookFunction,
         Permission,
         AuthorizeFunction,
         DatabaseRepositoryInterface,
@@ -48,7 +49,7 @@ declare module '@tensei/common/resources' {
         }
         hooks: {
             beforeCreate: HookFunction
-            beforeDelete: HookFunction
+            beforeDelete: AsyncHookFunction
             beforeUpdate: HookFunction
             afterCreate: HookFunction
             afterDelete: HookFunction
@@ -73,7 +74,7 @@ declare module '@tensei/common/resources' {
         label(label: string): this
         serialize(): SerializedResource
         beforeCreate(hook: HookFunction): this
-        beforeDelete(hook: HookFunction): this
+        beforeDelete(hook: AsyncHookFunction): this
         beforeUpdate(hook: HookFunction): this
         afterCreate(hook: HookFunction): this
         afterDelete(hook: HookFunction): this
@@ -115,10 +116,10 @@ declare module '@tensei/common/resources' {
         serialize(): SerializedResource
         beforeCreate(hook: HookFunction): this
         beforeUpdate(hook: HookFunction): this
-        beforeUpdate(hook: HookFunction): this
+        beforeDelete(hook: HookFunction): this
         afterCreate(hook: HookFunction): this
         afterUpdate(hook: HookFunction): this
-        afterUpdate(hook: HookFunction): this
+        afterDelete(hook: HookFunction): this
     }
 
     export const resource: (
@@ -133,7 +134,7 @@ declare module '@tensei/common/resources' {
             resources: ResourceContract[],
             database: DatabaseRepositoryInterface
         )
-        deleteById(id: number | string): Promise<any>
+        deleteOneById(id: number | string): Promise<any>
         create(payload: DataPayload): Promise<any>
         database(resource?: ResourceContract): DatabaseRepositoryInterface
         updateOneByField(

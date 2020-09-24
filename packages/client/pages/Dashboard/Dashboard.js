@@ -214,7 +214,9 @@ class DashboardPage extends React.Component {
                                 <Route
                                     exact
                                     component={DashboardIndex}
-                                    path={Tensei.getPath('dashboards/:dashboard')}
+                                    path={Tensei.getPath(
+                                        'dashboards/:dashboard'
+                                    )}
                                 />
                                 <Route
                                     path={Tensei.getPath(

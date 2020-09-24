@@ -2,6 +2,7 @@ import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 
 import { setup, fakePostData } from '../../helpers'
+import { Post, User } from '../../helpers/resources'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -82,10 +83,81 @@ beforeEach(() => {
             .delete(`/api/resources/posts/21`)
             .send(userDetails)
 
-        expect(response.status).toBe(422)
-        expect(response.body.message).toBe('Validation failed.')
-        expect(response.body.errors).toEqual([
-            { message: 'Post resource with id 21 was not found.' }
-        ])
+        expect(response.status).toBe(404)
+        expect(response.body.message).toBe(
+            'Could not find a resource with id 21'
+        )
+    })
+    test(`${databaseClient} - calls beforeDelete hook (posts)`, async () => {
+        const { app, manager } = await setup({
+            admin: {
+                permissions: ['delete:posts']
+            } as any,
+            databaseClient
+        })
+
+        const userDetails = {
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        }
+
+        const user = (
+            await manager({} as any)('User').create(userDetails)
+        ).toJSON()
+
+        const post = (
+            await manager({} as any)('Post').create({
+                ...fakePostData(),
+                title: lorem.words(3).slice(0, 23),
+                user_id: user.id
+            })
+        ).toJSON()
+
+        const beforeDeleteHook = jest.spyOn(Post.hooks, 'beforeDelete')
+
+        const client = Supertest(app)
+
+        let response = await client
+            .delete(`/api/resources/posts/${post.id}`)
+            .send(userDetails)
+
+        expect(response.status).toBe(204)
+        expect(beforeDeleteHook).toHaveBeenCalledTimes(1)
+    })
+    test(`${databaseClient} - cannot delete record when error is thrown in before delete hooks (posts)`, async () => {
+        const { app, manager } = await setup({
+            admin: {
+                permissions: ['delete:posts']
+            } as any,
+            databaseClient
+        })
+
+        const userDetails = {
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        }
+
+        await manager({} as any)('User').create(userDetails)
+
+        User.beforeDelete(async (model, request) => {
+            throw {
+                status: 400,
+                message: `cannot delete record`
+            }
+        })
+
+        const beforeDeleteHook = jest.spyOn(User.hooks, 'beforeDelete')
+
+        const client = Supertest(app)
+
+        let response = await client
+            .delete(`/api/resources/users/1`)
+            .send(userDetails)
+
+        expect(response.status).toBe(400)
+        expect(beforeDeleteHook).toHaveBeenCalledTimes(1)
+        expect(response.body.message).toBe('cannot delete record')
     })
 })

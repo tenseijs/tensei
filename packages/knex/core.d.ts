@@ -79,7 +79,7 @@ declare module '@tensei/knex' {
             value: any,
             payload: DataPayload = {}
         ) => Promise<any>
-        abstract deleteById: (id: number | string) => Promise<any>
+        abstract deleteOneById: (id: number | string) => Promise<any>
         abstract updateManyWhere: (
             whereClause: {
                 [key: string]: string | number

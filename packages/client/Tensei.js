@@ -85,7 +85,7 @@ export default class Tensei {
     }
 
     cardComponents = {
-        ValueMetric
+        ValueMetric,
     }
 
     indexFieldComponents = {

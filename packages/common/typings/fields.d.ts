@@ -482,13 +482,17 @@ declare module '@tensei/common/fields' {
         }
         hooks: {
             beforeCreate: FieldHookFunction
+            beforeDelete: FieldHookFunction
             beforeUpdate: FieldHookFunction
             afterCreate: FieldHookFunction
+            afterDelete: FieldHookFunction
             afterUpdate: FieldHookFunction
         }
         beforeCreate(hook: FieldHookFunction): this
+        beforeDelete(hook: FieldHookFunction): this
         beforeUpdate(hook: FieldHookFunction): this
         afterCreate(hook: FieldHookFunction): this
+        afterDelete(hook: FieldHookFunction): this
         afterUpdate(hook: FieldHookFunction): this
         /**
          *
