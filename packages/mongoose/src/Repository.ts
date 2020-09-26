@@ -211,6 +211,22 @@ export class Repository extends ResourceHelpers
         this.$db = await Mongoose.connect(this.connectionString, this.config)
     }
 
+    async aggregateCount(between: [string, string]) {
+        return 0
+    }
+
+    async aggregateAvg(between: [string, string], columns: string[]) {
+        return 0
+    }
+
+    async aggregateMin(between: [string, string], columns: string[]) {
+        return 0
+    }
+
+    async aggregateMax(between: [string, string], columns: string[]) {
+        return 0
+    }
+
     create(payload: DataPayload, relationshipPayload?: DataPayload) {
         return Promise.resolve()
     }
