@@ -228,7 +228,9 @@ export class Tensei {
         return this
     }
 
-    public manager = (request: Express.Request) => {
+    public manager = (
+        request: Express.Request
+    ): ManagerContract['setResource'] | null => {
         if (!this.databaseBooted) {
             return null
         }
@@ -310,7 +312,11 @@ export class Tensei {
                 [`administrator-roles.administrator-permissions`]
             )
 
-        if (admin.toJSON()) {
+        if (!admin) {
+            return next()
+        }
+
+        if (admin.toJSON) {
             admin = admin.toJSON()
         }
 

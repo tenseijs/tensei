@@ -191,12 +191,11 @@ class Auth {
                               .hideOnUpdate()
                               .hideOnDetail(),
                           text('Email Verification Token')
-                            .hidden()
-                            .hideOnCreate()
-                            .hideOnIndex()
-                            .hideOnUpdate()
-                            .hideOnDetail()
-                            ,
+                              .hidden()
+                              .hideOnCreate()
+                              .hideOnIndex()
+                              .hideOnUpdate()
+                              .hideOnDetail(),
                       ]
                     : []),
             ])

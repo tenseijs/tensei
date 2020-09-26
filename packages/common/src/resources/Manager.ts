@@ -27,6 +27,25 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         return this.repository.setResource(resource)
     }
 
+    public aggregateCount = (between: [string, string]) => {
+        return this.database().aggregateCount(between)
+    }
+
+    public aggregateAvg = (between: [string, string], columns: string[]) => {
+        return this.database().aggregateAvg(between, columns)
+    }
+
+    public aggregateMax = (between: [string, string], columns: string[]) => {
+        return this.database().aggregateMax(between, columns)
+    }
+
+    public aggregateMin = (between: [string, string], columns: string[]) => {
+        return this.database().aggregateMin(between, columns)
+    }
+
+    // @ts-ignore
+    public Model = () => this.getCurrentResource().Model()
+
     public async create(payload: DataPayload) {
         const resource = this.getCurrentResource()
 

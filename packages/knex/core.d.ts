@@ -5,6 +5,7 @@ import {
     Config,
     ResourceContract,
     DataPayload,
+    ManagerContract,
     FetchAllRequestQuery
 } from '@tensei/common'
 
@@ -16,6 +17,10 @@ declare module '@tensei/core' {
 
 declare module '@tensei/common' {
     export interface ResourceContract {
+        Model: () => any
+    }
+
+    export interface ManagerContract {
         Model: () => any
     }
 

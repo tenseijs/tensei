@@ -1,20 +1,32 @@
 declare module '@tensei/common/dashboards' {
-    import { ManagerContract } from '@tensei/common/resources'
+    import * as CSS from 'csstype'
+    import { Request } from 'express'
+    import { DateTime } from 'luxon'
+    import { ManagerContract, ResourceContract } from '@tensei/common/resources'
 
     interface DashboardConfig {
         name: string
         slug: string
         group: string
         displayInNavigation: boolean
-        cards: (CardContract|MetricContract)[]
+        cards: (CardContract | MetricContract)[]
     }
 
     interface CardContract {
         name: string
         slug: string
+        text: string
         config: CardConfig
+        background: string
+        backgroundImage: string
+        request: Request | null
+        bg: (bg: string) => this
         width: (width: Width) => this
+        textColor: (textColor: string) => this
         component: (component: string) => this
+        setRequest: (request: Request) => this
+        styles: (styles: CSS.Properties) => this
+        bgImage: (backgroundImage: string) => this
         serialize: () => SerializedCardContract
     }
 
@@ -23,6 +35,10 @@ declare module '@tensei/common/dashboards' {
         slug: string
         component: string
         width: Width
+        textColor: string
+        background: string
+        backgroundImage: string
+        customStyles: CSS.Properties
     }
 
     interface SerializedDashboardContract {
@@ -36,14 +52,32 @@ declare module '@tensei/common/dashboards' {
 
     export interface DashboardContract {
         config: DashboardConfig
-        cards: (cards: (CardContract|MetricContract)[]) => this
+        cards: (cards: (CardContract | MetricContract)[]) => this
 
         serialize: () => SerializedDashboardContract
     }
 
     interface MetricContract extends CardContract {
         config: MetricConfig
-        calculate: (calculator: ValueMetricCalculatorFunction) => this
+        result: (value: number) => ValueMetricResultContract
+        compute: (calculator: ValueMetricCalculatorFunction) => this
+        previousRange: (range: string, timezone: string) => [DateTime, DateTime]
+        count: (
+            resourceSlugOrResource: string | ResourceContract
+        ) => Promise<ValueMetricResultContract>
+        avg: (
+            resourceSlugOrResource: string | ResourceContract,
+            columns: string | string[]
+        ) => Promise<ValueMetricResultContract>
+        min: (
+            resourceSlugOrResource: string | ResourceContract,
+            columns: string | string[]
+        ) => Promise<ValueMetricResultContract>
+        max: (
+            resourceSlugOrResource: string | ResourceContract,
+            columns: string | string[]
+        ) => Promise<ValueMetricResultContract>
+        selectStyles: (styles: CSS.Properties) => this
     }
 
     interface ValueMetricContract extends MetricContract {
@@ -78,25 +112,37 @@ declare module '@tensei/common/dashboards' {
         | '8/12'
         | '9/12'
 
-    interface ValueMetricResult {}
+    interface ValueMetricResultConfig {
+        options: Intl.NumberFormatOptions
+        locale: string
+    }
+    interface ValueMetricResultContract {
+        config: ValueMetricResultConfig
+        value: number
+        locale(locale: string): this
+        currency(currency: string): this
+        style(style: string): this
+        options(options: Intl.NumberFormatOptions): this
+    }
+
+    export const valueMetricResult: (value: number) => ValueMetricResultContract
 
     type ValueMetricCalculatorFunction = (
-        manager: ManagerContract['setResource']
-    ) => Promise<ValueMetricResult>
+        _this: MetricContract
+    ) => Promise<ValueMetricResultContract>
 
     interface MetricConfig extends CardConfig {
         calculator: ValueMetricCalculatorFunction
     }
 
     interface ValueMetricConfig extends MetricConfig {
-        ranges: { [key: string]: string }
+        ranges: Array<{ label: string; value: string }>
+        selectStyles: CSS.Properties
     }
 
-    type ValueMetricRangeSetter = (ranges: {
-        [key: string]: string
-    }) => {
-        [key: string]: string
-    }
+    type ValueMetricRangeSetter = (
+        ranges: ValueMetricConfig['ranges']
+    ) => ValueMetricConfig['ranges']
 
     export const dashboard: (name: string, slug?: string) => DashboardContract
 

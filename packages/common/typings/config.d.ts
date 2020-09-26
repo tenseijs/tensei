@@ -109,6 +109,19 @@ declare module '@tensei/common/config' {
         abstract setResourceModels: (
             resources: ResourceContract[]
         ) => ResourceContract[]
+        abstract aggregateCount: (between: [string, string]) => Promise<number>
+        abstract aggregateAvg: (
+            between: [string, string],
+            columns: string[]
+        ) => Promise<number>
+        abstract aggregateMax: (
+            between: [string, string],
+            columns: string[]
+        ) => Promise<number>
+        abstract aggregateMin: (
+            between: [string, string],
+            columns: string[]
+        ) => Promise<number>
         abstract getFieldFromResource: (
             resource: ResourceContract,
             databaseField: string

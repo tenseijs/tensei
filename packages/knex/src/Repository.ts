@@ -223,6 +223,41 @@ export class SqlRepository extends ResourceHelpers
         this.bookshelfModels = bookshelfModels
     }
 
+    public async aggregateCount(between: [string, string]) {
+        return this.aggregate(between, 'count')
+    }
+
+    public async aggregate(
+        between: [string, string],
+        fn: string,
+        fnArgs: any[] = []
+    ) {
+        const createdAtField = 'created_at'
+
+        const query = this.$db!(
+            this.getCurrentResource().data.table
+        ).whereBetween(createdAtField, between)
+
+        // @ts-ignore
+        const result = await query[fn as any](...fnArgs)
+
+        const aggregate = result[0][`${fn}(*)`] || result[0][`${fn}`]
+
+        return aggregate
+    }
+
+    public async aggregateAvg(between: [string, string], columns: string[]) {
+        return this.aggregate(between, 'avg', [columns])
+    }
+
+    public async aggregateMin(between: [string, string], columns: string[]) {
+        return this.aggregate(between, 'min', [columns])
+    }
+
+    public async aggregateMax(between: [string, string], columns: string[]) {
+        return this.aggregate(between, 'max', [columns])
+    }
+
     private handleBelongsToManyField = async (
         trx: Knex.Transaction,
         resources: SerializedResource[],
