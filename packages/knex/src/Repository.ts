@@ -15,6 +15,7 @@ import {
     text,
     belongsToMany,
     resource,
+    dateTime,
     ResourceContract,
     DataPayload,
     FetchAllRequestQuery,
