@@ -399,6 +399,9 @@ declare module '@tensei/common/fields' {
     interface TimestampContract extends DateFieldContract {}
     interface JsonContract extends DateFieldContract {}
     interface LinkContract extends TextContract {}
+    interface ArrayContract extends FieldContract {
+        of(arrayOf: 'string' | 'number'): this
+    }
     interface BooleanFieldContract extends FieldContract {
         trueLabel(value: string): this
         falseLabel(value: string): this
@@ -445,6 +448,10 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => TimestampContract
+    const array: (
+        name: string,
+        databaseField?: string | undefined
+    ) => ArrayContract
 
     export declare class Field implements FieldContract {
         showHideField: {
@@ -723,4 +730,6 @@ declare module '@tensei/common/fields' {
     export declare class Textarea extends Text {
         public databaseFieldType: string
     }
+
+    export declare class ArrayField extends Field {}
 }

@@ -54,6 +54,10 @@ export class Tensei {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
+        database: 'sqlite',
+        pushResource: (resource: ResourceContract) => {
+            this.config.resources.push(resource)
+        },
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
@@ -71,10 +75,7 @@ export class Tensei {
         ],
         env: {
             port: process.env.PORT || 1377,
-            database: (process.env.DATABASE as SupportedDatabases) || 'sqlite',
-            sessionSecret: process.env.SESSION_SECRET || 'test-session-secret',
-            databaseUrl:
-                process.env.DATABASE_URL || 'mysql://root@127.0.0.1/flmg'
+            sessionSecret: process.env.SESSION_SECRET || 'test-session-secret'
         },
         logger: new Signale()
     }
@@ -127,9 +128,7 @@ export class Tensei {
                 ]
             },
             resources: this.config.resources,
-            pushResource: (resource: ResourceContract) => {
-                this.config.resources.push(resource)
-            },
+            pushResource: this.config.pushResource,
             resourcesMap: this.config.resourcesMap,
             // TODO: Make request option in manager. That way manager can be used in CLI, tests, anywhere.
             manager: this.manager({} as any)!
@@ -159,6 +158,12 @@ export class Tensei {
         return this
     }
 
+    public database(database: SupportedDatabases) {
+        this.config.database = database
+
+        return this
+    }
+
     public databaseConfig(...allArguments: any) {
         // @ts-ignore
         this.config.databaseConfig = allArguments
@@ -181,13 +186,25 @@ export class Tensei {
 
         // if database === mysql | sqlite | pg, we'll use the @tensei/knex package, with either mysql, pg or sqlite3 package
         // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
-        if (['mysql', 'pg', 'sqlite'].includes(this.config.env.database)) {
+        if (['mysql', 'pg', 'sqlite'].includes(this.config.database)) {
             try {
                 // import('@tensei/knex')
                 Repository = require('@tensei/knex').Repository
             } catch (error) {
                 this.config.logger.error(
-                    `To use the ${this.config.env.database} database, you need to install @tensei/knex and ${this.config.env.database} packages`
+                    `To use the ${this.config.database} database, you need to install @tensei/knex and ${this.config.database} packages`
+                )
+
+                process.exit(1)
+            }
+        }
+
+        if (['mongodb'].includes(this.config.database)) {
+            try {
+                Repository = require('@tensei/mongoose').Repository
+            } catch (error) {
+                this.config.logger.error(
+                    `To use the ${this.config.database} database, you need to install @tensei/mongoose.`
                 )
 
                 process.exit(1)
@@ -242,6 +259,37 @@ export class Tensei {
         ).setResource
     }
 
+    public getSessionPackage() {
+        if (['mongodb'].includes(this.config.database)) {
+            return 'connect-mongo'
+        }
+
+        return 'connect-session-knex'
+    }
+
+    getSessionPackageConfig(Store: any) {
+        let storeArguments: any = {}
+
+        if (['mysql', 'pg', 'sqlite3'].includes(this.config.database)) {
+            storeArguments = {
+                knex: this.databaseClient
+            }
+        }
+
+        if (['mongodb'].includes(this.config.database)) {
+            storeArguments = {
+                mongooseConnection: require('mongoose').connection
+            }
+        }
+
+        return {
+            secret: this.config.env.sessionSecret,
+            store: new Store(storeArguments),
+            resave: false,
+            saveUninitialized: false
+        }
+    }
+
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
@@ -260,18 +308,9 @@ export class Tensei {
             }
         )
 
-        const Store = require('connect-session-knex')(ExpressSession)
+        const Store = require(this.getSessionPackage())(ExpressSession)
 
-        this.app.use(
-            ExpressSession({
-                secret: this.config.env.sessionSecret,
-                store: new Store({
-                    knex: this.databaseClient
-                }),
-                resave: false,
-                saveUninitialized: false
-            })
-        )
+        this.app.use(ExpressSession(this.getSessionPackageConfig(Store)))
 
         this.app.use(this.setAuthMiddleware)
     }
@@ -302,6 +341,10 @@ export class Tensei {
         if (!request.session?.user) {
             return next()
         }
+
+        // const admin = await this.databaseRepository.findAdministratorById(request.session?.user)
+
+        //
 
         let admin = await request
             .manager(this.administratorResource())
@@ -521,14 +564,7 @@ export class Tensei {
     }
 
     public resources(resources: ResourceContract[]) {
-        const updatedResources = [
-            ...this.config.resources,
-            this.administratorResource(),
-            this.roleResource(),
-            this.permissionResource(),
-            this.passwordResetsResource(),
-            ...resources
-        ]
+        const updatedResources = [...this.config.resources, ...resources]
 
         const uniqueResources = Array.from(
             new Set(updatedResources.map(resource => resource.data.name))
@@ -571,49 +607,6 @@ export class Tensei {
         })
 
         return this
-    }
-
-    private roleResource() {
-        return resource('Administrator Role')
-            .hideFromNavigation()
-            .fields([
-                text('Name')
-                    .rules('required')
-                    .unique(),
-                text('Slug')
-                    .rules('required')
-                    .unique(),
-
-                belongsToMany('Administrator'),
-                belongsToMany('Administrator Permission')
-            ])
-    }
-
-    private permissionResource() {
-        return resource('Administrator Permission')
-            .hideFromNavigation()
-            .fields([
-                text('Name'),
-                text('Slug')
-                    .rules('required')
-                    .unique(),
-                belongsToMany('Administrator Role')
-            ])
-    }
-
-    private passwordResetsResource() {
-        return resource('Administrator Password Reset')
-            .hideFromNavigation()
-            .fields([
-                text('Email')
-                    .searchable()
-                    .unique()
-                    .notNullable(),
-                text('Token')
-                    .unique()
-                    .notNullable(),
-                dateTime('Expires At')
-            ])
     }
 
     private administratorResource() {

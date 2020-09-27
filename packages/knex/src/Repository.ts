@@ -12,11 +12,15 @@ import {
     SerializedResource,
     SerializedField,
     Config,
+    text,
+    belongsToMany,
+    resource,
     ResourceContract,
     DataPayload,
     FetchAllRequestQuery,
     ResourceHelpers
 } from '@tensei/common'
+import { hasMany } from '@tensei/common'
 
 export class SqlRepository extends ResourceHelpers
     implements DatabaseRepositoryInterface {
@@ -40,12 +44,85 @@ export class SqlRepository extends ResourceHelpers
         this.connectionEstablished = true
     }
 
+    private roleResource() {
+        return resource('Administrator Role')
+            .hideFromNavigation()
+            .fields([
+                text('Name')
+                    .rules('required')
+                    .unique(),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
+
+                belongsToMany('Administrator'),
+                belongsToMany('Administrator Permission')
+            ])
+    }
+
+    private permissionResource() {
+        return resource('Administrator Permission')
+            .hideFromNavigation()
+            .fields([
+                text('Name'),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
+                belongsToMany('Administrator Role')
+            ])
+    }
+
+    private passwordResetsResource() {
+        return resource('Administrator Password Reset')
+            .hideFromNavigation()
+            .fields([
+                text('Email')
+                    .searchable()
+                    .unique()
+                    .notNullable(),
+                text('Token')
+                    .unique()
+                    .notNullable(),
+                dateTime('Expires At')
+            ])
+    }
+
+    private administratorResource() {
+        const Bcrypt = require('bcryptjs')
+
+        return resource('Administrator')
+            .hideFromNavigation()
+            .fields([
+                text('Name'),
+                text('Email')
+                    .unique()
+                    .searchable()
+                    .rules('required', 'email'),
+                text('Password')
+                    .hidden()
+                    .rules('required', 'min:8'),
+                belongsToMany('Administrator Role')
+            ])
+            .beforeCreate(payload => ({
+                ...payload,
+                password: Bcrypt.hashSync(payload.password)
+            }))
+            .beforeUpdate(payload => ({
+                ...payload,
+                password: Bcrypt.hashSync(payload.password)
+            }))
+    }
+
     public setup = async (config: Config) => {
         this.config = config.databaseConfig[0]
 
         this.resources = config.resources
 
         this.establishDatabaseConnection()
+
+        config.pushResource(this.administratorResource())
+
+        config.pushResource(this.roleResource())
 
         try {
             await this.performDatabaseSchemaSync(

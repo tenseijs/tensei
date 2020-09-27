@@ -10,6 +10,7 @@
         "bookshelf": "^1.2.0",
         "bookshelf-eloquent": "^0.1.15",
         "change-case": "^4.1.1",
+        "connect-mongo": "^3.2.0",
         "connect-session-knex": "^1.7.3",
         "knex": "^0.21.2",
         "mongoose": "^5.10.5"

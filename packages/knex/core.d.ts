@@ -92,5 +92,18 @@ declare module '@tensei/knex' {
             valuesToUpdate: {}
         ) => Promise<any>
         abstract findAllCount: (resource: ResourceContract) => Promise<number>
+        abstract aggregateCount: (between: [string, string]) => Promise<number>
+        abstract aggregateAvg: (
+            between: [string, string],
+            columns: string[]
+        ) => Promise<number>
+        abstract aggregateMax: (
+            between: [string, string],
+            columns: string[]
+        ) => Promise<number>
+        abstract aggregateMin: (
+            between: [string, string],
+            columns: string[]
+        ) => Promise<number>
     }
 }

@@ -1,6 +1,6 @@
 declare module '@tensei/common/config' {
     import { Request } from 'express'
-    import { PluginContract } from '@tensei/common/plugins'
+    import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
     import { ResourceContract } from '@tensei/common/resources'
     import { DashboardContract } from '@tensei/common/dashboards'
 
@@ -66,12 +66,10 @@ declare module '@tensei/common/config' {
         name: string
         path: string
     }
-    type SupportedDatabases = 'mysql' | 'pg' | 'sqlite3'
+    type SupportedDatabases = 'mysql' | 'pg' | 'sqlite' | 'mongodb'
     interface Env {
         port: string | number
         sessionSecret: string
-        databaseUrl?: string
-        database: SupportedDatabases
     }
     export interface Config {
         plugins: PluginContract[]
@@ -89,6 +87,8 @@ declare module '@tensei/common/config' {
         dashboardsMap: {
             [key: string]: DashboardContract
         }
+        database: SupportedDatabases
+        pushResource: PluginSetupConfig['pushResource']
     }
     type Permission =
         | {

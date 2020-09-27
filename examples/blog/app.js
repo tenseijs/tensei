@@ -13,6 +13,7 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
+    .database('mongodb')
     .dashboards([
         dashboard('Main').cards([
             valueMetric('New Tags')
@@ -52,35 +53,39 @@ module.exports = tensei()
         ]),
     ])
     .plugins([
-        auth().name('Customer').twoFactorAuth().verifyEmails().plugin(),
-        trix(),
-        cashier()
-            .customerResourceName('Customer')
-            .cardUpfront()
-            .plans([
-                plan('Basic Sub').monthly().price(29),
-                plan('Premium Sub').yearly().price(99),
-            ])
-            .plugin(),
-        graphql().plugin(),
+        // auth().name('Customer').twoFactorAuth().verifyEmails().plugin(),
+        // trix(),
+        // cashier()
+        //     .customerResourceName('Customer')
+        //     .cardUpfront()
+        //     .plans([
+        //         plan('Basic Sub').monthly().price(29),
+        //         plan('Premium Sub').yearly().price(99),
+        //     ])
+        //     .plugin(),
+        // graphql().plugin(),
     ])
-    .databaseConfig({
-        // client: 'mysql',
-        // connection: {
-        //     host: '127.0.0.1',
-        //     user: 'root',
-        //     pass: '',
-        //     database: 'flmg',
-        // },
-        // client: 'sqlite3',
-        // connection: './blog.sqlite',
-        // useNullAsDefault: true,
-        // debug: false,
-        client: 'pg',
-        connection: {
-            host: '127.0.0.1',
-            user: 'root',
-            pass: '',
-            database: 'tensei',
-        },
+    .databaseConfig('mongodb://localhost/tensei', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
     })
+// .databaseConfig({
+//     // client: 'mysql',
+//     // connection: {
+//     //     host: '127.0.0.1',
+//     //     user: 'root',
+//     //     pass: '',
+//     //     database: 'flmg',
+//     // },
+//     // client: 'sqlite3',
+//     // connection: './blog.sqlite',
+//     // useNullAsDefault: true,
+//     // debug: false,
+//     client: 'pg',
+//     connection: {
+//         host: '127.0.0.1',
+//         user: 'root',
+//         pass: '',
+//         database: 'tensei',
+//     },
+// })

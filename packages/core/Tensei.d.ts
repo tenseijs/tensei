@@ -49,6 +49,7 @@ declare module '@tensei/core' {
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this
+        database(database: SupportedDatabases): this
         mail(driverName: SupportedDrivers, mailConfig?: {}): this
     }
 

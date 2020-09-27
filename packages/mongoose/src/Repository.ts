@@ -9,10 +9,16 @@ import {
     DatabaseRepositoryInterface,
     ResourceHelpers,
     Config,
+    resource,
+    text,
+    hasMany,
     ResourceContract,
     DataPayload,
     FetchAllRequestQuery
 } from '@tensei/common'
+import { array } from '@tensei/common'
+import { belongsTo } from '@tensei/common'
+import { dateTime } from '@tensei/common'
 
 export class Repository extends ResourceHelpers
     implements DatabaseRepositoryInterface {
@@ -28,12 +34,18 @@ export class Repository extends ResourceHelpers
         this.config = config.databaseConfig[1]
         this.connectionString = config.databaseConfig[0]
 
+        config.pushResource(this.administratorResource())
+        config.pushResource(this.roleResource())
+        config.pushResource(this.passwordResetsResource())
+
         this.resources = config.resources
 
         try {
             this.bootMongooseModels()
 
             await this.establishDatabaseConnection()
+
+            await this.setupRolesAndPermissions()
         } catch (errors) {
             // TODO: Log these errors with this.logger
             console.error('*************', errors)
@@ -52,9 +64,15 @@ export class Repository extends ResourceHelpers
 
     private getResourceMongooseModel = (
         resource: ResourceContract = this.getCurrentResource()
-    ) => this.mongooseModels.find(Model => resource.data.name === Model.name)
+    ) =>
+        this.mongooseModels.find(
+            // @ts-ignore
+            Model => resource.data.name === Model.getTenseiResourceName()
+        )
 
     private bootMongooseModels() {
+        Mongoose.set('useCreateIndex', true)
+
         this.mongooseModels = this.resources.map(resource => {
             const schemaDefinition: Mongoose.SchemaDefinition = {}
 
@@ -63,7 +81,13 @@ export class Repository extends ResourceHelpers
 
                 let type: any = null
 
-                if (['string', 'text'].includes(field.databaseFieldType)) {
+                if (field.databaseFieldType === 'increments') {
+                    return
+                }
+
+                if (
+                    ['string', 'text', 'enu'].includes(field.databaseFieldType)
+                ) {
                     type = Mongoose.Schema.Types.String
                 }
 
@@ -85,6 +109,10 @@ export class Repository extends ResourceHelpers
                     type = Mongoose.Schema.Types.Number
                 }
 
+                if (['array'].includes(field.databaseFieldType)) {
+                    type = [String]
+                }
+
                 if (field.component === 'BelongsToField') {
                     type = Mongoose.Schema.Types.ObjectId
                 }
@@ -96,7 +124,7 @@ export class Repository extends ResourceHelpers
                 schemaDefinition[field.databaseField] = {
                     type,
                     unique: field.isUnique,
-                    index: field.isSearchable,
+                    index: field.isUnique || field.isSearchable,
                     default: serializedField.defaultToNow
                         ? Date.now
                         : serializedField.defaultValue
@@ -110,6 +138,15 @@ export class Repository extends ResourceHelpers
                         ref: field.name
                     }
                 }
+
+                if (['enu'].includes(field.databaseFieldType)) {
+                    schemaDefinition[field.databaseField] = {
+                        ...schemaDefinition[field.databaseField],
+                        enum: (serializedField.selectOptions || []).map(
+                            option => option.value
+                        )
+                    }
+                }
             })
 
             const schema = new Mongoose.Schema(schemaDefinition)
@@ -118,6 +155,61 @@ export class Repository extends ResourceHelpers
 
             return Mongoose.model(resource.data.name, schema)
         })
+    }
+
+    private roleResource() {
+        return resource('Administrator Role')
+            .hideFromNavigation()
+            .fields([
+                text('Name')
+                    .rules('required')
+                    .unique(),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
+                array('Permissions').of('string')
+            ])
+    }
+
+    private passwordResetsResource() {
+        return resource('Administrator Password Reset')
+            .hideFromNavigation()
+            .fields([
+                text('Email')
+                    .searchable()
+                    .unique()
+                    .notNullable(),
+                text('Token')
+                    .unique()
+                    .notNullable(),
+                dateTime('Expires At')
+            ])
+    }
+
+    private administratorResource() {
+        const Bcrypt = require('bcryptjs')
+
+        return resource('Administrator')
+            .hideFromNavigation()
+            .fields([
+                text('Name'),
+                text('Email')
+                    .unique()
+                    .searchable()
+                    .rules('required', 'email'),
+                text('Password')
+                    .hidden()
+                    .rules('required', 'min:8'),
+                belongsTo('Administrator Role')
+            ])
+            .beforeCreate(payload => ({
+                ...payload,
+                password: Bcrypt.hashSync(payload.password)
+            }))
+            .beforeUpdate(payload => ({
+                ...payload,
+                password: Bcrypt.hashSync(payload.password)
+            }))
     }
 
     private setupRolesAndPermissions = async () => {
@@ -136,9 +228,8 @@ export class Repository extends ResourceHelpers
         })
 
         const roleResource = this.findResource('Administrator Role')
-        const permissionResource = this.findResource('Administrator Permission')
 
-        if (!roleResource || !permissionResource) {
+        if (!roleResource) {
             throw {
                 message: 'Role and Permission resources must be defined.',
                 status: 500
@@ -146,65 +237,34 @@ export class Repository extends ResourceHelpers
         }
 
         const RoleModel = this.getResourceMongooseModel(roleResource)
-        const PermissionModel = this.getResourceMongooseModel(
-            permissionResource
-        )
 
-        // find all existing permissions
-        // const existingPermissions = (
-        //     await PermissionModel.query().whereIn('slug', permissions)
-        // ).map((permission: any) => permission.slug)
+        if (!RoleModel) {
+            throw {
+                message: 'Role and Permission models must be defined.',
+                status: 500
+            }
+        }
 
-        // const newPermissionsToCreate = permissions.filter(
-        //     permission => !existingPermissions.includes(permission)
-        // )
+        let superAdminRole = await RoleModel.findOne({
+            slug: 'super-admin'
+        })
 
-        // const insertValues = newPermissionsToCreate.map(permission => ({
-        //     name: sentenceCase(permission.split(':').join(' ')),
-        //     slug: permission
-        // }))
-
-        // if (insertValues.length > 0) {
-        //     await PermissionModel.query().insert(
-        //         newPermissionsToCreate.map(permission => ({
-        //             name: sentenceCase(permission.split(':').join(' ')),
-        //             slug: permission
-        //         }))
-        //     )
-        // }
-
-        // let superAdminRole = (
-        //     await RoleModel.query()
-        //         .where('slug', 'super-admin')
-        //         .limit(1)
-        // )[0]
-
-        // if (!superAdminRole) {
-        //     await RoleModel.query().insert({
-        //         name: 'Super Admin',
-        //         slug: 'super-admin'
-        //     })
-
-        //     superAdminRole = (
-        //         await RoleModel.query()
-        //             .where('slug', 'super-admin')
-        //             .limit(1)
-        //     )[0]
-        // }
-
-        // const allPermissions = await PermissionModel.query()
-
-        // await new RoleModel({
-        //     id: superAdminRole.id
-        // })
-        //     [permissionResource.data.slug]()
-        //     .detach()
-
-        // await new RoleModel({
-        //     id: superAdminRole.id
-        // })
-        //     [permissionResource.data.slug]()
-        //     .attach(allPermissions.map((permission: any) => permission.id))
+        if (!superAdminRole) {
+            superAdminRole = await RoleModel.create({
+                name: 'Super Admin',
+                slug: 'super-admin',
+                permissions
+            })
+        } else {
+            await RoleModel.updateOne(
+                {
+                    _id: superAdminRole._id
+                },
+                {
+                    permissions
+                }
+            )
+        }
     }
 
     async establishDatabaseConnection() {
@@ -227,8 +287,17 @@ export class Repository extends ResourceHelpers
         return 0
     }
 
-    create(payload: DataPayload, relationshipPayload?: DataPayload) {
-        return Promise.resolve()
+    async create(payload: DataPayload, relationshipPayload?: DataPayload) {
+        const resource = this.getCurrentResource()
+        const Model = this.getResourceMongooseModel()!
+
+        const result = await Model.create(payload)
+
+        const relationshipFields = resource
+            .serialize()
+            .fields.filter(field => field.isRelationshipField)
+
+        
     }
 
     update(

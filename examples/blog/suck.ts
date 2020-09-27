@@ -1,18 +1,11 @@
 import { tensei } from '@tensei/core'
-import { Repository } from '@tensei/knex'
+import * as Mongoose from '@tensei/mongoose'
 
 tensei()
     .apiPath('beans')
     .dashboardPath('dashboard')
-    .databaseConfig({
-        client: 'mysql',
-        connection: {
-            host: '',
-            user: '',
-            password: ''
-        },
-        searchPath: '//'
-    })
+    .database('mongodb')
+    .databaseConfig('mongodb://localhost/tensei')
     .register()
     .then(({ app }) => {
         app.get('/nova', (request, response, ) => {
