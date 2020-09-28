@@ -363,6 +363,17 @@ class Auth {
                             this.authMiddleware,
                             AsyncHandler(this.confirmEnableTwoFactorAuth)
                         )
+
+                        if (this.config.teams) {
+                            // create team endpoint
+                            // fetch all teams endpoint
+                            // fetch single team endpoint
+                            // edit team endpoint
+                            // delete team endpoint
+                            // invite member to team endpoint
+                            // accept / reject membership invite endpoint
+                            // remove member from team endpoint
+                        }
                     }
 
                     if (this.config.verifyEmails) {
@@ -482,7 +493,7 @@ class Auth {
 
         const user = model.toJSON ? model.toJSON() : model
 
-        if (user.two_factor_enabled) {
+        if (user.two_factor_enabled === '1') {
             const Speakeasy = require('speakeasy')
 
             if (!token) {
@@ -712,7 +723,7 @@ class Auth {
         })
     }
 
-    private forgotPassword = async (request: Request, response: Response) => {
+    protected forgotPassword = async (request: Request, response: Response) => {
         const { body, mailer, manager } = request
         const { email } = await validateAll(body, {
             email: 'required|email',
@@ -765,7 +776,7 @@ class Auth {
         })
     }
 
-    private resetPassword = async (request: Request, response: Response) => {
+    protected resetPassword = async (request: Request, response: Response) => {
         const { body, manager } = request
 
         const { token, password } = await validateAll(body, {
@@ -836,7 +847,7 @@ class Auth {
         })
     }
 
-    private validate = async (data: AuthData, registration = false) => {
+    protected validate = async (data: AuthData, registration = false) => {
         let rules: {
             [key: string]: string
         } = {
@@ -855,7 +866,7 @@ class Auth {
         })
     }
 
-    private generateJwt(payload: object) {
+    public generateJwt(payload: object) {
         return Jwt.sign(payload, this.config.jwt.secretKey, {
             expiresIn: this.config.jwt.expiresIn,
         })

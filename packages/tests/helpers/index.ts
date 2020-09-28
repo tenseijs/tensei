@@ -1,8 +1,14 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
+import { auth } from '@tensei/auth'
 import { tensei, TenseiContract } from '@tensei/core'
-import { plugin, Plugin, User as IUser } from '@tensei/common'
+import {
+    plugin,
+    Plugin,
+    User as IUser,
+    SupportedDatabases
+} from '@tensei/common'
 
 import { Tag, Comment, User, Post, Reaction } from './resources'
 
@@ -10,6 +16,7 @@ interface ConfigureSetup {
     plugins?: Plugin[]
     admin?: IUser
     apiPath?: string
+    authApiPath?: string
     databaseClient?: 'mysql' | 'sqlite3' | 'pg'
     dashboardPath?: string
     createAndLoginAdmin?: boolean
@@ -39,6 +46,7 @@ export const setup = async (
         apiPath,
         databaseClient,
         dashboardPath,
+        authApiPath,
         createAndLoginAdmin
     }: ConfigureSetup = {},
     forceNewInstance = false
@@ -50,7 +58,8 @@ export const setup = async (
             user: process.env.DATABASE_USER || 'root',
             password: process.env.DATABASE_PASSSWORD || '',
             database: process.env.DATABASE_DB || 'testdb'
-        }
+        },
+        useNullAsDefault: true
     }
 
     if (databaseClient === 'sqlite3') {
@@ -69,15 +78,29 @@ export const setup = async (
                 user: process.env.DATABASE_USER || 'root',
                 password: process.env.DATABASE_PASSWORD || '',
                 database: process.env.DATABASE_DB || 'tensei'
-            }
+            },
+            useNullAsDefault: true
         }
     }
 
+    const derivedDatabaseFromClient =
+        {
+            pg: 'pg',
+            mysql: 'mysql',
+            sqlite3: 'sqlite'
+        }[databaseClient] || 'mysql'
+
     let instance = forceNewInstance
-        ? tensei().databaseConfig(dbConfig)
+        ? tensei()
+              .database(derivedDatabaseFromClient as SupportedDatabases)
+              // @ts-ignore
+              .databaseConfig(dbConfig)
         : cachedInstance
         ? cachedInstance
-        : tensei().databaseConfig(dbConfig)
+        : tensei()
+              .database(derivedDatabaseFromClient as SupportedDatabases)
+              // @ts-ignore
+              .databaseConfig(dbConfig)
 
     cachedInstance = instance
 
@@ -94,7 +117,14 @@ export const setup = async (
                       })
                   })
               ]
-            : [])
+            : []),
+        auth()
+            .name('Customer')
+            .twoFactorAuth()
+            .verifyEmails()
+            .apiPath(authApiPath || 'auth')
+            .twoFactorAuth()
+            .plugin()
     ])
 
     if (apiPath) {
@@ -117,6 +147,7 @@ export const setup = async (
     await Promise.all([
         knex('users').truncate(),
         knex('posts').truncate(),
+        knex('customers').truncate(),
         knex('administrators').truncate()
     ])
 
@@ -127,17 +158,27 @@ export const cleanup = async (databaseClient: Knex) => {
     await databaseClient.destroy()
 }
 
-export const createAdminUser = async (knex: Knex) => {
+export const createAuthUser = async (knex: Knex, extraArguments = {}) => {
+    return createAdminUser(knex, 'customers', extraArguments)
+}
+
+export const createAdminUser = async (
+    knex: Knex,
+    table = 'administrators',
+    extraArguments = {}
+) => {
     const user = {
         name: Faker.name.findName(),
         email: Faker.internet.email(),
-        password: 'password'
+        password: 'password',
+        ...extraArguments
     }
 
-    const id = await knex('administrators').insert({
+    const id = await knex(table).insert({
         name: user.name,
         email: user.email,
-        password: Bcrypt.hashSync(user.password)
+        password: Bcrypt.hashSync(user.password),
+        ...extraArguments
     })
 
     return {

@@ -117,17 +117,19 @@ export class SqlRepository extends ResourceHelpers
     public setup = async (config: Config) => {
         this.config = config.databaseConfig[0]
 
-        this.resources = config.resources
-
         this.establishDatabaseConnection()
 
         config.pushResource(this.administratorResource())
 
         config.pushResource(this.roleResource())
+        config.pushResource(this.permissionResource())
+        config.pushResource(this.passwordResetsResource())
+
+        this.resources = config.resources
 
         try {
             await this.performDatabaseSchemaSync(
-                config.resources.map(resource => resource.serialize())
+                this.resources.map(resource => resource.serialize())
             )
 
             await this.bootBookshelfModels()
@@ -136,7 +138,7 @@ export class SqlRepository extends ResourceHelpers
         } catch (errors) {
             // TODO: Log these errors with this.logger
             console.log('(********************', errors)
-            process.exit(1)
+            // process.exit(1)
         }
 
         return this.$db
@@ -446,6 +448,15 @@ export class SqlRepository extends ResourceHelpers
         }
 
         await knex.transaction(async trx => {
+            await trx.table(this.migrationsTable).truncate()
+
+            await trx.table(this.migrationsTable).insert(
+                resources.map(resource => ({
+                    resource_table: resource.table,
+                    resource_data: JSON.stringify(resource)
+                }))
+            )
+
             for (let index = 0; index < resources.length; index++) {
                 const resource = resources[index]
 
@@ -491,15 +502,6 @@ export class SqlRepository extends ResourceHelpers
                     }
                 )
             }
-
-            await trx.table(this.migrationsTable).truncate()
-
-            await trx.table(this.migrationsTable).insert(
-                resources.map(resource => ({
-                    resource_table: resource.table,
-                    resource_data: JSON.stringify(resource)
-                }))
-            )
         })
     }
 

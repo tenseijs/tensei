@@ -296,8 +296,6 @@ export class Repository extends ResourceHelpers
         const relationshipFields = resource
             .serialize()
             .fields.filter(field => field.isRelationshipField)
-
-        
     }
 
     update(
