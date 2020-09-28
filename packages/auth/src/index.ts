@@ -18,6 +18,7 @@ import {
 } from '@tensei/common'
 
 import { AuthPluginConfig, AuthData } from './config'
+import { createTeam } from './controllers/teams'
 
 import SetupSql from './setup-sql'
 
@@ -169,34 +170,34 @@ class Auth {
                 belongsToMany(this.config.roleResource),
                 ...(this.config.twoFactorAuth
                     ? [
-                          text('Two Factor Enabled')
-                              .hideOnCreate()
-                              .hideOnUpdate()
-                              .hideOnIndex()
-                              .hideOnDetail(),
-                          text('Two Factor Secret')
-                              .hidden()
-                              .hideOnIndex()
-                              .hideOnCreate()
-                              .hideOnUpdate()
-                              .hideOnDetail(),
-                      ]
+                        text('Two Factor Enabled')
+                            .hideOnCreate()
+                            .hideOnUpdate()
+                            .hideOnIndex()
+                            .hideOnDetail(),
+                        text('Two Factor Secret')
+                            .hidden()
+                            .hideOnIndex()
+                            .hideOnCreate()
+                            .hideOnUpdate()
+                            .hideOnDetail(),
+                    ]
                     : []),
                 ...this.config.fields,
                 ...(this.config.verifyEmails
                     ? [
-                          dateTime('Email Verified At')
-                              .hideOnCreate()
-                              .hideOnIndex()
-                              .hideOnUpdate()
-                              .hideOnDetail(),
-                          text('Email Verification Token')
-                              .hidden()
-                              .hideOnCreate()
-                              .hideOnIndex()
-                              .hideOnUpdate()
-                              .hideOnDetail(),
-                      ]
+                        dateTime('Email Verified At')
+                            .hideOnCreate()
+                            .hideOnIndex()
+                            .hideOnUpdate()
+                            .hideOnDetail(),
+                        text('Email Verification Token')
+                            .hidden()
+                            .hideOnCreate()
+                            .hideOnIndex()
+                            .hideOnUpdate()
+                            .hideOnDetail(),
+                    ]
                     : []),
             ])
             .beforeCreate((payload, request) => {
@@ -365,6 +366,36 @@ class Auth {
                         )
 
                         if (this.config.teams) {
+                            app.post(
+                                this.getApiPath('teams'),
+                                this.setAuthMiddleware,
+                                this.authMiddleware,
+                                AsyncHandler(createTeam)
+                            )
+                            // app.get(
+                            //     this.getApiPath('teams'),
+                            //     this.setAuthMiddleware,
+                            //     this.authMiddleware,
+                            //     AsyncHandler(this.getAllTeams)
+                            // )
+                            // app.get(
+                            //     this.getApiPath('teams/:teamid'),
+                            //     this.setAuthMiddleware,
+                            //     this.authMiddleware,
+                            //     AsyncHandler(this.getTeam)
+                            // )
+                            // app.put(
+                            //     this.getApiPath('teams/:teamid'),
+                            //     this.setAuthMiddleware,
+                            //     this.authMiddleware,
+                            //     AsyncHandler(this.editTeam)
+                            // )
+                            // app.delete(
+                            //     this.getApiPath('teams/:teamid'),
+                            //     this.setAuthMiddleware,
+                            //     this.authMiddleware,
+                            //     AsyncHandler(this.deleteTeam)
+                            // )
                             // create team endpoint
                             // fetch all teams endpoint
                             // fetch single team endpoint
@@ -410,8 +441,7 @@ class Auth {
                 id,
                 [],
                 [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
+                    `${this.roleResource().data.slug}.${this.permissionResource().data.slug
                     }`,
                 ]
             )
@@ -485,8 +515,7 @@ class Auth {
                 userWithPassword.id,
                 [],
                 [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
+                    `${this.roleResource().data.slug}.${this.permissionResource().data.slug
                     }`,
                 ]
             )
@@ -575,8 +604,7 @@ class Auth {
                     id,
                     [],
                     [
-                        `${this.roleResource().data.slug}.${
-                            this.permissionResource().data.slug
+                        `${this.roleResource().data.slug}.${this.permissionResource().data.slug
                         }`,
                     ]
                 )
