@@ -20,6 +20,7 @@ declare global {
                 [key: string]: DashboardContract
             }
             mailer: Mail
+            originatedFromDashboard: boolean | undefined
         }
     }
 }

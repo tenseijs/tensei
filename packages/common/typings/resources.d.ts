@@ -41,10 +41,18 @@ declare module '@tensei/common/resources' {
 
     export interface ResourceContract<ResourceType = {}> {
         authorizeCallbacks: {
-            authorizedToSee: AuthorizeFunction
-            authorizedToCreate: AuthorizeFunction
-            authorizedToUpdate: AuthorizeFunction
-            authorizedToDelete: AuthorizeFunction
+            authorizedToShow: AuthorizeFunction[]
+            authorizedToFetch: AuthorizeFunction[]
+            authorizedToCreate: AuthorizeFunction[]
+            authorizedToUpdate: AuthorizeFunction[]
+            authorizedToDelete: AuthorizeFunction[]
+        }
+        dashboardAuthorizeCallbacks: {
+            authorizedToShow: AuthorizeFunction[]
+            authorizedToFetch: AuthorizeFunction[]
+            authorizedToCreate: AuthorizeFunction[]
+            authorizedToUpdate: AuthorizeFunction[]
+            authorizedToDelete: AuthorizeFunction[]
         }
         hooks: {
             beforeCreate: HookFunction
@@ -54,10 +62,16 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         permissions(permissions: Permission[]): this
-        canSee(authorizeFunction: AuthorizeFunction): this
+        canShow(authorizeFunction: AuthorizeFunction): this
+        canFetch(authorizeFunction: AuthorizeFunction): this
         canCreate(authorizeFunction: AuthorizeFunction): this
         canUpdate(authorizeFunction: AuthorizeFunction): this
         canDelete(authorizeFunction: AuthorizeFunction): this
+        canShowOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canFetchOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canCreateOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canUpdateOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
         displayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this
@@ -78,10 +92,18 @@ declare module '@tensei/common/resources' {
 
     export class Resource implements ResourceContract {
         authorizeCallbacks: {
-            authorizedToSee: AuthorizeFunction
-            authorizedToCreate: AuthorizeFunction
-            authorizedToUpdate: AuthorizeFunction
-            authorizedToDelete: AuthorizeFunction
+            authorizedToShow: AuthorizeFunction[]
+            authorizedToFetch: AuthorizeFunction[]
+            authorizedToCreate: AuthorizeFunction[]
+            authorizedToUpdate: AuthorizeFunction[]
+            authorizedToDelete: AuthorizeFunction[]
+        }
+        dashboardAuthorizeCallbacks: {
+            authorizedToShow: AuthorizeFunction[]
+            authorizedToFetch: AuthorizeFunction[]
+            authorizedToCreate: AuthorizeFunction[]
+            authorizedToUpdate: AuthorizeFunction[]
+            authorizedToDelete: AuthorizeFunction[]
         }
         hooks: {
             beforeCreate: HookFunction
@@ -91,10 +113,16 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         permissions(permissions: Permission[]): this
-        canSee(authorizeFunction: AuthorizeFunction): this
+        canShow(authorizeFunction: AuthorizeFunction): this
+        canFetch(authorizeFunction: AuthorizeFunction): this
         canCreate(authorizeFunction: AuthorizeFunction): this
         canUpdate(authorizeFunction: AuthorizeFunction): this
         canDelete(authorizeFunction: AuthorizeFunction): this
+        canShowOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canFetchOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canCreateOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canUpdateOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
         displayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this

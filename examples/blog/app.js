@@ -53,7 +53,14 @@ module.exports = tensei()
         ]),
     ])
     .plugins([
-        auth().name('Customer').twoFactorAuth().verifyEmails().plugin(),
+        auth()
+            .name('Customer')
+            .twoFactorAuth()
+            .verifyEmails()
+            .teams()
+            .apiPath('auth')
+            .rolesAndPermissions()
+            .plugin(),
         trix(),
         cashier()
             .customerResourceName('Customer')

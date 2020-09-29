@@ -23,8 +23,7 @@ import {
     ManagerContract,
     SupportedDatabases,
     DatabaseRepositoryInterface,
-    belongsToMany,
-    dateTime
+    belongsToMany
 } from '@tensei/common'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
@@ -32,6 +31,8 @@ import FindResourceController from './controllers/resources/FindResourceControll
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
 import { DashboardContract } from '@tensei/common'
 import MetricController from './controllers/MetricController'
+import { EndpointMiddleware } from '@tensei/common'
+import { InBuiltEndpoints } from '@tensei/common'
 
 export class Tensei {
     public app: Application = Express()
@@ -61,6 +62,22 @@ export class Tensei {
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
+        middleware: [],
+
+        pushMiddleware: (middleware: EndpointMiddleware) => {
+            this.config.middleware.push(middleware)
+        },
+
+        showController: this.asyncHandler(FindResourceController.show),
+        runActionController: this.asyncHandler(RunActionController.run),
+        indexController: this.asyncHandler(IndexResourceController.index),
+        createController: this.asyncHandler(CreateResourceController.store),
+        updateController: this.asyncHandler(UpdateResourceController.update),
+        deleteController: this.asyncHandler(DeleteResourceController.destroy),
+        showRelationController: this.asyncHandler(
+            FindResourceController.showRelation
+        ),
+
         scripts: [
             {
                 name: 'tensei.js',
@@ -109,6 +126,7 @@ export class Tensei {
     public getPluginArguments() {
         return {
             app: this.app,
+            ...this.config,
             style: (name: Asset['name'], path: Asset['path']) => {
                 this.config.styles = [
                     ...this.config.styles,
@@ -127,9 +145,6 @@ export class Tensei {
                     }
                 ]
             },
-            resources: this.config.resources,
-            pushResource: this.config.pushResource,
-            resourcesMap: this.config.resourcesMap,
             // TODO: Make request option in manager. That way manager can be used in CLI, tests, anywhere.
             manager: this.manager({} as any)!
         }
@@ -153,7 +168,7 @@ export class Tensei {
     }
 
     public dashboardPath(dashboardPath: string) {
-        this.setValue('dashboardPath', dashboardPath)
+        this.config.dashboardPath = dashboardPath
 
         return this
     }
@@ -240,7 +255,7 @@ export class Tensei {
     }
 
     public apiPath(apiPath: string) {
-        this.setValue('apiPath', apiPath)
+        this.config.apiPath = apiPath
 
         return this
     }
@@ -319,6 +334,10 @@ export class Tensei {
         return `/${this.config.apiPath}/${path}`
     }
 
+    private getDashboardApiPath = (path: string) => {
+        return `/${this.config.dashboardPath}/${this.config.apiPath}/${path}`
+    }
+
     public authMiddleware = async (
         request: Express.Request,
         response: Express.Response,
@@ -329,6 +348,16 @@ export class Tensei {
                 message: 'Unauthenticated.'
             })
         }
+
+        next()
+    }
+
+    public setDashboardOrigin = async (
+        request: Express.Request,
+        response: Express.Response,
+        next: Express.NextFunction
+    ) => {
+        request.originatedFromDashboard = true
 
         next()
     }
@@ -384,90 +413,109 @@ export class Tensei {
 
     public registerCoreRoutes() {
         // The administration dashboard
-        this.app.get(
-            `/${this.config.dashboardPath}(/*)?`,
-            this.asyncHandler(ClientController.index)
-        )
 
         this.app.post(
-            this.getApiPath('login'),
+            this.getDashboardApiPath('login'),
+            this.setDashboardOrigin,
             this.asyncHandler(AuthController.login)
         )
 
         this.app.post(
-            this.getApiPath('register'),
+            this.getDashboardApiPath('register'),
+            this.setDashboardOrigin,
             this.asyncHandler(AuthController.register)
         )
 
         this.app.post(
-            this.getApiPath('forgot-password'),
+            this.getDashboardApiPath('forgot-password'),
+            this.setDashboardOrigin,
             this.asyncHandler(ForgotPasswordController.forgotPassword)
         )
 
         this.app.post(
-            this.getApiPath('reset-password'),
+            this.getDashboardApiPath('reset-password'),
+            this.setDashboardOrigin,
             this.asyncHandler(ForgotPasswordController.resetPassword)
         )
 
         this.app.post(
-            this.getApiPath('logout'),
+            this.getDashboardApiPath('logout'),
+            this.setDashboardOrigin,
             this.authMiddleware,
             this.asyncHandler(AuthController.logout)
         )
 
         this.app.get(
-            this.getApiPath(`resources/:resource`),
+            this.getDashboardApiPath(`resources/:resource`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(IndexResourceController.index)
+            this.config.indexController
         )
 
         this.app.get(
-            this.getApiPath(`resources/:resource/:resourceId`),
+            this.getDashboardApiPath(`resources/:resource/:resourceId`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(FindResourceController.show)
+            this.config.showController
         )
 
         this.app.get(
-            this.getApiPath(`resources/:resource/:resourceId/:relatedResource`),
+            this.getDashboardApiPath(
+                `resources/:resource/:resourceId/:relatedResource`
+            ),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(FindResourceController.showRelation)
+            this.config.showRelationController
         )
 
         this.app.put(
-            this.getApiPath(`resources/:resource/:resourceId`),
+            this.getDashboardApiPath(`resources/:resource/:resourceId`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(UpdateResourceController.update)
+            this.config.updateController
         )
 
         this.app.get(
-            this.getApiPath(`metrics/:dashboard/:metric`),
+            this.getDashboardApiPath(`metrics/:dashboard/:metric`),
+            this.setDashboardOrigin,
             this.authMiddleware,
             this.asyncHandler(MetricController.index)
         )
 
         this.app.patch(
-            this.getApiPath(`resources/:resource/:resourceId`),
+            this.getDashboardApiPath(`resources/:resource/:resourceId`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(UpdateResourceController.update)
+            this.config.updateController
         )
 
         this.app.post(
-            this.getApiPath(`resources/:resource`),
+            this.getDashboardApiPath(`resources/:resource`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(CreateResourceController.store)
+            this.config.createController
         )
 
         this.app.post(
-            this.getApiPath(`resources/:resource/actions/:action`),
+            this.getDashboardApiPath(`resources/:resource/actions/:action`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(RunActionController.run)
+            this.config.runActionController
         )
 
         this.app.delete(
-            this.getApiPath(`resources/:resource/:resourceId`),
+            this.getDashboardApiPath(`resources/:resource/:resourceId`),
+            this.setDashboardOrigin,
             this.authMiddleware,
-            this.asyncHandler(DeleteResourceController.destroy)
+            this.config.deleteController
         )
+
+        this.app.get(
+            `/${this.config.dashboardPath}(/*)?`,
+            this.asyncHandler(ClientController.index)
+        )
+
+        this.generateClientFacingApiRoutes()
 
         this.app.use(
             (
@@ -503,6 +551,56 @@ export class Tensei {
                 })
             }
         )
+    }
+
+    public generateClientFacingApiRoutes() {
+        this.app.get(
+            this.getApiPath(':resource'),
+            ...this.getMiddlewareForEndpoint('index'),
+            this.config.indexController
+        )
+
+        this.app.get(
+            this.getApiPath(':resource/:resourceId'),
+            ...this.getMiddlewareForEndpoint('show'),
+            this.config.showController
+        )
+
+        this.app.get(
+            this.getApiPath(':resource/:resourceId'),
+            ...this.getMiddlewareForEndpoint('showRelation'),
+            this.config.showRelationController
+        )
+
+        this.app.post(
+            this.getApiPath(':resource'),
+            ...this.getMiddlewareForEndpoint('create'),
+            this.config.createController
+        )
+
+        this.app.put(
+            this.getApiPath(':resource/:resourceId'),
+            ...this.getMiddlewareForEndpoint('update'),
+            this.config.updateController
+        )
+
+        this.app.patch(
+            this.getApiPath(':resource/:resourceId'),
+            ...this.getMiddlewareForEndpoint('update'),
+            this.config.updateController
+        )
+
+        this.app.delete(
+            this.getApiPath(':resource/:resourceId'),
+            ...this.getMiddlewareForEndpoint('delete'),
+            this.config.deleteController
+        )
+    }
+
+    private getMiddlewareForEndpoint(endpoint: InBuiltEndpoints) {
+        return this.config.middleware
+            .filter(middleware => middleware.type === endpoint)
+            .map(middleware => middleware.handler)
     }
 
     public registerAssetsRoutes() {
@@ -576,7 +674,7 @@ export class Tensei {
             )
             .filter(Boolean) as ResourceContract[]
 
-        this.setValue('resources', uniqueResources)
+        this.config.resources = uniqueResources
 
         const resourcesMap: Config['resourcesMap'] = {}
 
@@ -584,7 +682,7 @@ export class Tensei {
             resourcesMap[resource.data.slug] = resource
         })
 
-        this.setValue('resourcesMap', resourcesMap)
+        this.config.resourcesMap = resourcesMap
 
         return this
     }

@@ -1,6 +1,6 @@
 declare module '@tensei/common/plugins' {
     import { Application } from 'express'
-    import { Asset } from '@tensei/common/config'
+    import { Asset, EndpointMiddleware, Config } from '@tensei/common/config'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
@@ -14,7 +14,7 @@ declare module '@tensei/common/plugins' {
         | 'beforeCoreRoutesSetup'
         | 'afterCoreRoutesSetup'
 
-    interface PluginSetupConfig {
+    interface PluginSetupConfig extends Config {
         resources: ResourceContract[]
         app: Application
         resourcesMap: {
@@ -22,6 +22,7 @@ declare module '@tensei/common/plugins' {
         }
         manager: ManagerContract['setResource']
         pushResource: (resource: ResourceContract) => void
+        pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void
         script: (name: Asset['name'], path: Asset['path']) => void
     }

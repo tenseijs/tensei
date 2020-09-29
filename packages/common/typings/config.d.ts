@@ -1,8 +1,14 @@
 declare module '@tensei/common/config' {
-    import { Request } from 'express'
-    import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
     import { ResourceContract } from '@tensei/common/resources'
     import { DashboardContract } from '@tensei/common/dashboards'
+    import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
+    import {
+        Request,
+        Handler,
+        NextFunction,
+        ErrorRequestHandler,
+        RequestHandler,
+    } from 'express'
 
     enum noPagination {
         true = 'true',
@@ -67,9 +73,22 @@ declare module '@tensei/common/config' {
         path: string
     }
     type SupportedDatabases = 'mysql' | 'pg' | 'sqlite' | 'mongodb'
+    type InBuiltEndpoints =
+        | 'show'
+        | 'index'
+        | 'create'
+        | 'update'
+        | 'delete'
+        | 'runAction'
+        | 'showRelation'
+    type ExpressMiddleware = ErrorRequestHandler | RequestHandler
     interface Env {
         port: string | number
         sessionSecret: string
+    }
+    interface EndpointMiddleware {
+        type: InBuiltEndpoints
+        handler: ExpressMiddleware
     }
     export interface Config {
         plugins: PluginContract[]
@@ -89,6 +108,17 @@ declare module '@tensei/common/config' {
         }
         database: SupportedDatabases
         pushResource: PluginSetupConfig['pushResource']
+
+        showController: Handler
+        indexController: Handler
+        createController: Handler
+        updateController: Handler
+        deleteController: Handler
+        runActionController: Handler
+        showRelationController: Handler
+
+        middleware: EndpointMiddleware[]
+        pushMiddleware: (middleware: EndpointMiddleware) => void
     }
     type Permission =
         | {

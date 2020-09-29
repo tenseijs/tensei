@@ -15,6 +15,7 @@ import {
     dateTime,
     HookFunction,
     DataPayload,
+    InBuiltEndpoints,
 } from '@tensei/common'
 
 import { AuthPluginConfig, AuthData } from './config'
@@ -38,12 +39,7 @@ class Auth {
         twoFactorAuth: false,
         verifyEmails: false,
         skipWelcomeEmail: false,
-        // beforeCreateUser?: HookFunction
-        // afterCreateUser?: HookFunction
-        // beforeUpdateUser?: HookFunction
-        // afterUpdateUser?: HookFunction
-        // beforeLoginUser?: HookFunction
-        // afterLoginUser?: HookFunction
+        rolesAndPermissions: false,
     }
 
     public beforeCreateUser(hook: HookFunction) {
@@ -148,8 +144,14 @@ class Auth {
         return this
     }
 
+    public rolesAndPermissions() {
+        this.config.rolesAndPermissions = true
+
+        return this
+    }
+
     private userResource() {
-        return resource(this.config.nameResource)
+        const userResource = resource(this.config.nameResource)
             .fields([
                 text('Name').searchable().creationRules('required'),
                 text('Email')
@@ -166,7 +168,9 @@ class Auth {
                     .creationRules('required')
                     .onlyOnForms()
                     .hideOnUpdate(),
-                belongsToMany(this.config.roleResource),
+                ...(this.config.rolesAndPermissions
+                    ? [belongsToMany(this.config.roleResource)]
+                    : []),
                 ...(this.config.twoFactorAuth
                     ? [
                           text('Two Factor Enabled')
@@ -232,6 +236,8 @@ class Auth {
                 return parsedPayload
             })
             .group('Users & Permissions')
+
+        return userResource
     }
 
     private teamResource() {
@@ -304,27 +310,87 @@ class Auth {
     public plugin() {
         return (
             plugin('Auth')
-                .beforeDatabaseSetup(({ pushResource }) => {
-                    pushResource(this.userResource())
+                .beforeDatabaseSetup(
+                    ({ pushResource, pushMiddleware, resources }) => {
+                        pushResource(this.userResource())
+                        pushResource(this.passwordResetsResource())
 
-                    pushResource(this.roleResource())
+                        if (this.config.rolesAndPermissions) {
+                            pushResource(this.roleResource())
 
-                    pushResource(this.permissionResource())
+                            pushResource(this.permissionResource())
+                        }
 
-                    pushResource(this.passwordResetsResource())
+                        if (this.config.teams) {
+                            pushResource(this.teamResource())
 
-                    if (this.config.teams) {
-                        pushResource(this.teamResource())
+                            pushResource(this.teamInviteResource())
+                        }
 
-                        pushResource(this.teamInviteResource())
+                        ;([
+                            'show',
+                            'index',
+                            'delete',
+                            'create',
+                            'runAction',
+                            'showRelation',
+                            'update',
+                        ] as InBuiltEndpoints[]).forEach((endpoint) => {
+                            pushMiddleware({
+                                type: endpoint,
+                                handler: this.setAuthMiddleware,
+                            })
+
+                            pushMiddleware({
+                                type: endpoint,
+                                handler: this.authMiddleware,
+                            })
+                        })
+
+                        if (this.config.rolesAndPermissions) {
+                            resources.forEach((resource) => {
+                                resource.canCreate(
+                                    ({ authUser }) =>
+                                        authUser?.permissions.includes(
+                                            `create:${resource.data.slug}`
+                                        ) || false
+                                )
+                                resource.canFetch(
+                                    ({ authUser }) =>
+                                        authUser?.permissions.includes(
+                                            `fetch:${resource.data.slug}`
+                                        ) || false
+                                )
+                                resource.canShow(
+                                    ({ authUser }) =>
+                                        authUser?.permissions.includes(
+                                            `show:${resource.data.slug}`
+                                        ) || false
+                                )
+                                resource.canUpdate(
+                                    ({ authUser }) =>
+                                        authUser?.permissions.includes(
+                                            `update:${resource.data.slug}`
+                                        ) || false
+                                )
+                                resource.canDelete(
+                                    ({ authUser }) =>
+                                        authUser?.permissions.includes(
+                                            `delete:${resource.data.slug}`
+                                        ) || false
+                                )
+                            })
+                        }
+
+                        return Promise.resolve()
                     }
-
-                    return Promise.resolve()
-                })
+                )
 
                 // TODO: If we support more databases, add a setup method for each database.
-                .afterDatabaseSetup(async ({ resources, manager }) =>
-                    SetupSql(resources, this.config, manager)
+                .afterDatabaseSetup(
+                    async ({ resources, manager }) =>
+                        this.config.rolesAndPermissions &&
+                        SetupSql(resources, this.config, manager)
                 )
 
                 .beforeCoreRoutesSetup(async ({ app }) => {
@@ -363,17 +429,6 @@ class Auth {
                             this.authMiddleware,
                             AsyncHandler(this.confirmEnableTwoFactorAuth)
                         )
-
-                        if (this.config.teams) {
-                            // create team endpoint
-                            // fetch all teams endpoint
-                            // fetch single team endpoint
-                            // edit team endpoint
-                            // delete team endpoint
-                            // invite member to team endpoint
-                            // accept / reject membership invite endpoint
-                            // remove member from team endpoint
-                        }
                     }
 
                     if (this.config.verifyEmails) {
@@ -409,11 +464,13 @@ class Auth {
             .findOneById(
                 id,
                 [],
-                [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
-                    }`,
-                ]
+                this.config.rolesAndPermissions
+                    ? [
+                          `${this.roleResource().data.slug}.${
+                              this.permissionResource().data.slug
+                          }`,
+                      ]
+                    : []
             )
 
         const user = model.toJSON ? model.toJSON() : model
@@ -484,11 +541,13 @@ class Auth {
             .findOneById(
                 userWithPassword.id,
                 [],
-                [
-                    `${this.roleResource().data.slug}.${
-                        this.permissionResource().data.slug
-                    }`,
-                ]
+                this.config.rolesAndPermissions
+                    ? [
+                          `${this.roleResource().data.slug}.${
+                              this.permissionResource().data.slug
+                          }`,
+                      ]
+                    : []
             )
 
         const user = model.toJSON ? model.toJSON() : model
@@ -524,7 +583,7 @@ class Auth {
         })
     }
 
-    private authMiddleware = async (
+    public authMiddleware = async (
         request: Request,
         response: Response,
         next: NextFunction
@@ -538,7 +597,7 @@ class Auth {
         next()
     }
 
-    private verifiedMiddleware = async (
+    public verifiedMiddleware = async (
         request: Request,
         response: Response,
         next: NextFunction
@@ -552,7 +611,7 @@ class Auth {
         next()
     }
 
-    private setAuthMiddleware = async (
+    public setAuthMiddleware = async (
         request: Request,
         response: Response,
         next: NextFunction
@@ -574,11 +633,13 @@ class Auth {
                 .findOneById(
                     id,
                     [],
-                    [
-                        `${this.roleResource().data.slug}.${
-                            this.permissionResource().data.slug
-                        }`,
-                    ]
+                    this.config.rolesAndPermissions
+                        ? [
+                              `${this.roleResource().data.slug}.${
+                                  this.permissionResource().data.slug
+                              }`,
+                          ]
+                        : []
                 )
 
             const user = {
@@ -594,15 +655,17 @@ class Auth {
                     : model.email_verification_token,
             }
 
-            user.permissions = user[this.roleResource().data.slug].reduce(
-                (acc: [], role: any) => [
-                    ...acc,
-                    ...(role[this.permissionResource().data.slug] || []).map(
-                        (permission: any) => permission.slug
-                    ),
-                ],
-                []
-            )
+            if (this.config.rolesAndPermissions) {
+                user.permissions = user[this.roleResource().data.slug].reduce(
+                    (acc: [], role: any) => [
+                        ...acc,
+                        ...(
+                            role[this.permissionResource().data.slug] || []
+                        ).map((permission: any) => permission.slug),
+                    ],
+                    []
+                )
+            }
 
             request.authUser = user
         } catch (errors) {

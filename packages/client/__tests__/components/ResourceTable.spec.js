@@ -31,7 +31,7 @@ let props = {
         authorizedToUpdate: jest.fn(() => true),
         authorizedToDelete: jest.fn(() => true),
         authorizedToRunAction: jest.fn(() => true),
-        authorizedToSee: jest.fn(() => true),
+        authorizedToFetch: jest.fn(() => true),
     },
 }
 

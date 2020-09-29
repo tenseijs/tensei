@@ -21,15 +21,31 @@ interface ResourceDataWithFields extends ResourceData {
 
 export class Resource<ResourceType = {}> implements ResourceContract {
     public authorizeCallbacks: {
-        authorizedToSee: AuthorizeFunction
-        authorizedToCreate: AuthorizeFunction
-        authorizedToUpdate: AuthorizeFunction
-        authorizedToDelete: AuthorizeFunction
+        authorizedToShow: AuthorizeFunction[]
+        authorizedToFetch: AuthorizeFunction[]
+        authorizedToCreate: AuthorizeFunction[]
+        authorizedToUpdate: AuthorizeFunction[]
+        authorizedToDelete: AuthorizeFunction[]
     } = {
-        authorizedToSee: (request) => true,
-        authorizedToCreate: (request) => true,
-        authorizedToUpdate: (request) => true,
-        authorizedToDelete: (request) => true,
+        authorizedToShow: [],
+        authorizedToFetch: [],
+        authorizedToCreate: [],
+        authorizedToUpdate: [],
+        authorizedToDelete: [],
+    }
+
+    public dashboardAuthorizeCallbacks: {
+        authorizedToShow: AuthorizeFunction[]
+        authorizedToFetch: AuthorizeFunction[]
+        authorizedToCreate: AuthorizeFunction[]
+        authorizedToUpdate: AuthorizeFunction[]
+        authorizedToDelete: AuthorizeFunction[]
+    } = {
+        authorizedToShow: [],
+        authorizedToFetch: [],
+        authorizedToCreate: [],
+        authorizedToUpdate: [],
+        authorizedToDelete: [],
     }
 
     public hooks: {
@@ -97,26 +113,62 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public canSee(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks['authorizedToSee'] = authorizeFunction
+    public canShow(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToShow.push(authorizeFunction)
+
+        return this
+    }
+
+    public canFetch(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToFetch.push(authorizeFunction)
 
         return this
     }
 
     public canCreate(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks['authorizedToCreate'] = authorizeFunction
+        this.authorizeCallbacks.authorizedToCreate.push(authorizeFunction)
 
         return this
     }
 
     public canUpdate(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks['authorizedToUpdate'] = authorizeFunction
+        this.authorizeCallbacks.authorizedToUpdate.push(authorizeFunction)
 
         return this
     }
 
     public canDelete(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks['authorizedToDelete'] = authorizeFunction
+        this.authorizeCallbacks.authorizedToDelete.push(authorizeFunction)
+
+        return this
+    }
+
+    public canShowOnDashboard(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToShow.push(authorizeFunction)
+
+        return this
+    }
+
+    public canFetchOnDashboard(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToFetch.push(authorizeFunction)
+
+        return this
+    }
+
+    public canCreateOnDashboard(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToCreate.push(authorizeFunction)
+
+        return this
+    }
+
+    public canUpdateOnDashboard(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToUpdate.push(authorizeFunction)
+
+        return this
+    }
+
+    public canDeleteOnDashboard(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToDelete.push(authorizeFunction)
 
         return this
     }

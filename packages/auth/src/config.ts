@@ -5,6 +5,7 @@ export interface AuthPluginConfig {
     nameResource: string
     roleResource: string
     permissionResource: string
+    rolesAndPermissions: boolean
     passwordResetsResource: string
     apiPath: string
     jwt: {

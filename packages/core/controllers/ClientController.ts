@@ -34,7 +34,8 @@ class ClientController {
                     )
                 ),
                 appConfig: JSON.stringify({
-                    dashboardPath: request.appConfig.dashboardPath
+                    dashboardPath: request.appConfig.dashboardPath,
+                    apiPath: request.appConfig.apiPath
                 }),
                 shouldShowRegistrationScreen
             })

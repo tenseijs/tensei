@@ -52,8 +52,10 @@ class Wrapper extends React.Component {
                         permissions,
                         setUser: this.setUser,
                         shouldShowRegistrationScreen,
-                        authorizedToSee: (slug) =>
-                            user ? permissions[`read:${slug}`] : false,
+                        authorizedToFetch: (slug) =>
+                            user ? permissions[`fetch:${slug}`] : false,
+                        authorizedToShow: (slug) =>
+                            user ? permissions[`show:${slug}`] : false,
                         authorizedToCreate: (slug) =>
                             user ? permissions[`create:${slug}`] : false,
                         authorizedToUpdate: (slug) =>

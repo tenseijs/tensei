@@ -34,9 +34,11 @@ export default async (
     const permissions: Permission[] = []
 
     resources.forEach((resource) => {
-        ;['create', 'read', 'update', 'delete'].forEach((operation) => {
-            permissions.push(`${operation}:${resource.data.slug}`)
-        })
+        ;['create', 'fetch', 'show', 'update', 'delete'].forEach(
+            (operation) => {
+                permissions.push(`${operation}:${resource.data.slug}`)
+            }
+        )
 
         resource.data.actions.forEach((action) => {
             permissions.push(`run:${resource.data.slug}:${action.data.slug}`)

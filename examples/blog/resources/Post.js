@@ -18,7 +18,7 @@ module.exports = resource('Post')
     .actions([
         action('Publish on')
             .positive()
-            .handle(async ({ request, models, payload, notification }) =>
+            .handle(async ({ notification }) =>
                 notification({
                     message: 'All articles have been published.',
                     variant: 'positive',

@@ -64,7 +64,7 @@ export default class Tensei {
     getPath = (path) => `/${this.state.appConfig.dashboardPath}/${path}`
 
     request = Axios.create({
-        baseURL: '/api/',
+        baseURL: `/${this.state.appConfig.dashboardPath}/${this.state.appConfig.apiPath}`,
     })
 
     bootingCallbacks = []
