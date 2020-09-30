@@ -26,12 +26,14 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToCreate: AuthorizeFunction[]
         authorizedToUpdate: AuthorizeFunction[]
         authorizedToDelete: AuthorizeFunction[]
+        authorizedToRunAction: AuthorizeFunction[]
     } = {
         authorizedToShow: [],
         authorizedToFetch: [],
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
+        authorizedToRunAction: []
     }
 
     public dashboardAuthorizeCallbacks: {
@@ -40,12 +42,14 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToCreate: AuthorizeFunction[]
         authorizedToUpdate: AuthorizeFunction[]
         authorizedToDelete: AuthorizeFunction[]
+        authorizedToRunAction: AuthorizeFunction[]
     } = {
         authorizedToShow: [],
         authorizedToFetch: [],
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
+        authorizedToRunAction: []
     }
 
     public hooks: {
@@ -72,12 +76,12 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     constructor(name: string, tableName?: string) {
-        this.setValue('name', name)
-        this.setValue('slug', Pluralize(paramCase(name)))
-        this.setValue('label', Pluralize(name))
-        this.setValue('camelCaseName', camelCase(name))
-        this.setValue('camelCaseNamePlural', Pluralize(camelCase(name)))
-        this.setValue('table', tableName || Pluralize(snakeCase(name)))
+        this.data.name = name
+        this.data.slug = Pluralize(paramCase(name))
+        this.data.label = Pluralize(name)
+        this.data.camelCaseName = camelCase(name)
+        this.data.camelCaseNamePlural = Pluralize(camelCase(name))
+        this.data.table = tableName || Pluralize(snakeCase(name))
     }
 
     public Model = (): any => {
@@ -108,7 +112,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public permissions(permissions: Permission[]) {
-        this.setValue('permissions', permissions)
+        this.data.permissions = permissions
 
         return this
     }
@@ -143,110 +147,114 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
+    public canRunAction(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToRunAction.push(authorizeFunction)
+
+        return this
+    }
+
     public canShowOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks.authorizedToShow.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToShow.push(authorizeFunction)
 
         return this
     }
 
     public canFetchOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks.authorizedToFetch.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToFetch.push(authorizeFunction)
 
         return this
     }
 
     public canCreateOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks.authorizedToCreate.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToCreate.push(authorizeFunction)
 
         return this
     }
 
     public canUpdateOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks.authorizedToUpdate.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToUpdate.push(authorizeFunction)
 
         return this
     }
 
     public canDeleteOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.authorizeCallbacks.authorizedToDelete.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToDelete.push(authorizeFunction)
+
+        return this
+    }
+
+    public canRunActionOnDashboard(authorizeFunction: AuthorizeFunction) {
+        this.dashboardAuthorizeCallbacks.authorizedToRunAction.push(authorizeFunction)
 
         return this
     }
 
     public displayField(displayField: string) {
-        this.setValue('displayField', displayField)
+        this.data.displayField = displayField
 
         return this
     }
 
     public fields(fields: FieldContract[]) {
-        this.setValue('fields', [
-            // We'll set the primary key here. We're not ready to allow custom primary keys yet.
+        this.data.fields = [
             id('ID'),
-            ...fields,
-        ])
+            ...fields
+        ]
 
         return this
     }
 
     public actions(actions: Action[]) {
-        this.setValue('actions', actions)
+        this.data.actions = actions
 
         return this
     }
 
     public noTimeStamps() {
-        this.setValue('noTimeStamps', true)
+        this.data.noTimeStamps = true
 
         return this
     }
 
-    private setValue(key: keyof ResourceDataWithFields, value: any) {
-        this.data = {
-            ...this.data,
-            [key]: value,
-        }
-    }
-
     public perPageOptions(perPageOptions: number[]) {
-        this.setValue('perPageOptions', perPageOptions)
+        this.data.perPageOptions = perPageOptions
 
         return this
     }
 
     public displayInNavigation() {
-        this.setValue('displayInNavigation', true)
+        this.data.displayInNavigation = true
 
         return this
     }
 
     public hideFromNavigation() {
-        this.setValue('displayInNavigation', false)
+        this.data.displayInNavigation = false
 
         return this
     }
 
     public validationMessages(validationMessages: ValidationMessages) {
-        this.setValue('validationMessages', validationMessages)
+        this.data.validationMessages = validationMessages
 
         return this
     }
 
     public group(groupName: string) {
-        this.setValue('group', groupName)
-        this.setValue('groupSlug', paramCase(groupName))
+        this.data.group = groupName
+        this.data.groupSlug = paramCase(groupName)
 
         return this
     }
 
     public slug(slug: string) {
-        this.setValue('slug', slug)
+        this.data.slug = slug
 
         return this
     }
 
     public label(label: string) {
-        this.setValue('label', label)
+        this.data.label = label
 
         return this
     }
@@ -294,6 +302,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
         return this
     }
+
+
 }
 
 export const resource = (name: string, tableName?: string) =>

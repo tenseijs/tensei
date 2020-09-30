@@ -26,7 +26,7 @@ import { setup, fakePostData } from '../../helpers'
 
         const client = Supertest(app)
 
-        const response = await client.post(`/api/resources/posts`).send(post)
+        const response = await client.post(`/admin/api/resources/posts`).send(post)
 
         expect(response.status).toBe(201)
         expect(response.body.title).toBe(post.title)
@@ -50,7 +50,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         const response = await client
-            .post(`/api/resources/users`)
+            .post(`/admin/api/resources/users`)
             .send(userDetails)
 
         expect(response.status).toBe(201)
@@ -77,7 +77,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         const response = await client
-            .get(`/api/resources/users`)
+            .get(`/admin/api/resources/users`)
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -111,7 +111,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         const response = await client
-            .patch(`/api/resources/users/${user.id}`)
+            .patch(`/admin/api/resources/users/${user.id}`)
             .send(updateDetails)
 
         expect(response.status).toBe(200)
@@ -140,7 +140,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         const response = await client
-            .get(`/api/resources/users/${user.id}`)
+            .get(`/admin/api/resources/users/${user.id}`)
             .send(userDetails)
 
         expect(response.status).toBe(200)

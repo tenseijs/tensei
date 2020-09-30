@@ -90,11 +90,38 @@ Array [
 ]
 `;
 
-exports[`Manager runAction method calls findAllByIds method 1`] = `Promise {}`;
+exports[`Manager runAction method calls findAllByIds method 1`] = `
+Object {
+  "html": "
+                    <div className='w-full bg-gray-100'>
+                        <p>SOME EXAMPLE HTML TO BE SET ON THE DOM</p>
+                    </div>
+                ",
+  "status": 201,
+  "type": "html",
+}
+`;
 
-exports[`Manager runAction method calls findAllByIds method 2`] = `Promise {}`;
+exports[`Manager runAction method calls findAllByIds method 2`] = `
+Object {
+  "route": "/resources/posts/12",
+  "status": 202,
+  "type": "push",
+}
+`;
 
-exports[`Manager runAction method calls findAllByIds method 3`] = `Promise {}`;
+exports[`Manager runAction method calls findAllByIds method 3`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "custom-field-name",
+      "message": "Custom validation message",
+    },
+  ],
+  "status": 422,
+  "type": "validation-errors",
+}
+`;
 
 exports[`Manager runAction method calls findAllByIds method 4`] = `
 Object {

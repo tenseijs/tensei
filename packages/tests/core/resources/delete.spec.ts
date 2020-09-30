@@ -38,12 +38,12 @@ beforeEach(() => {
         const client = Supertest(app)
 
         let response = await client
-            .delete(`/api/resources/posts/${post1.toJSON().id}`)
+            .delete(`/admin/api/resources/posts/${post1.toJSON().id}`)
             .send(userDetails)
 
         expect(response.status).toBe(204)
 
-        response = await client.get(`/api/resources/posts`).send(userDetails)
+        response = await client.get(`/admin/api/resources/posts`).send(userDetails)
 
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(1)
@@ -79,7 +79,7 @@ beforeEach(() => {
         const client = Supertest(app)
 
         const response = await client
-            .delete(`/api/resources/posts/21`)
+            .delete(`/admin/api/resources/posts/21`)
             .send(userDetails)
 
         expect(response.status).toBe(422)

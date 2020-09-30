@@ -4,9 +4,9 @@ import { resource as createResourceFn } from './Resource'
 import { DataPayload, FetchAllRequestQuery } from '@tensei/common'
 import {
     ActionResponse,
-    DatabaseRepositoryInterface,
-    ResourceContract,
     ManagerContract,
+    ResourceContract,
+    DatabaseRepositoryInterface,
 } from '@tensei/common'
 import { ResourceHelpers } from '../helpers'
 
@@ -20,7 +20,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     public async deleteById(id: number | string) {
-        await this.authorize('authorizedToDelete')
+        const model = await this.database().findOneById(id)
+
+        await this.authorize('authorizedToDelete', model)
 
         return this.database().deleteById(id)
     }
@@ -67,6 +69,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     public async authorize(
         authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'],
+        model?: any,
         resource = this.getCurrentResource()
     ) {
         const authorizeFunctions = this.request?.originatedFromDashboard
@@ -74,7 +77,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             : resource.authorizeCallbacks[authorizeFn]
 
         const authorizedResults = await Promise.all(
-            authorizeFunctions.map((fn) => fn(this.request!))
+            authorizeFunctions.map((fn) => fn(this.request!, model))
         )
 
         if (
@@ -133,7 +136,16 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             )
         }
 
-        await this.authorize('authorizedToUpdate')
+        const model = await this.findOneByField(databaseField, value)
+
+        if (! model) {
+            throw {
+                status: 404,
+                message: `Resource with ${databaseField} ${value} was not found.`
+            }
+        }
+
+        await this.authorize('authorizedToUpdate', model)
 
         let { parsedPayload } = await this.validate(payload, false)
 
@@ -151,7 +163,16 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ) {
         const resource = this.getCurrentResource()
 
-        await this.authorize('authorizedToUpdate')
+        const model = await this.database().findOneById(id)
+
+        if (! model) {
+            throw {
+                status: 404,
+                message: `Resource with id ${id} was not found.`
+            }
+        }
+
+        await this.authorize('authorizedToUpdate', model)
 
         let { parsedPayload, relationshipFieldsPayload } = await this.validate(
             payload,
@@ -670,11 +691,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ): Promise<ActionResponse> => {
         const resource = this.getCurrentResource()
 
-        await this.authorize('authorizedToCreate')
-        await this.authorize('authorizedToFetch')
-        await this.authorize('authorizedToUpdate')
-        await this.authorize('authorizedToDelete')
-        await this.authorize('authorizedToShow')
+        await this.authorize('authorizedToRunAction')
 
         const action = resource.data.actions.find(
             (action) => action.data.slug === actionSlug

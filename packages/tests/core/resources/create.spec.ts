@@ -32,7 +32,7 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        const response = await client.post(`/api/resources/posts`).send(post)
+        const response = await client.post(`/admin/api/resources/posts`).send(post)
 
         expect(beforeCreateHook).toHaveBeenCalledTimes(1)
 
@@ -61,11 +61,11 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        let response = await client.post(`/api/resources/posts`).send(post)
+        let response = await client.post(`/admin/api/resources/posts`).send(post)
 
         expect(response.status).toBe(201)
 
-        response = await client.post(`/api/resources/posts`).send(post)
+        response = await client.post(`/admin/api/resources/posts`).send(post)
 
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')
@@ -100,7 +100,7 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        let response = await client.post(`/api/resources/posts`).send(post)
+        let response = await client.post(`/admin/api/resources/posts`).send(post)
 
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')
@@ -137,7 +137,7 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        let response = await client.post(`/api/resources/posts`).send(post)
+        let response = await client.post(`/admin/api/resources/posts`).send(post)
 
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')

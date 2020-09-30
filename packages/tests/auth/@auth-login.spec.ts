@@ -87,7 +87,6 @@ jest.mock('speakeasy')
                 name: userData.name,
                 email_verified_at: null,
                 two_factor_enabled: null,
-                roles: []
             }
         })
     })

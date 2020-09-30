@@ -46,6 +46,7 @@ declare module '@tensei/common/resources' {
             authorizedToCreate: AuthorizeFunction[]
             authorizedToUpdate: AuthorizeFunction[]
             authorizedToDelete: AuthorizeFunction[]
+            authorizedToRunAction: AuthorizeFunction[]
         }
         dashboardAuthorizeCallbacks: {
             authorizedToShow: AuthorizeFunction[]
@@ -53,6 +54,7 @@ declare module '@tensei/common/resources' {
             authorizedToCreate: AuthorizeFunction[]
             authorizedToUpdate: AuthorizeFunction[]
             authorizedToDelete: AuthorizeFunction[]
+            authorizedToRunAction: AuthorizeFunction[]
         }
         hooks: {
             beforeCreate: HookFunction
@@ -67,11 +69,13 @@ declare module '@tensei/common/resources' {
         canCreate(authorizeFunction: AuthorizeFunction): this
         canUpdate(authorizeFunction: AuthorizeFunction): this
         canDelete(authorizeFunction: AuthorizeFunction): this
+        canRunAction(authorizeFunction: AuthorizeFunction): this
         canShowOnDashboard(authorizeFunction: AuthorizeFunction): this
         canFetchOnDashboard(authorizeFunction: AuthorizeFunction): this
         canCreateOnDashboard(authorizeFunction: AuthorizeFunction): this
         canUpdateOnDashboard(authorizeFunction: AuthorizeFunction): this
         canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canRunActionOnDashboard(authorizeFunction: AuthorizeFunction): this
         displayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this
@@ -97,6 +101,7 @@ declare module '@tensei/common/resources' {
             authorizedToCreate: AuthorizeFunction[]
             authorizedToUpdate: AuthorizeFunction[]
             authorizedToDelete: AuthorizeFunction[]
+            authorizedToRunAction: AuthorizeFunction[]
         }
         dashboardAuthorizeCallbacks: {
             authorizedToShow: AuthorizeFunction[]
@@ -104,6 +109,7 @@ declare module '@tensei/common/resources' {
             authorizedToCreate: AuthorizeFunction[]
             authorizedToUpdate: AuthorizeFunction[]
             authorizedToDelete: AuthorizeFunction[]
+            authorizedToRunAction: AuthorizeFunction[]
         }
         hooks: {
             beforeCreate: HookFunction
@@ -118,11 +124,13 @@ declare module '@tensei/common/resources' {
         canCreate(authorizeFunction: AuthorizeFunction): this
         canUpdate(authorizeFunction: AuthorizeFunction): this
         canDelete(authorizeFunction: AuthorizeFunction): this
+        canRunAction(authorizeFunction: AuthorizeFunction): this
         canShowOnDashboard(authorizeFunction: AuthorizeFunction): this
         canFetchOnDashboard(authorizeFunction: AuthorizeFunction): this
         canCreateOnDashboard(authorizeFunction: AuthorizeFunction): this
         canUpdateOnDashboard(authorizeFunction: AuthorizeFunction): this
         canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canRunActionOnDashboard(authorizeFunction: AuthorizeFunction): this
         displayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this
@@ -164,6 +172,7 @@ declare module '@tensei/common/resources' {
         deleteById(id: number | string): Promise<any>
         create(payload: DataPayload): Promise<any>
         database(resource?: ResourceContract): DatabaseRepositoryInterface
+        authorize(authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'], model?: any, resource?: ResourceContract): Promise<void>
         updateOneByField(
             databaseField: string,
             value: any,
@@ -258,6 +267,7 @@ declare module '@tensei/common/resources' {
         deleteById(id: number | string): Promise<any>
         create(payload: DataPayload): Promise<any>
         database(resource?: ResourceContract): DatabaseRepositoryInterface
+        authorize(authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'], model?: any, resource?: ResourceContract): Promise<void>
         updateOneByField(
             databaseField: string,
             value: any,

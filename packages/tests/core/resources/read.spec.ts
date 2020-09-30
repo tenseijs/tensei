@@ -6,7 +6,7 @@ import { setup, fakePostData } from '../../helpers'
     test(`${databaseClient} - paginates resources appropriately (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
-                permissions: ['create:users']
+                permissions: ['create:users', 'fetch:users', 'fetch:posts', 'create:posts']
             } as any,
             databaseClient
         })
@@ -34,7 +34,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         let response = await client
-            .get(`/api/resources/posts`)
+            .get(`/admin/api/resources/posts`)
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -44,7 +44,7 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.pageCount).toBe(2)
 
         response = await client
-            .get(`/api/resources/posts?perPage=10&page=2`)
+            .get(`/admin/api/resources/posts?perPage=10&page=2`)
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -84,7 +84,7 @@ import { setup, fakePostData } from '../../helpers'
 
         const response = await client
             .get(
-                `/api/resources/posts?perPage=10&page=1&fields=id,title,category`
+                `/admin/api/resources/posts?perPage=10&page=1&fields=id,title,category`
             )
             .send(userDetails)
 
@@ -128,7 +128,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         let response = await client
-            .get(`/api/resources/posts?perPage=10&page=1&search=new title 1`)
+            .get(`/admin/api/resources/posts?perPage=10&page=1&search=new title 1`)
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -136,7 +136,7 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.data[0].title).toBe(titles[0])
 
         response = await client
-            .get(`/api/resources/posts?perPage=10&page=1&search=new title 2`)
+            .get(`/admin/api/resources/posts?perPage=10&page=1&search=new title 2`)
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -144,7 +144,7 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.data[0].title).toBe(titles[1])
 
         response = await client
-            .get(`/api/resources/posts?perPage=10&page=1&search=new title`)
+            .get(`/admin/api/resources/posts?perPage=10&page=1&search=new title`)
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -203,7 +203,7 @@ import { setup, fakePostData } from '../../helpers'
         // this is to test for the first user
 
         let response = await client
-            .get(`/api/resources/users/1/posts`)
+            .get(`/admin/api/resources/users/1/posts`)
             .send({ ...userDetails, email: user1.toJSON().email })
 
         expect(response.status).toBe(200)
@@ -216,7 +216,7 @@ import { setup, fakePostData } from '../../helpers'
         // this is to test for the second user
 
         response = await client
-            .get(`/api/resources/users/2/posts`)
+            .get(`/admin/api/resources/users/2/posts`)
             .send({ ...userDetails, email: user2.toJSON().email })
 
         expect(response.status).toBe(200)
@@ -247,7 +247,7 @@ import { setup, fakePostData } from '../../helpers'
         const wrongResource = 'pictures'
 
         let response = await client
-            .get(`/api/resources/users/1/${wrongResource}`)
+            .get(`/admin/api/resources/users/1/${wrongResource}`)
             .send(userDetails)
 
         expect(response.status).toBe(404)
@@ -276,7 +276,7 @@ import { setup, fakePostData } from '../../helpers'
         const noRelationResource = 'Reaction'
 
         let response = await client
-            .get('/api/resources/users/1/reactions')
+            .get('/admin/api/resources/users/1/reactions')
             .send(userDetails)
 
         expect(response.status).toBe(404)
@@ -303,7 +303,7 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         const response = await client
-            .get(`/api/resources/users/10`)
+            .get(`/admin/api/resources/users/10`)
             .send(userDetails)
 
         expect(response.status).toBe(404)
@@ -330,7 +330,7 @@ import { setup, fakePostData } from '../../helpers'
         const wrongID = 5
 
         const response = await client
-            .get(`/api/resources/users/${wrongID}`)
+            .get(`/admin/api/resources/users/${wrongID}`)
             .send(userDetails)
 
         expect(response.status).toBe(404)

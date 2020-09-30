@@ -11,7 +11,7 @@ import { setup, createAdminUser } from '../../helpers'
         const user = await createAdminUser(knex)
 
         const cookie = (
-            await client.post('/api/login').send({
+            await client.post('/admin/api/login').send({
                 ...user,
                 password: 'password'
             })
@@ -22,7 +22,7 @@ import { setup, createAdminUser } from '../../helpers'
         expect(await knex('sessions').select('*')).toHaveLength(1)
 
         const response = await client
-            .post('/api/logout')
+            .post('/admin/api/logout')
             .set('Cookie', [`connect.sid=${cookie};`])
 
         expect(response.header['set-cookie']).toBeFalsy()

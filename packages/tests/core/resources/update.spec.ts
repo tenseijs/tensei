@@ -36,7 +36,7 @@ beforeEach(() => {
         const client = Supertest(app)
 
         const response = await client
-            .patch(`/api/resources/users/${user.id}`)
+            .patch(`/admin/api/resources/users/${user.id}`)
             .send(updateDetails)
 
         expect(response.status).toBe(200)
@@ -77,7 +77,7 @@ beforeEach(() => {
         const client = Supertest(app)
 
         const response = await client
-            .patch(`/api/resources/posts/${post.id}`)
+            .patch(`/admin/api/resources/posts/${post.id}`)
             .send(updateDetails)
 
         expect(response.status).toBe(422)

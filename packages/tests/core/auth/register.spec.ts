@@ -12,7 +12,7 @@ import { setup, createAdminUser } from '../../helpers'
 
         const client = Supertest(app)
 
-        const response = await client.post('/api/register').send({})
+        const response = await client.post('/admin/api/register').send({})
 
         expect(response.status).toBe(422)
         expect(response.body).toMatchSnapshot()
@@ -27,7 +27,7 @@ import { setup, createAdminUser } from '../../helpers'
 
         await createAdminUser(knex)
 
-        const response = await client.post('/api/register').send({
+        const response = await client.post('/admin/api/register').send({
             email: 'hey@unknown-user.io',
             password: 'password'
         })
@@ -43,7 +43,7 @@ import { setup, createAdminUser } from '../../helpers'
 
         const client = Supertest(app)
 
-        const response = await client.post('/api/register').send({
+        const response = await client.post('/admin/api/register').send({
             email: 'hey@admin.io',
             password: 'password',
             name: 'Hey Admin io'
@@ -65,7 +65,7 @@ import { setup, createAdminUser } from '../../helpers'
 
         expect(await knex('sessions').select('*')).toHaveLength(0)
 
-        const response = await client.post('/api/login').send({
+        const response = await client.post('/admin/api/login').send({
             email: user.email,
             password: user.password
         })
@@ -93,7 +93,7 @@ import { setup, createAdminUser } from '../../helpers'
 
         const user = await createAdminUser(knex)
 
-        const response = await client.post('/api/login').send({
+        const response = await client.post('/admin/api/login').send({
             email: user.email,
             password: user.password,
             rememberMe: true

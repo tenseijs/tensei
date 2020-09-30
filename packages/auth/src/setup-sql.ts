@@ -4,18 +4,18 @@ import { sentenceCase } from 'change-case'
 import { AuthPluginConfig } from './config'
 
 export default async (
-    resources: ResourceContract[],
-    config: AuthPluginConfig,
-    manager: PluginSetupConfig['manager']
+    config: PluginSetupConfig,
+    authConfig: AuthPluginConfig,
 ) => {
+    const { resources } = config
     const UserResource = resources.find(
-        (resource) => resource.data.name === config.nameResource
+        (resource) => resource.data.name === authConfig.nameResource
     )
     const RoleResource = resources.find(
-        (resource) => resource.data.name === config.roleResource
+        (resource) => resource.data.name === authConfig.roleResource
     )
     const PermissionResource = resources.find(
-        (resource) => resource.data.name === config.permissionResource
+        (resource) => resource.data.name === authConfig.permissionResource
     )
 
     if (!UserResource || !RoleResource || !PermissionResource) {
@@ -74,4 +74,39 @@ export default async (
     if (insertPermissions.length > 0) {
         await PermissionModel.query().insert(insertPermissions)
     }
+
+    // Insert default roles
+    // There will be two default roles: Authenticated & Public
+    // Public will have no permissions attached by default
+    let [authenticatedRole, publicRole] = await Promise.all([
+        RoleModel.query().insert({
+            name: 'Authenticated',
+            slug: 'authenticated'
+        }),
+        RoleModel.query().insert({
+            name: 'Public',
+            slug: 'public'
+        }),
+    ])
+
+    const rolesToCreate = []
+
+    if (! authenticatedRole) {
+        rolesToCreate.push(
+            RoleModel.query().insert({
+                name: 'Authenticated',
+                slug: 'authenticated'
+            })
+        )
+    }
+
+    if (! publicRole) {
+        RoleModel.query().insert({
+            name: 'Public',
+            slug: 'public'
+        })
+    }
+
+    await Promise.all(rolesToCreate)
+    // Authenticated will have all permissions by default
 }

@@ -36,7 +36,7 @@ test('passes user to view if user is logged in', async () => {
     const admin = await createAdminUser(databaseClient)
 
     const cookie = (
-        await client.post('/api/login').send({
+        await client.post('/admin/api/login').send({
             email: admin.email,
             password: 'password'
         })

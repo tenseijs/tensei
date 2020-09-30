@@ -13,11 +13,17 @@ const setup = (
     } as any,
     instance = db
 ) =>
-    new Manager(
-        request,
-        [Tag, Comment, User, Post, ...resources],
-        instance as any
-    ).setResource(resource)
+    {
+        const manager = new Manager(
+            request,
+            [Tag, Comment, User, Post, ...resources],
+            instance as any
+        ).setResource(resource)
+
+        manager.authorize = jest.fn(() => Promise.resolve())
+
+        return manager
+    }
 
 describe('Manager', () => {
     describe('findResource', () => {
@@ -104,8 +110,12 @@ describe('Manager', () => {
     })
 
     describe('deleteById', () => {
-        test('calls deleteById method from the db', () => {
-            setup(Post).deleteById('1')
+        test('calls deleteById method from the db', async () => {
+            const manager = setup(Post)
+
+            manager.findOneById = jest.fn(() => ({} as any))
+
+            await manager.deleteById('1')
 
             expect(db.deleteById).toHaveBeenCalled()
         })
@@ -146,7 +156,11 @@ describe('Manager', () => {
 
     describe('update', () => {
         test('calls update method from the db', async () => {
-            await setup(Post).update(1, {
+            const manager = setup(Post)
+
+            db.findOneById = jest.fn(() => ({} as any))
+
+            await manager.update(1, {
                 title: 'new title',
                 description: 'some description',
                 content: 'some content',
@@ -231,15 +245,15 @@ describe('Manager', () => {
         test('calls findAllByIds method', async () => {
             db.findAllByIds.mockClear()
 
-            const response1 = setup(Post).runAction('archive')
+            const response1 = await setup(Post).runAction('archive')
             expect(db.findAllByIds).toHaveBeenCalled()
             expect(response1).toMatchSnapshot()
 
-            const response2 = setup(Post).runAction('fix-seo')
+            const response2 = await setup(Post).runAction('fix-seo')
             expect(db.findAllByIds).toHaveBeenCalled()
             expect(response2).toMatchSnapshot()
 
-            const response3 = setup(Post).runAction('check-status')
+            const response3 = await setup(Post).runAction('check-status')
             expect(db.findAllByIds).toHaveBeenCalled()
             expect(response3).toMatchSnapshot()
 
@@ -271,11 +285,11 @@ describe('Manager', () => {
     })
 
     describe('findOneByField', () => {
-        test('calls findOneByField method from db', () => {
+        test('calls findOneByField method from db', async () => {
             db.findOneByField.mockClear()
             expect.assertions(1)
 
-            setup(User).findOneByField('email', 'dodo@email.com')
+            await setup(User).findOneByField('email', 'dodo@email.com')
             expect(db.findOneByField).toHaveBeenCalled()
         })
         test('throws error if an invalid field is passed', async () => {
@@ -289,7 +303,7 @@ describe('Manager', () => {
     })
 
     describe('validateRequestQuery', () => {
-        test('calls findOneByField method from db', async () => {
+        test('correctly validates request query for a resource', async () => {
             expect(
                 await setup().validateRequestQuery(
                     {
@@ -422,11 +436,11 @@ describe('Manager', () => {
     })
 
     describe('findOneByField', () => {
-        test('calls findOneByField method from db', () => {
+        test('calls findOneByField method from db', async () => {
             db.findOneByField.mockClear()
             expect.assertions(1)
 
-            setup(User).findOneByField('email', 'dodo@email.com')
+            await setup(User).findOneByField('email', 'dodo@email.com')
             expect(db.findOneByField).toHaveBeenCalled()
         })
 

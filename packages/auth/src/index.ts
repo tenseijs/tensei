@@ -39,7 +39,7 @@ class Auth {
         twoFactorAuth: false,
         verifyEmails: false,
         skipWelcomeEmail: false,
-        rolesAndPermissions: false,
+        rolesAndPermissions: false, 
     }
 
     public beforeCreateUser(hook: HookFunction) {
@@ -288,6 +288,7 @@ class Auth {
                     .rules('required')
                     .unique()
                     .searchable()
+                    .hideOnUpdate()
                     .rules('required'),
 
                 belongsToMany(this.config.nameResource),
@@ -347,50 +348,76 @@ class Auth {
                             })
                         })
 
-                        if (this.config.rolesAndPermissions) {
-                            resources.forEach((resource) => {
-                                resource.canCreate(
-                                    ({ authUser }) =>
-                                        authUser?.permissions.includes(
-                                            `create:${resource.data.slug}`
-                                        ) || false
-                                )
-                                resource.canFetch(
-                                    ({ authUser }) =>
-                                        authUser?.permissions.includes(
-                                            `fetch:${resource.data.slug}`
-                                        ) || false
-                                )
-                                resource.canShow(
-                                    ({ authUser }) =>
-                                        authUser?.permissions.includes(
-                                            `show:${resource.data.slug}`
-                                        ) || false
-                                )
-                                resource.canUpdate(
-                                    ({ authUser }) =>
-                                        authUser?.permissions.includes(
-                                            `update:${resource.data.slug}`
-                                        ) || false
-                                )
-                                resource.canDelete(
-                                    ({ authUser }) =>
-                                        authUser?.permissions.includes(
-                                            `delete:${resource.data.slug}`
-                                        ) || false
-                                )
-                            })
-                        }
-
                         return Promise.resolve()
                     }
                 )
 
                 // TODO: If we support more databases, add a setup method for each database.
                 .afterDatabaseSetup(
-                    async ({ resources, manager }) =>
-                        this.config.rolesAndPermissions &&
-                        SetupSql(resources, this.config, manager)
+                    async (config) =>
+                        {
+                            const { resources, manager, database } = config
+                            if (this.config.rolesAndPermissions) {
+                                if (['mysql', 'pg', 'sqlite'].includes(database)) {
+                                    SetupSql(config, this.config)
+                                }
+
+                                if (['mongodb'].includes(database)) {
+                                    // TODO: Setup mongodb
+                                }
+                            }
+
+                            if (this.config.rolesAndPermissions) {
+                                resources.forEach((resource) => {
+                                    resource.canCreate(
+                                        ({ authUser }) =>
+                                            authUser?.permissions.includes(
+                                                `create:${resource.data.slug}`
+                                            ) || false
+                                    )
+                                    resource.canFetch(
+                                        ({ authUser }) =>
+                                            authUser?.permissions.includes(
+                                                `fetch:${resource.data.slug}`
+                                            ) || false
+                                    )
+                                    resource.canShow(
+                                        ({ authUser }) =>
+                                            authUser?.permissions.includes(
+                                                `show:${resource.data.slug}`
+                                            ) || false
+                                    )
+                                    resource.canUpdate(
+                                        ({ authUser }) =>
+                                            authUser?.permissions.includes(
+                                                `update:${resource.data.slug}`
+                                            ) || false
+                                    )
+                                    resource.canDelete(
+                                        ({ authUser }) =>
+                                            authUser?.permissions.includes(
+                                                `delete:${resource.data.slug}`
+                                            ) || false
+                                    )
+
+                                    resource.data.actions.forEach(action => {
+                                        resource.canRunAction(
+                                            ({ authUser }) =>
+                                                authUser?.permissions.includes(
+                                                    `run:${resource.data.slug}:${action.data.slug}`
+                                                ) || false
+                                        )
+                                    })
+
+                                    if (resource.data.name === this.userResource().data.name) {
+                                        resource.canUpdate(({ authUser }) => {
+                                            if (['authenticated', 'public'].includes('')) {}
+                                            return false
+                                        })
+                                    }
+                                })
+                            }
+                        }
                 )
 
                 .beforeCoreRoutesSetup(async ({ app }) => {

@@ -185,7 +185,7 @@ test('the auth middleware passes if the admin is correctly logged in', async () 
     const user = await createAdminUser(knex)
 
     const cookie = (
-        await client.post('/api/login').send({
+        await client.post('/admin/api/login').send({
             email: user.email,
             password: 'password'
         })
@@ -194,7 +194,7 @@ test('the auth middleware passes if the admin is correctly logged in', async () 
         .split('=')[1]
 
     const response = await client
-        .post(`/api/logout`)
+        .post(`/admin/api/logout`)
         .set('Cookie', [`connect.sid=${cookie};`])
 
     expect(response.status).toBe(200)
