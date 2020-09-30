@@ -80,8 +80,8 @@ module.exports = tensei()
         client: 'mysql',
         connection: {
             host: '127.0.0.1',
-            user: 'root',
-            pass: '',
+            user: 'dozic',
+            password: 'password',
             database: 'flmg',
         },
         // client: 'sqlite3',

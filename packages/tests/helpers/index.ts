@@ -55,8 +55,8 @@ export const setup = async (
         client: 'mysql',
         connection: {
             host: process.env.DATABASE_HOST || '127.0.0.1',
-            user: process.env.DATABASE_USER || 'root',
-            password: process.env.DATABASE_PASSSWORD || '',
+            user: process.env.DATABASE_USER || 'dozic',
+            password: process.env.DATABASE_PASSSWORD || 'password',
             database: process.env.DATABASE_DB || 'testdb'
         },
         useNullAsDefault: true
@@ -75,7 +75,7 @@ export const setup = async (
             client: 'pg',
             connection: {
                 host: process.env.DATABASE_HOST || '127.0.0.1',
-                user: process.env.DATABASE_USER || 'root',
+                user: process.env.DATABASE_USER || 'postgres',
                 password: process.env.DATABASE_PASSWORD || '',
                 database: process.env.DATABASE_DB || 'tensei'
             },
@@ -92,15 +92,15 @@ export const setup = async (
 
     let instance = forceNewInstance
         ? tensei()
-              .database(derivedDatabaseFromClient as SupportedDatabases)
-              // @ts-ignore
-              .databaseConfig(dbConfig)
+            .database(derivedDatabaseFromClient as SupportedDatabases)
+            // @ts-ignore
+            .databaseConfig(dbConfig)
         : cachedInstance
-        ? cachedInstance
-        : tensei()
-              .database(derivedDatabaseFromClient as SupportedDatabases)
-              // @ts-ignore
-              .databaseConfig(dbConfig)
+            ? cachedInstance
+            : tensei()
+                .database(derivedDatabaseFromClient as SupportedDatabases)
+                // @ts-ignore
+                .databaseConfig(dbConfig)
 
     cachedInstance = instance
 
@@ -108,15 +108,15 @@ export const setup = async (
         ...(plugins || []),
         ...(admin
             ? [
-                  plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
-                      app.use(async (request, response, next) => {
-                          // @ts-ignore
-                          request.admin = admin
+                plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
+                    app.use(async (request, response, next) => {
+                        // @ts-ignore
+                        request.admin = admin
 
-                          next()
-                      })
-                  })
-              ]
+                        next()
+                    })
+                })
+            ]
             : []),
         auth()
             .name('Customer')
@@ -140,9 +140,9 @@ export const setup = async (
         .register()
 
     const knex: Knex = instance.databaseClient
-    ;(await knex.schema.hasTable('sessions'))
-        ? await knex('sessions').truncate()
-        : null
+        ; (await knex.schema.hasTable('sessions'))
+            ? await knex('sessions').truncate()
+            : null
 
     await Promise.all([
         knex('users').truncate(),
