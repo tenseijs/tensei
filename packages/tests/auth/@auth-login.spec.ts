@@ -86,7 +86,7 @@ jest.mock('speakeasy')
                 id: expect.any(Number),
                 name: userData.name,
                 email_verified_at: null,
-                two_factor_enabled: null,
+                two_factor_enabled: null
             }
         })
     })

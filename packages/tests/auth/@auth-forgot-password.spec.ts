@@ -4,103 +4,71 @@ import Supertest from 'supertest'
 
 import { setup, createAdminUser } from '../helpers'
 
+beforeEach(() => {
+    jest.clearAllMocks()
+})
 jest.mock('speakeasy')
-    ;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
-        test(`${databaseClient} - sends email for forgot password`, async () => {
-            const { app, manager, mailer } = await setup({
-                databaseClient
-            })
-
-            const client = Supertest(app)
-
-            const userData = {
-                name: Faker.name.findName(),
-                email: Faker.internet.email(),
-                password: 'password'
-            }
-
-            await manager({} as any)('Customer').create(userData)
-
-            const mailSendRawSpy = jest.spyOn(mailer, 'sendRaw')
-
-            const response = await client.post('/admin/api/forgot-password').send({
-                email: userData.email,
-            })
-
-            expect(response.status).toBe(200)
-            // expect(response.body).toMatchSnapshot()
+;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
+    test(`${databaseClient} - sends email on successful forgot password request`, async () => {
+        const { app, manager, mailer } = await setup({
+            databaseClient
         })
 
-        // test(`${databaseClient} - returns a 422 if user does not exist in database`, async () => {
-        //     const { app } = await setup({
-        //         databaseClient
-        //     })
+        const client = Supertest(app)
 
-        //     const client = Supertest(app)
+        const userData = {
+            name: Faker.name.findName(),
+            email: Faker.internet.email(),
+            password: 'password'
+        }
 
-        //     const response = await client.post('/auth/login').send({
-        //         email: 'hey@unknown-user.io',
-        //         password: 'password',
-        //         rememberMe: true
-        //     })
+        await manager({} as any)('Customer').create(userData)
 
-        //     expect(response.status).toBe(401)
-        //     expect(response.body).toMatchSnapshot()
-        // })
+        const mailSendRawSpy = jest.spyOn(mailer, 'sendRaw')
 
-        // test(`${databaseClient} - returns a 422 if user password is wrong`, async () => {
-        //     const { app, databaseClient: knex } = await setup({
-        //         databaseClient
-        //     })
+        const response = await client.post('/auth/forgot-password').send({
+            email: userData.email
+        })
 
-        //     const client = Supertest(app)
-
-        //     const user = await createAdminUser(knex)
-
-        //     const response = await client.post('/auth/login').send({
-        //         email: user.email,
-        //         password: 'WRONG_PASSWORD',
-        //         rememberMe: true
-        //     })
-
-        //     expect(response.status).toBe(401)
-        //     expect(response.body).toMatchSnapshot()
-        // })
-
-        // test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        //     const { app, databaseClient: knexClient, manager } = await setup({
-        //         databaseClient
-        //     })
-
-        //     const client = Supertest(app)
-
-        //     const userData = {
-        //         name: Faker.name.findName(),
-        //         email: Faker.internet.email(),
-        //         password: 'password'
-        //     }
-
-        //     await manager({} as any)('Customer').create(userData)
-
-        //     const response = await client.post('/auth/login').send({
-        //         email: userData.email,
-        //         password: userData.password
-        //     })
-
-        //     expect(response.status).toBe(200)
-
-        //     expect(response.body).toEqual({
-        //         token: expect.any(String),
-        //         user: {
-        //             email: userData.email,
-        //             created_at: expect.any(String),
-        //             updated_at: expect.any(String),
-        //             id: expect.any(Number),
-        //             name: userData.name,
-        //             email_verified_at: null,
-        //             two_factor_enabled: null,
-        //             roles: []
-        //         }
-        //     })
-        // })
+        expect(response.status).toBe(200)
+        expect(mailSendRawSpy).toHaveBeenCalledTimes(1)
+        expect(response.body.message).toBe(
+            'Please check your email for steps to reset your password.'
+        )
+        expect(response.body).toMatchSnapshot()
     })
+
+    test(`${databaseClient} - returns a 422 if user email does not exist`, async () => {
+        const { app } = await setup({
+            databaseClient
+        })
+
+        const client = Supertest(app)
+
+        let response = await client.post('/auth/forgot-password').send({
+            email: Faker.internet.email()
+        })
+
+        expect(response.status).toBe(422)
+        expect(response.body).toEqual([
+            {
+                field: 'email',
+                message: 'Invalid email address.'
+            }
+        ])
+        expect(response.body).toMatchSnapshot()
+
+        response = await client.post('/auth/forgot-password').send({
+            email: 'example@gm.c'
+        })
+
+        expect(response.status).toBe(422)
+        expect(response.body).toEqual([
+            {
+                field: 'email',
+                message: 'Invalid email address.'
+            }
+        ])
+        expect(response.body).toMatchSnapshot()
+    })
+})

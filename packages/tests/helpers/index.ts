@@ -55,8 +55,8 @@ export const setup = async (
         client: 'mysql',
         connection: {
             host: process.env.DATABASE_HOST || '127.0.0.1',
-            user: process.env.DATABASE_USER || 'dozic',
-            password: process.env.DATABASE_PASSSWORD || 'password',
+            user: process.env.DATABASE_USER || 'root',
+            password: process.env.DATABASE_PASSSWORD || '',
             database: process.env.DATABASE_DB || 'testdb'
         },
         useNullAsDefault: true
@@ -75,7 +75,7 @@ export const setup = async (
             client: 'pg',
             connection: {
                 host: process.env.DATABASE_HOST || '127.0.0.1',
-                user: process.env.DATABASE_USER || 'postgres',
+                user: process.env.DATABASE_USER || 'root',
                 password: process.env.DATABASE_PASSWORD || '',
                 database: process.env.DATABASE_DB || 'tensei'
             },

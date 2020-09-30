@@ -43,7 +43,9 @@ beforeEach(() => {
 
         expect(response.status).toBe(204)
 
-        response = await client.get(`/admin/api/resources/posts`).send(userDetails)
+        response = await client
+            .get(`/admin/api/resources/posts`)
+            .send(userDetails)
 
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(1)

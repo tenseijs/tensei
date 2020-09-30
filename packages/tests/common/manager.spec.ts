@@ -52,7 +52,7 @@ describe('Manager', () => {
     })
 
     describe('create', () => {
-        ;['posts', 'comments', 'users', 'tags'].forEach((slug) => {
+        ;['posts', 'comments', 'users', 'tags'].forEach(slug => {
             test(`validates payload before creating any record (${slug})`, async () => {
                 db.create.mockClear()
                 expect.assertions(2)
@@ -431,6 +431,25 @@ describe('Manager', () => {
             }).findAllRelatedResource(1, Tag)
 
             expect(db.findAllBelongingToMany).toHaveBeenCalled()
+        })
+    })
+
+    describe('findOneByField', () => {
+        test('calls findOneByField method from db', async () => {
+            db.findOneByField.mockClear()
+            expect.assertions(1)
+
+            await setup(User).findOneByField('email', 'dodo@email.com')
+            expect(db.findOneByField).toHaveBeenCalled()
+        })
+
+        test('throws error', async () => {
+            db.findOneByField.mockClear()
+            expect.assertions(1)
+
+            await expect(() =>
+                setup(User).findOneByField('content', 'dodo@email.com')
+            ).rejects.toThrow('Field content could not be found on resource.')
         })
     })
 
