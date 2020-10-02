@@ -172,7 +172,11 @@ declare module '@tensei/common/resources' {
         deleteById(id: number | string): Promise<any>
         create(payload: DataPayload): Promise<any>
         database(resource?: ResourceContract): DatabaseRepositoryInterface
-        authorize(authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'], model?: any, resource?: ResourceContract): Promise<void>
+        authorize(
+            authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'],
+            model?: any,
+            resource?: ResourceContract
+        ): Promise<void>
         updateOneByField(
             databaseField: string,
             value: any,
@@ -267,7 +271,11 @@ declare module '@tensei/common/resources' {
         deleteById(id: number | string): Promise<any>
         create(payload: DataPayload): Promise<any>
         database(resource?: ResourceContract): DatabaseRepositoryInterface
-        authorize(authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'], model?: any, resource?: ResourceContract): Promise<void>
+        authorize(
+            authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'],
+            model?: any,
+            resource?: ResourceContract
+        ): Promise<void>
         updateOneByField(
             databaseField: string,
             value: any,

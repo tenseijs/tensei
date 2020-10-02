@@ -33,7 +33,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
-        authorizedToRunAction: []
+        authorizedToRunAction: [],
     }
 
     public dashboardAuthorizeCallbacks: {
@@ -49,7 +49,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
-        authorizedToRunAction: []
+        authorizedToRunAction: [],
     }
 
     public hooks: {
@@ -154,37 +154,49 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public canShowOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.dashboardAuthorizeCallbacks.authorizedToShow.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToShow.push(
+            authorizeFunction
+        )
 
         return this
     }
 
     public canFetchOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.dashboardAuthorizeCallbacks.authorizedToFetch.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToFetch.push(
+            authorizeFunction
+        )
 
         return this
     }
 
     public canCreateOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.dashboardAuthorizeCallbacks.authorizedToCreate.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToCreate.push(
+            authorizeFunction
+        )
 
         return this
     }
 
     public canUpdateOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.dashboardAuthorizeCallbacks.authorizedToUpdate.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToUpdate.push(
+            authorizeFunction
+        )
 
         return this
     }
 
     public canDeleteOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.dashboardAuthorizeCallbacks.authorizedToDelete.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToDelete.push(
+            authorizeFunction
+        )
 
         return this
     }
 
     public canRunActionOnDashboard(authorizeFunction: AuthorizeFunction) {
-        this.dashboardAuthorizeCallbacks.authorizedToRunAction.push(authorizeFunction)
+        this.dashboardAuthorizeCallbacks.authorizedToRunAction.push(
+            authorizeFunction
+        )
 
         return this
     }
@@ -196,10 +208,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public fields(fields: FieldContract[]) {
-        this.data.fields = [
-            id('ID'),
-            ...fields
-        ]
+        this.data.fields = [id('ID'), ...fields]
 
         return this
     }
@@ -302,8 +311,6 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
         return this
     }
-
-
 }
 
 export const resource = (name: string, tableName?: string) =>

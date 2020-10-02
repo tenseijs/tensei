@@ -60,6 +60,22 @@ module.exports = tensei()
             .teams()
             .apiPath('auth')
             .rolesAndPermissions()
+            .social('github', {
+                key: 'fe70f4adef103b95d58d',
+                secret: '20af95da2d79cbde357ac739e6f7e588fc13fc63',
+                scope: ['user', 'user:email'],
+                response: ['raw', 'tokens', 'jwt']
+            })
+            .social('twitter', {
+                key: 'cpKhfpZr3aYokVhJXPRxvwya9',
+                secret: 'dZCpuEoTJxAiIgVgVpdPORoCPvdF9pAddsQ8sV8oQ3AlnnAffa'
+            })
+            .social('gitlab', {
+                key: 'be9855c70e85496e7d5281793ae96dda5c3e0558a5870dfc1d585ead3f7ced3c',
+                secret: 'e6bfcce12fdeac1b8bd7a397de8fe39b98f6b1b39b0228fcd349796fe749d00c',
+                // scope: ['api', 'read_user', 'read_api', 'read_repository', 'write_repository'],
+                redirect_uri: 'http://localhost:5000/auth/github/callback'
+            })
             .plugin(),
         trix(),
         cashier()

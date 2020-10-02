@@ -138,10 +138,10 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
         const model = await this.findOneByField(databaseField, value)
 
-        if (! model) {
+        if (!model) {
             throw {
                 status: 404,
-                message: `Resource with ${databaseField} ${value} was not found.`
+                message: `Resource with ${databaseField} ${value} was not found.`,
             }
         }
 
@@ -165,10 +165,10 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
         const model = await this.database().findOneById(id)
 
-        if (! model) {
+        if (!model) {
             throw {
                 status: 404,
-                message: `Resource with id ${id} was not found.`
+                message: `Resource with id ${id} was not found.`,
             }
         }
 

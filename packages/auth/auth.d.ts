@@ -4,7 +4,7 @@ import { UserWithAuth } from './src/config'
 declare global {
     namespace Express {
         export interface Request {
-            authUser?: UserWithAuth
+            user?: UserWithAuth
         }
     }
 }

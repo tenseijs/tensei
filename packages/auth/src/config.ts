@@ -1,5 +1,20 @@
 import { FieldContract, User, HookFunction } from '@tensei/common'
 
+export interface GrantConfig {
+    key: string
+    secret: string
+    scope?: string[]
+    callback?: string
+    clientCallback: string
+}
+
+export type SupportedSocialProviders =
+    | 'github'
+    | 'gitlab'
+    | 'google'
+    | 'facebook'
+    | 'twitter'
+
 export interface AuthPluginConfig {
     fields: FieldContract[]
     nameResource: string
@@ -23,6 +38,9 @@ export interface AuthPluginConfig {
     afterUpdateUser?: HookFunction
     beforeLoginUser?: HookFunction
     afterLoginUser?: HookFunction
+    providers: {
+        [key: string]: GrantConfig
+    }
 }
 
 export interface UserWithAuth extends User {

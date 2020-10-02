@@ -24,6 +24,8 @@ declare module '@tensei/core' {
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this
+        serverUrl(url: string): this
+        clientUrl(url: string): this
         manager: (request?: Request) => ManagerContract | null
         registerMiddleware(): void
         authMiddleware: (
@@ -70,6 +72,8 @@ declare module '@tensei/core' {
         apiPath(apiPath: string): this
         manager: () => Manager | null
         registerMiddleware(): void
+        serverUrl(url: string): this
+        clientUrl(url: string): this
         authMiddleware: (
             request: Express.Request,
             response: Express.Response,

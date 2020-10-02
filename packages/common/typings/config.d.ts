@@ -59,7 +59,10 @@ declare module '@tensei/common/config' {
         roles: UserRole[]
         permissions: string[]
     }
-    type AuthorizeFunction<ModelType = any> = (request: Request, model?: ModelType) => boolean | Promise<boolean>
+    type AuthorizeFunction<ModelType = any> = (
+        request: Request,
+        model?: ModelType
+    ) => boolean | Promise<boolean>
     type HookFunction = (
         payload: DataPayload,
         request: Request | null
@@ -91,6 +94,9 @@ declare module '@tensei/common/config' {
         handler: ExpressMiddleware
     }
     export interface Config {
+        databaseClient: any
+        serverUrl: string
+        clientUrl: string
         plugins: PluginContract[]
         dashboards: DashboardContract[]
         resources: ResourceContract[]
