@@ -9,6 +9,7 @@
  * file that was distributed with this source code.
  */
 import nodemailer from 'nodemailer'
+import { DriverInterface } from '../config'
 
 /**
  * Ethereal driver is used to run test emails
@@ -16,7 +17,7 @@ import nodemailer from 'nodemailer'
  * @class EtherealDriver
  * @constructor
  */
-class EtherealDriver {
+class EtherealDriver implements DriverInterface {
     private transporter: any = null
     private log: any = null
     /**

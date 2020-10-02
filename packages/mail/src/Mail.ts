@@ -7,8 +7,8 @@
  * file that was distributed with this source code.
  */
 import MailManager from './Manager'
-import { SupportedDrivers, Address } from './config'
 import { Stream } from 'nodemailer/lib/xoauth2'
+import { SupportedDrivers, Address } from './config'
 
 /**
  * This class is used to compose and send aa mail
@@ -79,7 +79,7 @@ export class Mail {
          * Cannot get config for the defined connection
          */
         if (!this.Config) {
-            throw new Error(`Missing configuration for ${name}.`)
+            throw new Error(`Missing configuration for ${connection}.`)
         }
 
         this._driverInstance = MailManager.driver(connection, this.Config)
