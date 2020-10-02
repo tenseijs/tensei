@@ -2,11 +2,12 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAdminUser } from '../helpers'
+import { setup, cleanup } from '../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
+
 jest.mock('speakeasy')
 ;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - resets password successfully`, async () => {
@@ -79,6 +80,7 @@ jest.mock('speakeasy')
         ])
         expect(response.body).toMatchSnapshot()
     })
+
     test(`${databaseClient} - throws 422 error when reset password token does not exist on DB`, async () => {
         const { app } = await setup({
             databaseClient
@@ -126,4 +128,8 @@ jest.mock('speakeasy')
         expect(response.body.message).toEqual('User does not exist anymore.')
         expect(response.body).toMatchSnapshot()
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

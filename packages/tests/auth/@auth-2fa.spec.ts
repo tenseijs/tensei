@@ -4,7 +4,7 @@ import Supertest from 'supertest'
 import { auth } from '@tensei/auth'
 import { generateSecret, totp } from 'speakeasy'
 
-import { setup, createAuthUser } from '../helpers'
+import { setup, createAuthUser, cleanup } from '../helpers'
 
 const generateSecretMock = (generateSecret as unknown) as jest.Mock<
     typeof generateSecret
@@ -133,4 +133,8 @@ jest.mock('speakeasy')
         expect(freshUser.get('two_factor_secret')).toBe(null)
         expect(freshUser.get('two_factor_enabled')).toBe('0')
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

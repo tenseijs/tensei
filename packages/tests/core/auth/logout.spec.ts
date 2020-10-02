@@ -1,5 +1,5 @@
 import Supertest from 'supertest'
-import { setup, createAdminUser } from '../../helpers'
+import { setup, createAdminUser, cleanup } from '../../helpers'
 ;['mysql', 'sqlite', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - can successfully logout when administrator is logged in`, async () => {
         const { app, databaseClient: knex } = await setup({
@@ -28,4 +28,8 @@ import { setup, createAdminUser } from '../../helpers'
         expect(response.header['set-cookie']).toBeFalsy()
         expect(await knex('sessions').select('*')).toHaveLength(0)
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

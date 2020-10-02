@@ -2,7 +2,7 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAuthUser } from '../helpers'
+import { setup, createAuthUser, cleanup } from '../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -37,6 +37,7 @@ jest.mock('speakeasy')
         expect(response.status).toBe(200)
         expect(response.body.message).toBe('Email has been verified.')
     })
+
     test(`${databaseClient} - throws error when email verification token is invalid`, async () => {
         const { app, databaseClient: knexClient, manager } = await setup({
             databaseClient
@@ -64,6 +65,7 @@ jest.mock('speakeasy')
         expect(response.status).toBe(400)
         expect(response.body.message).toBe('Invalid email verification token.')
     })
+
     test(`${databaseClient} - calls the mailer.sendRaw method when verifyEmails is enabled`, async () => {
         const { app, mailer } = await setup({
             databaseClient
@@ -82,4 +84,8 @@ jest.mock('speakeasy')
         expect(response.status).toBe(201)
         expect(mailSendRawSpy).toHaveBeenCalledTimes(1)
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

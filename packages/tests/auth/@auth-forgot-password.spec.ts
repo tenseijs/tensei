@@ -2,11 +2,12 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAdminUser } from '../helpers'
+import { setup, cleanup } from '../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
+
 jest.mock('speakeasy')
 ;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - sends email on successful forgot password request`, async () => {
@@ -71,4 +72,8 @@ jest.mock('speakeasy')
         ])
         expect(response.body).toMatchSnapshot()
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

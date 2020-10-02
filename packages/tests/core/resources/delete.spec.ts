@@ -1,7 +1,7 @@
 import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
+import { setup, fakePostData, cleanup } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -90,4 +90,8 @@ beforeEach(() => {
             { message: 'Post resource with id 21 was not found.' }
         ])
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

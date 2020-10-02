@@ -1,6 +1,6 @@
 import Supertest from 'supertest'
 
-import { setup } from '../../helpers'
+import { setup, cleanup } from '../../helpers'
 
 test('runs an action that returns html', async () => {
     const { app } = await setup({
@@ -62,4 +62,8 @@ test('runs an action with fields that returns an array of validation errors', as
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
+})
+
+afterAll(async () => {
+    await cleanup()
 })

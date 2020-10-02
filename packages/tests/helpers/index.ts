@@ -22,7 +22,7 @@ interface ConfigureSetup {
     createAndLoginAdmin?: boolean
 }
 
-let cachedInstance: TenseiContract | null = null
+export let cachedInstance: TenseiContract | null = null
 
 export const fakePostData = () => ({
     title: Faker.lorem.word(),
@@ -46,8 +46,7 @@ export const setup = async (
         apiPath,
         databaseClient,
         dashboardPath,
-        authApiPath,
-        createAndLoginAdmin
+        authApiPath
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -92,15 +91,15 @@ export const setup = async (
 
     let instance = forceNewInstance
         ? tensei()
-            .database(derivedDatabaseFromClient as SupportedDatabases)
-            // @ts-ignore
-            .databaseConfig(dbConfig)
+              .database(derivedDatabaseFromClient as SupportedDatabases)
+              // @ts-ignore
+              .databaseConfig(dbConfig)
         : cachedInstance
-            ? cachedInstance
-            : tensei()
-                .database(derivedDatabaseFromClient as SupportedDatabases)
-                // @ts-ignore
-                .databaseConfig(dbConfig)
+        ? cachedInstance
+        : tensei()
+              .database(derivedDatabaseFromClient as SupportedDatabases)
+              // @ts-ignore
+              .databaseConfig(dbConfig)
 
     cachedInstance = instance
 
@@ -108,15 +107,15 @@ export const setup = async (
         ...(plugins || []),
         ...(admin
             ? [
-                plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
-                    app.use(async (request, response, next) => {
-                        // @ts-ignore
-                        request.admin = admin
+                  plugin('Force auth').beforeDatabaseSetup(async ({ app }) => {
+                      app.use(async (request, response, next) => {
+                          // @ts-ignore
+                          request.admin = admin
 
-                        next()
-                    })
-                })
-            ]
+                          next()
+                      })
+                  })
+              ]
             : []),
         auth()
             .name('Customer')
@@ -140,9 +139,9 @@ export const setup = async (
         .register()
 
     const knex: Knex = instance.databaseClient
-        ; (await knex.schema.hasTable('sessions'))
-            ? await knex('sessions').truncate()
-            : null
+    ;(await knex.schema.hasTable('sessions'))
+        ? await knex('sessions').truncate()
+        : null
 
     await Promise.all([
         knex('users').truncate(),
@@ -154,7 +153,9 @@ export const setup = async (
     return instance
 }
 
-export const cleanup = async (databaseClient: Knex) => {
+export const cleanup = async (
+    databaseClient: Knex = cachedInstance.databaseClient
+) => {
     await databaseClient.destroy()
 }
 

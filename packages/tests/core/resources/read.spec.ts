@@ -1,7 +1,7 @@
-import Faker, { fake, lorem } from 'faker'
+import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
+import { setup, fakePostData, cleanup } from '../../helpers'
 ;['sqlite3', 'mysql', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - paginates resources appropriately (posts)`, async () => {
         const { app, manager } = await setup({
@@ -270,6 +270,7 @@ import { setup, fakePostData } from '../../helpers'
             expect(d.title).toBe(titles[i])
         })
     })
+
     test(`${databaseClient} - find all related resources (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -342,6 +343,7 @@ import { setup, fakePostData } from '../../helpers'
             expect(d.user_id).toBe(2)
         })
     })
+
     test(`${databaseClient} - throws error when related resource is not found (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -454,4 +456,8 @@ import { setup, fakePostData } from '../../helpers'
             `Could not find a resource with id ${wrongID}`
         )
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

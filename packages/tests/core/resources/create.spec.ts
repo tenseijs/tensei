@@ -1,8 +1,8 @@
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
 import { Post } from '../../helpers/resources'
+import { setup, fakePostData, cleanup } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -157,4 +157,8 @@ beforeEach(() => {
             }
         ])
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

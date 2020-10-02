@@ -2,7 +2,7 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAdminUser } from '../helpers'
+import { setup, createAdminUser, cleanup } from '../helpers'
 
 jest.mock('speakeasy')
 ;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
@@ -90,4 +90,8 @@ jest.mock('speakeasy')
             }
         })
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

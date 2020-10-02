@@ -1,7 +1,7 @@
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
+import { setup, fakePostData, cleanup } from '../../helpers'
 ;['sqlite3', 'mysql', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - can create a resource with correct values (posts)`, async () => {
         const { app, manager } = await setup({
@@ -149,4 +149,8 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.email).toBe(userDetails.email)
         expect(response.body.full_name).toBe(userDetails.full_name)
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })
