@@ -14,6 +14,7 @@ module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
     .database('mysql')
+    .serverUrl('http://localhost:5000')
     .dashboards([
         dashboard('Main').cards([
             valueMetric('New Tags')
@@ -64,7 +65,6 @@ module.exports = tensei()
                 key: 'fe70f4adef103b95d58d',
                 secret: '20af95da2d79cbde357ac739e6f7e588fc13fc63',
                 scope: ['user', 'user:email'],
-                response: ['raw', 'tokens', 'jwt']
             })
             .social('twitter', {
                 key: 'cpKhfpZr3aYokVhJXPRxvwya9',

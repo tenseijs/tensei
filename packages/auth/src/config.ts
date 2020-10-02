@@ -5,6 +5,7 @@ export interface GrantConfig {
     secret: string
     scope?: string[]
     callback?: string
+    redirect_uri?: string
     clientCallback: string
 }
 

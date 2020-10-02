@@ -321,7 +321,7 @@ class Auth {
         return (
             plugin('Auth')
                 .beforeDatabaseSetup(
-                    ({ pushResource, pushMiddleware, resources }) => {
+                    ({ pushResource, pushMiddleware }) => {
                         pushResource(this.userResource())
                         pushResource(this.passwordResetsResource())
 
@@ -434,7 +434,7 @@ class Auth {
                 })
 
                 .beforeCoreRoutesSetup(async (config) => {
-                    const { app } = config
+                    const { app, serverUrl } = config
 
                     app.post(this.getApiPath('login'), AsyncHandler(this.login))
                     app.post(
@@ -497,6 +497,16 @@ class Auth {
                             )
                         )
 
+                        
+                        Object.keys(this.config.providers).forEach(provider => {
+                            this.config.providers[provider] = {
+                                ...this.config.providers[provider],
+                                redirect_uri: `${serverUrl}/connect/${provider}/callback`
+                            }
+                        })
+                        
+                        console.log('>>>>>>>>>>>>.', this.config.providers)
+        
                         app.use(grant.express()(this.config.providers))
 
                         app.get(
