@@ -19,9 +19,11 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 422 if there is already an administrator in the database`, async () => {
-        const { app, databaseClient: knex } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const client = Supertest(app)
 
@@ -55,9 +57,11 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, databaseClient: knex } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const client = Supertest(app)
 
@@ -85,9 +89,11 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - can login correctly with remember me`, async () => {
-        const { app, databaseClient: knex } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const client = Supertest(app)
 

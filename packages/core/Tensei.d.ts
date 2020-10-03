@@ -57,7 +57,7 @@ declare module '@tensei/core' {
 
     export class Tensei implements TenseiContract {
         app: Application
-        databaseClient: any
+        getDatabaseClient: () => any
         extensions: {
             [key: string]: any
         }

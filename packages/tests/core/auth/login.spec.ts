@@ -33,11 +33,11 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 422 if user password is wrong`, async () => {
-        const { app, databaseClient } = await setup()
+        const { app, getDatabaseClient } = await setup()
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(databaseClient)
+        const user = await createAdminUser(getDatabaseClient())
 
         const response = await client.post('/admin/api/login').send({
             email: user.email,
@@ -50,9 +50,9 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, databaseClient } = await setup()
+        const { app, getDatabaseClient } = await setup()
 
-        const knex: Knex = databaseClient
+        const knex: Knex = getDatabaseClient()
 
         const client = Supertest(app)
 
@@ -80,9 +80,9 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - can login correctly with remember me`, async () => {
-        const { app, databaseClient } = await setup()
+        const { app, getDatabaseClient } = await setup()
 
-        const knex: Knex = databaseClient
+        const knex: Knex = getDatabaseClient()
 
         const client = Supertest(app)
 

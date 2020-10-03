@@ -15,6 +15,7 @@ module.exports = tensei()
     .resources([Tag, Post, User, Comment])
     .database('mysql')
     .serverUrl('http://localhost:5000')
+    .clientUrl('https://google.com')
     .dashboards([
         dashboard('Main').cards([
             valueMetric('New Tags')
@@ -68,13 +69,22 @@ module.exports = tensei()
             })
             .social('twitter', {
                 key: 'cpKhfpZr3aYokVhJXPRxvwya9',
-                secret: 'dZCpuEoTJxAiIgVgVpdPORoCPvdF9pAddsQ8sV8oQ3AlnnAffa'
+                secret: 'dZCpuEoTJxAiIgVgVpdPORoCPvdF9pAddsQ8sV8oQ3AlnnAffa',
             })
             .social('gitlab', {
-                key: 'be9855c70e85496e7d5281793ae96dda5c3e0558a5870dfc1d585ead3f7ced3c',
-                secret: 'e6bfcce12fdeac1b8bd7a397de8fe39b98f6b1b39b0228fcd349796fe749d00c',
-                // scope: ['api', 'read_user', 'read_api', 'read_repository', 'write_repository'],
-                redirect_uri: 'http://localhost:5000/auth/github/callback'
+                key:
+                    'be9855c70e85496e7d5281793ae96dda5c3e0558a5870dfc1d585ead3f7ced3c',
+                secret:
+                    'e6bfcce12fdeac1b8bd7a397de8fe39b98f6b1b39b0228fcd349796fe749d00c',
+            })
+            .social('google', {
+                key:
+                    '76952592334-fs7o9kt3fjt3of9lf36mpirlgm0eua5t.apps.googleusercontent.com',
+                secret: 'GNadJyJK0scU7AO7KiGz9Nnp',
+            })
+            .social('linkedin', {
+                key: '77pu89txu2rshd',
+                secret: 'wHTGlrThZnOBbEHL',
             })
             .plugin(),
         trix(),

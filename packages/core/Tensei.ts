@@ -192,6 +192,10 @@ export class Tensei {
         return this
     }
 
+    public getDatabaseClient = () => {
+        return this.config.databaseClient
+    }
+
     public async registerDatabase() {
         if (this.databaseBooted) {
             return this
@@ -604,7 +608,7 @@ export class Tensei {
     }
 
     public clientUrl(url: string) {
-        this.config.serverUrl = url
+        this.config.clientUrl = url
 
         return this
     }

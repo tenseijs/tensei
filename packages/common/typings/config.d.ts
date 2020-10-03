@@ -14,32 +14,33 @@ declare module '@tensei/common/config' {
         true = 'true',
         false = 'false',
     }
-    interface FetchAllRequestQuery {
-        perPage: number
-        page: number
-        fields: string[]
-        search: string
-        noPagination: noPagination
-        filters: Array<{
-            field: string
-            value: string
-            operator:
-                | 'equals'
-                | 'contains'
-                | 'not_equals'
-                | 'null'
-                | 'not_null'
-                | 'gt'
-                | 'gte'
-                | 'lt'
-                | 'lte'
-                | 'matches'
-                | 'in'
-                | 'not_in'
-        }>
-        withRelationships: string[]
+    interface Filter {
+        field: string
+        value: string
+        operator:
+            | 'equals'
+            | 'contains'
+            | 'not_equals'
+            | 'null'
+            | 'not_null'
+            | 'gt'
+            | 'gte'
+            | 'lt'
+            | 'lte'
+            | 'matches'
+            | 'in'
+            | 'not_in'
     }
-    interface FetchAllResults<Model = {}> {
+    interface FetchAllRequestQuery {
+        perPage?: number
+        page?: number
+        fields?: string[]
+        search?: string
+        noPagination?: noPagination
+        filters?: Filter[]
+        withRelationships?: string[]
+    }
+    interface FetchAllResults<Model = any> {
         data: Model[]
         total: number
         perPage: number | null
