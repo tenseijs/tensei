@@ -33,15 +33,15 @@ export const resources = [
                         showOnIndex: true,
                         showOnUpdate: true,
                         databaseFieldType: 'datetime',
-                        updateRules: [],
-                    },
+                        updateRules: []
+                    }
                 ],
                 intent: 'positive',
                 name: 'Publish on',
                 showOnDetail: true,
                 showOnIndex: true,
                 showOnTableRow: true,
-                slug: 'publish-on',
+                slug: 'publish-on'
             },
             {
                 cancelButtonText: 'Cancel',
@@ -75,16 +75,16 @@ export const resources = [
                         showOnIndex: true,
                         showOnUpdate: true,
                         databaseFieldType: 'datetime',
-                        updateRules: [],
-                    },
+                        updateRules: []
+                    }
                 ],
                 intent: 'positive',
                 name: 'Publish on',
                 showOnDetail: true,
                 showOnIndex: true,
                 showOnTableRow: false,
-                slug: 'publish-on',
-            },
+                slug: 'publish-on'
+            }
         ],
         collection: 'posts',
         defaultPerPage: 1,
@@ -115,7 +115,7 @@ export const resources = [
                 showOnIndex: true,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
+                updateRules: []
             },
             {
                 asObjectId: true,
@@ -140,7 +140,7 @@ export const resources = [
                 showOnIndex: true,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
+                updateRules: []
             },
             {
                 asObjectId: true,
@@ -165,7 +165,7 @@ export const resources = [
                 showOnIndex: true,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
+                updateRules: []
             },
             {
                 asObjectId: true,
@@ -190,8 +190,8 @@ export const resources = [
                 showOnIndex: false,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
-            },
+                updateRules: []
+            }
         ],
         group: 'Resources',
         groupSlug: 'resources',
@@ -199,12 +199,12 @@ export const resources = [
         slug: 'posts',
         messages: {
             'title.required': 'The title field is required.',
-            'publishedAt.required': 'The published at field is required.',
+            'publishedAt.required': 'The published at field is required.'
         },
         name: 'Post',
         param: 'posts',
         perPageOptions: [10, 25, 50],
-        primaryKey: '_id',
+        primaryKey: '_id'
     },
     {
         actions: [],
@@ -237,7 +237,7 @@ export const resources = [
                 showOnIndex: true,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
+                updateRules: []
             },
             {
                 asObjectId: true,
@@ -262,7 +262,7 @@ export const resources = [
                 showOnIndex: true,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
+                updateRules: []
             },
             {
                 asObjectId: true,
@@ -287,7 +287,7 @@ export const resources = [
                 showOnIndex: true,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
+                updateRules: []
             },
             {
                 asObjectId: true,
@@ -312,8 +312,8 @@ export const resources = [
                 showOnIndex: false,
                 showOnUpdate: true,
                 databaseFieldType: 'string',
-                updateRules: [],
-            },
+                updateRules: []
+            }
         ],
         group: 'Resources',
         groupSlug: 'resources',
@@ -321,13 +321,13 @@ export const resources = [
         slug: 'news',
         messages: {
             'title.required': 'The title field is required.',
-            'publishedAt.required': 'The published at field is required.',
+            'publishedAt.required': 'The published at field is required.'
         },
         name: 'News',
         param: 'news',
         perPageOptions: [10, 25, 50],
-        primaryKey: '_id',
-    },
+        primaryKey: '_id'
+    }
 ]
 
 export const user = {
@@ -335,5 +335,5 @@ export const user = {
     firstName: 'dozie',
     lastName: 'nwoga',
     password: '$2a$10$d.IeGxbRR4kc1ZxE7u0LSuHMrX9aMlUrbLgLoxqEcVI9I2CyntgV.',
-    _id: '5f0d62b4e2fab0431e1d35cf',
+    _id: '5f0d62b4e2fab0431e1d35cf'
 }

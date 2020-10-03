@@ -3,20 +3,20 @@ import { Redirect } from 'react-router-dom'
 
 const Auth = React.createContext([])
 
-export const withAuth = (Component) => {
-    const WithAuthComponent = (props) => (
+export const withAuth = Component => {
+    const WithAuthComponent = props => (
         <Auth.Consumer>
-            {(value) => <Component {...props} auth={value} />}
+            {value => <Component {...props} auth={value} />}
         </Auth.Consumer>
     )
 
     return WithAuthComponent
 }
 
-export const mustBeAuthenticated = (Component) => {
-    const MustBeAuthComponent = (props) => (
+export const mustBeAuthenticated = Component => {
+    const MustBeAuthComponent = props => (
         <Auth.Consumer>
-            {(value) => {
+            {value => {
                 const { user, shouldShowRegistrationScreen } = value
 
                 if (!user) {
@@ -39,10 +39,10 @@ export const mustBeAuthenticated = (Component) => {
     return MustBeAuthComponent
 }
 
-export const mustBeNotAuthenticated = (Component) => {
-    const MustBeNotAuthComponent = (props) => (
+export const mustBeNotAuthenticated = Component => {
+    const MustBeNotAuthComponent = props => (
         <Auth.Consumer>
-            {(value) => {
+            {value => {
                 const { user } = value
 
                 if (user) {

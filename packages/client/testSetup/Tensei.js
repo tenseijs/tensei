@@ -20,16 +20,16 @@ export default {
         LinkField: TextField,
         NumberField: TextField,
         IntegerField: TextField,
-        DateField: DateTimeField,
+        DateField: DateTimeField
     },
     library: {
-        Notification: { success: jest.fn(), error: jest.fn() },
+        Notification: { success: jest.fn(), error: jest.fn() }
     },
     indexFieldComponents: {
         LinkField,
         TextField: TextIndexField,
         IDField: TextIndexField,
         NumberField: TextField,
-        DateField: DateIndexField,
-    },
+        DateField: DateIndexField
+    }
 }

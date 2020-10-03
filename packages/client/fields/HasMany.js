@@ -10,19 +10,19 @@ class HasMany extends React.Component {
         isLoading: true,
         options: [],
         selectedOptions: [],
-        relatedResource: null,
+        relatedResource: null
     }
 
     findRelatedResource = () => {
         return this.props.resources.find(
-            (relatedResource) => relatedResource.name === this.props.field.name
+            relatedResource => relatedResource.name === this.props.field.name
         )
     }
 
     componentDidMount() {
         this.setState(
             {
-                relatedResource: this.findRelatedResource(),
+                relatedResource: this.findRelatedResource()
             },
             () => {
                 this.fetchOptions()
@@ -39,7 +39,7 @@ class HasMany extends React.Component {
         const { resource, resourceId, field: fieldProp } = this.props
 
         const relatedBelongsToField = relatedResource.fields.find(
-            (field) =>
+            field =>
                 field.name === resource.name &&
                 field.component === 'BelongsToField'
         )
@@ -54,92 +54,89 @@ class HasMany extends React.Component {
                     relatedResource.slug
                 }?fields=${[
                     relatedResource.displayField,
-                    relatedResource.valueField,
+                    relatedResource.valueField
                 ].join(',')}&per_page=${relatedResource.perPageOptions[0]}`
             )
             .then(({ data }) => {
                 this.setState(
                     {
-                        selectedOptions: data.data.map((option) => ({
+                        selectedOptions: data.data.map(option => ({
                             label: option[relatedResource.displayField],
-                            value: option[relatedResource.valueField],
-                        })),
+                            value: option[relatedResource.valueField]
+                        }))
                     },
                     () =>
                         this.props.onFieldChange(
                             this.state.selectedOptions.map(
-                                (option) => option.value
+                                option => option.value
                             )
                         )
                 )
             })
     }
 
-    fetchOptions = (query) => {
+    fetchOptions = query => {
         const { relatedResource } = this.state
 
         Tensei.request
             .get(
                 `resources/${relatedResource.slug}?fields=${[
                     relatedResource.displayField,
-                    relatedResource.valueField,
+                    relatedResource.valueField
                 ].join(',')}&search=${query || ''}`
             )
             .then(({ data }) => {
                 this.setState({
                     isLoading: false,
-                    options: data.data.map((option) => ({
+                    options: data.data.map(option => ({
                         label: option[relatedResource.displayField],
-                        value: option[relatedResource.valueField],
-                    })),
+                        value: option[relatedResource.valueField]
+                    }))
                 })
             })
     }
 
-    onQueryChange = debounce(500, (query) => {
+    onQueryChange = debounce(500, query => {
         this.setState({
-            isLoading: true,
+            isLoading: true
         })
         this.fetchOptions(query)
     })
 
-    onAutocompleteChange = (selectedOption) => {
+    onAutocompleteChange = selectedOption => {
         console.log('this is the auto complete')
         this.setState(
             {
-                selectedOptions: [
-                    ...this.state.selectedOptions,
-                    selectedOption,
-                ],
+                selectedOptions: [...this.state.selectedOptions, selectedOption]
             },
             () =>
                 this.props.onFieldChange(
-                    this.state.selectedOptions.map((option) => option.value)
+                    this.state.selectedOptions.map(option => option.value)
                 )
         )
     }
 
-    removeOption = (optionToRemove) => {
+    removeOption = optionToRemove => {
         this.setState(
             {
                 selectedOptions: this.state.selectedOptions.filter(
-                    (option) => option.value !== optionToRemove.value
-                ),
+                    option => option.value !== optionToRemove.value
+                )
             },
             () =>
                 this.props.onFieldChange(
-                    this.state.selectedOptions.map((option) => option.value)
+                    this.state.selectedOptions.map(option => option.value)
                 )
         )
     }
 
     optionsToRender = () => {
         const selectedOptions = this.state.selectedOptions.map(
-            (selectedOption) => selectedOption.value
+            selectedOption => selectedOption.value
         )
 
         return this.state.options.filter(
-            (option) => !selectedOptions.includes(option.value)
+            option => !selectedOptions.includes(option.value)
         )
     }
 
@@ -168,11 +165,11 @@ class HasMany extends React.Component {
                             relatedResource
                                 ? relatedResource.label.toLowerCase()
                                 : ''
-                        }`,
+                        }`
                     })}
                 >
-                    {(options) =>
-                        this.optionsToRender().map((option) => (
+                    {options =>
+                        this.optionsToRender().map(option => (
                             <span key={option.value}>{option.label}</span>
                         ))
                     }
@@ -181,7 +178,7 @@ class HasMany extends React.Component {
                 {selectedOptions.length > 0 ? (
                     <>
                         <div className="flex flex-wrap mt-4">
-                            {selectedOptions.map((option) => (
+                            {selectedOptions.map(option => (
                                 <Pill
                                     className="mr-2 mt-2"
                                     key={option.value}

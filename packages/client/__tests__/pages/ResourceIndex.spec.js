@@ -14,17 +14,17 @@ const props = {
     match,
     resources,
     history: { push: jest.fn() },
-    location: { pathname: 'resource/posts' },
+    location: { pathname: 'resource/posts' }
 }
 
-const WithAuthComponent = (props) => (
+const WithAuthComponent = props => (
     <Router history={history}>
         <Auth.Provider
             value={{
                 authorizedToCreate: jest.fn(() => Promise.resolve(true)),
                 authorizedToUpdate: jest.fn(() => Promise.resolve(true)),
                 authorizedToDelete: jest.fn(() => Promise.resolve(true)),
-                authorizedToRunAction: jest.fn(() => true),
+                authorizedToRunAction: jest.fn(() => true)
             }}
         >
             <ResourceIndex {...props} />
@@ -52,7 +52,7 @@ describe('Test the resource index page', () => {
                                 scheduled_for: '2020-08-11T23:00:00.000Z',
                                 title: 'Magnus',
                                 updated_at: '2020-08-12T21:40:24.000Z',
-                                user_id: 2,
+                                user_id: 2
                             },
                             {
                                 av_cpc: 21,
@@ -66,16 +66,16 @@ describe('Test the resource index page', () => {
                                 scheduled_for: '2020-08-11T23:00:00.000Z',
                                 title: 'Amapai',
                                 updated_at: '2020-08-12T21:40:24.000Z',
-                                user_id: 2,
-                            },
+                                user_id: 2
+                            }
                         ],
                         page: 1,
                         total: 2,
                         perPage: 10,
-                        pageCount: 1,
-                    },
-                }),
-            },
+                        pageCount: 1
+                    }
+                })
+            }
         }
     })
 
@@ -90,7 +90,7 @@ describe('Test the resource index page', () => {
             match,
             resources,
             history: { push: jest.fn() },
-            location: { pathname: 'resource/posts' },
+            location: { pathname: 'resource/posts' }
         }
         const { rerender } = render(<WithAuthComponent {...props} />)
 
@@ -98,7 +98,7 @@ describe('Test the resource index page', () => {
 
         const newProps = {
             ...props,
-            match: { params: { resource: 'news' } },
+            match: { params: { resource: 'news' } }
         }
 
         rerender(<WithAuthComponent {...newProps} />)

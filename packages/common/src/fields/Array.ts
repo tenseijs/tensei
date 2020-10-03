@@ -16,7 +16,7 @@ export class ArrayField extends Field {
     public serialize() {
         return {
             ...super.serialize(),
-            arrayOf: this.arrayOf,
+            arrayOf: this.arrayOf
         }
     }
 }

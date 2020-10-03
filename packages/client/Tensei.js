@@ -40,7 +40,7 @@ export default class Tensei {
 
             user = JSON.parse(window.tenseiDefaultState.user || null)
 
-            user.permissions.forEach((permission) => {
+            user.permissions.forEach(permission => {
                 permissions[permission] = true
             })
         } catch (errors) {}
@@ -51,20 +51,20 @@ export default class Tensei {
             appConfig,
             dashboards,
             permissions,
-            shouldShowRegistrationScreen,
+            shouldShowRegistrationScreen
         }
     })()
 
     library = {
-        Notification,
+        Notification
     }
 
     setWrapperState = () => {}
 
-    getPath = (path) => `/${this.state.appConfig.dashboardPath}/${path}`
+    getPath = path => `/${this.state.appConfig.dashboardPath}/${path}`
 
     request = Axios.create({
-        baseURL: `/${this.state.appConfig.dashboardPath}/${this.state.appConfig.apiPath}`,
+        baseURL: `/${this.state.appConfig.dashboardPath}/${this.state.appConfig.apiPath}`
     })
 
     bootingCallbacks = []
@@ -81,11 +81,11 @@ export default class Tensei {
         LinkField: TextField,
         NumberField: TextField,
         IntegerField: TextField,
-        DateField: DateTimeField,
+        DateField: DateTimeField
     }
 
     cardComponents = {
-        ValueMetric,
+        ValueMetric
     }
 
     indexFieldComponents = {
@@ -95,7 +95,7 @@ export default class Tensei {
         NumberField: TextField,
         DateField: DateIndexField,
         DateTimeField: DateIndexField,
-        BooleanField: BooleanIndexField,
+        BooleanField: BooleanIndexField
     }
 
     detailFieldComponents = {
@@ -111,10 +111,10 @@ export default class Tensei {
         HasManyField: HasManyDetailField,
         TextareaField: TextareaDetailField,
         BelongsToField: BelongsToDetailField,
-        BelongsToManyField: BelongsToManyDetailField,
+        BelongsToManyField: BelongsToManyDetailField
     }
 
-    booting = (boot) => {
+    booting = boot => {
         this.bootingCallbacks = [...this.bootingCallbacks, boot.bind(this)]
 
         return this
@@ -123,7 +123,7 @@ export default class Tensei {
     field = (key, Component) => {
         this.fieldComponents = {
             ...this.fieldComponents,
-            [key]: Component,
+            [key]: Component
         }
 
         return this
@@ -132,7 +132,7 @@ export default class Tensei {
     detailField = (key, Component) => {
         this.detailFieldComponents = {
             ...this.detailFieldComponents,
-            [key]: Component,
+            [key]: Component
         }
 
         return this
@@ -141,19 +141,19 @@ export default class Tensei {
     indexField = (key, Component) => {
         this.indexFieldComponents = {
             ...this.indexFieldComponents,
-            [key]: Component,
+            [key]: Component
         }
 
         return this
     }
 
     boot = () => {
-        this.bootingCallbacks.forEach((bootCallback) => {
+        this.bootingCallbacks.forEach(bootCallback => {
             bootCallback()
         })
 
         this.setWrapperState({
-            booted: true,
+            booted: true
         })
     }
 }

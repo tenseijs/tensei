@@ -8,7 +8,7 @@ import {
     Button,
     Heading,
     Subheading,
-    Paragraph,
+    Paragraph
 } from '@contentful/forma-36-react-components'
 
 class CreateResource extends React.Component {
@@ -22,13 +22,13 @@ class CreateResource extends React.Component {
             formInitialized: false,
             resource: this.findResource(),
             editingState: !!this.props.match.params.resourceId,
-            errors: {},
+            errors: {}
         }
     }
 
     findResource() {
         return this.props.resources.find(
-            (resource) => resource.slug === this.props.match.params.resource
+            resource => resource.slug === this.props.match.params.resource
         )
     }
 
@@ -51,7 +51,7 @@ class CreateResource extends React.Component {
                         form,
                         errors,
                         model: data,
-                        formInitialized: true,
+                        formInitialized: true
                     })
                 })
 
@@ -70,23 +70,23 @@ class CreateResource extends React.Component {
             this.setState({
                 formInitialized: true,
                 form,
-                errors,
+                errors
             })
         }
     }
 
     getUpdateFields = () =>
-        this.state.resource.fields.filter((field) => field.showOnUpdate)
+        this.state.resource.fields.filter(field => field.showOnUpdate)
 
     getCreationFields = () =>
-        this.state.resource.fields.filter((field) => field.showOnCreation)
+        this.state.resource.fields.filter(field => field.showOnCreation)
 
     getResourceFields = () =>
         (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
         ).filter(
-            (field) =>
+            field =>
                 !['HasOneField', 'HasManyEmbeddedField'].includes(
                     field.component
                 )
@@ -96,19 +96,19 @@ class CreateResource extends React.Component {
         (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
-        ).filter((field) => field.component === 'HasOneField')
+        ).filter(field => field.component === 'HasOneField')
 
     getResourceObjectArrayFields = () =>
         (this.state.editingState
             ? this.getUpdateFields()
             : this.getCreationFields()
-        ).filter((field) => field.component === 'HasManyEmbeddedField')
+        ).filter(field => field.component === 'HasManyEmbeddedField')
 
     resetForm = () => {
         const [form, errors] = this.getDefaultFormState(this.state.model)
         this.setState({
             form,
-            errors,
+            errors
         })
     }
 
@@ -116,7 +116,7 @@ class CreateResource extends React.Component {
         const form = {}
         const errors = {}
 
-        this.getResourceFields().forEach((field) => {
+        this.getResourceFields().forEach(field => {
             form[field.inputName] = model[field.inputName] || field.defaultValue
             errors[field.inputName] = null
 
@@ -127,7 +127,7 @@ class CreateResource extends React.Component {
             }
         })
 
-        this.getResourceObjectFields().forEach((objectField) => {
+        this.getResourceObjectFields().forEach(objectField => {
             form[objectField.inputName] =
                 model[objectField.inputName] ||
                 form[objectField.inputName] ||
@@ -137,7 +137,7 @@ class CreateResource extends React.Component {
             if (model[objectField.inputName]) {
                 form[objectField.inputName] = model[objectField.inputName]
             } else {
-                objectField.fields.forEach((childField) => {
+                objectField.fields.forEach(childField => {
                     form[objectField.inputName][childField.inputName] =
                         [childField.inputName] || childField.defaultValue
 
@@ -146,7 +146,7 @@ class CreateResource extends React.Component {
             }
         })
 
-        this.getResourceObjectArrayFields().forEach((field) => {
+        this.getResourceObjectArrayFields().forEach(field => {
             form[field.inputName] =
                 model[field.inputName] || form[field.inputName] || []
             errors[field.inputName] = []
@@ -154,7 +154,7 @@ class CreateResource extends React.Component {
             if (model[field.inputName]) {
                 form[field.inputName] = model[field.inputName]
             } else {
-                field.fields.forEach((childField) => {
+                field.fields.forEach(childField => {
                     form[field.inputName][0] = form[field.inputName][0] || {}
                     form[field.inputName][0][childField.inputName] =
                         childField.defaultValue
@@ -170,10 +170,10 @@ class CreateResource extends React.Component {
         return [form, errors]
     }
 
-    getObjectArrayFieldDefaultItem = (field) => {
+    getObjectArrayFieldDefaultItem = field => {
         const form = {}
 
-        field.fields.forEach((childField) => {
+        field.fields.forEach(childField => {
             form[childField.inputName] = form[field.inputName] || {}
             form[childField.inputName] = childField.defaultValue
         })
@@ -232,7 +232,7 @@ class CreateResource extends React.Component {
         let onFieldChange = console.log
 
         if (parentResourceField) {
-            onFieldChange = (value) =>
+            onFieldChange = value =>
                 this.handleObjectFieldChange(
                     parentResourceField,
                     resourceField,
@@ -241,12 +241,12 @@ class CreateResource extends React.Component {
         }
 
         if (!parentResourceField) {
-            onFieldChange = (value) =>
+            onFieldChange = value =>
                 this.handleFieldChange(resourceField.inputName, value)
         }
 
         if (arrayParentResourceField) {
-            onFieldChange = (value) =>
+            onFieldChange = value =>
                 this.handleArrayObjectField(
                     parentResourceField,
                     resourceField,
@@ -273,7 +273,7 @@ class CreateResource extends React.Component {
 
     submit = () => {
         this.setState({
-            submitting: true,
+            submitting: true
         })
 
         const { resource, editingState } = this.state
@@ -284,7 +284,7 @@ class CreateResource extends React.Component {
             }`,
             {
                 ...this.state.form,
-                somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere',
+                somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere'
             }
         )
             .then(() => {
@@ -296,21 +296,21 @@ class CreateResource extends React.Component {
                     `Resource has been ${editingState ? 'updated' : 'created'}.`
                 )
             })
-            .catch((error) => {
+            .catch(error => {
                 Tensei.library.Notification.error(
                     `Failed ${editingState ? 'updating' : 'creating'} resource.`
                 )
 
                 this.setState({
-                    errors: this.formatErrors(error?.response?.data?.errors),
+                    errors: this.formatErrors(error?.response?.data?.errors)
                 })
             })
     }
 
-    formatErrors = (errors) => {
+    formatErrors = errors => {
         let formattedErrors = {}
 
-        errors.forEach((error) => {
+        errors.forEach(error => {
             formattedErrors[error.field] = error.message
         })
 
@@ -321,8 +321,8 @@ class CreateResource extends React.Component {
         this.setState({
             form: {
                 ...this.state.form,
-                [field]: value,
-            },
+                [field]: value
+            }
         })
     }
 
@@ -336,13 +336,13 @@ class CreateResource extends React.Component {
                     if (arrayFieldIndex === stateFormFieldIndex) {
                         return {
                             ...formValue,
-                            [field.inputName]: value,
+                            [field.inputName]: value
                         }
                     }
 
                     return formValue
-                }),
-            },
+                })
+            }
         })
     }
 
@@ -352,13 +352,13 @@ class CreateResource extends React.Component {
                 ...this.state.form,
                 [parentField.inputName]: {
                     ...this.state.form[parentField.inputName],
-                    [field.inputName]: value,
-                },
-            },
+                    [field.inputName]: value
+                }
+            }
         })
     }
 
-    renderObjectField = (field) => {
+    renderObjectField = field => {
         return (
             <div key={field.inputName} className="w-full flex flex-wrap mt-10">
                 <div className="w-full md:w-1/3 flex flex-col mb-5 md:mb-0">
@@ -370,7 +370,7 @@ class CreateResource extends React.Component {
 
                 <div className="w-full md:w-2/3">
                     <div className="w-full md:w-5/6 bg-gray-lightest p-6 mb-3">
-                        {field.fields.map((childField) =>
+                        {field.fields.map(childField =>
                             this.renderResourceField(childField, field)
                         )}
                     </div>
@@ -385,26 +385,26 @@ class CreateResource extends React.Component {
                 ...this.state.form,
                 [field.inputName]: this.state.form[field.inputName].filter(
                     (fieldItem, fieldItemIndex) => fieldItemIndex !== index
-                ),
+                )
             },
             errors: {
                 ...this.state.errors,
                 [field.inputName]: this.state.errors[field.inputName].filter(
                     (fieldItem, fieldItemIndex) => fieldItemIndex !== index
-                ),
-            },
+                )
+            }
         })
     }
 
-    addObjectArrayItem = (field) => {
+    addObjectArrayItem = field => {
         this.setState({
             form: {
                 ...this.state.form,
                 [field.inputName]: [
                     ...this.state.form[field.inputName],
-                    this.getObjectArrayFieldDefaultItem(field),
-                ],
-            },
+                    this.getObjectArrayFieldDefaultItem(field)
+                ]
+            }
         })
     }
 
@@ -413,7 +413,7 @@ class CreateResource extends React.Component {
             resource,
             formInitialized,
             form,
-            editingState: editing,
+            editingState: editing
         } = this.state
 
         const authorizedToCreate = this.props.auth.authorizedToCreate(
@@ -467,7 +467,7 @@ class CreateResource extends React.Component {
 
                                 <div className="w-full md:w-2/3">
                                     <div className="w-full md:w-5/6 bg-gray-lightest p-6 mb-3">
-                                        {this.getResourceFields().map((field) =>
+                                        {this.getResourceFields().map(field =>
                                             this.renderResourceField(field)
                                         )}
                                     </div>
@@ -475,11 +475,11 @@ class CreateResource extends React.Component {
                             </div>
                         ) : null}
 
-                        {this.getResourceObjectFields().map((field) =>
+                        {this.getResourceObjectFields().map(field =>
                             this.renderObjectField(field)
                         )}
 
-                        {this.getResourceObjectArrayFields().map((field) => {
+                        {this.getResourceObjectArrayFields().map(field => {
                             return (
                                 <div
                                     key={field.inputName}
@@ -531,7 +531,7 @@ class CreateResource extends React.Component {
                                                                     field,
                                                                     [
                                                                         field,
-                                                                        formIndex,
+                                                                        formIndex
                                                                     ]
                                                                 )
                                                         )}

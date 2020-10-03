@@ -16,7 +16,7 @@ class BooleanField extends React.Component {
                 <div
                     className={cn('h-2 w-2 mr-2 rounded-full', {
                         'bg-green-500': checked,
-                        'bg-red-500': !checked,
+                        'bg-red-500': !checked
                     })}
                 ></div>
                 {checked ? field.trueLabel : field.falseLabel}

@@ -6,7 +6,7 @@ import {
     Icon,
     Modal,
     TextLink,
-    ModalConfirm,
+    ModalConfirm
 } from '@contentful/forma-36-react-components'
 import { withAuth } from '~/store/auth'
 
@@ -14,7 +14,7 @@ const ActionsDropdown = ({
     position = 'index',
     resource,
     selected = [],
-    auth,
+    auth
 }) => {
     const [form, setForm] = useState({})
     const [action, setAction] = useState(null)
@@ -24,7 +24,7 @@ const ActionsDropdown = ({
     const [showActionsDropdown, setShowActionsDropdown] = useState(false)
 
     // position can be index, detail, table-row
-    const actions = resource.actions.filter((action) => {
+    const actions = resource.actions.filter(action => {
         const authorizedToRunAction = auth.authorizedToRunAction(
             action.slug,
             resource.slug
@@ -52,28 +52,28 @@ const ActionsDropdown = ({
         return null
     }
 
-    const setDefaultFormState = (action) => {
+    const setDefaultFormState = action => {
         if (action.fields.length === 0) {
             return
         }
 
         const defaultForm = {}
 
-        action.fields.forEach((field) => {
+        action.fields.forEach(field => {
             defaultForm[field.inputName] = field.defaultValue || ''
         })
 
         setForm(defaultForm)
     }
 
-    const showActionModal = (action) => {
+    const showActionModal = action => {
         setAction(action)
         toggleActionsDropdown()
 
         setDefaultFormState(action)
     }
 
-    const renderField = (field) => {
+    const renderField = field => {
         const Component = Tensei.fieldComponents[field.component]
 
         if (!Component) {
@@ -88,10 +88,10 @@ const ActionsDropdown = ({
                     label={field.name}
                     value={form[field.inputName] || ''}
                     errorMessage={errors[field.inputName] || ''}
-                    onFieldChange={(value) => {
+                    onFieldChange={value => {
                         setForm({
                             ...form,
-                            [field.inputName]: value,
+                            [field.inputName]: value
                         })
                     }}
                 />
@@ -99,7 +99,7 @@ const ActionsDropdown = ({
         )
     }
 
-    const handleResponse = (response) => {
+    const handleResponse = response => {
         if (!response) {
             closeModal()
 
@@ -108,7 +108,7 @@ const ActionsDropdown = ({
         if (!response.type) {
             let parsedErrors = {}
 
-            error?.response?.data?.errors?.forEach((error) => {
+            error?.response?.data?.errors?.forEach(error => {
                 parsedErrors[error.field] = error.message
             })
 
@@ -158,14 +158,14 @@ const ActionsDropdown = ({
         Tensei.request
             .post(`resources/${resource.slug}/actions/${action.slug}`, {
                 models: selected,
-                form,
+                form
             })
             .then(({ data }) => {
                 handleResponse(data)
 
                 setRunningAction(false)
             })
-            .catch((error) => {
+            .catch(error => {
                 handleResponse(error?.response?.data)
 
                 setRunningAction(false)
@@ -198,7 +198,7 @@ const ActionsDropdown = ({
                     )
                 }
             >
-                {actions.map((action) => (
+                {actions.map(action => (
                     <DropdownListItem
                         key={action.slug}
                         onClick={() => showActionModal(action)}
@@ -222,9 +222,7 @@ const ActionsDropdown = ({
                     <p>{action.confirmText}</p>
                 ) : null}
 
-                {action
-                    ? action.fields.map((field) => renderField(field))
-                    : null}
+                {action ? action.fields.map(field => renderField(field)) : null}
             </ModalConfirm>
 
             <Modal
@@ -236,7 +234,7 @@ const ActionsDropdown = ({
                 <Modal.Content>
                     <div
                         dangerouslySetInnerHTML={{
-                            __html: htmlResponse,
+                            __html: htmlResponse
                         }}
                     ></div>
                 </Modal.Content>

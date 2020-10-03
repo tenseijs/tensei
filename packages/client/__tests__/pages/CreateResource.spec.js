@@ -6,10 +6,10 @@ import { resources } from '~/testSetup/data'
 import TenseiMock from '~/testSetup/Tensei'
 import CreateResource from '~/pages/CreateResource'
 
-const WithAuthComponent = (props) => (
+const WithAuthComponent = props => (
     <Auth.Provider
         value={{
-            authorizedToCreate: jest.fn(() => Promise.resolve(true)),
+            authorizedToCreate: jest.fn(() => Promise.resolve(true))
         }}
     >
         <CreateResource {...props} />
@@ -25,7 +25,7 @@ describe('Test the create resource page', () => {
         const match = { params: { resource: 'posts' } }
         const props = {
             match,
-            resources,
+            resources
         }
 
         const { asFragment } = render(<WithAuthComponent {...props} />)
@@ -38,12 +38,12 @@ describe('Test the create resource page', () => {
         const props = {
             match,
             resources,
-            history: { push: jest.fn() },
+            history: { push: jest.fn() }
         }
 
         window.Tensei = {
             ...TenseiMock,
-            request: { post: jest.fn(() => Promise.resolve(true)) },
+            request: { post: jest.fn(() => Promise.resolve(true)) }
         }
         render(<WithAuthComponent {...props} />)
 
@@ -57,7 +57,7 @@ describe('Test the create resource page', () => {
 
         fireEvent.change(nameField, { target: { value: 'new post' } })
         fireEvent.change(descriptionField, {
-            target: { value: 'new description' },
+            target: { value: 'new description' }
         })
         fireEvent.change(contentField, { target: { value: 'fresh content' } })
 

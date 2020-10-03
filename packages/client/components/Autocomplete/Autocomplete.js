@@ -9,14 +9,14 @@ import {
     SkeletonContainer,
     IconButton,
     DropdownListItem,
-    ValidationMessage,
+    ValidationMessage
 } from '@contentful/forma-36-react-components'
 
 const KEY_CODE = {
     ENTER: 13,
     ARROW_DOWN: 40,
     ARROW_UP: 38,
-    TAB: 9,
+    TAB: 9
 }
 
 const TOGGLED_LIST = 'TOGGLED_LIST'
@@ -27,7 +27,7 @@ const ITEM_SELECTED = 'ITEM_SELECTED'
 const initialState = {
     isOpen: false,
     query: '',
-    highlightedItemIndex: null,
+    highlightedItemIndex: null
 }
 
 const reducer = (state, action) => {
@@ -36,20 +36,20 @@ const reducer = (state, action) => {
             return {
                 ...state,
                 isOpen: action.payload,
-                highlightedItemIndex: null,
+                highlightedItemIndex: null
             }
         case NAVIGATED_ITEMS:
             return {
                 ...state,
                 isOpen: true,
-                highlightedItemIndex: action.payload,
+                highlightedItemIndex: action.payload
             }
         case QUERY_CHANGED:
             return {
                 ...state,
                 highlightedItemIndex: null,
                 isOpen: true,
-                query: action.payload,
+                query: action.payload
             }
         case ITEM_SELECTED:
             return { ...initialState }
@@ -78,7 +78,7 @@ export const Autocomplete = ({
     dropdownProps,
     renderToggleElement,
     textInputProps,
-    onDropdownClose,
+    onDropdownClose
 }) => {
     const listRef = useRef()
     const inputRef = useRef()
@@ -88,22 +88,22 @@ export const Autocomplete = ({
         initialState
     )
 
-    const toggleList = (isOpen) => {
+    const toggleList = isOpen => {
         dispatch({ type: TOGGLED_LIST, payload: isOpen })
     }
 
-    const selectItem = (item) => {
+    const selectItem = item => {
         dispatch({ type: ITEM_SELECTED })
         onQueryChange('')
         onChange(item)
     }
 
-    const updateQuery = (value) => {
+    const updateQuery = value => {
         dispatch({ type: QUERY_CHANGED, payload: value })
         onQueryChange(value)
     }
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = event => {
         const isEnter = event.keyCode === KEY_CODE.ENTER
         const isTab =
             event.keyCode === KEY_CODE.TAB ||
@@ -143,7 +143,7 @@ export const Autocomplete = ({
             <div className="AutocompleteInput">
                 <TextInput
                     value={toggleProps.query}
-                    onChange={(e) => toggleProps.onChange(e.target.value)}
+                    onChange={e => toggleProps.onChange(e.target.value)}
                     onFocus={toggleProps.onFocus}
                     onKeyDown={toggleProps.onKeyDown}
                     disabled={toggleProps.disabled}
@@ -163,7 +163,7 @@ export const Autocomplete = ({
                     buttonType="muted"
                     iconProps={{
                         icon: toggleProps.query ? 'Close' : 'ChevronDown',
-                        ...(iconProps ? iconProps(toggleProps) : {}),
+                        ...(iconProps ? iconProps(toggleProps) : {})
                     }}
                     onClick={() => {
                         if (onIconClick) {
@@ -188,7 +188,7 @@ export const Autocomplete = ({
         onFocus: () => toggleList(true),
         onKeyDown: handleKeyDown,
         onToggle: handleInputButtonClick,
-        inputRef: inputRef,
+        inputRef: inputRef
     }
 
     const renderToggleElementFunction =

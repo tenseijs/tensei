@@ -30,7 +30,7 @@ export class Select extends Field {
     public serialize() {
         return {
             ...super.serialize(),
-            selectOptions: this.selectOptions,
+            selectOptions: this.selectOptions
         }
     }
 }

@@ -14,7 +14,7 @@ class Plan {
         slug: '',
         price: 0,
         interval: 'month',
-        trialDays: 0,
+        trialDays: 0
     }
 
     constructor(name: string, slug?: string) {

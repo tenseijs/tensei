@@ -1,6 +1,8 @@
 declare module '@tensei/core' {
     import { SupportedDrivers } from '@tensei/mail'
+    import { StorageManager } from '@slynova/flydrive'
     import Express, { Application, Request } from 'express'
+    import { SupportedStorageDrivers, StorageConstructor } from '@tensei/common'
     import {
         PluginContract,
         ResourceContract,
@@ -17,6 +19,7 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
+        storage: StorageManager
         register(): Promise<this>
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
@@ -53,6 +56,17 @@ declare module '@tensei/core' {
         plugins(plugins: PluginContract[]): this
         database(database: SupportedDatabases): this
         mail(driverName: SupportedDrivers, mailConfig?: {}): this
+        storageDriver<
+            StorageDriverImplementation extends Storage,
+            DriverConfig extends unknown
+        >(
+            driverName: SupportedStorageDrivers,
+            driverConfig: DriverConfig,
+            storageImplementation: StorageConstructor<
+                StorageDriverImplementation
+            >
+        ): this
+        defaultStorageDriver(driverName: string): this
     }
 
     export class Tensei implements TenseiContract {
@@ -61,6 +75,7 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
+        storage: StorageManager
         register(): Promise<this>
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
@@ -97,6 +112,17 @@ declare module '@tensei/core' {
         resources(resources: ResourceContract[]): this
         plugins(plugins: PluginContract[]): this
         mail(driverName: SupportedDrivers, mailConfig?: {}): this
+        storageDriver<
+            StorageDriverImplementation extends Storage,
+            DriverConfig extends unknown
+        >(
+            driverName: SupportedStorageDrivers,
+            driverConfig: DriverConfig,
+            storageImplementation: StorageConstructor<
+                StorageDriverImplementation
+            >
+        ): this
+        defaultStorageDriver(driverName: string): this
     }
 
     export const tensei: (config?: {}) => TenseiContract

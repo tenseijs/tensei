@@ -19,7 +19,7 @@ import {
     DataPayload,
     InBuiltEndpoints,
     SupportedDatabases,
-    Config,
+    Config
 } from '@tensei/common'
 
 import {
@@ -27,7 +27,7 @@ import {
     GrantConfig,
     AuthPluginConfig,
     SupportedSocialProviders,
-    defaultProviderScopes,
+    defaultProviderScopes
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
@@ -44,7 +44,7 @@ class Auth {
         apiPath: 'auth',
         jwt: {
             expiresIn: '7d',
-            secretKey: process.env.JWT_SECRET || 'auth-secret-key',
+            secretKey: process.env.JWT_SECRET || 'auth-secret-key'
         },
         teams: false,
         teamFields: [],
@@ -52,7 +52,7 @@ class Auth {
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
-        providers: {},
+        providers: {}
     }
 
     public beforeCreateUser(hook: HookFunction) {
@@ -181,7 +181,7 @@ class Auth {
                 passwordField
                     .hidden()
                     .htmlAttributes({
-                        type: 'password',
+                        type: 'password'
                     })
                     .creationRules('required')
                     .onlyOnForms()
@@ -201,7 +201,7 @@ class Auth {
                               .hideOnIndex()
                               .hideOnCreate()
                               .hideOnUpdate()
-                              .hideOnDetail(),
+                              .hideOnDetail()
                       ]
                     : []),
                 ...this.config.fields,
@@ -215,16 +215,16 @@ class Auth {
                               .hideOnCreate()
                               .hideOnIndex()
                               .hideOnUpdate()
-                              .hideOnDetail(),
+                              .hideOnDetail()
                       ]
-                    : []),
+                    : [])
             ])
             .beforeCreate((payload, request) => {
                 const parsedPayload: DataPayload = {
                     ...payload,
                     password: payload.password
                         ? Bcrypt.hashSync(payload.password)
-                        : null,
+                        : null
                 }
 
                 if (this.config.verifyEmails) {
@@ -243,7 +243,7 @@ class Auth {
                 if (payload.password) {
                     parsedPayload = {
                         ...payload,
-                        password: Bcrypt.hashSync(payload.password),
+                        password: Bcrypt.hashSync(payload.password)
                     }
                 }
 
@@ -264,7 +264,7 @@ class Auth {
                 text('Name').unique(),
                 belongsTo(this.config.nameResource),
                 belongsToMany(this.config.nameResource),
-                ...this.config.teamFields,
+                ...this.config.teamFields
             ])
             .hideFromNavigation()
     }
@@ -275,7 +275,7 @@ class Auth {
             text('Role'),
             text('Token').unique().rules('required'),
             belongsTo(this.teamResource().data.name),
-            belongsTo(this.config.nameResource),
+            belongsTo(this.config.nameResource)
         ])
     }
 
@@ -288,7 +288,7 @@ class Auth {
                     .unique()
                     .searchable()
                     .rules('required'),
-                belongsToMany(this.config.roleResource),
+                belongsToMany(this.config.roleResource)
             ])
             .displayField('name')
             .group('Users & Permissions')
@@ -310,7 +310,7 @@ class Auth {
                     .rules('required'),
 
                 belongsToMany(this.config.nameResource),
-                belongsToMany(this.config.permissionResource),
+                belongsToMany(this.config.permissionResource)
             ])
             .displayField('name')
             .group('Users & Permissions')
@@ -322,7 +322,7 @@ class Auth {
             .fields([
                 text('Email').searchable().unique().notNullable(),
                 text('Token').unique().notNullable(),
-                dateTime('Expires At'),
+                dateTime('Expires At')
             ])
     }
 
@@ -341,7 +341,7 @@ class Auth {
                 textarea('Temporal Token'),
                 json('Payload'),
                 text('Provider').rules('required'),
-                text('Provider User ID'),
+                text('Provider User ID')
             ])
     }
 
@@ -375,16 +375,16 @@ class Auth {
                         'create',
                         'runAction',
                         'showRelation',
-                        'update',
-                    ] as InBuiltEndpoints[]).forEach((endpoint) => {
+                        'update'
+                    ] as InBuiltEndpoints[]).forEach(endpoint => {
                         pushMiddleware({
                             type: endpoint,
-                            handler: this.setAuthMiddleware,
+                            handler: this.setAuthMiddleware
                         })
 
                         pushMiddleware({
                             type: endpoint,
-                            handler: this.authMiddleware,
+                            handler: this.authMiddleware
                         })
                     })
 
@@ -392,7 +392,7 @@ class Auth {
                 })
 
                 // TODO: If we support more databases, add a setup method for each database.
-                .afterDatabaseSetup(async (config) => {
+                .afterDatabaseSetup(async config => {
                     const { resources, database } = config
 
                     if (this.config.rolesAndPermissions) {
@@ -406,7 +406,7 @@ class Auth {
                     }
 
                     if (this.config.rolesAndPermissions) {
-                        resources.forEach((resource) => {
+                        resources.forEach(resource => {
                             resource.canCreate(
                                 ({ user }) =>
                                     user?.permissions.includes(
@@ -438,7 +438,7 @@ class Auth {
                                     ) || false
                             )
 
-                            resource.data.actions.forEach((action) => {
+                            resource.data.actions.forEach(action => {
                                 resource.canRunAction(
                                     ({ user }) =>
                                         user?.permissions.includes(
@@ -463,7 +463,7 @@ class Auth {
                     }
                 })
 
-                .beforeCoreRoutesSetup(async (config) => {
+                .beforeCoreRoutesSetup(async config => {
                     const { app, serverUrl, clientUrl } = config
 
                     app.post(this.getApiPath('login'), AsyncHandler(this.login))
@@ -527,29 +527,27 @@ class Auth {
                             )
                         )
 
-                        Object.keys(this.config.providers).forEach(
-                            (provider) => {
-                                const providerConfig = this.config.providers[
-                                    provider
-                                ]
-                                const clientCallback =
-                                    providerConfig.clientCallback || ''
+                        Object.keys(this.config.providers).forEach(provider => {
+                            const providerConfig = this.config.providers[
+                                provider
+                            ]
+                            const clientCallback =
+                                providerConfig.clientCallback || ''
 
-                                this.config.providers[provider] = {
-                                    ...providerConfig,
-                                    redirect_uri: `${serverUrl}/connect/${provider}/callback`,
-                                    clientCallback: clientCallback.startsWith(
-                                        'http'
-                                    )
-                                        ? clientCallback
-                                        : `${clientUrl}${
-                                              clientCallback.startsWith('/')
-                                                  ? '/'
-                                                  : ''
-                                          }${clientCallback}`,
-                                }
+                            this.config.providers[provider] = {
+                                ...providerConfig,
+                                redirect_uri: `${serverUrl}/connect/${provider}/callback`,
+                                clientCallback: clientCallback.startsWith(
+                                    'http'
+                                )
+                                    ? clientCallback
+                                    : `${clientUrl}${
+                                          clientCallback.startsWith('/')
+                                              ? '/'
+                                              : ''
+                                      }${clientCallback}`
                             }
-                        )
+                        })
 
                         app.use(grant.express()(this.config.providers))
 
@@ -585,13 +583,13 @@ class Auth {
 
         if (['mysql', 'pg', 'sqlite3'].includes(config.database)) {
             storeArguments = {
-                knex: config.databaseClient,
+                knex: config.databaseClient
             }
         }
 
         if (['mongodb'].includes(config.database)) {
             storeArguments = {
-                mongooseConnection: require('mongoose').connection,
+                mongooseConnection: require('mongoose').connection
             }
         }
 
@@ -599,7 +597,7 @@ class Auth {
             secret: process.env.GRANT_SESSION_SECRET || 'grant',
             store: new Store(storeArguments),
             resave: false,
-            saveUninitialized: false,
+            saveUninitialized: false
         }
     }
 
@@ -626,7 +624,7 @@ class Auth {
                     ? [
                           `${this.roleResource().data.slug}.${
                               this.permissionResource().data.slug
-                          }`,
+                          }`
                       ]
                     : []
             )
@@ -641,9 +639,9 @@ class Auth {
 
         return response.status(201).json({
             token: this.generateJwt({
-                id: user.id,
+                id: user.id
             }),
-            user,
+            user
         })
     }
 
@@ -656,16 +654,16 @@ class Auth {
                 .database()
                 .updateOneByField('id', user?.id, {
                     email_verification_token: null,
-                    email_verified_at: Dayjs().format('YYYY-MM-DD HH:mm:ss'),
+                    email_verified_at: Dayjs().format('YYYY-MM-DD HH:mm:ss')
                 })
 
             return response.status(200).json({
-                message: `Email has been verified.`,
+                message: `Email has been verified.`
             })
         }
 
         return response.status(400).json({
-            message: 'Invalid email verification token.',
+            message: 'Invalid email verification token.'
         })
     }
 
@@ -677,7 +675,7 @@ class Auth {
         if (!['login', 'register'].includes(action)) {
             throw {
                 status: 400,
-                message: 'Action can only be login or register.',
+                message: 'Action can only be login or register.'
             }
         }
 
@@ -685,8 +683,8 @@ class Auth {
             throw [
                 {
                     field: 'access_token',
-                    message: 'Invalid access token provided.',
-                },
+                    message: 'Invalid access token provided.'
+                }
             ]
         }
 
@@ -698,14 +696,14 @@ class Auth {
             throw [
                 {
                     field: 'access_token',
-                    message: 'Invalid access token provided.',
-                },
+                    message: 'Invalid access token provided.'
+                }
             ]
         }
 
         oauthIdentity = {
             ...oauthIdentity,
-            payload: JSON.parse(oauthIdentity.payload),
+            payload: JSON.parse(oauthIdentity.payload)
         }
 
         let user = await manager(this.config.nameResource)
@@ -716,8 +714,8 @@ class Auth {
             throw [
                 {
                     field: 'email',
-                    message: 'Cannot find a user with these credentials.',
-                },
+                    message: 'Cannot find a user with these credentials.'
+                }
             ]
         }
 
@@ -727,14 +725,14 @@ class Auth {
                     field: 'email',
                     message: `A ${this.userResource().data.name.toLowerCase()} already exists with email ${
                         oauthIdentity.email
-                    }.`,
-                },
+                    }.`
+                }
             ]
         }
 
         if (!user && action === 'register') {
             let createPayload: DataPayload = {
-                ...oauthIdentity.payload,
+                ...oauthIdentity.payload
             }
 
             if (this.config.verifyEmails) {
@@ -754,7 +752,7 @@ class Auth {
         }
 
         const belongsToField = this.oauthResource().data.fields.find(
-            (field) => field.name === this.config.nameResource
+            field => field.name === this.config.nameResource
         )!
 
         await manager('Oauth Identity')
@@ -763,7 +761,7 @@ class Auth {
                 oauthIdentity.id,
                 {
                     temporal_token: null,
-                    [belongsToField?.databaseField]: user.id,
+                    [belongsToField?.databaseField]: user.id
                 },
                 {},
                 true
@@ -771,9 +769,9 @@ class Auth {
 
         return response.json({
             token: this.generateJwt({
-                id: user.id,
+                id: user.id
             }),
-            user,
+            user
         })
     }
 
@@ -788,14 +786,14 @@ class Auth {
         if (!userWithPassword) {
             throw {
                 message: 'Invalid credentials.',
-                status: 401,
+                status: 401
             }
         }
 
         if (!Bcrypt.compareSync(password, userWithPassword.password)) {
             throw {
                 message: 'Invalid credentials.',
-                status: 401,
+                status: 401
             }
         }
 
@@ -809,7 +807,7 @@ class Auth {
                     ? [
                           `${this.roleResource().data.slug}.${
                               this.permissionResource().data.slug
-                          }`,
+                          }`
                       ]
                     : []
             )
@@ -822,28 +820,28 @@ class Auth {
             if (!token) {
                 return response.status(400).json({
                     message: 'The two factor authentication token is required.',
-                    requiresTwoFactorToken: true,
+                    requiresTwoFactorToken: true
                 })
             }
 
             const verified = Speakeasy.totp.verify({
                 token,
                 encoding: 'base32',
-                secret: model.two_factor_secret,
+                secret: model.two_factor_secret
             })
 
             if (!verified) {
                 return response.status(400).json({
-                    message: `Invalid two factor authentication token.`,
+                    message: `Invalid two factor authentication token.`
                 })
             }
         }
 
         return response.json({
             token: this.generateJwt({
-                id: user.id,
+                id: user.id
             }),
-            user,
+            user
         })
     }
 
@@ -854,7 +852,7 @@ class Auth {
     ) => {
         if (!request.user) {
             return response.status(401).json({
-                message: 'Unauthenticated.',
+                message: 'Unauthenticated.'
             })
         }
 
@@ -868,7 +866,7 @@ class Auth {
     ) => {
         if (!request.user?.email_verified_at) {
             return response.status(400).json({
-                message: 'Unverified.',
+                message: 'Unverified.'
             })
         }
 
@@ -901,7 +899,7 @@ class Auth {
                         ? [
                               `${this.roleResource().data.slug}.${
                                   this.permissionResource().data.slug
-                              }`,
+                              }`
                           ]
                         : []
                 )
@@ -916,7 +914,7 @@ class Auth {
                     : model.two_factor_enabled,
                 email_verification_token: model.get
                     ? model.get('email_verification_token')
-                    : model.email_verification_token,
+                    : model.email_verification_token
             }
 
             if (this.config.rolesAndPermissions) {
@@ -925,7 +923,7 @@ class Auth {
                         ...acc,
                         ...(
                             role[this.permissionResource().data.slug] || []
-                        ).map((permission: any) => permission.slug),
+                        ).map((permission: any) => permission.slug)
                     ],
                     []
                 )
@@ -945,7 +943,7 @@ class Auth {
     ) => {
         if (!request.user?.two_factor_enabled) {
             return response.status(400).json({
-                message: `You do not have two factor authentication enabled.`,
+                message: `You do not have two factor authentication enabled.`
             })
         }
 
@@ -954,12 +952,12 @@ class Auth {
         const verified = Speakeasy.totp.verify({
             encoding: 'base32',
             token: request.body.token,
-            secret: request.user?.two_factor_secret,
+            secret: request.user?.two_factor_secret
         })
 
         if (!verified) {
             return response.status(400).json({
-                message: `Invalid two factor authentication code.`,
+                message: `Invalid two factor authentication code.`
             })
         }
 
@@ -967,13 +965,13 @@ class Auth {
             request.user!.id,
             {
                 two_factor_secret: null,
-                two_factor_enabled: false,
+                two_factor_enabled: false
             },
             true
         )
 
         return response.json({
-            message: `Two factor auth has been disabled.`,
+            message: `Two factor auth has been disabled.`
         })
     }
 
@@ -984,37 +982,37 @@ class Auth {
         const Speakeasy = require('speakeasy')
 
         await validateAll(request.body, {
-            token: 'required|number',
+            token: 'required|number'
         })
 
         if (!request.user?.two_factor_secret) {
             return response.status(400).json({
-                message: `You must enable two factor authentication first.`,
+                message: `You must enable two factor authentication first.`
             })
         }
 
         const verified = Speakeasy.totp.verify({
             encoding: 'base32',
             token: request.body.token,
-            secret: request.user?.two_factor_secret,
+            secret: request.user?.two_factor_secret
         })
 
         if (!verified) {
             return response.status(400).json({
-                message: `Invalid two factor token.`,
+                message: `Invalid two factor token.`
             })
         }
 
         await request.manager(this.userResource()).update(
             request.user!.id,
             {
-                two_factor_enabled: true,
+                two_factor_enabled: true
             },
             true
         )
 
         return response.json({
-            message: `Two factor authentication has been enabled.`,
+            message: `Two factor authentication has been enabled.`
         })
     }
 
@@ -1031,7 +1029,7 @@ class Auth {
             request.user!.id,
             {
                 two_factor_secret: base32,
-                two_factor_enabled: false,
+                two_factor_enabled: false
             },
             true
         )
@@ -1040,12 +1038,12 @@ class Auth {
             if (error) {
                 return response.status(500).json({
                     message: `Error generating qr code.`,
-                    error,
+                    error
                 })
             }
 
             return response.json({
-                dataURL,
+                dataURL
             })
         })
     }
@@ -1053,7 +1051,7 @@ class Auth {
     protected forgotPassword = async (request: Request, response: Response) => {
         const { body, mailer, manager } = request
         const { email } = await validateAll(body, {
-            email: 'required|email',
+            email: 'required|email'
         })
 
         const existingUser = await manager(this.userResource()).findOneByField(
@@ -1068,8 +1066,8 @@ class Auth {
             return response.status(422).json([
                 {
                     field: 'email',
-                    message: 'Invalid email address.',
-                },
+                    message: 'Invalid email address.'
+                }
             ])
         }
 
@@ -1084,13 +1082,13 @@ class Auth {
                 email,
                 {
                     token,
-                    expires_at: expiresAt,
+                    expires_at: expiresAt
                 }
             )
         } else {
             await manager(this.passwordResetsResource()).database().create({
                 email,
-                token,
+                token
             })
         }
 
@@ -1099,7 +1097,7 @@ class Auth {
             .sendRaw(`Some raw message to send with the token ${token}`)
 
         return response.json({
-            message: `Please check your email for steps to reset your password.`,
+            message: `Please check your email for steps to reset your password.`
         })
     }
 
@@ -1108,7 +1106,7 @@ class Auth {
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
-            password: 'required|string|min:8',
+            password: 'required|string|min:8'
         })
 
         let existingPasswordReset = await manager(
@@ -1119,8 +1117,8 @@ class Auth {
             return response.status(422).json([
                 {
                     field: 'token',
-                    message: 'Invalid reset token.',
-                },
+                    message: 'Invalid reset token.'
+                }
             ])
         }
 
@@ -1132,8 +1130,8 @@ class Auth {
             return response.status(422).json([
                 {
                     field: 'token',
-                    message: 'Invalid reset token.',
-                },
+                    message: 'Invalid reset token.'
+                }
             ])
         }
 
@@ -1148,7 +1146,7 @@ class Auth {
                 .deleteById(existingPasswordReset.id)
 
             return response.status(500).json({
-                message: 'User does not exist anymore.',
+                message: 'User does not exist anymore.'
             })
         }
 
@@ -1156,7 +1154,7 @@ class Auth {
         await manager(this.userResource()).update(
             user.id,
             {
-                password,
+                password
             },
             true
         )
@@ -1170,7 +1168,7 @@ class Auth {
         // that their password was reset.
 
         response.json({
-            message: `Password reset successful.`,
+            message: `Password reset successful.`
         })
     }
 
@@ -1179,7 +1177,7 @@ class Auth {
             [key: string]: string
         } = {
             email: 'required|email',
-            password: 'required|min:8',
+            password: 'required|min:8'
         }
 
         if (registration) {
@@ -1189,13 +1187,13 @@ class Auth {
         return await validateAll(data, rules, {
             'email.required': 'The email is required.',
             'password.required': 'The password is required.',
-            'name.required': 'The name is required.',
+            'name.required': 'The name is required.'
         })
     }
 
     public generateJwt(payload: DataPayload) {
         return Jwt.sign(payload, this.config.jwt.secretKey, {
-            expiresIn: this.config.jwt.expiresIn,
+            expiresIn: this.config.jwt.expiresIn
         })
     }
 
@@ -1221,7 +1219,7 @@ class Auth {
             scope:
                 config.scope && config.scope.length > 0
                     ? config.scope
-                    : defaultProviderScopes(provider),
+                    : defaultProviderScopes(provider)
         }
 
         return this

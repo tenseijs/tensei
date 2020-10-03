@@ -11,7 +11,7 @@ export interface GraphQlPluginConfig {
 class Graphql {
     private config: GraphQlPluginConfig = {
         graphiql: true,
-        graphqlPath: '/graphql',
+        graphqlPath: '/graphql'
     }
 
     generateSchemaFromResources = (resources: Resource[]) => {
@@ -19,15 +19,15 @@ class Graphql {
             [key: string]: any
         } = {}
 
-        resources.forEach((resource) => {
+        resources.forEach(resource => {
             fields[resource.data.slug] = {}
         })
 
         return new GraphQLSchema({
             query: new GraphQLObjectType({
                 name: 'RootQueryType',
-                fields,
-            }),
+                fields
+            })
         })
     }
 
@@ -40,14 +40,14 @@ class Graphql {
                     this.config.graphqlPath,
                     graphqlHTTP({
                         schema,
-                        graphiql: this.config.graphiql,
+                        graphiql: this.config.graphiql
                     })
                 )
 
                 app.get(
                     this.config.graphqlPath,
                     GraphqlPlayground({
-                        endpoint: this.config.graphqlPath,
+                        endpoint: this.config.graphqlPath
                     })
                 )
 

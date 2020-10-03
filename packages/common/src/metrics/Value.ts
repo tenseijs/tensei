@@ -3,7 +3,7 @@ import {
     ValueMetricCalculatorFunction,
     ValueMetricConfig,
     MetricContract,
-    ResourceContract,
+    ResourceContract
 } from '@tensei/common'
 import * as CSS from 'csstype'
 import { DateTime } from 'luxon'
@@ -17,25 +17,25 @@ export class ValueMetrics extends Card implements MetricContract {
         ranges: [
             {
                 label: '30 Days',
-                value: '30d',
+                value: '30d'
             },
             {
                 label: '60 Days',
-                value: '60d',
+                value: '60d'
             },
             {
                 label: '90 Days',
-                value: '90d',
+                value: '90d'
             },
             {
                 label: 'Today',
-                value: 'today',
-            },
+                value: 'today'
+            }
         ],
         selectStyles: {},
-        calculator: async (request) => {
+        calculator: async request => {
             return this.result(0)
-        },
+        }
     }
 
     ranges(rangeSetter: ValueMetricRangeSetter) {
@@ -63,7 +63,7 @@ export class ValueMetrics extends Card implements MetricContract {
 
         const [count, previousCount] = await Promise.all([
             managerInstance.aggregateCount(currentRange),
-            managerInstance.aggregateCount(previousRange),
+            managerInstance.aggregateCount(previousRange)
         ])
 
         return this.result(count).previous(previousCount)
@@ -87,7 +87,7 @@ export class ValueMetrics extends Card implements MetricContract {
             managerInstance.aggregateMax(
                 previousRange,
                 typeof columns === 'string' ? [columns] : columns
-            ),
+            )
         ])
 
         return this.result(count).previous(previousCount)
@@ -111,7 +111,7 @@ export class ValueMetrics extends Card implements MetricContract {
             managerInstance.aggregateMin(
                 previousRange,
                 typeof columns === 'string' ? [columns] : columns
-            ),
+            )
         ])
 
         return this.result(count).previous(previousCount)
@@ -135,7 +135,7 @@ export class ValueMetrics extends Card implements MetricContract {
             managerInstance.aggregateAvg(
                 previousRange,
                 typeof columns === 'string' ? [columns] : columns
-            ),
+            )
         ])
 
         return this.result(count).previous(previousCount)
@@ -147,11 +147,11 @@ export class ValueMetrics extends Card implements MetricContract {
         const currentRange = this.currentRange(
             (query.range as string) || 'MTD',
             query.timezone as string
-        ).map((dateTime) => dateTime.toString())
+        ).map(dateTime => dateTime.toString())
         const previousRange = this.previousRange(
             (query.range as string) || 'MTD',
             query.timezone as string
-        ).map((dateTime) => dateTime.toString())
+        ).map(dateTime => dateTime.toString())
 
         return [currentRange, previousRange] as [
             [string, string],
@@ -166,54 +166,54 @@ export class ValueMetrics extends Card implements MetricContract {
         if (range === 'MTD') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    month: 1,
+                    month: 1
                 }),
-                DateTime.local().setZone(timezone),
+                DateTime.local().setZone(timezone)
             ]
         }
 
         if (range === 'YTD') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    year: 1,
+                    year: 1
                 }),
-                DateTime.local().setZone(timezone),
+                DateTime.local().setZone(timezone)
             ]
         }
 
         if (range === '30d') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    days: 30,
+                    days: 30
                 }),
-                DateTime.local().setZone(timezone),
+                DateTime.local().setZone(timezone)
             ]
         }
 
         if (range === '60d') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    days: 60,
+                    days: 60
                 }),
-                DateTime.local().setZone(timezone),
+                DateTime.local().setZone(timezone)
             ]
         }
 
         if (range === '90d') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    days: 90,
+                    days: 90
                 }),
-                DateTime.local().setZone(timezone),
+                DateTime.local().setZone(timezone)
             ]
         }
 
         if (range === 'today') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    hours: 24,
+                    hours: 24
                 }),
-                DateTime.local().setZone(timezone),
+                DateTime.local().setZone(timezone)
             ]
         }
 
@@ -221,13 +221,13 @@ export class ValueMetrics extends Card implements MetricContract {
             DateTime.local()
                 .setZone(timezone)
                 .minus({
-                    days: range as number,
+                    days: range as number
                 }),
             DateTime.local()
                 .setZone(timezone)
                 .minus({
-                    days: (range as number) * 2,
-                }),
+                    days: (range as number) * 2
+                })
         ]
     }
 
@@ -238,22 +238,22 @@ export class ValueMetrics extends Card implements MetricContract {
         if (range === 'MTD') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    month: 2,
+                    month: 2
                 }),
                 DateTime.local().setZone(timezone).minus({
-                    month: 1,
-                }),
+                    month: 1
+                })
             ]
         }
 
         if (range === 'YTD') {
             return [
                 DateTime.local().setZone(timezone).minus({
-                    year: 2,
+                    year: 2
                 }),
                 DateTime.local().setZone(timezone).minus({
-                    year: 1,
-                }),
+                    year: 1
+                })
             ]
         }
 
@@ -262,11 +262,11 @@ export class ValueMetrics extends Card implements MetricContract {
                 DateTime.local()
                     .setZone(timezone)
                     .minus({
-                        days: 30 * 2,
+                        days: 30 * 2
                     }),
                 DateTime.local().setZone(timezone).minus({
-                    days: 30,
-                }),
+                    days: 30
+                })
             ]
         }
 
@@ -275,11 +275,11 @@ export class ValueMetrics extends Card implements MetricContract {
                 DateTime.local()
                     .setZone(timezone)
                     .minus({
-                        days: 60 * 2,
+                        days: 60 * 2
                     }),
                 DateTime.local().setZone(timezone).minus({
-                    days: 60,
-                }),
+                    days: 60
+                })
             ]
         }
 
@@ -288,11 +288,11 @@ export class ValueMetrics extends Card implements MetricContract {
                 DateTime.local()
                     .setZone(timezone)
                     .minus({
-                        days: 90 * 2,
+                        days: 90 * 2
                     }),
                 DateTime.local().setZone(timezone).minus({
-                    days: 90,
-                }),
+                    days: 90
+                })
             ]
         }
 
@@ -301,11 +301,11 @@ export class ValueMetrics extends Card implements MetricContract {
                 DateTime.local()
                     .setZone(timezone)
                     .minus({
-                        hours: 24 * 2,
+                        hours: 24 * 2
                     }),
                 DateTime.local().setZone(timezone).minus({
-                    hours: 24,
-                }),
+                    hours: 24
+                })
             ]
         }
 
@@ -313,13 +313,13 @@ export class ValueMetrics extends Card implements MetricContract {
             DateTime.local()
                 .setZone(timezone)
                 .minus({
-                    days: range as number,
+                    days: range as number
                 }),
             DateTime.local()
                 .setZone(timezone)
                 .minus({
-                    days: (range as number) * 2,
-                }),
+                    days: (range as number) * 2
+                })
         ]
     }
 
@@ -333,7 +333,7 @@ export class ValueMetrics extends Card implements MetricContract {
         return {
             ...super.serialize(),
             ranges: this.config.ranges,
-            selectStyles: this.config.selectStyles,
+            selectStyles: this.config.selectStyles
         }
     }
 }

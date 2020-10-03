@@ -4,7 +4,7 @@ import {
     Select,
     Option,
     Button,
-    IconButton,
+    IconButton
 } from '@contentful/forma-36-react-components'
 
 const Filters = ({ fields, operators, filters, addFilter }) => {
@@ -19,7 +19,7 @@ const Filters = ({ fields, operators, filters, addFilter }) => {
                             className="mx-4"
                             data-testid="select-filter-column"
                         >
-                            {fields.map((field) => (
+                            {fields.map(field => (
                                 <Option
                                     data-testid="filter-column-option"
                                     key={field.inputName}
@@ -31,7 +31,7 @@ const Filters = ({ fields, operators, filters, addFilter }) => {
                         </Select>
 
                         <Select width="medium" className="mr-4">
-                            {operators.map((operator) => (
+                            {operators.map(operator => (
                                 <Option key={operator.value}>
                                     {operator.label}
                                 </Option>

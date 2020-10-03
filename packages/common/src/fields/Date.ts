@@ -87,7 +87,7 @@ export class DateField extends Field {
             format: this.dateFormat,
             firstDayOfWeek: this.dayOfWeek,
             defaultToNow: this.shouldDefaultToNow,
-            pickerFormat: this.pickerFormat || this.dateFormat,
+            pickerFormat: this.pickerFormat || this.dateFormat
         }
     }
 }

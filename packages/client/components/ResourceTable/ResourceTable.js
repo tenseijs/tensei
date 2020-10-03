@@ -19,7 +19,7 @@ import {
     TableRow,
     SkeletonRow,
     Checkbox,
-    Paragraph,
+    Paragraph
 } from '@contentful/forma-36-react-components'
 
 import { withAuth } from '~/store/auth'
@@ -39,12 +39,12 @@ class ResourceTable extends React.Component {
             loading: true,
             deleting: null,
             deleteLoading: false,
-            perPage: this.props.resource.perPageOptions[0] || 10,
+            perPage: this.props.resource.perPageOptions[0] || 10
         }
     }
 
     getShowOnIndexColumns = () =>
-        this.props.resource.fields.filter((field) => field.showOnIndex)
+        this.props.resource.fields.filter(field => field.showOnIndex)
 
     getTableColumns = () => this.getShowOnIndexColumns()
 
@@ -53,14 +53,14 @@ class ResourceTable extends React.Component {
 
         this.setState({
             selected: this.state.selected.includes(primaryKey)
-                ? this.state.selected.filter((key) => key !== primaryKey)
-                : [...this.state.selected, primaryKey],
+                ? this.state.selected.filter(key => key !== primaryKey)
+                : [...this.state.selected, primaryKey]
         })
     }
 
-    handleDeleteRow = (row) => {
+    handleDeleteRow = row => {
         this.setState({
-            deleting: row,
+            deleting: row
         })
     }
 
@@ -68,16 +68,16 @@ class ResourceTable extends React.Component {
         this.setState(
             {
                 page: selected + 1,
-                loading: true,
+                loading: true
             },
             () => this.fetch()
         )
 
     getTableData = () => {
-        return this.state.data.map((row) => ({
+        return this.state.data.map(row => ({
             key: row.id,
             cells: [
-                ...this.getTableColumns().map((column) => {
+                ...this.getTableColumns().map(column => {
                     const Component =
                         Tensei.indexFieldComponents[column.component]
 
@@ -89,10 +89,10 @@ class ResourceTable extends React.Component {
                             />
                         ) : (
                             row[column.inputName]
-                        ),
+                        )
                     }
-                }),
-            ],
+                })
+            ]
         }))
     }
 
@@ -115,7 +115,7 @@ class ResourceTable extends React.Component {
         const { perPage, page, search } = this.state
 
         const fields = this.getShowOnIndexColumns().map(
-            (field) => field.inputName
+            field => field.inputName
         )
 
         this.pushParamsToUrl()
@@ -135,12 +135,12 @@ class ResourceTable extends React.Component {
                     page: data.page,
                     total: data.total,
                     perPage: data.perPage,
-                    pageCount: data.pageCount,
+                    pageCount: data.pageCount
                 })
             })
-            .catch((error) => {
+            .catch(error => {
                 this.setState({
-                    loading: false,
+                    loading: false
                 })
 
                 Tensei.library.Notification.error(
@@ -151,7 +151,7 @@ class ResourceTable extends React.Component {
 
     handleModalCancel = () => {
         return this.setState({
-            deleting: null,
+            deleting: null
         })
     }
 
@@ -161,29 +161,29 @@ class ResourceTable extends React.Component {
         )
     }
 
-    handleSelectAllClicked = (event) => {
+    handleSelectAllClicked = event => {
         this.setState({
             selected: event.target.checked
-                ? this.state.data.map((row) => row.id)
-                : [],
+                ? this.state.data.map(row => row.id)
+                : []
         })
     }
 
-    onSearchChange = debounce(500, (search) => {
+    onSearchChange = debounce(500, search => {
         this.setState(
             {
                 loading: true,
-                search,
+                search
             },
             () => this.fetch()
         )
     })
 
-    handleSelectChange = (event) => {
+    handleSelectChange = event => {
         return this.setState(
             {
                 perPage: event.target.value,
-                loading: true,
+                loading: true
             },
             () => this.fetch()
         )
@@ -191,7 +191,7 @@ class ResourceTable extends React.Component {
 
     deleteResource = () => {
         this.setState({
-            deleteLoading: true,
+            deleteLoading: true
         })
 
         const { deleting } = this.state
@@ -206,7 +206,7 @@ class ResourceTable extends React.Component {
                     {
                         deleteLoading: false,
                         deleting: null,
-                        loading: true,
+                        loading: true
                     },
                     () => this.fetch()
                 )
@@ -218,7 +218,7 @@ class ResourceTable extends React.Component {
             .catch(() => {
                 this.setState({
                     deleteLoading: false,
-                    deleting: null,
+                    deleting: null
                 })
 
                 Tensei.library.Notification.error(
@@ -238,7 +238,7 @@ class ResourceTable extends React.Component {
             total,
             deleting,
             deleteLoading,
-            loading,
+            loading
         } = this.state
 
         const { resource } = this.props
@@ -251,8 +251,7 @@ class ResourceTable extends React.Component {
         const showingOnPage = parseInt(showingFrom + perPage)
 
         const showActionsOnTable =
-            resource.actions.filter((action) => action.showOnTableRow).length >
-            0
+            resource.actions.filter(action => action.showOnTableRow).length > 0
 
         const authorizedToCreate = this.props.auth.authorizedToCreate(
             resource.slug
@@ -272,7 +271,7 @@ class ResourceTable extends React.Component {
                     <TextInput
                         width="large"
                         value={search}
-                        onChange={(event) =>
+                        onChange={event =>
                             this.onSearchChange(event.target.value)
                         }
                         placeholder={`Type to search for ${resource.label.toLowerCase()}`}
@@ -309,7 +308,7 @@ class ResourceTable extends React.Component {
                                     labelText={`Select all ${resource.label}`}
                                 />
                             </TableCell>
-                            {tableColumns.map((column) => (
+                            {tableColumns.map(column => (
                                 <TableCell key={column.inputName}>
                                     {column.name}
                                 </TableCell>
@@ -325,12 +324,12 @@ class ResourceTable extends React.Component {
                             <SkeletonRow rowCount={10} />
                         ) : (
                             <>
-                                {this.getTableData().map((row) => (
+                                {this.getTableData().map(row => (
                                     <TableRow
                                         className={cn('cursor-pointer', {
                                             'bg-blue-lightest': selected.includes(
                                                 row.key
-                                            ),
+                                            )
                                         })}
                                         key={row.key}
                                     >
@@ -339,7 +338,7 @@ class ResourceTable extends React.Component {
                                                 checked={selected.includes(
                                                     row.key
                                                 )}
-                                                onChange={(e) =>
+                                                onChange={e =>
                                                     this.handleCheckboxChange(
                                                         e,
                                                         row
@@ -388,7 +387,7 @@ class ResourceTable extends React.Component {
                                                         )}
                                                         className="cursor-pointer"
                                                         style={{
-                                                            marginRight: '10px',
+                                                            marginRight: '10px'
                                                         }}
                                                     >
                                                         <IconButton
@@ -401,7 +400,7 @@ class ResourceTable extends React.Component {
                                                             iconProps={{
                                                                 icon: 'Edit',
                                                                 color:
-                                                                    'negative',
+                                                                    'negative'
                                                             }}
                                                             data-testid="edit-resource-btn"
                                                             label={`Edit resource`}
@@ -418,7 +417,7 @@ class ResourceTable extends React.Component {
                                                         className="cursor-pointer"
                                                         iconProps={{
                                                             icon: 'Delete',
-                                                            color: 'negative',
+                                                            color: 'negative'
                                                         }}
                                                         data-testid="delete-resource-btn"
                                                         label={`Delete resource`}
@@ -439,20 +438,18 @@ class ResourceTable extends React.Component {
                                 name="per-page"
                                 id="per-page"
                                 defaultValue={perPage}
-                                onChange={(event) =>
+                                onChange={event =>
                                     this.handleSelectChange(event)
                                 }
                             >
-                                {resource.perPageOptions.map(
-                                    (perPageOption) => (
-                                        <Option
-                                            key={perPageOption}
-                                            value={perPageOption.toString()}
-                                        >
-                                            {perPageOption} / page
-                                        </Option>
-                                    )
-                                )}
+                                {resource.perPageOptions.map(perPageOption => (
+                                    <Option
+                                        key={perPageOption}
+                                        value={perPageOption.toString()}
+                                    >
+                                        {perPageOption} / page
+                                    </Option>
+                                ))}
                             </Select>
                         </div>
 

@@ -5,7 +5,7 @@ import {
     text,
     integer,
     timestamp,
-    belongsTo,
+    belongsTo
 } from '@tensei/common'
 
 interface CashierConfig {
@@ -20,7 +20,7 @@ class Cashier {
         plans: [],
         cardUpfront: false,
         customerResourceName: '',
-        stripeKey: process.env.STRIPE_KEY || '',
+        stripeKey: process.env.STRIPE_KEY || ''
     }
 
     public customerResourceName(name: string) {
@@ -40,7 +40,7 @@ class Cashier {
                 integer('Quantity').default('0'),
                 timestamp('Trial Ends At'),
                 timestamp('Ends At'),
-                belongsTo(this.config.customerResourceName),
+                belongsTo(this.config.customerResourceName)
             ])
     }
 
@@ -75,7 +75,7 @@ class Cashier {
             })
             .setup(({ resources }) => {
                 const customerResource = resources.find(
-                    (resource) =>
+                    resource =>
                         resource.data.name === this.config.customerResourceName
                 )
 

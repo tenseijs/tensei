@@ -22,7 +22,7 @@ const DashBoardSetup = () => {
             initialEntries={[
                 '/resources/posts',
                 '/resources/posts/new',
-                'auth/login',
+                'auth/login'
             ]}
         >
             <Auth.Provider
@@ -30,12 +30,12 @@ const DashBoardSetup = () => {
                     user,
                     authorizedToCreate: jest.fn(() => true),
                     authorizedToUpdate: jest.fn(() => true),
-                    authorizedToDelete: jest.fn(() => true),
+                    authorizedToDelete: jest.fn(() => true)
                 }}
             >
                 <Resources.Provider
                     value={{
-                        resources: resources,
+                        resources: resources
                     }}
                 >
                     <Dashboard {...props} location={history.location} />
@@ -48,7 +48,7 @@ const DashBoardSetup = () => {
 describe('Test the dashboard page', () => {
     beforeEach(() => {
         window.Tensei = {
-            getPath: jest.fn(() => 'string'),
+            getPath: jest.fn(() => 'string')
         }
     })
 
@@ -63,7 +63,7 @@ describe('Test the dashboard page', () => {
     test('resources should be listed on the sidebar', () => {
         render(<DashBoardSetup />)
 
-        resources.map((r) => {
+        resources.map(r => {
             expect(screen.getByText(r.label)).toBeInTheDocument()
         })
     })
@@ -71,13 +71,13 @@ describe('Test the dashboard page', () => {
     test('resources can be toggled to hide / show', () => {
         render(<DashBoardSetup />)
 
-        resources.map((r) => {
+        resources.map(r => {
             expect(screen.getByText(r.label)).toBeInTheDocument()
         })
 
         userEvent.click(screen.getByText('Resources'))
 
-        resources.map((r) => {
+        resources.map(r => {
             expect(screen.queryByText(r.label)).not.toBeInTheDocument()
         })
     })
@@ -103,7 +103,7 @@ describe('Test the dashboard page', () => {
         window.Tensei = {
             getPath: jest.fn(() => 'auth/login'),
             request: { post: jest.fn(() => Promise.resolve(true)) },
-            location: { assign: jest.fn() },
+            location: { assign: jest.fn() }
         }
 
         render(<DashBoardSetup />)

@@ -6,7 +6,7 @@ import {
     ActionResponse,
     ManagerContract,
     ResourceContract,
-    DatabaseRepositoryInterface,
+    DatabaseRepositoryInterface
 } from '@tensei/common'
 import { ResourceHelpers } from '../helpers'
 
@@ -65,16 +65,16 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             : resource.authorizeCallbacks[authorizeFn]
 
         const authorizedResults = await Promise.all(
-            authorizeFunctions.map((fn) => fn(this.request!, model))
+            authorizeFunctions.map(fn => fn(this.request!, model))
         )
 
         if (
-            authorizedResults.filter((authorized) => authorized === true)
+            authorizedResults.filter(authorized => authorized === true)
                 .length !== authorizedResults.length
         ) {
             throw {
                 status: 401,
-                message: 'Unauthorized.',
+                message: 'Unauthorized.'
             }
         }
     }
@@ -86,12 +86,12 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
         const {
             nonRelationshipFieldsPayload,
-            relationshipFieldsPayload,
+            relationshipFieldsPayload
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
             await resource.hooks.beforeCreate(
                 {
                     ...validatedPayload.parsedPayload,
-                    ...validatedPayload.relationshipFieldsPayload,
+                    ...validatedPayload.relationshipFieldsPayload
                 },
                 this.request
             )
@@ -163,33 +163,33 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         const resource = this.getCurrentResource()
 
         const {
-            relationshipFieldsPayload,
+            relationshipFieldsPayload
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
             this.getResourceFieldsFromPayload(payload)
         )
 
         const relationshipFields = resource
             .serialize()
-            .fields.filter((field) => field.isRelationshipField)
+            .fields.filter(field => field.isRelationshipField)
 
         for (let index = 0; index < relationshipFields.length; index++) {
             const field = relationshipFields[index]
             const relatedResource = this.resources.find(
-                (relatedResource) => relatedResource.data.name === field.name
+                relatedResource => relatedResource.data.name === field.name
             )
 
             if (!relatedResource) {
                 throw [
                     {
-                        message: `The related resource ${field.name} was not found.`,
-                    },
+                        message: `The related resource ${field.name} was not found.`
+                    }
                 ]
             }
 
             if (field.component === 'HasManyField') {
                 // first we'll set all related belongs to values to null on the related resource
                 const relatedBelongsToField = relatedResource.data.fields.find(
-                    (field) =>
+                    field =>
                         field.component === 'BelongsToField' &&
                         field.name === resource.data.name
                 )
@@ -197,8 +197,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 if (!relatedBelongsToField) {
                     throw [
                         {
-                            message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`,
-                        },
+                            message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`
+                        }
                     ]
                 }
 
@@ -212,7 +212,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 await this.database().updateManyByIds(
                     relationshipFieldsPayload[field.inputName],
                     {
-                        [relatedBelongsToField.databaseField]: modelId,
+                        [relatedBelongsToField.databaseField]: modelId
                     }
                 )
             }
@@ -227,20 +227,20 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             search,
             filter,
             with: withRelationships,
-            no_pagination: noPagination = 'false',
+            no_pagination: noPagination = 'false'
         }: Request['query'],
         resource = this.getCurrentResource()
     ) {
         let filters: Filter[] = []
 
         if (typeof filter === 'object') {
-            Object.keys(filter || {}).forEach((filterKey) => {
+            Object.keys(filter || {}).forEach(filterKey => {
                 const [field, operator] = filterKey.split(':')
 
                 filters.push({
                     field,
                     operator: (operator as any) || 'equals',
-                    value: ((filter || {}) as any)[filterKey],
+                    value: ((filter || {}) as any)[filterKey]
                 })
             })
         }
@@ -257,18 +257,18 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             'gte',
             'lt',
             'lte',
-            'matches',
+            'matches'
         ]
 
         const validFields = resource
             .serialize()
-            .fields.filter((field) => !field.isRelationshipField)
-            .map((field) => field.databaseField)
+            .fields.filter(field => !field.isRelationshipField)
+            .map(field => field.databaseField)
 
         const relationshipFields = resource
             .serialize()
-            .fields.filter((field) => field.isRelationshipField)
-            .map((field) => field.inputName)
+            .fields.filter(field => field.isRelationshipField)
+            .map(field => field.inputName)
 
         return validateAll(
             {
@@ -278,7 +278,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 filters,
                 noPagination,
                 fields: (fields as string)?.split(','),
-                withRelationships: (withRelationships as string)?.split(','),
+                withRelationships: (withRelationships as string)?.split(',')
             },
             {
                 perPage: 'number',
@@ -294,7 +294,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     'required|string|in:' + validFields.join(','),
                 'filters.*.value': 'required|string',
                 'filters.*.operator':
-                    'required|string|in:' + supportedOperators.join(','),
+                    'required|string|in:' + supportedOperators.join(',')
             }
         )
     }
@@ -309,7 +309,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             search,
             filters,
             noPagination,
-            withRelationships,
+            withRelationships
         } = await this.validateRequestQuery(query || this.request?.query || {})
 
         return this.database().findAll({
@@ -319,7 +319,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             search,
             filters,
             noPagination,
-            withRelationships,
+            withRelationships
         })
     }
 
@@ -331,7 +331,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         const relatedResource = this.findResource(relatedResourceSlugOrResource)
 
         const relationField = resource.data.fields.find(
-            (field) => field.name === relatedResource.data.name
+            field => field.name === relatedResource.data.name
         )
 
         const {
@@ -347,7 +347,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         if (!relationField) {
             throw {
                 status: 404,
-                message: `Related field not found between ${resource.data.name} and ${relatedResource.data.name}.`,
+                message: `Related field not found between ${resource.data.name} and ${relatedResource.data.name}.`
             }
         }
 
@@ -359,20 +359,20 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     ...rest,
                     perPage,
                     page,
-                    filters,
+                    filters
                 }
             )
         }
 
         if (relationField.component === 'HasManyField') {
             const belongsToField = relatedResource.data.fields.find(
-                (field) => field.name === resource.data.name
+                field => field.name === resource.data.name
             )
 
             if (!belongsToField) {
                 throw {
                     status: 404,
-                    message: `Related 'belongs to' field not found between ${resource.data.name} and ${relatedResource.data.name}.`,
+                    message: `Related 'belongs to' field not found between ${resource.data.name} and ${relatedResource.data.name}.`
                 }
             }
 
@@ -385,9 +385,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     {
                         field: belongsToField.databaseField,
                         value: resourceId,
-                        operator: 'equals',
-                    },
-                ],
+                        operator: 'equals'
+                    }
+                ]
             })
         }
 
@@ -408,7 +408,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         if (!model) {
             throw {
                 message: `Could not find a resource with id ${id}`,
-                status: 404,
+                status: 404
             }
         }
 
@@ -419,7 +419,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         creationRules = true,
         resource = this.getCurrentResource()
     ) => {
-        const fields = resource.data.fields.filter((field) =>
+        const fields = resource.data.fields.filter(field =>
             creationRules
                 ? field.showHideField.showOnCreation
                 : field.showHideField.showOnUpdate
@@ -429,7 +429,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             [key: string]: string
         } = {}
 
-        fields.forEach((field) => {
+        fields.forEach(field => {
             const serializedField = field.serialize()
 
             const fieldValidationRules = Array.from(
@@ -437,7 +437,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     ...serializedField.rules,
                     ...serializedField[
                         creationRules ? 'creationRules' : 'updateRules'
-                    ],
+                    ]
                 ])
             ).join('|')
 
@@ -455,7 +455,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ) => {
         let validPayload: DataPayload = {}
 
-        resource.data.fields.forEach((field) => {
+        resource.data.fields.forEach(field => {
             const serializedField = field.serialize()
 
             if (Object.keys(payload).includes(serializedField.inputName)) {
@@ -474,7 +474,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         const relationshipFieldsPayload: DataPayload = {}
         const nonRelationshipFieldsPayload: DataPayload = {}
 
-        resource.data.fields.forEach((field) => {
+        resource.data.fields.forEach(field => {
             const serializedField = field.serialize()
 
             if (Object.keys(payload).includes(serializedField.inputName)) {
@@ -490,7 +490,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
         return {
             relationshipFieldsPayload,
-            nonRelationshipFieldsPayload,
+            nonRelationshipFieldsPayload
         }
     }
 
@@ -502,7 +502,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ): Promise<DataPayload> => {
         const {
             relationshipFieldsPayload,
-            nonRelationshipFieldsPayload,
+            nonRelationshipFieldsPayload
         } = this.breakFieldsIntoRelationshipsAndNonRelationships(
             this.getResourceFieldsFromPayload(payload, resource),
             resource
@@ -529,7 +529,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         // then we need to validate all unique fields.
         return {
             parsedPayload,
-            relationshipFieldsPayload,
+            relationshipFieldsPayload
         }
     }
 
@@ -542,7 +542,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         const uniqueFields = resource
             .serialize()
             .fields.filter(
-                (field) => field.isUnique && !field.isRelationshipField
+                field => field.isUnique && !field.isRelationshipField
             )
 
         for (let index = 0; index < uniqueFields.length; index++) {
@@ -575,8 +575,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                         message: `A ${resource.data.name.toLowerCase()} already exists with ${
                             field.inputName
                         } ${payload[field.inputName]}.`,
-                        field: field.inputName,
-                    },
+                        field: field.inputName
+                    }
                 ]
             }
         }
@@ -587,21 +587,21 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         resource = this.getCurrentResource()
     ) => {
         const fields = resource.data.fields
-            .map((field) => field.serialize())
-            .filter((field) => field.isRelationshipField)
+            .map(field => field.serialize())
+            .filter(field => field.isRelationshipField)
 
         for (let index = 0; index < fields.length; index++) {
             const field = fields[index]
             const relatedResource = this.resources.find(
-                (relatedResource) => relatedResource.data.name === field.name
+                relatedResource => relatedResource.data.name === field.name
             )
 
             if (!relatedResource) {
                 throw [
                     {
                         message: `The related resource ${field.name} could not be found.`,
-                        field: field.inputName,
-                    },
+                        field: field.inputName
+                    }
                 ]
             }
 
@@ -619,8 +619,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                     throw [
                         {
                             message: `Invalid values were provided for the related resource. Make sure all values provided exist in the database table ${relatedResource.data.table}`,
-                            field: field.inputName,
-                        },
+                            field: field.inputName
+                        }
                     ]
                 }
             }
@@ -647,13 +647,13 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         const resource = this.getCurrentResource()
 
         const action = resource.data.actions.find(
-            (action) => action.data.slug === actionSlug
+            action => action.data.slug === actionSlug
         )
 
         if (!action) {
             throw {
                 message: `Action ${actionSlug} is not defined on ${resource.data.slug} resource.`,
-                status: 404,
+                status: 404
             }
         }
 
@@ -677,23 +677,23 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             html: (html, status = 200) => ({
                 html,
                 type: 'html',
-                status,
+                status
             }),
             errors: (errors, status = 200) => ({
                 type: 'validation-errors',
                 errors,
-                status,
+                status
             }),
             notification: (notification, status = 200) => ({
                 ...notification,
                 type: 'notification',
-                status,
+                status
             }),
             push: (route, status = 200) => ({
                 type: 'push',
                 status,
-                route,
-            }),
+                route
+            })
         })
     }
 

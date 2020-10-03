@@ -3,20 +3,20 @@ import { Link } from 'react-router-dom'
 import {
     TextLink,
     SkeletonText,
-    SkeletonContainer,
+    SkeletonContainer
 } from '@contentful/forma-36-react-components'
 import { withResources } from '~/store/resources'
 
 class BelongsTo extends React.Component {
     state = {
         loading: !!this.props.value,
-        value: '',
+        value: ''
     }
 
     componentDidMount() {
         this.setState(
             {
-                relatedResource: this.findRelatedResource(),
+                relatedResource: this.findRelatedResource()
             },
             () => this.fetchResource()
         )
@@ -24,7 +24,7 @@ class BelongsTo extends React.Component {
 
     findRelatedResource = () => {
         return this.props.resources.find(
-            (relatedResource) => relatedResource.name === this.props.field.name
+            relatedResource => relatedResource.name === this.props.field.name
         )
     }
 
@@ -44,12 +44,12 @@ class BelongsTo extends React.Component {
             .then(({ data }) => {
                 this.setState({
                     value: data[relatedResource.displayField],
-                    loading: false,
+                    loading: false
                 })
             })
-            .catch((error) => {
+            .catch(error => {
                 this.setState({
-                    loading: false,
+                    loading: false
                 })
 
                 Tensei.library.Notification.success(

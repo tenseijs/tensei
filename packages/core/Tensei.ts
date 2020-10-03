@@ -5,6 +5,11 @@ import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
 import ClientController from './controllers/ClientController'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
+import {
+    StorageManager,
+    Storage,
+    StorageManagerConfig
+} from '@slynova/flydrive'
 import AuthController from './controllers/auth/AuthController'
 import ForgotPasswordController from './controllers/auth/ForgotPasswordController'
 import Express, { Request, Application, NextFunction } from 'express'
@@ -33,20 +38,34 @@ import FindResourceController from './controllers/resources/FindResourceControll
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
+import { StorageConstructor } from '@tensei/common'
+import { SupportedStorageDrivers } from '@tensei/common'
 
 export class Tensei {
     public app: Application = Express()
     public extensions: {
         [key: string]: any
     } = {}
-    private pluginsBooted: boolean = false
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
-    private mailer: Mail = mail().connection('ethereal')
+    public mailer: Mail = mail().connection('ethereal')
+    private storageConfig: StorageManagerConfig = {
+        default: 'local',
+        disks: {
+            local: {
+                driver: 'local',
+                config: {
+                    root: `${process.cwd()}/storage`,
+                    publicPath: `public`
+                }
+            }
+        }
+    }
+    private storage: StorageManager = new StorageManager(this.storageConfig)
 
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
-    private config: Config = {
+    public config: Config = {
         databaseClient: null,
         serverUrl: '',
         clientUrl: '',
@@ -311,6 +330,13 @@ export class Tensei {
 
     public registerMiddleware() {
         this.app.use(BodyParser.json())
+
+        const rootStorage = (this.storageConfig.disks?.local?.config as any).root
+        const publicPath = (this.storageConfig.disks?.local?.config as any).publicPath
+
+        if (rootStorage && publicPath) {
+            this.app.use(Express.static(`${rootStorage}/${publicPath}`))
+        }
 
         this.app.use(
             (
@@ -762,9 +788,49 @@ export class Tensei {
 
         return this
     }
+
+    public storageDriver<
+        StorageDriverImplementation extends Storage,
+        DriverConfig extends unknown
+    >(
+        driverName: SupportedStorageDrivers,
+        driverConfig: DriverConfig,
+        storageImplementation: StorageConstructor<StorageDriverImplementation>
+    ) {
+        this.storageConfig = {
+            ...this.storageConfig,
+            disks: {
+                ...this.storageConfig.disks,
+                [driverName]: {
+                    driver: driverName,
+                    config: driverConfig
+                }
+            }
+        }
+
+        this.storage = new StorageManager(this.storageConfig)
+
+        this.storage.registerDriver<StorageDriverImplementation>(
+            driverName,
+            storageImplementation
+        )
+
+        return this
+    }
+
+    public defaultStorageDriver(driverName: string) {
+        this.storageConfig = {
+            ...this.storageConfig,
+            default: driverName
+        }
+
+        this.storage = new StorageManager(this.storageConfig)
+
+        return this
+    }
 }
 
-export const tensei = (config = {}) => {
+export const tensei = () => {
     return new Tensei()
 }
 

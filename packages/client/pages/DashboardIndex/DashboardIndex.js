@@ -8,7 +8,7 @@ class DashboardIndex extends React.Component {
 
     findDashboard() {
         return this.props.dashboards.find(
-            (dashboard) => dashboard.slug === this.props.match.params.dashboard
+            dashboard => dashboard.slug === this.props.match.params.dashboard
         )
     }
 
@@ -16,7 +16,7 @@ class DashboardIndex extends React.Component {
         const dashboard = this.findDashboard()
 
         return {
-            dashboard,
+            dashboard
         }
     }
 
@@ -33,7 +33,7 @@ class DashboardIndex extends React.Component {
         this.setState(this.defaultState())
     }
 
-    renderCard = (card) => {
+    renderCard = card => {
         const Card = Tensei.cardComponents[card.component]
 
         if (!Card) {
@@ -57,7 +57,7 @@ class DashboardIndex extends React.Component {
                 </div>
 
                 <div className="flex flex-wrap mt-3">
-                    {dashboard.cards.map((card) => (
+                    {dashboard.cards.map(card => (
                         <div
                             key={card.slug}
                             style={{ height: '11.375rem' }}

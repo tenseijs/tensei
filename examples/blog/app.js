@@ -4,6 +4,7 @@ const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
 const { cashier, plan } = require('@tensei/cashier')
 const { tensei, dashboard, valueMetric } = require('@tensei/core')
+const { AmazonWebServicesS3Storage } = require('@slynova/flydrive-s3')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -16,6 +17,17 @@ module.exports = tensei()
     .database('mysql')
     .serverUrl('http://localhost:5000')
     .clientUrl('https://google.com')
+    .defaultStorageDriver('local')
+    .storageDriver(
+        's3',
+        {
+            key: 'AKIAYCA6IR7CS2WL6P7B',
+            secret: '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',
+            region: 'us-east-1',
+            bucket: 'tensei',
+        },
+        AmazonWebServicesS3Storage
+    )
     .dashboards([
         dashboard('Main').cards([
             valueMetric('New Tags')
@@ -98,10 +110,6 @@ module.exports = tensei()
             .plugin(),
         graphql().plugin(),
     ])
-    // .databaseConfig('mongodb://localhost/tensei', {
-    //     useNewUrlParser: true,
-    //     useUnifiedTopology: true,
-    // })
     .databaseConfig({
         client: 'mysql',
         connection: {
@@ -110,15 +118,4 @@ module.exports = tensei()
             pass: '',
             database: 'flmg',
         },
-        // client: 'sqlite3',
-        // connection: './blog.sqlite',
-        // useNullAsDefault: true,
-        // debug: false,
-        // client: 'pg',
-        // connection: {
-        //     host: '127.0.0.1',
-        //     user: 'root',
-        //     pass: '',
-        //     database: 'tensei',
-        // },
     })

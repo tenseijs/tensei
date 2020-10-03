@@ -19,19 +19,19 @@ function Icon({
     onPointerEnter,
     onPointerLeave,
     onFocus,
-    onBlur,
+    onBlur
 }) {
     const prefix = (payment && 'payment') || (flag && 'flag') || prefixFromProps
     const classes = cn(
         {
             [prefix]: true,
-            [`${prefix}-${name}`]: true,
+            [`${prefix}-${name}`]: true
         },
         className
     )
     const extraProps = isAriaHidden
         ? {
-              'aria-hidden': 'true',
+              'aria-hidden': 'true'
           }
         : null
 
@@ -42,7 +42,7 @@ function Icon({
         onPointerEnter,
         onPointerLeave,
         onFocus,
-        onBlur,
+        onBlur
     }
 
     return !link ? (

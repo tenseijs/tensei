@@ -5,7 +5,7 @@ import {
     Heading,
     Button,
     Card,
-    Paragraph,
+    Paragraph
 } from '@contentful/forma-36-react-components'
 
 import { withAuth } from '~/store/auth'
@@ -19,18 +19,18 @@ class ShowResource extends React.Component {
         return {
             model: null,
             loading: true,
-            resource: this.findResource(),
+            resource: this.findResource()
         }
     }
 
     findResource() {
         return this.props.resources.find(
-            (resource) => resource.slug === this.props.match.params.resource
+            resource => resource.slug === this.props.match.params.resource
         )
     }
 
     getShowFields() {
-        return this.getNonRelationalFields().map((field) => field.inputName)
+        return this.getNonRelationalFields().map(field => field.inputName)
     }
 
     componentDidMount() {
@@ -42,7 +42,7 @@ class ShowResource extends React.Component {
             {
                 model: null,
                 loading: true,
-                resource: this.findResource(),
+                resource: this.findResource()
             },
             () => this.fetchResource()
         )
@@ -70,13 +70,13 @@ class ShowResource extends React.Component {
             .then(({ data }) => {
                 this.setState({
                     model: data,
-                    loading: false,
+                    loading: false
                 })
             })
 
             .catch(() => {
                 this.setState({
-                    loading: false,
+                    loading: false
                 })
 
                 Tensei.library.Notification.error(
@@ -116,20 +116,20 @@ class ShowResource extends React.Component {
 
     getNonRelationalFields() {
         return this.state.resource.fields.filter(
-            (field) => !field.isRelationshipField && field.showOnDetail
+            field => !field.isRelationshipField && field.showOnDetail
         )
     }
 
     getRelationalFields() {
         return this.state.resource.fields.filter(
-            (field) => field.isRelationshipField
+            field => field.isRelationshipField
         )
     }
 
     getBelongsToManyFields() {}
 
     renderRelationalFields() {
-        return this.getRelationalFields().map((field) => {
+        return this.getRelationalFields().map(field => {
             const Component = Tensei.detailFieldComponents[field.component]
 
             if (!Component) {
@@ -152,8 +152,8 @@ class ShowResource extends React.Component {
         const { resource } = this.state
         const {
             match: {
-                params: { resourceId },
-            },
+                params: { resourceId }
+            }
         } = this.props
 
         const fields = this.getNonRelationalFields()
@@ -207,7 +207,7 @@ class ShowResource extends React.Component {
                                         index !== 0 &&
                                         index !== fields.length - 1,
                                     'pb-3': index === 0,
-                                    'pt-3': index === fields.length - 1,
+                                    'pt-3': index === fields.length - 1
                                 }
                             )}
                         >

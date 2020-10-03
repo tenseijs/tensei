@@ -24,7 +24,7 @@ const setupPage = (
             <Auth.Provider value={withAuth ? [user, () => jest.fn()] : []}>
                 <Resources.Provider
                     value={{
-                        resources: resources,
+                        resources: resources
                     }}
                 >
                     <Component {...props} location={history.location} />

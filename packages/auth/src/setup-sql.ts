@@ -9,13 +9,13 @@ export default async (
 ) => {
     const { resources } = config
     const UserResource = resources.find(
-        (resource) => resource.data.name === authConfig.nameResource
+        resource => resource.data.name === authConfig.nameResource
     )
     const RoleResource = resources.find(
-        (resource) => resource.data.name === authConfig.roleResource
+        resource => resource.data.name === authConfig.roleResource
     )
     const PermissionResource = resources.find(
-        (resource) => resource.data.name === authConfig.permissionResource
+        resource => resource.data.name === authConfig.permissionResource
     )
 
     if (!UserResource || !RoleResource || !PermissionResource) {
@@ -33,18 +33,16 @@ export default async (
 
     const permissions: Permission[] = []
 
-    resources.forEach((resource) => {
-        ;['create', 'fetch', 'show', 'update', 'delete'].forEach(
-            (operation) => {
-                permissions.push(`${operation}:${resource.data.slug}`)
-            }
-        )
+    resources.forEach(resource => {
+        ;['create', 'fetch', 'show', 'update', 'delete'].forEach(operation => {
+            permissions.push(`${operation}:${resource.data.slug}`)
+        })
 
-        resource.data.actions.forEach((action) => {
+        resource.data.actions.forEach(action => {
             permissions.push(`run:${resource.data.slug}:${action.data.slug}`)
         })
 
-        resource.data.permissions.forEach((permission) => {
+        resource.data.permissions.forEach(permission => {
             permissions.push(permission)
         })
     })
@@ -55,19 +53,19 @@ export default async (
     ).map((permission: any) => permission.slug)
 
     const newPermissionsToCreate = permissions.filter(
-        (permission) =>
+        permission =>
             !existingPermissions.includes(
                 typeof permission === 'string' ? permission : permission.slug
             )
     )
 
     const insertPermissions = Array.from(new Set(newPermissionsToCreate)).map(
-        (permission) => ({
+        permission => ({
             name:
                 typeof permission === 'string'
                     ? sentenceCase(permission.split(':').join(' '))
                     : permission.name,
-            slug: permission,
+            slug: permission
         })
     )
 
@@ -80,11 +78,11 @@ export default async (
     // Public will have no permissions attached by default
     let [authenticatedRole, publicRole] = await Promise.all([
         RoleModel.query().where({
-            slug: 'authenticated',
+            slug: 'authenticated'
         }),
         RoleModel.query().where({
-            slug: 'public',
-        }),
+            slug: 'public'
+        })
     ])
 
     const rolesToCreate = []
@@ -93,7 +91,7 @@ export default async (
         rolesToCreate.push(
             RoleModel.query().insert({
                 name: 'Authenticated',
-                slug: 'authenticated',
+                slug: 'authenticated'
             })
         )
     }
@@ -101,7 +99,7 @@ export default async (
     if (!publicRole || !publicRole[0]) {
         RoleModel.query().insert({
             name: 'Public',
-            slug: 'public',
+            slug: 'public'
         })
     }
 

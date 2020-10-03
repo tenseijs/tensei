@@ -7,7 +7,7 @@ export class BooleanField extends Field {
 
     private config = {
         trueLabel: 'Yes',
-        falseLabel: 'No',
+        falseLabel: 'No'
     }
 
     /**
@@ -39,7 +39,7 @@ export class BooleanField extends Field {
         return {
             ...super.serialize(),
             trueLabel: this.config.trueLabel,
-            falseLabel: this.config.falseLabel,
+            falseLabel: this.config.falseLabel
         }
     }
 }

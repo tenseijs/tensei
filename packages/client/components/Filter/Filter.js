@@ -4,13 +4,13 @@ import { Text } from 'office-ui-fabric-react/lib/Text'
 import {
     PrimaryButton,
     DefaultButton,
-    CommandButton,
+    CommandButton
 } from 'office-ui-fabric-react/lib/Button'
 import {
     Dropdown,
     DropdownMenuItemType,
     IDropdownStyles,
-    IDropdownOption,
+    IDropdownOption
 } from 'office-ui-fabric-react/lib/Dropdown'
 import { CircleAdditionIcon, RemoveIcon } from '@fluentui/react-icons'
 
@@ -18,9 +18,9 @@ class Filter extends React.Component {
     state = {
         filters: [
             {
-                key: 1,
-            },
-        ],
+                key: 1
+            }
+        ]
     }
 
     renderActionButton = () => {
@@ -38,9 +38,9 @@ class Filter extends React.Component {
             filters: [
                 ...this.state.filters,
                 {
-                    key: 2,
-                },
-            ],
+                    key: 2
+                }
+            ]
         })
     }
 
@@ -85,7 +85,7 @@ class Filter extends React.Component {
                             <CommandButton
                                 className="mt-2 md:mt-0"
                                 iconProps={{
-                                    iconName: 'Remove',
+                                    iconName: 'Remove'
                                 }}
                             >
                                 Remove filter
@@ -97,7 +97,7 @@ class Filter extends React.Component {
                         onClick={this.addNewFilter}
                         className="mt-6 md:mt-3 md:w-1/12 w-full"
                         iconProps={{
-                            iconName: 'Add',
+                            iconName: 'Add'
                         }}
                     >
                         New filter

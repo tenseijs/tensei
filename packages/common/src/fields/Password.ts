@@ -10,7 +10,7 @@ export class Password extends Text {
         super(name, databaseField)
 
         this.htmlAttributes({
-            type: 'password',
+            type: 'password'
         })
     }
 }

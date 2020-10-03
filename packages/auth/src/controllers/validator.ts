@@ -7,7 +7,7 @@ export default async (data: AuthData, registration = false) => {
         [key: string]: string
     } = {
         email: 'required|email',
-        password: 'required|min:8',
+        password: 'required|min:8'
     }
 
     if (registration) {
@@ -18,7 +18,7 @@ export default async (data: AuthData, registration = false) => {
         await validateAll(data, rules, {
             'email.required': 'The email is required.',
             'password.required': 'The password is required.',
-            'name.required': 'The name is required.',
+            'name.required': 'The name is required.'
         })
 
         return [true, []]

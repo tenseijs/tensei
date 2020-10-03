@@ -7,20 +7,20 @@ class ResetPasswordPage extends React.Component {
         password: '',
         errors: {},
         isLoading: false,
-        token: '',
+        token: ''
     }
 
-    submit = (submitEvent) => {
+    submit = submitEvent => {
         submitEvent.preventDefault()
 
         this.setState({
-            isLoading: true,
+            isLoading: true
         })
 
         Tensei.request
             .post('reset-password', {
                 password: this.state.password,
-                token: this.props.match.params.token,
+                token: this.props.match.params.token
             })
             .then(() => {
                 this.setState({ isLoading: false })
@@ -31,12 +31,12 @@ class ResetPasswordPage extends React.Component {
 
                 this.props.history.push(Tensei.getPath('auth/login'))
             })
-            .catch((error) => {
+            .catch(error => {
                 this.setState({ isLoading: false })
                 if (error?.response?.status === 422) {
                     this.setState({
                         isLoading: false,
-                        errors: this.flattenErrors(error.response.data.errors),
+                        errors: this.flattenErrors(error.response.data.errors)
                     })
                 }
                 if (error?.response?.status === 401) {
@@ -48,10 +48,10 @@ class ResetPasswordPage extends React.Component {
             })
     }
 
-    flattenErrors = (errors) => {
+    flattenErrors = errors => {
         const flatErrors = {}
 
-        errors.forEach((error) => {
+        errors.forEach(error => {
             flatErrors[error.field] = error.message
         })
 
@@ -76,14 +76,14 @@ class ResetPasswordPage extends React.Component {
                                 name="password"
                                 id="password"
                                 textInputProps={{
-                                    type: 'password',
+                                    type: 'password'
                                 }}
                                 value={this.state.password}
                                 placeholder=""
                                 validationMessage={this.state.errors.password}
-                                onChange={(event) =>
+                                onChange={event =>
                                     this.setState({
-                                        password: event.target.value,
+                                        password: event.target.value
                                     })
                                 }
                             />

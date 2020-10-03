@@ -6,7 +6,7 @@ import {
     ActionContract,
     SerializedField,
     DataPayload,
-    ValidationError,
+    ValidationError
 } from '@tensei/common'
 
 export interface ActionFlashMessage {
@@ -99,8 +99,8 @@ export class Action implements ActionContract {
             message: 'Action has been run.',
             variant: 'positive',
             type: 'notification',
-            status: 200,
-        }),
+            status: 200
+        })
     }
 
     public showHideField = {
@@ -124,7 +124,7 @@ export class Action implements ActionContract {
          *
          * If this is true, the field will show up on the detail page
          */
-        showOnDetail: true,
+        showOnDetail: true
     }
 
     constructor(public name: string) {
@@ -162,7 +162,7 @@ export class Action implements ActionContract {
     public showOnIndex() {
         this.showHideField = {
             ...this.showHideField,
-            showOnIndex: true,
+            showOnIndex: true
         }
 
         return this
@@ -175,7 +175,7 @@ export class Action implements ActionContract {
     public showOnDetail() {
         this.showHideField = {
             ...this.showHideField,
-            showOnDetail: true,
+            showOnDetail: true
         }
 
         return this
@@ -188,7 +188,7 @@ export class Action implements ActionContract {
     public showOnTableRow() {
         this.showHideField = {
             ...this.showHideField,
-            showOnTableRow: true,
+            showOnTableRow: true
         }
 
         return this
@@ -201,7 +201,7 @@ export class Action implements ActionContract {
     public hideOnIndex() {
         this.showHideField = {
             ...this.showHideField,
-            showOnIndex: false,
+            showOnIndex: false
         }
 
         return this
@@ -214,7 +214,7 @@ export class Action implements ActionContract {
     public hideOnDetail() {
         this.showHideField = {
             ...this.showHideField,
-            showOnDetail: false,
+            showOnDetail: false
         }
 
         return this
@@ -228,7 +228,7 @@ export class Action implements ActionContract {
         this.showHideField = {
             ...this.showHideField,
             showOnIndex: true,
-            showOnDetail: false,
+            showOnDetail: false
         }
 
         return this
@@ -243,7 +243,7 @@ export class Action implements ActionContract {
             ...this.showHideField,
             showOnIndex: false,
             showOnDetail: true,
-            showOnTableRow: false,
+            showOnTableRow: false
         }
 
         return this
@@ -258,7 +258,7 @@ export class Action implements ActionContract {
             ...this.showHideField,
             showOnIndex: false,
             showOnDetail: false,
-            showOnTableRow: true,
+            showOnTableRow: true
         }
 
         return this
@@ -267,7 +267,7 @@ export class Action implements ActionContract {
     private setValue(key: keyof ActionDataWithFields, value: any) {
         this.data = {
             ...this.data,
-            [key]: value,
+            [key]: value
         }
     }
 
@@ -293,8 +293,8 @@ export class Action implements ActionContract {
         return {
             ...this.data,
             name: this.name,
-            fields: this.data.fields.map((field) => field.serialize()),
-            ...this.showHideField,
+            fields: this.data.fields.map(field => field.serialize()),
+            ...this.showHideField
         }
     }
 }

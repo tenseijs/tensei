@@ -6,23 +6,23 @@ class ForgotPasswordPage extends React.Component {
     state = {
         email: '',
         errors: {},
-        isLoading: false,
+        isLoading: false
     }
 
-    submit = (submitEvent) => {
+    submit = submitEvent => {
         submitEvent.preventDefault()
 
         this.setState({
-            isLoading: true,
+            isLoading: true
         })
 
         Tensei.request
             .post('forgot-password', {
-                email: this.state.email,
+                email: this.state.email
             })
             .then(() => {
                 this.setState({
-                    isLoading: false,
+                    isLoading: false
                 })
 
                 Tensei.library.Notification.success(
@@ -30,11 +30,11 @@ class ForgotPasswordPage extends React.Component {
                 )
                 this.props.history.push(Tensei.getPath('auth/login'))
             })
-            .catch((error) => {
+            .catch(error => {
                 if (error?.response?.status === 422) {
                     return this.setState({
                         isLoading: false,
-                        errors: this.flattenErrors(error.response.data),
+                        errors: this.flattenErrors(error.response.data)
                     })
                 }
                 Tensei.library.Notification.error(
@@ -43,10 +43,10 @@ class ForgotPasswordPage extends React.Component {
             })
     }
 
-    flattenErrors = (errors) => {
+    flattenErrors = errors => {
         const flatErrors = {}
 
-        errors.forEach((error) => {
+        errors.forEach(error => {
             flatErrors[error.field] = error.message
         })
 
@@ -71,12 +71,12 @@ class ForgotPasswordPage extends React.Component {
                                 name="email"
                                 id="email"
                                 textInputProps={{
-                                    type: 'email',
+                                    type: 'email'
                                 }}
                                 value={this.state.email}
                                 placeholder="john@doe.com"
                                 validationMessage={this.state.errors.email}
-                                onChange={(event) =>
+                                onChange={event =>
                                     this.setState({ email: event.target.value })
                                 }
                             />

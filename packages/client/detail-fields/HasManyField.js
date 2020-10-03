@@ -14,13 +14,13 @@ class HasMany extends React.Component {
             search: '',
             loading: true,
             relatedResource,
-            perPage: relatedResource.perPageOptions[0] || 10,
+            perPage: relatedResource.perPageOptions[0] || 10
         }
     }
 
     findRelatedResource() {
         return this.props.resources.find(
-            (relatedResource) => relatedResource.name === this.props.field.name
+            relatedResource => relatedResource.name === this.props.field.name
         )
     }
 

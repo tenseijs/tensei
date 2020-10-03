@@ -12,13 +12,13 @@ import Login from '~/pages/Login'
 
 const history = createMemoryHistory()
 
-const LoginSetup = (props) => {
+const LoginSetup = props => {
     return (
         <MemoryRouter initialIndex={0} initialEntries={['/auth/login']}>
             <Auth.Provider value={{}}>
                 <Resources.Provider
                     value={{
-                        resources: [],
+                        resources: []
                     }}
                 >
                     <Login {...props} location={history.location} />
@@ -40,18 +40,18 @@ describe('Test the Login page', () => {
                                 {
                                     message:
                                         'These credentials do not match our records.',
-                                    field: 'email',
-                                },
-                            ],
-                        },
-                    },
-                }),
-            },
+                                    field: 'email'
+                                }
+                            ]
+                        }
+                    }
+                })
+            }
         }
     })
     test('should match snapshot', () => {
         window.Tensei = {
-            request: { post: jest.fn(() => Promise.resolve(true)) },
+            request: { post: jest.fn(() => Promise.resolve(true)) }
         }
         const { asFragment } = render(<LoginSetup />)
 

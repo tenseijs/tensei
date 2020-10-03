@@ -1,4 +1,5 @@
 declare module '@tensei/common/config' {
+    import { Storage } from '@slynova/flydrive'
     import { ResourceContract } from '@tensei/common/resources'
     import { DashboardContract } from '@tensei/common/dashboards'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
@@ -7,12 +8,12 @@ declare module '@tensei/common/config' {
         Handler,
         NextFunction,
         ErrorRequestHandler,
-        RequestHandler,
+        RequestHandler
     } from 'express'
 
     enum noPagination {
         true = 'true',
-        false = 'false',
+        false = 'false'
     }
     interface Filter {
         field: string
@@ -40,6 +41,12 @@ declare module '@tensei/common/config' {
         filters?: Filter[]
         withRelationships?: string[]
     }
+    interface StorageConstructor<T extends Storage = Storage> {
+        new (...args: any[]): T
+    }
+
+    type SupportedStorageDrivers = 'local' | 's3' | any
+
     interface FetchAllResults<Model = any> {
         data: Model[]
         total: number

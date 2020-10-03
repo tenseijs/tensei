@@ -1,12 +1,12 @@
 import {
     ValueMetricResultContract,
-    ValueMetricResultConfig,
+    ValueMetricResultConfig
 } from '@tensei/common'
 
 export class ValueMetricResult implements ValueMetricResultContract {
     public config: ValueMetricResultConfig = {
         locale: '',
-        options: {},
+        options: {}
     }
 
     previousValue: number = 0
@@ -34,7 +34,7 @@ export class ValueMetricResult implements ValueMetricResultContract {
     options(options: Intl.NumberFormatOptions) {
         this.config.options = {
             ...this.config.options,
-            ...options,
+            ...options
         }
 
         return this

@@ -1,7 +1,7 @@
 import React from 'react'
 import {
     Textarea as BaseTextarea,
-    ValidationMessage,
+    ValidationMessage
 } from '@contentful/forma-36-react-components'
 
 class Textarea extends React.Component {
@@ -29,7 +29,7 @@ class Textarea extends React.Component {
                     name={field.inputName}
                     error={!!errorMessage}
                     description={field.description}
-                    onChange={(event) => onFieldChange(event.target.value)}
+                    onChange={event => onFieldChange(event.target.value)}
                 />
                 {errorMessage ? (
                     <ValidationMessage className="TextFieldValidationMessage">

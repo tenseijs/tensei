@@ -58,7 +58,7 @@ export class HasManyEmbedded extends Field {
         return {
             ...super.serialize(),
             singleName: singular(this.name),
-            fields: this.objectFields.map((field) => field.serialize()),
+            fields: this.objectFields.map(field => field.serialize())
         }
     }
 }

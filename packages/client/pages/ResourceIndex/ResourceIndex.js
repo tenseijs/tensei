@@ -11,7 +11,7 @@ class ResourceIndex extends React.Component {
         const resource = this.findResource()
 
         return {
-            resource,
+            resource
         }
     }
 
@@ -35,7 +35,7 @@ class ResourceIndex extends React.Component {
 
     findResource() {
         return this.props.resources.find(
-            (resource) => resource.slug === this.props.match.params.resource
+            resource => resource.slug === this.props.match.params.resource
         )
     }
 

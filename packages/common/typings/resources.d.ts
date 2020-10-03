@@ -8,7 +8,7 @@ declare module '@tensei/common/resources' {
         AuthorizeFunction,
         DatabaseRepositoryInterface,
         User,
-        ResourceHelpers,
+        ResourceHelpers
     } from '@tensei/common/config'
     export interface ValidationMessages {
         [key: string]: string
@@ -195,7 +195,7 @@ declare module '@tensei/common/resources' {
                 search,
                 filter,
                 with: withRelationships,
-                no_pagination: noPagination,
+                no_pagination: noPagination
             }: Request['query'],
             resource?: ResourceContract<{}>
         ): Promise<any>
@@ -294,7 +294,7 @@ declare module '@tensei/common/resources' {
                 search,
                 filter,
                 with: withRelationships,
-                no_pagination: noPagination,
+                no_pagination: noPagination
             }: Request['query'],
             resource?: ResourceContract<{}>
         ): Promise<any>

@@ -1,7 +1,7 @@
 import React from 'react'
 import {
     Checkbox,
-    ValidationMessage,
+    ValidationMessage
 } from '@contentful/forma-36-react-components'
 
 class BooleanField extends React.Component {
@@ -23,7 +23,7 @@ class BooleanField extends React.Component {
                 </div>
                 <Checkbox
                     checked={checked}
-                    onChange={(event) => onFieldChange(event.target.checked)}
+                    onChange={event => onFieldChange(event.target.checked)}
                     labelText={field.name}
                     id={field.inputName}
                 />

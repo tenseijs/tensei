@@ -9,8 +9,8 @@ if (!mix.inProduction()) {
 
 mix.options({
     terser: {
-        extractComments: false,
-    },
+        extractComments: false
+    }
 })
 
 mix.setPublicPath('../core/build/client')

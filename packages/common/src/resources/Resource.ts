@@ -8,7 +8,7 @@ import {
     ResourceContract,
     AuthorizeFunction,
     ValidationMessages,
-    SerializedResource,
+    SerializedResource
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'
@@ -33,7 +33,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
-        authorizedToRunAction: [],
+        authorizedToRunAction: []
     }
 
     public dashboardAuthorizeCallbacks: {
@@ -49,7 +49,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
-        authorizedToRunAction: [],
+        authorizedToRunAction: []
     }
 
     public hooks: {
@@ -72,7 +72,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
         afterUpdate: (payload, request) => {
             return payload
-        },
+        }
     }
 
     constructor(name: string, tableName?: string) {
@@ -105,10 +105,10 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         camelCaseNamePlural: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
-            email: 'The {{ field }} must be a valid email address.',
+            email: 'The {{ field }} must be a valid email address.'
         },
         displayInNavigation: true,
-        perPageOptions: [10, 25, 50],
+        perPageOptions: [10, 25, 50]
     }
 
     public permissions(permissions: Permission[]) {
@@ -271,15 +271,15 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public serialize(): SerializedResource {
         return {
             ...this.data,
-            fields: this.data.fields.map((field) => field.serialize()),
-            actions: this.data.actions.map((action) => action.serialize()),
+            fields: this.data.fields.map(field => field.serialize()),
+            actions: this.data.actions.map(action => action.serialize())
         }
     }
 
     public beforeCreate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeCreate: hook,
+            beforeCreate: hook
         }
 
         return this
@@ -288,7 +288,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public beforeUpdate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeUpdate: hook,
+            beforeUpdate: hook
         }
 
         return this
@@ -297,7 +297,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public afterCreate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterCreate: hook,
+            afterCreate: hook
         }
 
         return this
@@ -306,7 +306,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public afterUpdate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterUpdate: hook,
+            afterUpdate: hook
         }
 
         return this

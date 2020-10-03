@@ -4,7 +4,7 @@ import { TextLink } from '@contentful/forma-36-react-components'
 
 class Textarea extends React.Component {
     state = {
-        showingContent: false,
+        showingContent: false
     }
 
     render() {
@@ -16,7 +16,7 @@ class Textarea extends React.Component {
                 {showingContent ? <p>{value}</p> : null}
                 <TextLink
                     className={cn({
-                        'mt-3': showingContent,
+                        'mt-3': showingContent
                     })}
                     onClick={() =>
                         this.setState({ showingContent: !showingContent })

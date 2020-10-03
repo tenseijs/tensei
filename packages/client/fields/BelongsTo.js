@@ -10,46 +10,46 @@ class BelongsTo extends React.Component {
         options: [],
         textValue: '',
         selectedOption: null,
-        relatedResource: null,
+        relatedResource: null
     }
 
     findRelatedResource = () => {
         return this.props.resources.find(
-            (relatedResource) => relatedResource.name === this.props.field.name
+            relatedResource => relatedResource.name === this.props.field.name
         )
     }
 
     componentDidMount() {
         this.setState(
             {
-                relatedResource: this.findRelatedResource(),
+                relatedResource: this.findRelatedResource()
             },
             () => this.fetchOptions()
         )
     }
 
-    fetchOptions = (query) => {
+    fetchOptions = query => {
         const { relatedResource } = this.state
 
         Tensei.request
             .get(
                 `resources/${relatedResource.slug}?fields=${[
                     relatedResource.displayField,
-                    relatedResource.valueField,
+                    relatedResource.valueField
                 ].join(',')}&search=${query || ''}`
             )
             .then(({ data }) => {
                 let selectedOption = null
 
-                const options = data.data.map((option) => ({
+                const options = data.data.map(option => ({
                     label: option[relatedResource.displayField],
-                    value: option[relatedResource.valueField],
+                    value: option[relatedResource.valueField]
                 }))
 
                 if (this.props.value) {
                     selectedOption =
                         options.find(
-                            (option) => option.value === this.props.value
+                            option => option.value === this.props.value
                         ) || null
                 }
 
@@ -57,24 +57,24 @@ class BelongsTo extends React.Component {
                     isLoading: false,
                     options,
                     selectedOption,
-                    textValue: selectedOption ? selectedOption.label : '',
+                    textValue: selectedOption ? selectedOption.label : ''
                 })
             })
     }
 
-    onQueryChange = debounce(500, (query) => {
+    onQueryChange = debounce(500, query => {
         this.setState({
-            isLoading: true,
+            isLoading: true
         })
         this.fetchOptions(query)
     })
 
-    onAutocompleteChange = (selectedOption) => {
+    onAutocompleteChange = selectedOption => {
         this.props.onFieldChange(selectedOption ? selectedOption.value : null)
 
         this.setState({
             selectedOption,
-            textValue: selectedOption ? selectedOption.label : '',
+            textValue: selectedOption ? selectedOption.label : ''
         })
     }
 
@@ -85,7 +85,7 @@ class BelongsTo extends React.Component {
             isLoading,
             relatedResource,
             textValue,
-            selectedOption,
+            selectedOption
         } = this.state
 
         return (
@@ -102,30 +102,30 @@ class BelongsTo extends React.Component {
                         items={options}
                         isLoading={isLoading}
                         width="full"
-                        onIconClick={(toggleProps) => {
+                        onIconClick={toggleProps => {
                             if (selectedOption) {
                                 this.onAutocompleteChange(null)
                             } else {
                                 toggleProps.onToggle()
                             }
                         }}
-                        iconProps={(toggleProps) => ({
+                        iconProps={toggleProps => ({
                             icon:
                                 toggleProps.query || selectedOption
                                     ? 'Close'
-                                    : 'ChevronDown',
+                                    : 'ChevronDown'
                         })}
                         onDropdownClose={() => {
                             this.setState({
                                 textValue: selectedOption
                                     ? selectedOption.label
-                                    : '',
+                                    : ''
                             })
                         }}
                         validationMessage={errorMessage}
                         dropdownProps={{ isFullWidth: true }}
                         onQueryChange={this.onQueryChange}
-                        textInputProps={(toggleProps) => ({
+                        textInputProps={toggleProps => ({
                             value: toggleProps.query
                                 ? toggleProps.query
                                 : textValue,
@@ -134,12 +134,12 @@ class BelongsTo extends React.Component {
                                 relatedResource
                                     ? relatedResource.label.toLowerCase()
                                     : ''
-                            }`,
+                            }`
                         })}
                     >
-                        {(options) => {
+                        {options => {
                             console.log(options, '>>>>>options')
-                            return options.map((option) => (
+                            return options.map(option => (
                                 <span key={option.value}>{option.label}</span>
                             ))
                         }}
@@ -148,11 +148,11 @@ class BelongsTo extends React.Component {
 
                 {!field.isSearchable ? (
                     <Select
-                        onChange={(event) => onFieldChange(event.target.value)}
+                        onChange={event => onFieldChange(event.target.value)}
                         value={value}
                     >
                         <Option value="">None</Option>
-                        {options.map((option) => (
+                        {options.map(option => (
                             <Option key={option.value} value={option.value}>
                                 {option.label}
                             </Option>

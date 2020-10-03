@@ -82,7 +82,7 @@ export class ID extends Field implements IDContract {
         return {
             ...super.serialize(),
             asString: this.string,
-            asObjectId: this.objectId,
+            asObjectId: this.objectId
         }
     }
 }

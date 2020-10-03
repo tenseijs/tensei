@@ -66,5 +66,5 @@ export const defaultProviderScopes = (
         gitlab: [],
         facebook: ['email'],
         twitter: [],
-        linkedin: ['r_liteprofile', 'r_emailaddress'],
+        linkedin: ['r_liteprofile', 'r_emailaddress']
     }[provider])

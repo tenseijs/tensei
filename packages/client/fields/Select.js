@@ -13,9 +13,9 @@ class Select extends React.Component {
                 labelText={field.name}
                 validationMessage={errorMessage}
                 description={field.description}
-                onChange={(event) => onFieldChange(event.target.value)}
+                onChange={event => onFieldChange(event.target.value)}
             >
-                {(field.selectOptions || []).map((option) => (
+                {(field.selectOptions || []).map(option => (
                     <Option key={option.value} value={option.value}>
                         {option.label}
                     </Option>

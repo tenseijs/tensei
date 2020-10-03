@@ -3,7 +3,7 @@ import { mustBeNotAuthenticated } from '~/store/auth'
 import {
     TextField,
     Button,
-    CheckboxField,
+    CheckboxField
 } from '@contentful/forma-36-react-components'
 
 class LoginPage extends React.Component {
@@ -12,39 +12,39 @@ class LoginPage extends React.Component {
         errors: {},
         password: '',
         isLoading: false,
-        rememberMe: false,
+        rememberMe: false
     }
 
-    login = (submitEvent) => {
+    login = submitEvent => {
         submitEvent.preventDefault()
 
         this.setState({
-            isLoading: true,
+            isLoading: true
         })
 
         Tensei.request
             .post('login', {
                 email: this.state.email,
                 password: this.state.password,
-                rememberMe: this.state.rememberMe,
+                rememberMe: this.state.rememberMe
             })
             .then(() => {
                 window.location.href = Tensei.getPath('')
             })
-            .catch((error) => {
+            .catch(error => {
                 if (error?.response?.status === 422) {
                     this.setState({
                         isLoading: false,
-                        errors: this.flattenErrors(error.response.data.errors),
+                        errors: this.flattenErrors(error.response.data.errors)
                     })
                 }
             })
     }
 
-    flattenErrors = (errors) => {
+    flattenErrors = errors => {
         const flatErrors = {}
 
-        errors.forEach((error) => {
+        errors.forEach(error => {
             flatErrors[error.field] = error.message
         })
 
@@ -69,18 +69,18 @@ class LoginPage extends React.Component {
                                 name="email"
                                 id="email"
                                 textInputProps={{
-                                    type: 'email',
+                                    type: 'email'
                                 }}
                                 value={this.state.email}
                                 placeholder="john@doe.com"
                                 validationMessage={this.state.errors.email}
-                                onChange={(event) =>
+                                onChange={event =>
                                     this.setState({ email: event.target.value })
                                 }
                             />
                             <TextField
                                 textInputProps={{
-                                    type: 'password',
+                                    type: 'password'
                                 }}
                                 labelText="Password"
                                 name="password"
@@ -88,18 +88,18 @@ class LoginPage extends React.Component {
                                 className="mt-4"
                                 validationMessage={this.state.errors.password}
                                 value={this.state.password}
-                                onChange={(event) =>
+                                onChange={event =>
                                     this.setState({
-                                        password: event.target.value,
+                                        password: event.target.value
                                     })
                                 }
                             />
 
                             <div className="mt-8 flex justify-between items-center">
                                 <CheckboxField
-                                    onChange={(event) =>
+                                    onChange={event =>
                                         this.setState({
-                                            rememberMe: event.target.checked,
+                                            rememberMe: event.target.checked
                                         })
                                     }
                                     checked={this.state.rememberMe}

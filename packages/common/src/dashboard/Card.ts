@@ -18,7 +18,7 @@ export class Card implements CardContract {
 
     public config: CardConfig = {
         width: '1/3',
-        component: '',
+        component: ''
     }
 
     public request: Request | null = null
@@ -81,7 +81,7 @@ export class Card implements CardContract {
             background: this.background,
             customStyles: this.customStyles,
             component: this.config.component,
-            backgroundImage: this.backgroundImage,
+            backgroundImage: this.backgroundImage
         }
     }
 }

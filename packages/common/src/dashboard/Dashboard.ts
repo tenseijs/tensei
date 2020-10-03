@@ -3,7 +3,7 @@ import {
     CardContract,
     DashboardConfig,
     SerializedDashboardContract,
-    DashboardContract,
+    DashboardContract
 } from '@tensei/common'
 
 export class Dashboard implements DashboardContract {
@@ -12,7 +12,7 @@ export class Dashboard implements DashboardContract {
         slug: '',
         cards: [],
         group: 'Dashboards',
-        displayInNavigation: true,
+        displayInNavigation: true
     }
 
     constructor(name: string, slug?: string) {
@@ -39,7 +39,7 @@ export class Dashboard implements DashboardContract {
             group: this.config.group,
             groupSlug: paramCase(this.config.group),
             displayInNavigation: this.config.displayInNavigation,
-            cards: this.config.cards.map((card) => card.serialize()),
+            cards: this.config.cards.map(card => card.serialize())
         }
     }
 

@@ -53,7 +53,7 @@ class SocialAuthCallbackController {
                       )
                     : {
                           email: providerData.email,
-                          name: providerData.name,
+                          name: providerData.name
                       }
 
                 let temporal_token = this.getTemporalToken()
@@ -64,16 +64,16 @@ class SocialAuthCallbackController {
                         {
                             field: 'provider',
                             value: provider,
-                            operator: 'equals',
+                            operator: 'equals'
                         },
                         {
                             field: 'provider_user_id',
                             value: providerData.provider_user_id,
-                            operator: 'equals',
-                        },
+                            operator: 'equals'
+                        }
                     ],
                     fields: ['temporal_token', 'id'],
-                    perPage: 1,
+                    perPage: 1
                 })
 
                 if (existingOauthIdentity.data.length > 0) {
@@ -81,7 +81,7 @@ class SocialAuthCallbackController {
                         existingOauthIdentity.data[0].id,
                         {
                             temporal_token,
-                            access_token,
+                            access_token
                         },
                         {},
                         true
@@ -93,7 +93,7 @@ class SocialAuthCallbackController {
                         temporal_token,
                         email: payload.email,
                         payload: JSON.stringify(payload),
-                        provider_user_id: providerData.provider_user_id,
+                        provider_user_id: providerData.provider_user_id
                     })
                 }
 
@@ -115,12 +115,12 @@ class SocialAuthCallbackController {
             config: purestConfig,
             defaults: {
                 headers: {
-                    'user-agent': 'tensei',
-                },
-            },
+                    'user-agent': 'tensei'
+                }
+            }
         })
 
-        return new Promise((resolve) =>
+        return new Promise(resolve =>
             github
                 .query()
                 .get('user')
@@ -130,7 +130,7 @@ class SocialAuthCallbackController {
                         ...body,
                         name: body.name,
                         email: body.email,
-                        provider_user_id: body.id,
+                        provider_user_id: body.id
                     }
                     if (error || data.email) {
                         return resolve([error, data])
@@ -148,11 +148,11 @@ class SocialAuthCallbackController {
                                         ...data,
                                         email: Array.isArray(emailBody)
                                             ? emailBody.find(
-                                                  (email) =>
+                                                  email =>
                                                       email.primary === true
                                               ).email
-                                            : null,
-                                    },
+                                            : null
+                                    }
                                 ])
                             }
                         )
@@ -165,7 +165,7 @@ class SocialAuthCallbackController {
     private gitlab() {}
 
     private google(access_token: string) {
-        return new Promise((resolve) =>
+        return new Promise(resolve =>
             purest({ provider: 'google', config: purestConfig })
                 .query('oauth')
                 .get('tokeninfo')
@@ -177,8 +177,8 @@ class SocialAuthCallbackController {
                             ...body,
                             email: body.email,
                             name: body.email.split('@')[0],
-                            provider_user_id: body.user_id,
-                        },
+                            provider_user_id: body.user_id
+                        }
                     ])
                 )
         )
@@ -193,21 +193,21 @@ class SocialAuthCallbackController {
                 linkedin: {
                     'https://api.linkedin.com': {
                         __domain: {
-                            auth: [{ auth: { bearer: '[0]' } }],
+                            auth: [{ auth: { bearer: '[0]' } }]
                         },
                         '[version]/{endpoint}': {
                             __path: {
                                 alias: '__default',
-                                version: 'v2',
-                            },
-                        },
-                    },
-                },
-            },
+                                version: 'v2'
+                            }
+                        }
+                    }
+                }
+            }
         })
 
         const getDetailsRequest = () =>
-            new Promise((resolve) =>
+            new Promise(resolve =>
                 linkedin
                     .query()
                     .get('me')
@@ -218,7 +218,7 @@ class SocialAuthCallbackController {
             )
 
         const getEmailRequest = () =>
-            new Promise((resolve) => {
+            new Promise(resolve => {
                 linkedin
                     .query()
                     .get(
@@ -232,7 +232,7 @@ class SocialAuthCallbackController {
 
         const [
             [detailsError, detailsBody],
-            [emailError, emailBody],
+            [emailError, emailBody]
         ]: any = await Promise.all([getDetailsRequest(), getEmailRequest()])
 
         return [
@@ -242,8 +242,8 @@ class SocialAuthCallbackController {
                 ...emailBody,
                 provider_user_id: detailsBody.id,
                 email: emailBody.elements[0]['handle~'].emailAddress,
-                name: `${detailsBody.localizedFirstName} ${detailsBody.localizedLastName}`,
-            },
+                name: `${detailsBody.localizedFirstName} ${detailsBody.localizedLastName}`
+            }
         ]
     }
 }

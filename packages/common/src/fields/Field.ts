@@ -3,7 +3,7 @@ import {
     FieldHookFunction,
     AuthorizeFunction,
     FieldContract,
-    SerializedField,
+    SerializedField
 } from '@tensei/common'
 
 interface Constructor<M> {
@@ -39,7 +39,7 @@ export class Field implements FieldContract {
          * If this is true, the field will be shown on the creation
          * form
          */
-        showOnCreation: true,
+        showOnCreation: true
     }
 
     public authorizeCallbacks: {
@@ -48,10 +48,10 @@ export class Field implements FieldContract {
         authorizedToUpdate: AuthorizeFunction
         authorizedToDelete: AuthorizeFunction
     } = {
-        authorizedToSee: (request) => true,
-        authorizedToCreate: (request) => true,
-        authorizedToUpdate: (request) => true,
-        authorizedToDelete: (request) => true,
+        authorizedToSee: request => true,
+        authorizedToCreate: request => true,
+        authorizedToUpdate: request => true,
+        authorizedToDelete: request => true
     }
 
     public hooks: {
@@ -74,13 +74,13 @@ export class Field implements FieldContract {
 
         afterUpdate: (payload, request) => {
             return payload
-        },
+        }
     }
 
     public beforeCreate(hook: FieldHookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeCreate: hook,
+            beforeCreate: hook
         }
 
         return this
@@ -89,7 +89,7 @@ export class Field implements FieldContract {
     public beforeUpdate(hook: FieldHookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeUpdate: hook,
+            beforeUpdate: hook
         }
 
         return this
@@ -98,7 +98,7 @@ export class Field implements FieldContract {
     public afterCreate(hook: FieldHookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterCreate: hook,
+            afterCreate: hook
         }
 
         return this
@@ -107,7 +107,7 @@ export class Field implements FieldContract {
     public afterUpdate(hook: FieldHookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterUpdate: hook,
+            afterUpdate: hook
         }
 
         return this
@@ -224,7 +224,7 @@ export class Field implements FieldContract {
     public showOnIndex() {
         this.showHideField = {
             ...this.showHideField,
-            showOnIndex: true,
+            showOnIndex: true
         }
 
         return this
@@ -237,7 +237,7 @@ export class Field implements FieldContract {
     public showOnDetail() {
         this.showHideField = {
             ...this.showHideField,
-            showOnDetail: true,
+            showOnDetail: true
         }
 
         return this
@@ -250,7 +250,7 @@ export class Field implements FieldContract {
     public showOnCreate() {
         this.showHideField = {
             ...this.showHideField,
-            showOnCreation: true,
+            showOnCreation: true
         }
 
         return this
@@ -263,7 +263,7 @@ export class Field implements FieldContract {
     public showOnUpdate() {
         this.showHideField = {
             ...this.showHideField,
-            showOnUpdate: true,
+            showOnUpdate: true
         }
 
         return this
@@ -276,7 +276,7 @@ export class Field implements FieldContract {
     public hideOnIndex() {
         this.showHideField = {
             ...this.showHideField,
-            showOnIndex: false,
+            showOnIndex: false
         }
 
         return this
@@ -289,7 +289,7 @@ export class Field implements FieldContract {
     public hideOnDetail() {
         this.showHideField = {
             ...this.showHideField,
-            showOnDetail: false,
+            showOnDetail: false
         }
 
         return this
@@ -302,7 +302,7 @@ export class Field implements FieldContract {
     public hideOnCreate() {
         this.showHideField = {
             ...this.showHideField,
-            showOnCreation: false,
+            showOnCreation: false
         }
 
         return this
@@ -315,7 +315,7 @@ export class Field implements FieldContract {
     public hideOnUpdate() {
         this.showHideField = {
             ...this.showHideField,
-            showOnUpdate: false,
+            showOnUpdate: false
         }
 
         return this
@@ -331,7 +331,7 @@ export class Field implements FieldContract {
             showOnIndex: true,
             showOnUpdate: false,
             showOnCreation: false,
-            showOnDetail: false,
+            showOnDetail: false
         }
 
         return this
@@ -348,7 +348,7 @@ export class Field implements FieldContract {
             showOnIndex: false,
             showOnUpdate: true,
             showOnCreation: true,
-            showOnDetail: false,
+            showOnDetail: false
         }
 
         return this
@@ -366,7 +366,7 @@ export class Field implements FieldContract {
             showOnIndex: true,
             showOnUpdate: false,
             showOnCreation: false,
-            showOnDetail: true,
+            showOnDetail: true
         }
 
         return this
@@ -562,7 +562,7 @@ export class Field implements FieldContract {
             fieldName: this.constructor.name,
             databaseField: this.databaseField,
             databaseFieldType: this.databaseFieldType,
-            isRelationshipField: this.isRelationshipField,
+            isRelationshipField: this.isRelationshipField
         }
     }
 }

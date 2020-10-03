@@ -23,7 +23,7 @@ export class Integer extends Number {
     public min(min: number) {
         this.attributes = {
             ...this.attributes,
-            min,
+            min
         }
 
         return this
@@ -38,7 +38,7 @@ export class Integer extends Number {
     public max(max: number) {
         this.attributes = {
             ...this.attributes,
-            max,
+            max
         }
 
         return this
@@ -71,7 +71,7 @@ export class Integer extends Number {
             ...super.serialize(),
 
             isUnsigned: this.isUnsigned,
-            isForeign: this.isForeign,
+            isForeign: this.isForeign
         }
     }
 }

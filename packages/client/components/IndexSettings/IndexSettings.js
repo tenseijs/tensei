@@ -2,11 +2,11 @@ import React from 'react'
 import {
     Dialog,
     DialogType,
-    DialogFooter,
+    DialogFooter
 } from 'office-ui-fabric-react/lib/Dialog'
 import {
     Dropdown,
-    DropdownMenuItemType,
+    DropdownMenuItemType
 } from 'office-ui-fabric-react/lib/Dropdown'
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button'
 
@@ -19,20 +19,20 @@ class IndexSettings extends React.Component {
                 isOpen={true}
                 maxWidth={'768px'}
                 styles={{
-                    className: 'w-full',
+                    className: 'w-full'
                 }}
                 onDismiss={console.log}
                 dialogContentProps={{
                     type: DialogType.normal,
                     title: this.props.title,
-                    closeButtonAriaLabel: 'Discard changes',
+                    closeButtonAriaLabel: 'Discard changes'
                 }}
                 modalProps={{
                     styles: {
                         main: {
-                            maxWidth: '600px',
-                        },
-                    },
+                            maxWidth: '600px'
+                        }
+                    }
                 }}
             >
                 <Dropdown
@@ -42,8 +42,8 @@ class IndexSettings extends React.Component {
                     options={[
                         {
                             key: 'orange',
-                            text: 'Orange',
-                        },
+                            text: 'Orange'
+                        }
                     ]}
                     // styles={dropdownStyles}
                 />

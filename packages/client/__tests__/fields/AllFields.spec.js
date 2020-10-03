@@ -32,7 +32,7 @@ const field = {
     showOnIndex: true,
     showOnUpdate: true,
     databaseFieldType: 'string',
-    updateRules: [],
+    updateRules: []
 }
 
 const selectField = {
@@ -48,12 +48,12 @@ const selectField = {
     selectOptions: [
         {
             label: 'Javascript',
-            value: 'javascript',
+            value: 'javascript'
         },
         {
             label: 'Angular',
-            value: 'angular',
-        },
+            value: 'angular'
+        }
     ],
     isSearchable: true,
     isSortable: true,
@@ -65,7 +65,7 @@ const selectField = {
     showOnIndex: true,
     showOnUpdate: true,
     databaseFieldType: 'enu',
-    updateRules: [],
+    updateRules: []
 }
 
 const hasManyField = {
@@ -89,7 +89,7 @@ const hasManyField = {
     showOnIndex: false,
     showOnUpdate: true,
     databaseFieldType: 'undefined',
-    updateRules: [],
+    updateRules: []
 }
 
 const belongsToManyField = {
@@ -106,12 +106,12 @@ const belongsToManyField = {
     selectOptions: [
         {
             label: 'Database',
-            value: 'database',
+            value: 'database'
         },
         {
             label: 'Testing',
-            value: 'testing',
-        },
+            value: 'testing'
+        }
     ],
     isSearchable: true,
     isSortable: true,
@@ -123,7 +123,7 @@ const belongsToManyField = {
     showOnIndex: true,
     showOnUpdate: true,
     databaseFieldType: 'enu',
-    updateRules: [],
+    updateRules: []
 }
 
 const dataTimeField = {
@@ -142,12 +142,12 @@ const dataTimeField = {
     selectOptions: [
         {
             label: 'Javascript',
-            value: 'javascript',
+            value: 'javascript'
         },
         {
             label: 'Angular',
-            value: 'angular',
-        },
+            value: 'angular'
+        }
     ],
     isSearchable: false,
     isSortable: false,
@@ -160,7 +160,7 @@ const dataTimeField = {
     showOnIndex: true,
     showOnUpdate: true,
     databaseFieldType: 'datetime',
-    updateRules: [],
+    updateRules: []
 }
 
 describe('Test the field components', () => {
@@ -202,7 +202,7 @@ describe('Test the field components', () => {
         const props = {
             field: selectField,
             onFieldChange: jest.fn(),
-            value: '',
+            value: ''
         }
 
         const { asFragment, rerender } = render(<SelectBox {...props} />)
@@ -232,18 +232,18 @@ describe('Test the field components', () => {
                         data: [
                             {
                                 title: 'a new title',
-                                value: 'the value',
-                            },
-                        ],
-                    },
-                }),
-            },
+                                value: 'the value'
+                            }
+                        ]
+                    }
+                })
+            }
         }
         const props = {
             field: hasManyField,
             onFieldChange: jest.fn(),
             value: '',
-            resources,
+            resources
         }
 
         render(<HasManyField {...props} />)
@@ -261,7 +261,7 @@ describe('Test the field components', () => {
         const props = {
             field: dataTimeField,
             onFieldChange: jest.fn(),
-            value: '',
+            value: ''
         }
 
         render(<DateTimeField {...props} />)
@@ -283,18 +283,18 @@ describe('Test the field components', () => {
                         data: [
                             {
                                 title: 'a new title',
-                                id: 'the value',
-                            },
-                        ],
-                    },
-                }),
-            },
+                                id: 'the value'
+                            }
+                        ]
+                    }
+                })
+            }
         }
         const props = {
             field: belongsToManyField,
             onFieldChange: jest.fn(),
             value: 'the value',
-            resources,
+            resources
         }
 
         const { rerender } = render(<BelongsToField {...props} />)

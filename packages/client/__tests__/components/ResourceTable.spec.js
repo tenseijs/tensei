@@ -4,7 +4,7 @@ import {
     screen,
     waitFor,
     fireEvent,
-    within,
+    within
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
@@ -24,18 +24,18 @@ let props = {
         match,
         resource: resources[0],
         history: { push: jest.fn() },
-        location: { pathname: 'resource/posts' },
+        location: { pathname: 'resource/posts' }
     },
     permissions: {
         authorizedToCreate: jest.fn(() => true),
         authorizedToUpdate: jest.fn(() => true),
         authorizedToDelete: jest.fn(() => true),
         authorizedToRunAction: jest.fn(() => true),
-        authorizedToFetch: jest.fn(() => true),
-    },
+        authorizedToFetch: jest.fn(() => true)
+    }
 }
 
-const WithAuthComponent = (props) => (
+const WithAuthComponent = props => (
     <Router history={history}>
         <Auth.Provider value={props.permissions}>
             <ResourceTable {...props.defaultProps} />
@@ -45,18 +45,18 @@ const WithAuthComponent = (props) => (
 
 const tableDataBuilder = build('TableData', {
     fields: {
-        id: fake((f) => f.random.number()),
-        av_cpc: fake((f) => f.random.number()),
-        category: fake((f) => f.lorem.word()),
-        content: fake((f) => f.lorem.sentence()),
-        created_at: fake((f) => f.date.future()),
-        published_at: fake((f) => f.date.future()),
-        scheduled_for: fake((f) => f.date.future()),
-        updated_at: fake((f) => f.date.future()),
-        description: fake((f) => f.lorem.words(12)),
-        name: fake((f) => f.lorem.word()),
-        user_id: fake((f) => f.random.number()),
-    },
+        id: fake(f => f.random.number()),
+        av_cpc: fake(f => f.random.number()),
+        category: fake(f => f.lorem.word()),
+        content: fake(f => f.lorem.sentence()),
+        created_at: fake(f => f.date.future()),
+        published_at: fake(f => f.date.future()),
+        scheduled_for: fake(f => f.date.future()),
+        updated_at: fake(f => f.date.future()),
+        description: fake(f => f.lorem.words(12)),
+        name: fake(f => f.lorem.word()),
+        user_id: fake(f => f.random.number())
+    }
 })
 
 const tableData = Array.from({ length: 50 }).map(() => tableDataBuilder())
@@ -72,11 +72,11 @@ describe('ResourceTable tests', () => {
                         page: 1,
                         total: 50,
                         perPage: 25,
-                        pageCount: 2,
-                    },
+                        pageCount: 2
+                    }
                 }),
-                delete: jest.fn(() => Promise.resolve(true)),
-            },
+                delete: jest.fn(() => Promise.resolve(true))
+            }
         }
     })
     afterEach(() => {
@@ -94,7 +94,7 @@ describe('ResourceTable tests', () => {
         )
 
         fireEvent.change(searchInput, {
-            target: { value: 'Amapai' },
+            target: { value: 'Amapai' }
         })
 
         window.Tensei.request.get = jest.fn().mockResolvedValueOnce({
@@ -103,8 +103,8 @@ describe('ResourceTable tests', () => {
                 page: 1,
                 total: 1,
                 perPage: 10,
-                pageCount: 1,
-            },
+                pageCount: 1
+            }
         })
 
         await waitFor(() =>
@@ -133,8 +133,8 @@ describe('ResourceTable tests', () => {
                 page: 2,
                 total: 50,
                 perPage: 10,
-                pageCount: 2,
-            },
+                pageCount: 2
+            }
         })
 
         userEvent.click(page2Btn)
@@ -174,19 +174,19 @@ describe('ResourceTable tests', () => {
         render(<WithAuthComponent {...props} />)
 
         const selectAllCheckBox = await screen.findByRole('checkbox', {
-            name: `Select all ${props.defaultProps.resource.label}`,
+            name: `Select all ${props.defaultProps.resource.label}`
         })
 
         const checkBoxes = await screen.findAllByRole('checkbox', {
-            name: 'Select row',
+            name: 'Select row'
         })
 
-        checkBoxes.map((checkbox) => {
+        checkBoxes.map(checkbox => {
             expect(checkbox).not.toBeChecked()
         })
 
         userEvent.click(selectAllCheckBox)
-        checkBoxes.map((checkbox) => {
+        checkBoxes.map(checkbox => {
             expect(checkbox).toBeChecked()
         })
     })
@@ -236,8 +236,8 @@ describe('ResourceTable tests', () => {
             ...props,
             permissions: {
                 ...props.permissions,
-                authorizedToCreate: jest.fn(() => false),
-            },
+                authorizedToCreate: jest.fn(() => false)
+            }
         }
 
         render(<WithAuthComponent {...props} />)
@@ -252,8 +252,8 @@ describe('ResourceTable tests', () => {
             ...props,
             permissions: {
                 ...props.permissions,
-                authorizedToDelete: jest.fn(() => false),
-            },
+                authorizedToDelete: jest.fn(() => false)
+            }
         }
         render(<WithAuthComponent {...props} />)
         expect(screen.queryAllByTestId('delete-resource-btn')).toHaveLength(0)
@@ -264,8 +264,8 @@ describe('ResourceTable tests', () => {
             ...props,
             permissions: {
                 ...props.permissions,
-                authorizedToUpdate: jest.fn(() => false),
-            },
+                authorizedToUpdate: jest.fn(() => false)
+            }
         }
         render(<WithAuthComponent {...props} />)
         expect(screen.queryAllByTestId('edit-resource-btn')).toHaveLength(0)
@@ -285,10 +285,8 @@ describe('ResourceTable tests', () => {
         window.Tensei = {
             ...TenseiMock,
             request: {
-                get: jest
-                    .fn()
-                    .mockImplementation(() => Promise.reject('value')),
-            },
+                get: jest.fn().mockImplementation(() => Promise.reject('value'))
+            }
         }
 
         render(<WithAuthComponent {...props} />)
@@ -306,10 +304,10 @@ describe('ResourceTable tests', () => {
 
         const perPageBox = screen.getByRole('combobox', { name: 'per-page' })
 
-        props.defaultProps.resource.perPageOptions.forEach((i) => {
+        props.defaultProps.resource.perPageOptions.forEach(i => {
             expect(
                 within(perPageBox).getAllByRole('option', {
-                    name: `${i} / page`,
+                    name: `${i} / page`
                 })
             )
         })
@@ -322,8 +320,8 @@ describe('ResourceTable tests', () => {
                     page: 1,
                     total: 50,
                     perPage: 10,
-                    pageCount: 2,
-                },
+                    pageCount: 2
+                }
             })
             .mockResolvedValueOnce({
                 data: {
@@ -331,8 +329,8 @@ describe('ResourceTable tests', () => {
                     page: 1,
                     total: 50,
                     perPage: 25,
-                    pageCount: 2,
-                },
+                    pageCount: 2
+                }
             })
 
         userEvent.selectOptions(perPageBox, ['10'])
@@ -364,8 +362,8 @@ describe('ResourceTable tests', () => {
                     page: 1,
                     total: 50,
                     perPage: 10,
-                    pageCount: 2,
-                },
+                    pageCount: 2
+                }
             })
             .mockResolvedValueOnce({
                 data: {
@@ -373,8 +371,8 @@ describe('ResourceTable tests', () => {
                     page: 1,
                     total: 50,
                     perPage: 25,
-                    pageCount: 2,
-                },
+                    pageCount: 2
+                }
             })
 
         userEvent.selectOptions(perPageBox, ['10'])

@@ -16,15 +16,15 @@ class Text extends React.Component {
                     type: [
                         'NumberField',
                         'IntegerField',
-                        'BigIntegerField',
+                        'BigIntegerField'
                     ].includes(field.component)
                         ? 'number'
                         : 'text',
-                    ...field.attributes,
+                    ...field.attributes
                 }}
                 validationMessage={errorMessage}
                 description={field.description}
-                onChange={(event) => onFieldChange(event.target.value)}
+                onChange={event => onFieldChange(event.target.value)}
             />
         )
     }

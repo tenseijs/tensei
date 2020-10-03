@@ -2498,6 +2498,21 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@slynova/flydrive-s3@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@slynova/flydrive-s3/-/flydrive-s3-1.0.3.tgz#513bab886f50e4acdeb56ba3b4ddb329f3ccb6a2"
+  integrity sha512-mSLuQ+YqJTlW+64D+bVKQCF0W8FKKAeOkhrWWc7NIE35AWxrI7eLbaOBqe1GHBiy29xRP8v+aHGMIelGsi1bDQ==
+  dependencies:
+    aws-sdk "^2.680.0"
+
+"@slynova/flydrive@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@slynova/flydrive/-/flydrive-1.0.3.tgz#1ca4be055c759abd3f55b2a46f279baa1e6ce2b2"
+  integrity sha512-XJ8tfijqfXUuFPwrceCgXr/GqwkO49u4fBYsXZV7lBt9/9HqbdEG2E//R3pOIp2L35zqxrOe3Vk/getnYibjAA==
+  dependencies:
+    fs-extra "^9.0.0"
+    node-exceptions "^4.0.1"
+
 "@slynova/slug@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@slynova/slug/-/slug-1.1.2.tgz#c6289781da191b3ea386d678843cb7a7db7844e8"
@@ -3970,6 +3985,11 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
 
+at-least-node@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
+  integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
+
 atob-lite@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/atob-lite/-/atob-lite-2.0.0.tgz#0fef5ad46f1bd7a8502c65727f0367d5ee43d696"
@@ -4004,6 +4024,21 @@ aws-sdk@^2.2.36:
   version "2.756.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.756.0.tgz#87ec4e2a03ed838de6d7b0ce6a62f276e318b4fc"
   integrity sha512-Hk6DzcsXq1WRg+UVHDH56iQz31kDtg/NRqtJL1A0BrZ/PtNSLTHsQQllpcAi09UxLDMzBoDXymZ8kYg0Migq8w==
+  dependencies:
+    buffer "4.9.2"
+    events "1.1.1"
+    ieee754 "1.1.13"
+    jmespath "0.15.0"
+    querystring "0.2.0"
+    sax "1.2.1"
+    url "0.10.3"
+    uuid "3.3.2"
+    xml2js "0.4.19"
+
+aws-sdk@^2.680.0:
+  version "2.766.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.766.0.tgz#f0b05d827c79c78d16efab0520f4ed0c21573665"
+  integrity sha512-msEEF7veBrxU1TlhLL33du4oJdwJ6uAWogf9+S0v437AX2z6K5IFr5J78JBysBudRHO0L6aC8bat6OS3oPEQvQ==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -7782,6 +7817,16 @@ fs-extra@^8.0.0, fs-extra@^8.1.0:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
+fs-extra@^9.0.0:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.0.1.tgz#910da0062437ba4c39fedd863f1675ccfefcb9fc"
+  integrity sha512-h2iAoN838FqAFJY2/qVpzFXy+EBxfVE220PalAqQLDVsFOHLJrZvut5puAbCdNv6WJk+B8ihI+k0c7JK5erwqQ==
+  dependencies:
+    at-least-node "^1.0.0"
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^1.0.0"
+
 fs-minipass@^1.2.5:
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/fs-minipass/-/fs-minipass-1.2.7.tgz#ccff8570841e7fe4265693da88936c55aed7f7c7"
@@ -10667,6 +10712,15 @@ jsonfile@^4.0.0:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
+jsonfile@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/jsonfile/-/jsonfile-6.0.1.tgz#98966cba214378c8c84b82e085907b40bf614179"
+  integrity sha512-jR2b5v7d2vIOust+w3wtFKZIfpC2pnRmFAhAC/BuweZFQR8qZzxH1OyrQ10HmdVYiXWkYUqPVsz91cG7EL2FBg==
+  dependencies:
+    universalify "^1.0.0"
+  optionalDependencies:
+    graceful-fs "^4.1.6"
+
 jsonparse@^1.2.0:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/jsonparse/-/jsonparse-1.3.1.tgz#3f4dae4a91fac315f71062f8521cc239f1366280"
@@ -12165,6 +12219,11 @@ node-exceptions@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/node-exceptions/-/node-exceptions-3.0.0.tgz#48b8e10da71370845ef1af583778139527308d11"
   integrity sha512-pFhMAqdN1avrFwtZs66HxYiVnbnH9wjXB4m8IKs5Z9+r7U5voqxT+EDbVkRfge+V7JnkOgKhN4HfKBn1o5g9Wg==
+
+node-exceptions@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/node-exceptions/-/node-exceptions-4.0.1.tgz#70425d17a245c3c00709c72f57c4c20b39ef1a4c"
+  integrity sha512-KJI+FawYOv74x60H6+zrBPfO2vvp9m0pHZi6SH8BBBuc67Irv11DsqY4Le4EBFq1/T5aXFU3hkLrMgtW7RNXxA==
 
 node-fetch-npm@^2.0.2:
   version "2.0.4"
@@ -17073,6 +17132,11 @@ universalify@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.2.tgz#b646f69be3942dabcecc9d6639c80dc105efaa66"
   integrity sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==
+
+universalify@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/universalify/-/universalify-1.0.0.tgz#b61a1da173e8435b2fe3c67d29b9adf8594bd16d"
+  integrity sha512-rb6X1W158d7pRQBg5gkR8uPaSfiids68LTJQYOtEUhoJUWBdaQHsuT/EUduxXYxcrt4r5PJ4fuHW1MHT6p0qug==
 
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"

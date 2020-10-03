@@ -1,7 +1,7 @@
 module.exports = {
     purge: {
         enabled: process.env.NODE_ENV === 'production',
-        content: ['./**/*.js'],
+        content: ['./**/*.js']
     },
     theme: {
         extend: {
@@ -25,12 +25,12 @@ module.exports = {
 
                 'gray-lightest-100': '#e5ebed',
                 'gray-lightest-200': '#d3dce0',
-                'blue-lightest': '#e8f7ff',
+                'blue-lightest': '#e8f7ff'
             },
             fontFamily: {
                 // sans: ['IBM Plex Sans'],
             },
-            width: (theme) => ({
+            width: theme => ({
                 ...theme('spacing'),
                 '1/7': '14.30%',
                 '6/7': '85.7%',
@@ -52,17 +52,17 @@ module.exports = {
                 '18-percent': '18%',
                 '82-percent': '82%',
                 full: '100%',
-                screen: '100vw',
+                screen: '100vw'
             }),
             spacing: {
-                topbar: '4.375rem',
+                topbar: '4.375rem'
             },
             boxShadow: {
                 'account-menu':
-                    'rgba(0, 0, 0, 0.4) 1px 0px 2px 0px inset, rgba(0, 0, 0, 0.35) 2px 0px 5px 0px inset;',
-            },
-        },
+                    'rgba(0, 0, 0, 0.4) 1px 0px 2px 0px inset, rgba(0, 0, 0, 0.35) 2px 0px 5px 0px inset;'
+            }
+        }
     },
     variants: {},
-    plugins: [],
+    plugins: []
 }

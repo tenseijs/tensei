@@ -5,7 +5,7 @@ import {
     Dropdown,
     DropdownList,
     DropdownListItem,
-    Paragraph,
+    Paragraph
 } from '@contentful/forma-36-react-components'
 
 import ShowResource from '~/pages/ShowResource'
@@ -30,16 +30,16 @@ class DashboardPage extends React.Component {
 
         return {
             groups,
-            accountMenuOpen: false,
+            accountMenuOpen: false
         }
     }
 
     populateGroups(elementName, groups) {
         this.props[elementName]
-            .filter((resource) => resource.displayInNavigation)
-            .forEach((element) => {
+            .filter(resource => resource.displayInNavigation)
+            .forEach(element => {
                 const groupExists = groups.findIndex(
-                    (group) => group.name === element.group
+                    group => group.name === element.group
                 )
 
                 if (groupExists === -1) {
@@ -53,9 +53,9 @@ class DashboardPage extends React.Component {
                                 label: element.label || element.name,
                                 to: Tensei.getPath(
                                     `${elementName}/${element.slug}`
-                                ),
-                            },
-                        ],
+                                )
+                            }
+                        ]
                     })
                 } else {
                     groups[groupExists] = {
@@ -67,9 +67,9 @@ class DashboardPage extends React.Component {
                                 label: element.label,
                                 to: Tensei.getPath(
                                     `${elementName}/${element.slug}`
-                                ),
-                            },
-                        ],
+                                )
+                            }
+                        ]
                     }
                 }
             })
@@ -85,29 +85,29 @@ class DashboardPage extends React.Component {
 
     toggleAccountMenu = () => {
         this.setState({
-            accountMenuOpen: !this.state.accountMenuOpen,
+            accountMenuOpen: !this.state.accountMenuOpen
         })
     }
 
-    toggleGroup = (groupToToggle) => {
+    toggleGroup = groupToToggle => {
         this.setState({
-            groups: this.state.groups.map((group) => {
+            groups: this.state.groups.map(group => {
                 if (group.slug === groupToToggle.slug) {
                     return {
                         ...group,
-                        open: !group.open,
+                        open: !group.open
                     }
                 }
 
                 return group
-            }),
+            })
         })
     }
 
     renderGroups = () => {
         return (
             <>
-                {this.state.groups.map((group) => (
+                {this.state.groups.map(group => (
                     <Fragment key={group.slug}>
                         <header
                             onClick={() => this.toggleGroup(group)}
@@ -117,14 +117,14 @@ class DashboardPage extends React.Component {
                                 className={cn(
                                     'mr-3 transition duration-75 transform text-blue-darkest',
                                     {
-                                        '-rotate-90': !group.open,
+                                        '-rotate-90': !group.open
                                     }
                                 )}
                             />
                             {group.name}
                         </header>
                         {group.open &&
-                            group.items.map((item) => (
+                            group.items.map(item => (
                                 <Link key={item.slug} to={item.to}>
                                     <div
                                         className={cn(
@@ -132,7 +132,7 @@ class DashboardPage extends React.Component {
                                             {
                                                 'bg-gray-lightest-100': this.props.location.pathname.match(
                                                     item.to
-                                                ),
+                                                )
                                             }
                                         )}
                                     >
@@ -166,7 +166,7 @@ class DashboardPage extends React.Component {
                                         'shadow-account-menu cursor-pointer px-5 h-topbar flex items-center justify-center',
                                         {
                                             'bg-blue-darkest-200 hover:bg-blue-darkest-300': !accountMenuOpen,
-                                            'bg-blue-darkest-300': accountMenuOpen,
+                                            'bg-blue-darkest-300': accountMenuOpen
                                         }
                                     )}
                                 >

@@ -26,6 +26,9 @@
         "copy:files": "cp index.mustache build/index.mustache"
     },
     "dependencies": {
+        "@slynova/flydrive": "^1.0.3",
+        "@tensei/common": "0.0.0",
+        "@tensei/mail": "0.0.0",
         "@types/signale": "^1.4.1",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",
@@ -46,9 +49,7 @@
         "readline-sync": "^1.4.10",
         "signale": "^1.4.0",
         "sqlite3": "^5.0.0",
-        "throttle-debounce": "^2.2.1",
-        "@tensei/common": "0.0.0",
-        "@tensei/mail": "0.0.0"
+        "throttle-debounce": "^2.2.1"
     },
     "config": {
         "commitizen": {

@@ -1,9 +1,10 @@
 import { Request } from 'express'
 import { Mail } from '@tensei/mail'
+import { StorageManager } from '@slynova/flydrive'
 import {
     ManagerContract,
     ResourceContract,
-    DashboardContract,
+    DashboardContract
 } from '@tensei/common'
 
 declare global {

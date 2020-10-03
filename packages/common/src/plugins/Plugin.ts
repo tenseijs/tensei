@@ -3,7 +3,7 @@ import {
     PluginSetupConfig,
     PluginSetupFunction,
     SetupFunctions,
-    PluginContract,
+    PluginContract
 } from '@tensei/common'
 
 export class Plugin implements PluginContract {
@@ -17,7 +17,7 @@ export class Plugin implements PluginContract {
         afterMiddlewareSetup: (config: PluginSetupConfig) => Promise.resolve(),
 
         beforeCoreRoutesSetup: (config: PluginSetupConfig) => Promise.resolve(),
-        afterCoreRoutesSetup: (config: PluginSetupConfig) => Promise.resolve(),
+        afterCoreRoutesSetup: (config: PluginSetupConfig) => Promise.resolve()
     }
 
     public slug: string = ''
@@ -29,7 +29,7 @@ export class Plugin implements PluginContract {
     private setValue(key: SetupFunctions, value: PluginSetupFunction) {
         this.data = {
             ...this.data,
-            [key]: value,
+            [key]: value
         }
     }
 

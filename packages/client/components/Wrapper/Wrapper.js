@@ -17,12 +17,12 @@ class Wrapper extends React.Component {
         appConfig: window.Tensei.state.appConfig,
         permissions: window.Tensei.state.permissions,
         shouldShowRegistrationScreen:
-            window.Tensei.state.shouldShowRegistrationScreen,
+            window.Tensei.state.shouldShowRegistrationScreen
     }
 
-    setUser = (user) => {
+    setUser = user => {
         this.setState({
-            user,
+            user
         })
     }
 
@@ -37,7 +37,7 @@ class Wrapper extends React.Component {
             resources,
             dashboards,
             permissions,
-            shouldShowRegistrationScreen,
+            shouldShowRegistrationScreen
         } = this.state
 
         if (!booted) {
@@ -52,26 +52,26 @@ class Wrapper extends React.Component {
                         permissions,
                         setUser: this.setUser,
                         shouldShowRegistrationScreen,
-                        authorizedToFetch: (slug) =>
+                        authorizedToFetch: slug =>
                             user ? permissions[`fetch:${slug}`] : false,
-                        authorizedToShow: (slug) =>
+                        authorizedToShow: slug =>
                             user ? permissions[`show:${slug}`] : false,
-                        authorizedToCreate: (slug) =>
+                        authorizedToCreate: slug =>
                             user ? permissions[`create:${slug}`] : false,
-                        authorizedToUpdate: (slug) =>
+                        authorizedToUpdate: slug =>
                             user ? permissions[`update:${slug}`] : false,
-                        authorizedToDelete: (slug) =>
+                        authorizedToDelete: slug =>
                             user ? permissions[`delete:${slug}`] : false,
                         authorizedToRunAction: (slug, resource) =>
                             user
                                 ? permissions[`run:${resource}:${slug}`]
-                                : false,
+                                : false
                     }}
                 >
                     <Resources.Provider
                         value={{
                             resources,
-                            dashboards,
+                            dashboards
                         }}
                     >
                         <Route

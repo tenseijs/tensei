@@ -10,7 +10,7 @@ export class ResourceHelpers {
         if (!resourceSlug) {
             throw {
                 message: `Resource ${resourceSlug} not found.`,
-                status: 404,
+                status: 404
             }
         }
 
@@ -19,7 +19,7 @@ export class ResourceHelpers {
         }
 
         const resource = this.resources.find(
-            (resource) =>
+            resource =>
                 resource.data.slug === resourceSlug ||
                 resource.data.name === resourceSlug
         )
@@ -27,7 +27,7 @@ export class ResourceHelpers {
         if (!resource) {
             throw {
                 message: `Resource ${resourceSlug} not found.`,
-                status: 404,
+                status: 404
             }
         }
 
@@ -39,7 +39,7 @@ export class ResourceHelpers {
         databaseField: string
     ) => {
         return resource.data.fields.find(
-            (field) =>
+            field =>
                 field.name === databaseField ||
                 field.databaseField === databaseField
         )
@@ -55,7 +55,7 @@ export class ResourceHelpers {
         if (!this.resource) {
             throw {
                 message: `Missing resource for this operation.`,
-                status: 400,
+                status: 400
             }
         }
 
