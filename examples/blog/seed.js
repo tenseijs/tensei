@@ -63,7 +63,9 @@ const postsTagsBuilder = build('PostTag', {
 
 require('./app')
     .register()
-    .then(async ({ databaseClient: knex }) => {
+    .then(async ({ getDatabaseClient }) => {
+        const knex = getDatabaseClient()
+
         await Promise.all([
             knex('posts').truncate(),
             knex('users').truncate(),

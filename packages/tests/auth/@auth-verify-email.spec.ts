@@ -11,9 +11,11 @@ beforeEach(() => {
 jest.mock('speakeasy')
 ;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, databaseClient: knexClient, manager } = await setup({
+        const { app, getDatabaseClient, manager } = await setup({
             databaseClient
         })
+
+        const knexClient = getDatabaseClient()
 
         const client = Supertest(app)
 
@@ -39,9 +41,11 @@ jest.mock('speakeasy')
     })
 
     test(`${databaseClient} - throws error when email verification token is invalid`, async () => {
-        const { app, databaseClient: knexClient, manager } = await setup({
+        const { app, getDatabaseClient, manager } = await setup({
             databaseClient
         })
+
+        const knexClient = getDatabaseClient()
 
         const client = Supertest(app)
 

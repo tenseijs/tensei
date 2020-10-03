@@ -138,7 +138,8 @@ export const setup = async (
         .resources([Post, Tag, User, Comment, Reaction])
         .register()
 
-    const knex: Knex = instance.databaseClient
+    const knex: Knex = instance.getDatabaseClient()
+
     ;(await knex.schema.hasTable('sessions'))
         ? await knex('sessions').truncate()
         : null
@@ -154,7 +155,7 @@ export const setup = async (
 }
 
 export const cleanup = async (
-    databaseClient: Knex = cachedInstance.databaseClient
+    databaseClient: Knex = cachedInstance.getDatabaseClient()
 ) => {
     await databaseClient.destroy()
 }

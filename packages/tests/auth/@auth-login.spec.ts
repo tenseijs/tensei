@@ -37,9 +37,11 @@ jest.mock('speakeasy')
     })
 
     test(`${databaseClient} - returns a 422 if user password is wrong`, async () => {
-        const { app, databaseClient: knex } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const client = Supertest(app)
 
@@ -56,7 +58,7 @@ jest.mock('speakeasy')
     })
 
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, databaseClient: knexClient, manager } = await setup({
+        const { app, manager } = await setup({
             databaseClient
         })
 

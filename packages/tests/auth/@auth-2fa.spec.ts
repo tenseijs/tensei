@@ -26,9 +26,11 @@ jest.mock('speakeasy')
                 } as any)
         )
 
-        const { app, databaseClient: knex, manager } = await setup({
+        const { app, getDatabaseClient, manager } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const user = await createAuthUser(knex)
 
@@ -59,9 +61,11 @@ jest.mock('speakeasy')
 
         totpVerifyMock.mockImplementation(() => jest.fn(() => true))
 
-        const { app, databaseClient: knex, manager } = await setup({
+        const { app, getDatabaseClient, manager } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const user = await createAuthUser(knex, {
             two_factor_secret: sampleBase32,
@@ -98,9 +102,11 @@ jest.mock('speakeasy')
 
         totpVerifyMock.mockImplementation(() => jest.fn(() => true))
 
-        const { app, databaseClient: knex, manager } = await setup({
+        const { app, getDatabaseClient, manager } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const user = await createAuthUser(knex, {
             two_factor_secret: sampleBase32,

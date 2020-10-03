@@ -178,7 +178,9 @@ test('plugins can push in new resources to the application', async () => {
 })
 
 test('the auth middleware passes if the admin is correctly logged in', async () => {
-    const { app, databaseClient: knex } = await setup({}, true)
+    const { app, getDatabaseClient } = await setup({}, true)
+
+    const knex = getDatabaseClient()
 
     const client = Supertest(app)
 
@@ -202,7 +204,7 @@ test('the auth middleware passes if the admin is correctly logged in', async () 
 })
 
 test('the auth middleware returns a 401 if there is no logged in admin', async () => {
-    const { app, databaseClient: knex } = await setup({}, true)
+    const { app } = await setup({}, true)
 
     const client = Supertest(app)
 
@@ -213,7 +215,7 @@ test('the auth middleware returns a 401 if there is no logged in admin', async (
 })
 
 test('the set auth middleware returns a 401 if the user does not exist in the database', async () => {
-    const { app, databaseClient: knex } = await setup(
+    const { app } = await setup(
         {
             plugin: [
                 plugin('').beforeDatabaseSetup(async ({ app }) => {

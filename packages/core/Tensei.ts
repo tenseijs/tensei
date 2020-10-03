@@ -14,29 +14,28 @@ import IndexResourceController from './controllers/resources/IndexResourceContro
 import {
     text,
     Asset,
+    Config,
+    Manager,
     resource,
+    belongsToMany,
     PluginContract,
     ResourceContract,
     SetupFunctions,
-    Config,
-    Manager,
     ManagerContract,
+    InBuiltEndpoints,
+    DashboardContract,
     SupportedDatabases,
-    DatabaseRepositoryInterface,
-    belongsToMany
+    EndpointMiddleware,
+    DatabaseRepositoryInterface
 } from '@tensei/common'
+import MetricController from './controllers/MetricController'
+import FindResourceController from './controllers/resources/FindResourceController'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
-import FindResourceController from './controllers/resources/FindResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { DashboardContract } from '@tensei/common'
-import MetricController from './controllers/MetricController'
-import { EndpointMiddleware } from '@tensei/common'
-import { InBuiltEndpoints } from '@tensei/common'
 
 export class Tensei {
     public app: Application = Express()
-    public databaseClient: any = null
     public extensions: {
         [key: string]: any
     } = {}
@@ -45,11 +44,12 @@ export class Tensei {
     private registeredApplication: boolean = false
     private mailer: Mail = mail().connection('ethereal')
 
-    private supportedDatabases = ['mysql', 'pg', 'sqlite', 'mongodb']
-
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
     private config: Config = {
+        databaseClient: null,
+        serverUrl: '',
+        clientUrl: '',
         resources: [],
         plugins: [],
         dashboards: [],
@@ -192,6 +192,10 @@ export class Tensei {
         return this
     }
 
+    public getDatabaseClient = () => {
+        return this.config.databaseClient
+    }
+
     public async registerDatabase() {
         if (this.databaseBooted) {
             return this
@@ -234,7 +238,7 @@ export class Tensei {
 
         this.resources(repository.setResourceModels(this.config.resources))
 
-        this.databaseClient = client
+        this.config.databaseClient = client
         this.databaseRepository = repository
 
         this.app.use(
@@ -287,7 +291,7 @@ export class Tensei {
 
         if (['mysql', 'pg', 'sqlite3'].includes(this.config.database)) {
             storeArguments = {
-                knex: this.databaseClient
+                knex: this.config.databaseClient
             }
         }
 
@@ -595,6 +599,18 @@ export class Tensei {
             ...this.getMiddlewareForEndpoint('delete'),
             this.config.deleteController
         )
+    }
+
+    public serverUrl(url: string) {
+        this.config.serverUrl = url
+
+        return this
+    }
+
+    public clientUrl(url: string) {
+        this.config.clientUrl = url
+
+        return this
     }
 
     private getMiddlewareForEndpoint(endpoint: InBuiltEndpoints) {

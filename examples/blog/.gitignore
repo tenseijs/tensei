@@ -1,2 +1,3 @@
 node_modules/
 .env
+connect-session-knex.sqlite

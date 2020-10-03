@@ -8,20 +8,19 @@ import Bookshelf from 'bookshelf'
 import { snakeCase, sentenceCase } from 'change-case'
 
 import {
-    DatabaseRepositoryInterface,
-    SerializedResource,
-    SerializedField,
-    Config,
     text,
-    belongsToMany,
+    Config,
     resource,
     dateTime,
-    ResourceContract,
     DataPayload,
+    belongsToMany,
+    SerializedField,
+    ResourceHelpers,
+    ResourceContract,
+    SerializedResource,
     FetchAllRequestQuery,
-    ResourceHelpers
+    DatabaseRepositoryInterface
 } from '@tensei/common'
-import { hasMany } from '@tensei/common'
 
 export class SqlRepository extends ResourceHelpers
     implements DatabaseRepositoryInterface {
@@ -880,9 +879,17 @@ export class SqlRepository extends ResourceHelpers
     public findAllBelongingToMany = async (
         relatedResource: ResourceContract,
         resourceId: string | number,
-        query: FetchAllRequestQuery
+        baseQuery: FetchAllRequestQuery
     ) => {
         const resource = this.getCurrentResource()
+
+        const query = {
+            ...baseQuery,
+            page: baseQuery.page || 1,
+            search: baseQuery.search || '',
+            fields: baseQuery.fields || '*',
+            perPage: baseQuery.perPage || 10
+        }
 
         const Model = this.getResourceBookshelfModel(resource)
 
@@ -940,10 +947,12 @@ export class SqlRepository extends ResourceHelpers
                     [relatedResource.data.slug]: function(builder: any) {
                         return getBuilder(builder)
                             .select(
-                                query.fields.map(
-                                    field =>
-                                        `${relatedResource.data.table}.${field}`
-                                )
+                                Array.isArray(query.fields)
+                                    ? query.fields.map(
+                                          field =>
+                                              `${relatedResource.data.table}.${field}`
+                                      )
+                                    : '*'
                             )
                             .limit(query.perPage)
                             .offset((query.page - 1) * query.perPage)
@@ -956,7 +965,7 @@ export class SqlRepository extends ResourceHelpers
             page: query.page,
             perPage: query.perPage,
             total: count as number,
-            pageCount: Math.ceil((count as number) / query.perPage),
+            pageCount: Math.ceil((count as number) / (query.perPage || 10)),
             data: data.relations[relatedResource.data.slug].models
         }
     }
@@ -965,7 +974,7 @@ export class SqlRepository extends ResourceHelpers
         filters: FetchAllRequestQuery['filters'],
         builder: Knex
     ): Knex => {
-        filters.forEach(filter => {
+        ;(filters || []).forEach(filter => {
             if (filter.operator === 'null') {
                 builder.whereNull(filter.field)
 
@@ -1024,9 +1033,17 @@ export class SqlRepository extends ResourceHelpers
         return builder
     }
 
-    public findAll = async (query: FetchAllRequestQuery) => {
+    public findAll = async (baseQuery: FetchAllRequestQuery) => {
         const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)
+
+        const query = {
+            ...baseQuery,
+            page: baseQuery.page || 1,
+            search: baseQuery.search || '',
+            perPage: baseQuery.perPage || 10,
+            fields: baseQuery.fields || '*'
+        }
 
         const getBuilder = () => {
             let builder = Model.query()

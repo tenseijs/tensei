@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import { validateAll } from 'indicative/validator'
 import { resource as createResourceFn } from './Resource'
-import { DataPayload, FetchAllRequestQuery } from '@tensei/common'
+import { DataPayload, FetchAllRequestQuery, Filter } from '@tensei/common'
 import {
     ActionResponse,
     ManagerContract,
@@ -20,10 +20,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     public async deleteById(id: number | string) {
-        const model = await this.database().findOneById(id)
-
-        await this.authorize('authorizedToDelete', model)
-
         return this.database().deleteById(id)
     }
 
@@ -32,8 +28,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     public aggregateCount = async (between: [string, string]) => {
-        await this.authorize('authorizedToFetch')
-
         return this.database().aggregateCount(between)
     }
 
@@ -41,8 +35,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         between: [string, string],
         columns: string[]
     ) => {
-        await this.authorize('authorizedToFetch')
-
         return this.database().aggregateAvg(between, columns)
     }
 
@@ -50,8 +42,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         between: [string, string],
         columns: string[]
     ) => {
-        await this.authorize('authorizedToFetch')
-
         return this.database().aggregateMax(between, columns)
     }
 
@@ -59,8 +49,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         between: [string, string],
         columns: string[]
     ) => {
-        await this.authorize('authorizedToFetch')
-
         return this.database().aggregateMin(between, columns)
     }
 
@@ -93,8 +81,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     public async create(payload: DataPayload) {
         const resource = this.getCurrentResource()
-
-        await this.authorize('authorizedToCreate')
 
         let validatedPayload = await this.validate(payload)
 
@@ -136,17 +122,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             )
         }
 
-        const model = await this.findOneByField(databaseField, value)
-
-        if (! model) {
-            throw {
-                status: 404,
-                message: `Resource with ${databaseField} ${value} was not found.`
-            }
-        }
-
-        await this.authorize('authorizedToUpdate', model)
-
         let { parsedPayload } = await this.validate(payload, false)
 
         return this.database().updateOneByField(
@@ -162,17 +137,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         patch = true
     ) {
         const resource = this.getCurrentResource()
-
-        const model = await this.database().findOneById(id)
-
-        if (! model) {
-            throw {
-                status: 404,
-                message: `Resource with id ${id} was not found.`
-            }
-        }
-
-        await this.authorize('authorizedToUpdate', model)
 
         let { parsedPayload, relationshipFieldsPayload } = await this.validate(
             payload,
@@ -222,8 +186,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 ]
             }
 
-            await this.authorize('authorizedToUpdate', relatedResource)
-
             if (field.component === 'HasManyField') {
                 // first we'll set all related belongs to values to null on the related resource
                 const relatedBelongsToField = relatedResource.data.fields.find(
@@ -269,7 +231,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         }: Request['query'],
         resource = this.getCurrentResource()
     ) {
-        let filters: FetchAllRequestQuery['filters'] = []
+        let filters: Filter[] = []
 
         if (typeof filter === 'object') {
             Object.keys(filter || {}).forEach((filterKey) => {
@@ -340,8 +302,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     public async findAll(query = undefined) {
         const resource = this.getCurrentResource()
 
-        await this.authorize('authorizedToFetch')
-
         const {
             perPage,
             page,
@@ -369,9 +329,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ) {
         const resource = this.getCurrentResource()
         const relatedResource = this.findResource(relatedResourceSlugOrResource)
-
-        await this.authorize('authorizedToShow')
-        await this.authorize('authorizedToFetch', relatedResource)
 
         const relationField = resource.data.fields.find(
             (field) => field.name === relatedResource.data.name
@@ -438,8 +395,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     public async findOneById(id: number | string, withRelated?: string[]) {
-        await this.authorize('authorizedToShow')
-
         const { fields, withRelationships } = await this.validateRequestQuery(
             this.request?.query || {}
         )
@@ -691,8 +646,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ): Promise<ActionResponse> => {
         const resource = this.getCurrentResource()
 
-        await this.authorize('authorizedToRunAction')
-
         const action = resource.data.actions.find(
             (action) => action.data.slug === actionSlug
         )
@@ -745,14 +698,10 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     findAllCount = async () => {
-        await this.authorize('authorizedToFetch')
-
         return this.database().findAllCount()
     }
 
     findOneByField = async (databaseField: string, value: any) => {
-        await this.authorize('authorizedToShow')
-
         const resource = this.getCurrentResource()
 
         const field = this.getFieldFromResource(resource, databaseField)

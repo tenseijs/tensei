@@ -2,9 +2,11 @@ import Supertest from 'supertest'
 import { setup, createAdminUser, cleanup } from '../../helpers'
 ;['mysql', 'sqlite', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - can successfully logout when administrator is logged in`, async () => {
-        const { app, databaseClient: knex } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
+
+        const knex = getDatabaseClient()
 
         const client = Supertest(app)
 

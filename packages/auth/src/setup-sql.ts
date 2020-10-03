@@ -5,7 +5,7 @@ import { AuthPluginConfig } from './config'
 
 export default async (
     config: PluginSetupConfig,
-    authConfig: AuthPluginConfig,
+    authConfig: AuthPluginConfig
 ) => {
     const { resources } = config
     const UserResource = resources.find(
@@ -79,31 +79,29 @@ export default async (
     // There will be two default roles: Authenticated & Public
     // Public will have no permissions attached by default
     let [authenticatedRole, publicRole] = await Promise.all([
-        RoleModel.query().insert({
-            name: 'Authenticated',
-            slug: 'authenticated'
+        RoleModel.query().where({
+            slug: 'authenticated',
         }),
-        RoleModel.query().insert({
-            name: 'Public',
-            slug: 'public'
+        RoleModel.query().where({
+            slug: 'public',
         }),
     ])
 
     const rolesToCreate = []
 
-    if (! authenticatedRole) {
+    if (!authenticatedRole || !authenticatedRole[0]) {
         rolesToCreate.push(
             RoleModel.query().insert({
                 name: 'Authenticated',
-                slug: 'authenticated'
+                slug: 'authenticated',
             })
         )
     }
 
-    if (! publicRole) {
+    if (!publicRole || !publicRole[0]) {
         RoleModel.query().insert({
             name: 'Public',
-            slug: 'public'
+            slug: 'public',
         })
     }
 

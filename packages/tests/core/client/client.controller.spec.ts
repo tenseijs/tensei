@@ -16,11 +16,11 @@ test('can fetch the index.html file on all subroutes of the dashboard page', asy
 })
 
 test('passes shouldShowRegistrationScreen: false option to client if an administrator already exists', async () => {
-    const { app, databaseClient } = await setup()
+    const { app, getDatabaseClient } = await setup()
 
     const client = Supertest(app)
 
-    await createAdminUser(databaseClient)
+    await createAdminUser(getDatabaseClient())
 
     const response = await client.get(`/admin`)
 
@@ -29,11 +29,11 @@ test('passes shouldShowRegistrationScreen: false option to client if an administ
 })
 
 test('passes user to view if user is logged in', async () => {
-    const { app, databaseClient } = await setup()
+    const { app, getDatabaseClient } = await setup()
 
     const client = Supertest(app)
 
-    const admin = await createAdminUser(databaseClient)
+    const admin = await createAdminUser(getDatabaseClient())
 
     const cookie = (
         await client.post('/admin/api/login').send({

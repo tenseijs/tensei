@@ -1,7 +1,25 @@
 import { FieldContract, User, HookFunction } from '@tensei/common'
 
+export interface GrantConfig {
+    key: string
+    secret: string
+    scope?: string[]
+    callback?: string
+    redirect_uri?: string
+    clientCallback: string
+}
+
+export type SupportedSocialProviders =
+    | 'github'
+    | 'gitlab'
+    | 'google'
+    | 'facebook'
+    | 'twitter'
+    | 'linkedin'
+
 export interface AuthPluginConfig {
     fields: FieldContract[]
+    profilePictures: boolean
     nameResource: string
     roleResource: string
     permissionResource: string
@@ -23,6 +41,10 @@ export interface AuthPluginConfig {
     afterUpdateUser?: HookFunction
     beforeLoginUser?: HookFunction
     afterLoginUser?: HookFunction
+    beforeOAuthIdentityCreated?: HookFunction
+    providers: {
+        [key: string]: GrantConfig
+    }
 }
 
 export interface UserWithAuth extends User {
@@ -34,3 +56,15 @@ export interface UserWithAuth extends User {
 }
 
 export type AuthData = { email: string; password: string; name?: string }
+
+export const defaultProviderScopes = (
+    provider: SupportedSocialProviders
+): string[] =>
+    ({
+        google: ['email'],
+        github: ['user', 'user:email'],
+        gitlab: [],
+        facebook: ['email'],
+        twitter: [],
+        linkedin: ['r_liteprofile', 'r_emailaddress'],
+    }[provider])
