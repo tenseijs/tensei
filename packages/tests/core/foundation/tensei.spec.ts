@@ -244,13 +244,21 @@ test('the set auth middleware returns a 401 if the user does not exist in the da
 test('can add custom storage drivers', async () => {
     const instance = await setup()
 
-    instance.storageDriver('s3', {
-        key: 'example_s3_key'
-    }, {})
+    instance.storageDriver(
+        's3',
+        {
+            key: 'example_s3_key'
+        },
+        {}
+    )
 
-    instance.storageDriver('cloudinary', {
-        key: 'example_cloudinary_key'
-    }, {})
+    instance.storageDriver(
+        'cloudinary',
+        {
+            key: 'example_cloudinary_key'
+        },
+        {}
+    )
 
     expect(instance.storage.disksConfig.s3).toEqual({
         driver: 's3',

@@ -331,8 +331,10 @@ export class Tensei {
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
-        const rootStorage = (this.storageConfig.disks?.local?.config as any).root
-        const publicPath = (this.storageConfig.disks?.local?.config as any).publicPath
+        const rootStorage = (this.storageConfig.disks?.local?.config as any)
+            .root
+        const publicPath = (this.storageConfig.disks?.local?.config as any)
+            .publicPath
 
         if (rootStorage && publicPath) {
             this.app.use(Express.static(`${rootStorage}/${publicPath}`))

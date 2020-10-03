@@ -21,10 +21,10 @@ module.exports = tensei()
     .storageDriver(
         's3',
         {
-            key: 'AKIAYCA6IR7CS2WL6P7B',
-            secret: '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',
-            region: 'us-east-1',
-            bucket: 'tensei',
+            key: process.env.AWS_KEY,
+            secret: process.env.AWS_SECRET,
+            region: process.env.AWS_REGION,
+            bucket: process.env.AWS_BUCKET,
         },
         AmazonWebServicesS3Storage
     )
@@ -75,28 +75,21 @@ module.exports = tensei()
             .apiPath('auth')
             .rolesAndPermissions()
             .social('github', {
-                key: 'fe70f4adef103b95d58d',
-                secret: '20af95da2d79cbde357ac739e6f7e588fc13fc63',
+                key: process.env.GITHUB_KEY,
+                secret: process.env.GITHUB_SECRET,
                 scope: ['user', 'user:email'],
             })
-            .social('twitter', {
-                key: 'cpKhfpZr3aYokVhJXPRxvwya9',
-                secret: 'dZCpuEoTJxAiIgVgVpdPORoCPvdF9pAddsQ8sV8oQ3AlnnAffa',
-            })
             .social('gitlab', {
-                key:
-                    'be9855c70e85496e7d5281793ae96dda5c3e0558a5870dfc1d585ead3f7ced3c',
-                secret:
-                    'e6bfcce12fdeac1b8bd7a397de8fe39b98f6b1b39b0228fcd349796fe749d00c',
+                key: process.env.GITLAB_KEY,
+                secret: process.env.GITLAB_SECRET,
             })
             .social('google', {
-                key:
-                    '76952592334-fs7o9kt3fjt3of9lf36mpirlgm0eua5t.apps.googleusercontent.com',
-                secret: 'GNadJyJK0scU7AO7KiGz9Nnp',
+                key: process.env.GOOGLE_KEY,
+                secret: process.env.GOOGLE_SECRET,
             })
             .social('linkedin', {
-                key: '77pu89txu2rshd',
-                secret: 'wHTGlrThZnOBbEHL',
+                key: process.env.LINKEDIN_KEY,
+                secret: process.env.LINKEDIN_SECRET,
             })
             .plugin(),
         trix(),
