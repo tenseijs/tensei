@@ -1,7 +1,7 @@
 import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
+import { setup, fakePostData, cleanup } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -43,7 +43,9 @@ beforeEach(() => {
 
         expect(response.status).toBe(204)
 
-        response = await client.get(`/admin/api/resources/posts`).send(userDetails)
+        response = await client
+            .get(`/admin/api/resources/posts`)
+            .send(userDetails)
 
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(1)
@@ -88,4 +90,8 @@ beforeEach(() => {
             { message: 'Post resource with id 21 was not found.' }
         ])
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

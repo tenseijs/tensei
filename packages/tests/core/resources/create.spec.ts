@@ -1,8 +1,8 @@
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
 import { Post } from '../../helpers/resources'
+import { setup, fakePostData, cleanup } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -32,7 +32,9 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        const response = await client.post(`/admin/api/resources/posts`).send(post)
+        const response = await client
+            .post(`/admin/api/resources/posts`)
+            .send(post)
 
         expect(beforeCreateHook).toHaveBeenCalledTimes(1)
 
@@ -61,7 +63,9 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        let response = await client.post(`/admin/api/resources/posts`).send(post)
+        let response = await client
+            .post(`/admin/api/resources/posts`)
+            .send(post)
 
         expect(response.status).toBe(201)
 
@@ -100,7 +104,9 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        let response = await client.post(`/admin/api/resources/posts`).send(post)
+        let response = await client
+            .post(`/admin/api/resources/posts`)
+            .send(post)
 
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')
@@ -137,7 +143,9 @@ beforeEach(() => {
 
         const client = Supertest(app)
 
-        let response = await client.post(`/admin/api/resources/posts`).send(post)
+        let response = await client
+            .post(`/admin/api/resources/posts`)
+            .send(post)
 
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')
@@ -149,4 +157,8 @@ beforeEach(() => {
             }
         ])
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

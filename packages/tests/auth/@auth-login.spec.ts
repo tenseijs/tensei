@@ -2,7 +2,7 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAdminUser } from '../helpers'
+import { setup, createAdminUser, cleanup } from '../helpers'
 
 jest.mock('speakeasy')
 ;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
@@ -86,8 +86,12 @@ jest.mock('speakeasy')
                 id: expect.any(Number),
                 name: userData.name,
                 email_verified_at: null,
-                two_factor_enabled: null,
+                two_factor_enabled: null
             }
         })
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

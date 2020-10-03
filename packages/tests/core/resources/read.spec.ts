@@ -1,12 +1,17 @@
-import Faker, { fake, lorem } from 'faker'
+import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData } from '../../helpers'
+import { setup, fakePostData, cleanup } from '../../helpers'
 ;['sqlite3', 'mysql', 'pg'].forEach((databaseClient: any) => {
     test(`${databaseClient} - paginates resources appropriately (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
-                permissions: ['create:users', 'fetch:users', 'fetch:posts', 'create:posts']
+                permissions: [
+                    'create:users',
+                    'fetch:users',
+                    'fetch:posts',
+                    'create:posts'
+                ]
             } as any,
             databaseClient
         })
@@ -51,6 +56,111 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.total).toBe(30)
         expect(response.body.page).toBe(2)
         expect(response.body.perPage).toBe(25)
+    })
+    test(`${databaseClient} - filters resources correctly (posts)`, async () => {
+        const { app, manager } = await setup({
+            admin: {
+                permissions: ['create:users']
+            } as any,
+            databaseClient
+        })
+
+        const userDetails = {
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        }
+
+        const user = (
+            await manager({} as any)('User').create(userDetails)
+        ).toJSON()
+
+        await Promise.all(
+            Array.from({ length: 10 }).map(() =>
+                manager({} as any)('Post').create({
+                    ...fakePostData(),
+                    title: lorem.words(3).slice(0, 23),
+                    av_cpc: 1200,
+                    user_id: user.id
+                })
+            )
+        )
+
+        await Promise.all(
+            Array.from({ length: 15 }).map(() =>
+                manager({} as any)('Post').create({
+                    ...fakePostData(),
+                    title: lorem.words(3).slice(0, 23),
+                    av_cpc: 10410,
+                    user_id: user.id
+                })
+            )
+        )
+
+        await manager({} as any)('Post').create({
+            ...fakePostData(),
+            title: 'example title',
+            av_cpc: 11,
+            // published_at: new Date("3/3/2020"),
+            user_id: user.id
+        })
+
+        const client = Supertest(app)
+
+        let response = await client
+            .get(`/admin/api/resources/posts?filter[av_cpc:gt]=10000`)
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(15)
+
+        response = await client
+            .get(`/admin/api/resources/posts?filter[av_cpc:lt]=1201`)
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(11)
+
+        response = await client
+            .get(`/admin/api/resources/posts?filter[av_cpc:lte]=1200`)
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(11)
+
+        response = await client
+            .get(`/admin/api/resources/posts?filter[av_cpc:gt]=1201`)
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(15)
+
+        response = await client
+            .get(`/admin/api/resources/posts?filter[title:contains]=example`)
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(1)
+        expect(response.body.data[0].title).toContain('example')
+
+        response = await client
+            .get(
+                `/admin/api/resources/posts?filter[title:equals]=example title`
+            )
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(1)
+        expect(response.body.data[0].title).toBe('example title')
+
+        response = await client
+            .get(
+                `/admin/api/resources/posts?filter[title:not_equals]=example title`
+            )
+            .send(userDetails)
+
+        expect(response.status).toBe(200)
+        expect(response.body.total).toBe(25)
     })
     test(`${databaseClient} - show only selected fields (posts) `, async () => {
         const { app, manager } = await setup({
@@ -128,7 +238,9 @@ import { setup, fakePostData } from '../../helpers'
         const client = Supertest(app)
 
         let response = await client
-            .get(`/admin/api/resources/posts?perPage=10&page=1&search=new title 1`)
+            .get(
+                `/admin/api/resources/posts?perPage=10&page=1&search=new title 1`
+            )
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -136,7 +248,9 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.data[0].title).toBe(titles[0])
 
         response = await client
-            .get(`/admin/api/resources/posts?perPage=10&page=1&search=new title 2`)
+            .get(
+                `/admin/api/resources/posts?perPage=10&page=1&search=new title 2`
+            )
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -144,7 +258,9 @@ import { setup, fakePostData } from '../../helpers'
         expect(response.body.data[0].title).toBe(titles[1])
 
         response = await client
-            .get(`/admin/api/resources/posts?perPage=10&page=1&search=new title`)
+            .get(
+                `/admin/api/resources/posts?perPage=10&page=1&search=new title`
+            )
             .send(userDetails)
 
         expect(response.status).toBe(200)
@@ -154,6 +270,7 @@ import { setup, fakePostData } from '../../helpers'
             expect(d.title).toBe(titles[i])
         })
     })
+
     test(`${databaseClient} - find all related resources (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -226,6 +343,7 @@ import { setup, fakePostData } from '../../helpers'
             expect(d.user_id).toBe(2)
         })
     })
+
     test(`${databaseClient} - throws error when related resource is not found (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -338,4 +456,8 @@ import { setup, fakePostData } from '../../helpers'
             `Could not find a resource with id ${wrongID}`
         )
     })
+})
+
+afterAll(async () => {
+    await cleanup()
 })

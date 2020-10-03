@@ -1,6 +1,6 @@
 import Supertest from 'supertest'
 
-import { setup } from '../../helpers'
+import { setup, cleanup } from '../../helpers'
 
 test('runs an action that returns html', async () => {
     const { app } = await setup({
@@ -9,7 +9,9 @@ test('runs an action that returns html', async () => {
 
     const client = Supertest(app)
 
-    const response = await client.post('/admin/api/resources/posts/actions/archive')
+    const response = await client.post(
+        '/admin/api/resources/posts/actions/archive'
+    )
 
     expect(response.status).toBe(201)
     expect(response.body.html).toMatch(
@@ -39,7 +41,9 @@ test('runs an action with fields that returns a push', async () => {
 
     const client = Supertest(app)
 
-    const response = await client.post('/admin/api/resources/posts/actions/fix-seo')
+    const response = await client.post(
+        '/admin/api/resources/posts/actions/fix-seo'
+    )
 
     expect(response.status).toBe(202)
     expect(response.body).toMatchSnapshot()
@@ -58,4 +62,8 @@ test('runs an action with fields that returns an array of validation errors', as
 
     expect(response.status).toBe(422)
     expect(response.body).toMatchSnapshot()
+})
+
+afterAll(async () => {
+    await cleanup()
 })

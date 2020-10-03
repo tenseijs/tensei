@@ -22,7 +22,7 @@ interface ConfigureSetup {
     createAndLoginAdmin?: boolean
 }
 
-let cachedInstance: TenseiContract | null = null
+export let cachedInstance: TenseiContract | null = null
 
 export const fakePostData = () => ({
     title: Faker.lorem.word(),
@@ -46,8 +46,7 @@ export const setup = async (
         apiPath,
         databaseClient,
         dashboardPath,
-        authApiPath,
-        createAndLoginAdmin
+        authApiPath
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -154,7 +153,9 @@ export const setup = async (
     return instance
 }
 
-export const cleanup = async (databaseClient: Knex) => {
+export const cleanup = async (
+    databaseClient: Knex = cachedInstance.databaseClient
+) => {
     await databaseClient.destroy()
 }
 

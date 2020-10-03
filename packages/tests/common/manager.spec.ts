@@ -12,18 +12,17 @@ const setup = (
         }
     } as any,
     instance = db
-) =>
-    {
-        const manager = new Manager(
-            request,
-            [Tag, Comment, User, Post, ...resources],
-            instance as any
-        ).setResource(resource)
+) => {
+    const manager = new Manager(
+        request,
+        [Tag, Comment, User, Post, ...resources],
+        instance as any
+    ).setResource(resource)
 
-        manager.authorize = jest.fn(() => Promise.resolve())
+    manager.authorize = jest.fn(() => Promise.resolve())
 
-        return manager
-    }
+    return manager
+}
 
 describe('Manager', () => {
     describe('findResource', () => {
