@@ -13,7 +13,7 @@ declare module '@tensei/core' {
 
     export interface TenseiContract {
         app: Application
-        databaseClient: any
+        getDatabaseClient(): any
         extensions: {
             [key: string]: any
         }

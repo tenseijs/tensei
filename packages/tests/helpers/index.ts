@@ -155,7 +155,7 @@ export const setup = async (
 }
 
 export const cleanup = async (
-    databaseClient: Knex = cachedInstance.databaseClient
+    databaseClient: Knex = cachedInstance.getDatabaseClient()
 ) => {
     await databaseClient.destroy()
 }
