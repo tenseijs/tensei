@@ -135,8 +135,10 @@ console.log(this.schemaString)
     
         resources.forEach(resource => {
             // handle fetch all resolvers
-            resolvers[resource.data.camelCaseNamePlural] = async (args: any) => {
+            resolvers[resource.data.camelCaseNamePlural] = async (args: any, request: any, ql: any) => {
                 const resourceManager = manager(resource.data.name)
+
+                // console.log(ql.fieldNodes[0].selectionSet.selections[3])
 
                 const data = await resourceManager.database().findAll(args)
 
@@ -152,7 +154,9 @@ console.log(this.schemaString)
                             result[relatedResource.data.camelCaseName] = async () => {
                                 const relatedRow = await manager(relatedResource.data.name).database().findOneById(row[field.databaseField])
 
-                                return relatedRow.toJSON()
+                                let relatedRowJson = relatedRow.toJSON()
+
+                                return relatedRowJson
                             }
                         }
                     })
@@ -162,10 +166,32 @@ console.log(this.schemaString)
             }
 
             // handle fetch one resolvers
-            resolvers[resource.data.camelCaseName] = async (...all: any) => {
-                console.log('______________ RESOLVER', all)
+            resolvers[resource.data.camelCaseName] = async (args: any) => {
+                const resourceManager = manager(resource.data.name)
 
-                return []
+                const data = await resourceManager.database().findOneById(args.id)
+
+                let result = {
+                    ...data,
+                }
+
+                resource.data.fields.forEach(field => {
+                    if (field.component === 'HasManyField') {
+                        const relatedResource = resources.find(resource => resource.data.name === field.name)!
+                        console.log('>>>>>>>>>>>>>>>>', relatedResource.data.camelCaseNamePlural)
+
+                        result[relatedResource.data.camelCaseNamePlural] = async () => {
+                            const relatedRow = await manager(relatedResource.data.name).database().findAll({})
+
+                            return relatedRow.data.map(_ => ({
+                                ..._.toJSON(),
+                                
+                            }))
+                        }
+                    }
+                })
+
+                return result
             }
         })
 
