@@ -58,6 +58,7 @@ export class SqlRepository extends ResourceHelpers
                 belongsToMany('Administrator'),
                 belongsToMany('Administrator Permission')
             ])
+            .hideFromApi()
     }
 
     private permissionResource() {
@@ -70,6 +71,7 @@ export class SqlRepository extends ResourceHelpers
                     .unique(),
                 belongsToMany('Administrator Role')
             ])
+            .hideFromApi()
     }
 
     private passwordResetsResource() {
@@ -85,6 +87,7 @@ export class SqlRepository extends ResourceHelpers
                     .notNullable(),
                 dateTime('Expires At')
             ])
+            .hideFromApi()
     }
 
     private administratorResource() {
@@ -111,6 +114,7 @@ export class SqlRepository extends ResourceHelpers
                 ...payload,
                 password: Bcrypt.hashSync(payload.password)
             }))
+            .hideFromApi()
     }
 
     public setup = async (config: Config) => {
@@ -975,7 +979,7 @@ export class SqlRepository extends ResourceHelpers
         builder: Knex
     ): Knex => {
         ;(filters || []).forEach(filter => {
-            if (filter.operator === 'null') {
+            if (filter.operator === 'is_null') {
                 builder.whereNull(filter.field)
 
                 return

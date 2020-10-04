@@ -22,7 +22,7 @@ declare module '@tensei/common/config' {
             | 'equals'
             | 'contains'
             | 'not_equals'
-            | 'null'
+            | 'is_null'
             | 'not_null'
             | 'gt'
             | 'gte'

@@ -1,4 +1,5 @@
-import { snakeCase, camelCase } from 'change-case'
+import Pluralize from 'pluralize'
+import { snakeCase, camelCase, pascalCase } from 'change-case'
 import {
     FieldHookFunction,
     AuthorizeFunction,
@@ -176,6 +177,12 @@ export class Field implements FieldContract {
      */
     public databaseField: string
 
+    public camelCaseName: string
+
+    public camelCaseNamePlural: string
+
+    public pascalCaseName: string
+
     /**
      *
      * The
@@ -215,6 +222,10 @@ export class Field implements FieldContract {
         this.name = name
 
         this.databaseField = databaseField || snakeCase(this.name)
+
+        this.camelCaseName = camelCase(name)
+        this.pascalCaseName = pascalCase(name)
+        this.camelCaseNamePlural = Pluralize(this.camelCaseName)
     }
 
     /**
@@ -562,7 +573,9 @@ export class Field implements FieldContract {
             fieldName: this.constructor.name,
             databaseField: this.databaseField,
             databaseFieldType: this.databaseFieldType,
-            isRelationshipField: this.isRelationshipField
+            isRelationshipField: this.isRelationshipField,
+            camelCaseNamePlural: this.camelCaseNamePlural,
+            pascalCaseName: this.pascalCaseName
         }
     }
 }

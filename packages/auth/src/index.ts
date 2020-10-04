@@ -39,7 +39,7 @@ class Auth {
         nameResource: 'User',
         roleResource: 'Role',
         permissionResource: 'Permission',
-        passwordResetsResource: 'Password Resets',
+        passwordResetsResource: 'Password Reset',
         fields: [],
         apiPath: 'auth',
         jwt: {
@@ -321,9 +321,10 @@ class Auth {
             .hideFromNavigation()
             .fields([
                 text('Email').searchable().unique().notNullable(),
-                text('Token').unique().notNullable(),
+                text('Token').unique().notNullable().hidden(),
                 dateTime('Expires At')
             ])
+            .hideFromApi()
     }
 
     private oauthResource() {

@@ -39,6 +39,9 @@ declare module '@tensei/common/fields' {
         trueLabel?: string
         falseLabel?: string
         isRelationshipField: boolean
+        camelCaseName: string
+        camelCaseNamePlural: string
+        pascalCaseName: string
     }
     interface FieldContract {
         showHideField: {
@@ -158,6 +161,12 @@ declare module '@tensei/common/fields' {
          *
          */
         defaultValue: string | number | boolean
+
+        camelCaseName: string
+
+        pascalCaseName: string
+
+        camelCaseNamePlural: string
         /**
          * Instantiate a new field. Requires the name,
          * and optionally the corresponding database
@@ -375,7 +384,7 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => SelectContract
-    interface TextareaContract extends Text {}
+    interface TextareaContract extends TextContract {}
     const textarea: (
         name: string,
         databaseField?: string | undefined

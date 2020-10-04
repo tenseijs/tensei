@@ -12,7 +12,7 @@ import {
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'
-import { snakeCase, paramCase, camelCase } from 'change-case'
+import { snakeCase, paramCase, camelCase, pascalCase } from 'change-case'
 
 interface ResourceDataWithFields extends ResourceData {
     fields: FieldContract[]
@@ -82,6 +82,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         this.data.camelCaseName = camelCase(name)
         this.data.camelCaseNamePlural = Pluralize(camelCase(name))
         this.data.table = tableName || Pluralize(snakeCase(name))
+        this.data.pascalCaseName = pascalCase(name)
     }
 
     public Model = (): any => {
@@ -95,6 +96,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         name: '',
         slug: '',
         label: '',
+        hideFromApi: false,
         permissions: [],
         group: 'Resources',
         groupSlug: 'resources',
@@ -103,6 +105,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         noTimeStamps: false,
         camelCaseName: '',
         camelCaseNamePlural: '',
+        pascalCaseName: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
             email: 'The {{ field }} must be a valid email address.'
@@ -113,6 +116,12 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public permissions(permissions: Permission[]) {
         this.data.permissions = permissions
+
+        return this
+    }
+
+    public hideFromApi() {
+        this.data.hideFromApi = true
 
         return this
     }

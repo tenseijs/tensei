@@ -21,6 +21,7 @@ declare module '@tensei/common/resources' {
         label: string
         groupSlug: string
         valueField: string
+        hideFromApi: boolean
         camelCaseName: string
         displayField: string
         noTimeStamps: boolean
@@ -28,6 +29,7 @@ declare module '@tensei/common/resources' {
         permissions: Permission[]
         camelCaseNamePlural: string
         displayInNavigation: boolean
+        pascalCaseName: string
         validationMessages: ValidationMessages
     }
     interface ResourceDataWithFields extends ResourceData {
@@ -63,6 +65,7 @@ declare module '@tensei/common/resources' {
             afterUpdate: HookFunction
         }
         data: ResourceDataWithFields
+        hideFromApi(): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this
@@ -118,6 +121,7 @@ declare module '@tensei/common/resources' {
             afterUpdate: HookFunction
         }
         data: ResourceDataWithFields
+        hideFromApi(): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this

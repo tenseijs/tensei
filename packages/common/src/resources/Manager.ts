@@ -245,13 +245,11 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             })
         }
 
-        const supportedOperators = [
+        const supportedOperators: Filter['operator'][] = [
             'equals',
             'contains',
             'not_equals',
-            'exists',
-            'doesnt_exist',
-            'null',
+            'is_null',
             'not_null',
             'gt',
             'gte',
