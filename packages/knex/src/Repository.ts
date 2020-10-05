@@ -892,7 +892,7 @@ export class SqlRepository extends ResourceHelpers
             page: baseQuery.page || 1,
             search: baseQuery.search || '',
             fields: baseQuery.fields || '*',
-            perPage: baseQuery.perPage || 10
+            perPage: baseQuery.perPage || baseQuery.per_page || 10
         }
 
         const Model = this.getResourceBookshelfModel(resource)
@@ -1045,7 +1045,7 @@ export class SqlRepository extends ResourceHelpers
             ...baseQuery,
             page: baseQuery.page || 1,
             search: baseQuery.search || '',
-            perPage: baseQuery.perPage || 10,
+            perPage: baseQuery.perPage || baseQuery.per_page || 10,
             fields: baseQuery.fields || '*'
         }
 

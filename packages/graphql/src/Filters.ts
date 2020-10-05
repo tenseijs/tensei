@@ -1,13 +1,17 @@
 import { ResourceContract } from '@tensei/common'
 import { GraphQLEnumValueConfigMap, GraphQLEnumType } from 'graphql'
 
-export const FilterGraphqlTypes = new class Filter {
-
+export const FilterGraphqlTypes = new (class Filter {
     getFieldsTypeDefinition(resource: ResourceContract) {
-        return resource.data.fields.filter(field => !field.isHidden && !field.serialize().isRelationshipField).map(field => {
-            return `
+        return resource.data.fields
+            .filter(
+                field =>
+                    !field.isHidden && !field.serialize().isRelationshipField
+            )
+            .map(field => {
+                return `
   ${field.databaseField}`
-        })
+            })
     }
 
     public getQueryFilterOperatorType(resource: ResourceContract) {
@@ -49,13 +53,12 @@ export const FilterGraphqlTypes = new class Filter {
         const values: GraphQLEnumValueConfigMap = {}
 
         resource.data.fields.forEach(field => {
-
             if (field.serialize().isRelationshipField) {
                 return
             }
 
             values[field.databaseField] = {
-                value: field.databaseField,
+                value: field.databaseField
             }
         })
 
@@ -64,5 +67,4 @@ export const FilterGraphqlTypes = new class Filter {
             values
         })
     }
-
-}
+})()

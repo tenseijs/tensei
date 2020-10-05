@@ -34,6 +34,7 @@ declare module '@tensei/common/config' {
     }
     interface FetchAllRequestQuery {
         perPage?: number
+        per_page?: number
         page?: number
         fields?: string[]
         search?: string

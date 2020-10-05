@@ -52,7 +52,9 @@ module.exports = resource('Post')
             .sortable()
             .searchable()
             .unique()
-            .description('This will help you define how this post should work exactly.')
+            .description(
+                'This will help you define how this post should work exactly.'
+            )
             .rules('required', 'max:24'),
         boolean('Approved')
             .trueLabel('Done')
@@ -87,8 +89,7 @@ module.exports = resource('Post')
             ])
             .rules('required')
             .searchable()
-            .description('Select one of these technologies to write about.')
-            ,
+            .description('Select one of these technologies to write about.'),
         belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()

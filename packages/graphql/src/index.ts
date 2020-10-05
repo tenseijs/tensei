@@ -1,6 +1,31 @@
 import { graphqlHTTP } from 'express-graphql'
-import { plugin, Resource, FieldContract, Field, ResourceContract, ManagerContract } from '@tensei/common'
-import { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLFieldConfig, GraphQLID, GraphQLEnumType, GraphQLType, GraphQLEnumValueConfigMap, GraphQLBoolean, GraphQLInt, GraphQLScalarType, GraphQLList, GraphQLArgs, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, buildSchema, GraphQLNonNull } from 'graphql'
+import {
+    plugin,
+    Resource,
+    FieldContract,
+    Field,
+    ResourceContract,
+    ManagerContract
+} from '@tensei/common'
+import {
+    GraphQLSchema,
+    GraphQLObjectType,
+    GraphQLString,
+    GraphQLFieldConfig,
+    GraphQLID,
+    GraphQLEnumType,
+    GraphQLType,
+    GraphQLEnumValueConfigMap,
+    GraphQLBoolean,
+    GraphQLInt,
+    GraphQLScalarType,
+    GraphQLList,
+    GraphQLArgs,
+    GraphQLFieldConfigArgumentMap,
+    GraphQLInputObjectType,
+    buildSchema,
+    GraphQLNonNull
+} from 'graphql'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 
 import { FilterGraphqlTypes } from './Filters'
@@ -18,7 +43,11 @@ class Graphql {
 
     schemaString: string = ''
 
-    private getGraphqlFieldDefinition = (field: FieldContract, resource: ResourceContract, resources: ResourceContract[]) => {
+    private getGraphqlFieldDefinition = (
+        field: FieldContract,
+        resource: ResourceContract,
+        resources: ResourceContract[]
+    ) => {
         let FieldType = 'String'
         let FieldKey = field.databaseField
 
@@ -34,16 +63,16 @@ class Graphql {
             FieldType = 'Boolean'
         }
 
-        if (
-            ['integer', 'bigInteger'].includes(field.databaseFieldType)
-        ) {
+        if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
             FieldType = 'Int'
         }
 
         if (field.component === 'BelongsToField') {
-            const relatedResource = resources.find(resource => resource.data.name === field.name)
+            const relatedResource = resources.find(
+                resource => resource.data.name === field.name
+            )
 
-            if (! relatedResource) {
+            if (!relatedResource) {
                 throw new Error(`Resource ${field.name} does not exist.`)
             }
 
@@ -51,26 +80,31 @@ class Graphql {
             FieldKey = relatedResource.data.camelCaseName
         }
 
-
         if (field.serialize().isRelationshipField) {
-            const relatedResource = resources.find(resource => resource.data.name === field.name)
+            const relatedResource = resources.find(
+                resource => resource.data.name === field.name
+            )
 
-            if (! relatedResource) {
+            if (!relatedResource) {
                 throw new Error(`Resource ${field.name} does not exist.`)
             }
 
-            if (field.component === 'HasManyField') {
+            if (
+                ['HasManyField', 'BelongsToManyField'].includes(field.component)
+            ) {
                 FieldType = `[${relatedResource.data.pascalCaseName}]`
-                FieldKey = `${relatedResource.data.camelCaseNamePlural}`
-            }
-
-            if (field.component === 'BelongsToManyField') {
-                FieldType = `[${relatedResource.data.pascalCaseName}]`
-                FieldKey = `${relatedResource.data.camelCaseNamePlural}`
+                FieldKey = `${
+                    relatedResource.data.camelCaseNamePlural
+                }(page: Int = 1, per_page: Int = ${
+                    relatedResource.data.perPageOptions[0] || 10
+                }, filters: [${relatedResource.data.pascalCaseName}Filter])`
             }
         }
 
-        if (field.validationRules.includes('required') || field.databaseFieldType === 'increments') {
+        if (
+            !field.serialize().isNullable ||
+            field.databaseFieldType === 'increments'
+        ) {
             FieldType = `${FieldType}!`
         }
 
@@ -79,8 +113,12 @@ class Graphql {
     }
 
     private defineFetchAllQueryForResource(resource: ResourceContract) {
-return `
-  ${resource.data.camelCaseNamePlural}(page: Int = 1, perPage: Int = ${resource.data.perPageOptions[0] || 10}, filters: [${resource.data.pascalCaseName}Filter]): [${resource.data.pascalCaseName}!]!`
+        return `
+  ${resource.data.camelCaseNamePlural}(page: Int = 1, per_page: Int = ${
+            resource.data.perPageOptions[0] || 10
+        }, filters: [${resource.data.pascalCaseName}Filter]): [${
+            resource.data.pascalCaseName
+        }]`
     }
 
     private defineFetchSingleQueryForResource(resource: ResourceContract) {
@@ -88,12 +126,30 @@ return `
   ${resource.data.camelCaseName}(id: ID!): ${resource.data.pascalCaseName}`
     }
 
-    private setupResourceGraphqlTypes (resources: ResourceContract[]) {
+    getFieldsTypeDefinition(resource: ResourceContract) {
+        return resource.data.fields
+            .filter(
+                field =>
+                    !field.isHidden && !field.serialize().isRelationshipField
+            )
+            .map(field => {
+                return `
+  ${field.databaseField}`
+            })
+    }
+
+    private setupResourceGraphqlTypes(resources: ResourceContract[]) {
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
-type ${resource.data.pascalCaseName} {${resource.data.fields.filter(field => ! field.isHidden).map(field => this.getGraphqlFieldDefinition(field, resource, resources))}
+type ${resource.data.pascalCaseName} {${resource.data.fields
+                .filter(field => !field.isHidden)
+                .map(field =>
+                    this.getGraphqlFieldDefinition(field, resource, resources)
+                )}
 }
-enum ${resource.data.pascalCaseName}FieldsEnum {${FilterGraphqlTypes.getFieldsTypeDefinition(resource)}
+enum ${resource.data.pascalCaseName}FieldsEnum {${this.getFieldsTypeDefinition(
+                resource
+            )}
 }
 enum ${resource.data.pascalCaseName}FilterOperators {
   equals
@@ -114,28 +170,153 @@ input ${resource.data.pascalCaseName}Filter {
   value: [String]
   operator: ${resource.data.pascalCaseName}FilterOperators
 }
-${resource.data.fields.filter(field => field.databaseFieldType === 'enu').map(field => `
-enum ${resource.data.pascalCaseName}${field.pascalCaseName}Enum {${field.serialize().selectOptions?.map(option => `
-  ${option.value}`)}
-}`)}
+${resource.data.fields
+    .filter(field => field.databaseFieldType === 'enu')
+    .map(
+        field => `
+enum ${resource.data.pascalCaseName}${
+            field.pascalCaseName
+        }Enum {${field.serialize().selectOptions?.map(
+            option => `
+  ${option.value}`
+        )}
+}`
+    )}
 `
         })
 
-this.schemaString = `${this.schemaString}type Query {${resources.map(resource => {
-    return `${this.defineFetchSingleQueryForResource(resource)}${this.defineFetchAllQueryForResource(resource)}`
-})}
+        this.schemaString = `${this.schemaString}type Query {${resources.map(
+            resource => {
+                return `${this.defineFetchSingleQueryForResource(
+                    resource
+                )}${this.defineFetchAllQueryForResource(resource)}`
+            }
+        )}
 }
 `
-console.log(this.schemaString)
+        // console.log(this.schemaString)
         return buildSchema(this.schemaString)
     }
 
-    private getResolvers(resources: ResourceContract[], manager: ManagerContract['setResource']) {
+    private getResolvers(
+        resources: ResourceContract[],
+        manager: ManagerContract['setResource']
+    ) {
         let resolvers: any = {}
-    
+
+        const getSingleResource = async (
+            resource: ResourceContract,
+            relatedResource: ResourceContract,
+            field: FieldContract,
+            row: any
+        ) => {
+            const relatedRow = await manager(relatedResource)
+                .database()
+                .findOneById(row[field.databaseField])
+
+            let relatedRowJson = relatedRow.toJSON()
+
+            relatedRowJson = populateRowWithRelationShips(relatedRowJson, relatedResource)
+
+            return relatedRowJson
+        }
+
+        const populateRowWithRelationShips = (row:any, resource: ResourceContract) => {
+            resource.data.fields.forEach(field => {
+                if (field.component === 'BelongsToField') {
+                    const relatedResource = resources.find(
+                        r => r.data.name === field.name
+                    )!
+
+                    row[
+                        relatedResource.data.camelCaseName
+                    ] = () =>
+                        getSingleResource(
+                            resource,
+                            relatedResource,
+                            field,
+                            row
+                        )
+                }
+
+                if (
+                    ['BelongsToManyField', 'HasManyField'].includes(
+                        field.component
+                    )
+                ) {
+                    const relatedResource = resources.find(
+                        resource => resource.data.name === field.name
+                    )!
+
+                    row[
+                        relatedResource.data.camelCaseNamePlural
+                    ] = (relatedArgs: any) =>
+                        getMultipleResources(
+                            resource,
+                            relatedResource,
+                            field,
+                            row,
+                            relatedArgs
+                        )
+                }
+            })
+
+            return row
+        }
+
+        const getMultipleResources = async (
+            resource: ResourceContract,
+            relatedResource: ResourceContract,
+            field: FieldContract,
+            row: any,
+            args: any
+        ) => {
+            let rows: any = {
+                data: []
+            }
+
+            if (field.component === 'BelongsToManyField') {
+                rows = await manager(resource.data.name)
+                    .database()
+                    .findAllBelongingToMany(relatedResource, row.id, args)
+            } else {
+                let relatedBelongsToField = relatedResource.data.fields.find(
+                    field => field.name === resource.data.name
+                )
+
+                rows = await manager(relatedResource)
+                    .database()
+                    .findAll({
+                        ...args,
+                        filters: [
+                            ...(args.filters || []),
+                            {
+                                field: relatedBelongsToField?.databaseField,
+                                value: row.id,
+                                operator: 'equals'
+                            }
+                        ]
+                    })
+            }
+
+            return rows.data.map((row: any) => {
+                let result = {
+                    ...row.toJSON()
+                }
+
+                result = populateRowWithRelationShips(result, relatedResource)
+
+                return result
+            })
+        }
+
         resources.forEach(resource => {
             // handle fetch all resolvers
-            resolvers[resource.data.camelCaseNamePlural] = async (args: any, request: any, ql: any) => {
+            resolvers[resource.data.camelCaseNamePlural] = async (
+                args: any,
+                request: any,
+                ql: any
+            ) => {
                 const resourceManager = manager(resource.data.name)
 
                 // console.log(ql.fieldNodes[0].selectionSet.selections[3])
@@ -147,19 +328,7 @@ console.log(this.schemaString)
                         ...row
                     }
 
-                    resource.data.fields.forEach(field => {
-                        if (field.component === 'BelongsToField') {
-                            const relatedResource = resources.find(resource => resource.data.name === field.name)!
-
-                            result[relatedResource.data.camelCaseName] = async () => {
-                                const relatedRow = await manager(relatedResource.data.name).database().findOneById(row[field.databaseField])
-
-                                let relatedRowJson = relatedRow.toJSON()
-
-                                return relatedRowJson
-                            }
-                        }
-                    })
+                    result = populateRowWithRelationShips(result, resource)
 
                     return result
                 })
@@ -169,25 +338,48 @@ console.log(this.schemaString)
             resolvers[resource.data.camelCaseName] = async (args: any) => {
                 const resourceManager = manager(resource.data.name)
 
-                const data = await resourceManager.database().findOneById(args.id)
+                const data = await resourceManager
+                    .database()
+                    .findOneById(args.id)
 
                 let result = {
-                    ...data,
+                    ...data.toJSON()
                 }
 
                 resource.data.fields.forEach(field => {
-                    if (field.component === 'HasManyField') {
-                        const relatedResource = resources.find(resource => resource.data.name === field.name)!
-                        console.log('>>>>>>>>>>>>>>>>', relatedResource.data.camelCaseNamePlural)
+                    if (field.component === 'BelongsToField') {
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.name
+                        )!
 
-                        result[relatedResource.data.camelCaseNamePlural] = async () => {
-                            const relatedRow = await manager(relatedResource.data.name).database().findAll({})
+                        result[relatedResource.data.camelCaseName] = () =>
+                            getSingleResource(
+                                resource,
+                                relatedResource,
+                                field,
+                                result
+                            )
+                    }
 
-                            return relatedRow.data.map(_ => ({
-                                ..._.toJSON(),
-                                
-                            }))
-                        }
+                    if (
+                        ['BelongsToManyField', 'HasManyField'].includes(
+                            field.component
+                        )
+                    ) {
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.name
+                        )!
+
+                        result[relatedResource.data.camelCaseNamePlural] = (
+                            relatedArgs: any
+                        ) =>
+                            getMultipleResources(
+                                relatedResource,
+                                relatedResource,
+                                field,
+                                result,
+                                relatedArgs
+                            )
                     }
                 })
 
@@ -201,7 +393,9 @@ console.log(this.schemaString)
     plugin() {
         return plugin('Graph QL').afterDatabaseSetup(
             async ({ app, resources, manager }) => {
-                const exposedResources = resources.filter(resource => ! resource.data.hideFromApi)
+                const exposedResources = resources.filter(
+                    resource => !resource.data.hideFromApi
+                )
                 const schema = this.setupResourceGraphqlTypes(exposedResources)
 
                 app.post(

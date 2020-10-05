@@ -183,6 +183,8 @@ export class Field implements FieldContract {
 
     public pascalCaseName: string
 
+    public capsDatabasefieldName: string
+
     /**
      *
      * The
@@ -226,6 +228,7 @@ export class Field implements FieldContract {
         this.camelCaseName = camelCase(name)
         this.pascalCaseName = pascalCase(name)
         this.camelCaseNamePlural = Pluralize(this.camelCaseName)
+        this.capsDatabasefieldName = this.databaseField.toUpperCase()
     }
 
     /**
@@ -575,7 +578,8 @@ export class Field implements FieldContract {
             databaseFieldType: this.databaseFieldType,
             isRelationshipField: this.isRelationshipField,
             camelCaseNamePlural: this.camelCaseNamePlural,
-            pascalCaseName: this.pascalCaseName
+            pascalCaseName: this.pascalCaseName,
+            capsDatabasefieldName: this.capsDatabasefieldName
         }
     }
 }

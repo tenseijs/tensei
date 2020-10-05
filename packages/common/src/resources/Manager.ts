@@ -310,6 +310,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             withRelationships
         } = await this.validateRequestQuery(query || this.request?.query || {})
 
+        // @ts-ignore
+        console.log(query.perPage, perPage)
+
         return this.database().findAll({
             perPage: perPage || resource.data.perPageOptions[0] || 10,
             page: page || 1,

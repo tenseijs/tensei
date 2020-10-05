@@ -25,6 +25,7 @@ declare module '@tensei/common/fields' {
         hidden: boolean
         fieldName: string
         camelCaseName: string
+        capsDatabasefieldName: string
         databaseField: string
         databaseFieldType: string
         attributes: {
@@ -167,6 +168,8 @@ declare module '@tensei/common/fields' {
         pascalCaseName: string
 
         camelCaseNamePlural: string
+
+        capsDatabasefieldName: string
         /**
          * Instantiate a new field. Requires the name,
          * and optionally the corresponding database
