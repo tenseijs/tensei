@@ -93,6 +93,24 @@ module.exports = tensei()
             })
             .plugin(),
         trix(),
+        digitalDownloads()
+            .config({
+                baseCountry: '',
+                baseState: '',
+                baseCurrency: '',
+                paymentGateways: ['paystack', 'paypal'],
+                basePaymentGateway: 'paystack',
+            })
+            .onSaleNotifications()
+            .onSaleNotificationsConfig({
+                purchaseReceipts: {
+                    from: 'email',
+                    name: '',
+                },
+                saleAlerts: {
+                    emails: [],
+                },
+            }),
         cashier()
             .customerResourceName('Customer')
             .cardUpfront()

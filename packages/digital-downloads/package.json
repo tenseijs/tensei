@@ -1,0 +1,13 @@
+{
+    "name": "@tensei/digital-downloads",
+    "version": "0.0.0",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "types": "./core.d.ts",
+    "scripts": {
+        "build": "tsc --p tsconfig.json",
+        "dev": "tsc --watch --p tsconfig.json",
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'"
+    },
+    "author": ""
+}
