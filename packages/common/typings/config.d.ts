@@ -38,9 +38,9 @@ declare module '@tensei/common/config' {
         page?: number
         fields?: string[]
         search?: string
-        noPagination?: noPagination
         filters?: Filter[]
         withRelationships?: string[]
+        noPagination?: 'true' | 'false'
     }
     interface StorageConstructor<T extends Storage = Storage> {
         new (...args: any[]): T
@@ -232,7 +232,52 @@ declare module '@tensei/common/config' {
             },
             valuesToUpdate: {}
         ) => Promise<any>
-        abstract findAllCount: () => Promise<number>
+        abstract findAllCount: (
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<number>
+        abstract findAllBelongingToMany: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<{
+            page: number
+            perPage: number
+            total: number
+            data: any
+            pageCount: number
+        }>
+        abstract findAllBelongingToManyData: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<any>
+        abstract findAllBelongingToManyCount: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<any>
+        abstract findAllBelongingToManyResolvers: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => (() => any)[]
+        abstract handleFilterQueries: (
+            filters: FetchAllRequestQuery['filters'],
+            builder: Knex
+        ) => Knex
+        abstract findAllData: (baseQuery: FetchAllRequestQuery) => Promise<any>
+        abstract findAll: (
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<{
+            data: any
+            page: number
+            total: number
+            perPage: number
+            pageCount: number
+        }>
+        abstract findAllResolvers: (
+            baseQuery: FetchAllRequestQuery
+        ) => (() => any)[]
     }
 
     export class ResourceHelpers {

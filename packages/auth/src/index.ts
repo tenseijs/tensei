@@ -173,9 +173,7 @@ class Auth {
         if (Object.keys(this.config.providers).length === 0) {
             passwordField = passwordField.notNullable()
         } else {
-            socialFields = [
-                hasMany(this.oauthResource().data.name)
-            ]
+            socialFields = [hasMany(this.oauthResource().data.name)]
         }
 
         const userResource = resource(this.config.nameResource)
@@ -194,7 +192,7 @@ class Auth {
                     .creationRules('required')
                     .onlyOnForms()
                     .hideOnUpdate(),
-                    ...socialFields,
+                ...socialFields,
                 ...(this.config.rolesAndPermissions
                     ? [belongsToMany(this.config.roleResource)]
                     : []),

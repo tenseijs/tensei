@@ -621,12 +621,6 @@ export class SqlRepository extends ResourceHelpers
         }
     }
 
-    public findAllCount = async () => {
-        const Model = this.getResourceBookshelfModel(this.getCurrentResource())
-
-        return Model.count()
-    }
-
     public create = async (
         payload: DataPayload,
         relationshipPayload: DataPayload = {}
@@ -885,16 +879,81 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) => {
-        const resource = this.getCurrentResource()
+        const query = this.getDefaultQuery(baseQuery)
 
-        const query = {
+        const [
+            countResolver,
+            dataResolver
+        ]: any = this.findAllBelongingToManyResolvers(
+            relatedResource,
+            resourceId,
+            query
+        )
+
+        const data = await dataResolver()
+        const countResult = await countResolver()
+
+        const count = countResult[0]['count(*)'] || countResult[0]['count']
+
+        return {
+            page: query.page,
+            perPage: query.perPage,
+            total: count as number,
+            data: data.relations[relatedResource.data.slug].models,
+            pageCount: Math.ceil((count as number) / (query.perPage || 10))
+        }
+    }
+
+    private getDefaultQuery = (baseQuery: FetchAllRequestQuery) => {
+        return {
             ...baseQuery,
             page: baseQuery.page || 1,
             search: baseQuery.search || '',
-            fields: baseQuery.fields || '*',
+            fields: baseQuery.fields || ['*'],
             perPage: baseQuery.perPage || baseQuery.per_page || 10
         }
+    }
 
+    public findAllBelongingToManyData = async (
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) => {
+        const [, dataResolver]: any = this.findAllBelongingToManyResolvers(
+            relatedResource,
+            resourceId,
+            this.getDefaultQuery(baseQuery)
+        )
+
+        const data = await dataResolver()
+
+        return data.relations[relatedResource.data.slug].models
+    }
+
+    public findAllBelongingToManyCount = async (
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) => {
+        const [countResolver]: any = this.findAllBelongingToManyResolvers(
+            relatedResource,
+            resourceId,
+            this.getDefaultQuery(baseQuery)
+        )
+
+        const count = await countResolver()
+
+        return count[0]['count(*)'] || count[0]['count']
+    }
+
+    public findAllBelongingToManyResolvers = (
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) => {
+        const resource = this.getCurrentResource()
+
+        const query = this.getDefaultQuery(baseQuery)
         const Model = this.getResourceBookshelfModel(resource)
 
         const getBuilder = (builder: any) => {
@@ -931,47 +990,42 @@ export class SqlRepository extends ResourceHelpers
             .sort()
             .join('_')
 
-        const countResult = await getBuilder(
-            this.$db!(relatedResource.data.table)
-                .count()
-                .innerJoin(
-                    tableName,
-                    `${tableName}.${relatedResourceColumnName}`,
-                    `${relatedResource.data.table}.id`
-                )
-        ).andWhere(`${tableName}.${resourceColumnName}`, resourceId)
-
-        const count = countResult[0]['count(*)'] || countResult[0]['count']
-
-        const data = await Model.forge({
-            id: resourceId
-        }).fetch({
-            withRelated: [
-                {
-                    [relatedResource.data.slug]: function(builder: any) {
-                        return getBuilder(builder)
-                            .select(
-                                Array.isArray(query.fields)
-                                    ? query.fields.map(
-                                          field =>
-                                              `${relatedResource.data.table}.${field}`
-                                      )
-                                    : '*'
-                            )
-                            .limit(query.perPage)
-                            .offset((query.page - 1) * query.perPage)
-                    }
-                }
-            ]
-        })
-
-        return {
-            page: query.page,
-            perPage: query.perPage,
-            total: count as number,
-            pageCount: Math.ceil((count as number) / (query.perPage || 10)),
-            data: data.relations[relatedResource.data.slug].models
-        }
+        return [
+            () =>
+                getBuilder(
+                    this.$db!(relatedResource.data.table)
+                        .count()
+                        .innerJoin(
+                            tableName,
+                            `${tableName}.${relatedResourceColumnName}`,
+                            `${relatedResource.data.table}.id`
+                        )
+                ).andWhere(`${tableName}.${resourceColumnName}`, resourceId),
+            () =>
+                Model.forge({
+                    id: resourceId
+                }).fetch({
+                    withRelated: [
+                        {
+                            [relatedResource.data.slug]: function(
+                                builder: any
+                            ) {
+                                return getBuilder(builder)
+                                    .select(
+                                        Array.isArray(query.fields)
+                                            ? query.fields.map(
+                                                  field =>
+                                                      `${relatedResource.data.table}.${field}`
+                                              )
+                                            : '*'
+                                    )
+                                    .limit(query.perPage)
+                                    .offset((query.page - 1) * query.perPage)
+                            }
+                        }
+                    ]
+                })
+        ]
     }
 
     public handleFilterQueries = (
@@ -1037,17 +1091,50 @@ export class SqlRepository extends ResourceHelpers
         return builder
     }
 
+    public findAllData = async (baseQuery: FetchAllRequestQuery) => {
+        const [, dataResolver]: any = this.findAllResolvers(
+            this.getDefaultQuery(baseQuery)
+        )
+
+        const results = await dataResolver()
+
+        return results
+    }
+
+    public findAllCount = async (baseQuery: FetchAllRequestQuery) => {
+        const query = this.getDefaultQuery(baseQuery)
+
+        const [countResolver]: any = this.findAllResolvers(query)
+
+        const count = await countResolver()
+
+        return count[0]['count(*)'] || count[0]['count']
+    }
+
     public findAll = async (baseQuery: FetchAllRequestQuery) => {
+        const query = this.getDefaultQuery(baseQuery)
+
+        const [countResolver, dataResolver]: any = this.findAllResolvers(query)
+
+        const count = await countResolver()
+        const total = count[0]['count(*)'] || count[0]['count']
+
+        const results = await dataResolver()
+
+        return {
+            data: results,
+            page: query.page,
+            total: parseInt(total),
+            perPage: query.perPage,
+            pageCount: Math.ceil(total / query.perPage)
+        }
+    }
+
+    public findAllResolvers = (baseQuery: FetchAllRequestQuery) => {
         const resource = this.getCurrentResource()
         const Model = this.getResourceBookshelfModel(resource)
 
-        const query = {
-            ...baseQuery,
-            page: baseQuery.page || 1,
-            search: baseQuery.search || '',
-            perPage: baseQuery.perPage || baseQuery.per_page || 10,
-            fields: baseQuery.fields || '*'
-        }
+        const query = this.getDefaultQuery(baseQuery)
 
         const getBuilder = () => {
             let builder = Model.query()
@@ -1073,25 +1160,13 @@ export class SqlRepository extends ResourceHelpers
             return builder
         }
 
-        const count = await getBuilder().count()
-
-        const data = getBuilder()
-
-        let results = await data
-            .select(query.fields || '*')
-            .limit(query.perPage)
-            .offset((query.page - 1) * query.perPage)
-
-        const total = count[0]['count(*)'] || count[0]['count']
-
-        // we need to also implement the logic for no pagination
-
-        return {
-            data: results,
-            page: query.page,
-            total: parseInt(total),
-            perPage: query.perPage,
-            pageCount: Math.ceil(total / query.perPage)
-        }
+        return [
+            () => getBuilder().count(),
+            () =>
+                getBuilder()
+                    .select(query.fields || '*')
+                    .limit(query.perPage)
+                    .offset((query.page - 1) * query.perPage)
+        ]
     }
 }

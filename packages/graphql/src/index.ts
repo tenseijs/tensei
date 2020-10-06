@@ -138,6 +138,14 @@ class Graphql {
             })
     }
 
+    private getRelatedFieldsCountDefinition(
+        field: FieldContract,
+        resource: ResourceContract,
+        resources: ResourceContract[]
+    ) {
+        return ``
+    }
+
     private setupResourceGraphqlTypes(resources: ResourceContract[]) {
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
@@ -206,19 +214,20 @@ enum ${resource.data.pascalCaseName}${
 
         const getSingleResource = async (
             resource: ResourceContract,
-            relatedResource: ResourceContract,
             field: FieldContract,
             row: any
         ) => {
-            const relatedRow = await manager(relatedResource)
+            const relatedRow = await manager(resource)
                 .database()
                 .findOneById(row[field.databaseField])
 
             let relatedRowJson = relatedRow.toJSON()
 
+            relatedRowJson.resource_count = 23
+
             relatedRowJson = populateRowWithRelationShips(
                 relatedRowJson,
-                relatedResource
+                resource
             )
 
             return relatedRowJson
@@ -235,7 +244,7 @@ enum ${resource.data.pascalCaseName}${
                     )!
 
                     row[relatedResource.data.camelCaseName] = () =>
-                        getSingleResource(resource, relatedResource, field, row)
+                        getSingleResource(relatedResource, field, row)
                 }
 
                 if (
@@ -270,14 +279,12 @@ enum ${resource.data.pascalCaseName}${
             row: any,
             args: any
         ) => {
-            let rows: any = {
-                data: []
-            }
+            let rows: any = []
 
             if (field.component === 'BelongsToManyField') {
                 rows = await manager(resource.data.name)
                     .database()
-                    .findAllBelongingToMany(relatedResource, row.id, args)
+                    .findAllBelongingToManyData(relatedResource, row.id, args)
             } else {
                 let relatedBelongsToField = relatedResource.data.fields.find(
                     field => field.name === resource.data.name
@@ -285,7 +292,7 @@ enum ${resource.data.pascalCaseName}${
 
                 rows = await manager(relatedResource)
                     .database()
-                    .findAll({
+                    .findAllData({
                         ...args,
                         filters: [
                             ...(args.filters || []),
@@ -298,7 +305,7 @@ enum ${resource.data.pascalCaseName}${
                     })
             }
 
-            return rows.data.map((row: any) =>
+            return rows.map((row: any) =>
                 populateRowWithRelationShips(
                     row.toJSON ? row.toJSON() : row,
                     relatedResource
@@ -315,9 +322,9 @@ enum ${resource.data.pascalCaseName}${
             ) => {
                 const resourceManager = manager(resource.data.name)
 
-                const data = await resourceManager.database().findAll(args)
+                const data = await resourceManager.database().findAllData(args)
 
-                return data.data.map(row =>
+                return data.map((row: any) =>
                     populateRowWithRelationShips(
                         row.toJSON ? row.toJSON() : row,
                         resource
@@ -329,11 +336,11 @@ enum ${resource.data.pascalCaseName}${
             resolvers[resource.data.camelCaseName] = async (args: any) => {
                 const resourceManager = manager(resource.data.name)
 
-                const data = await resourceManager
-                    .database()
-                    .findOneById(args.id)
+                let data = await resourceManager.database().findOneById(args.id)
 
-                return populateRowWithRelationShips(data.toJSON(), resource)
+                data = data.toJSON ? data.toJSON() : data
+
+                return populateRowWithRelationShips(data, resource)
             }
         })
 
