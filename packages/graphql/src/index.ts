@@ -216,27 +216,26 @@ enum ${resource.data.pascalCaseName}${
 
             let relatedRowJson = relatedRow.toJSON()
 
-            relatedRowJson = populateRowWithRelationShips(relatedRowJson, relatedResource)
+            relatedRowJson = populateRowWithRelationShips(
+                relatedRowJson,
+                relatedResource
+            )
 
             return relatedRowJson
         }
 
-        const populateRowWithRelationShips = (row:any, resource: ResourceContract) => {
+        const populateRowWithRelationShips = (
+            row: any,
+            resource: ResourceContract
+        ) => {
             resource.data.fields.forEach(field => {
                 if (field.component === 'BelongsToField') {
                     const relatedResource = resources.find(
                         r => r.data.name === field.name
                     )!
 
-                    row[
-                        relatedResource.data.camelCaseName
-                    ] = () =>
-                        getSingleResource(
-                            resource,
-                            relatedResource,
-                            field,
-                            row
-                        )
+                    row[relatedResource.data.camelCaseName] = () =>
+                        getSingleResource(resource, relatedResource, field, row)
                 }
 
                 if (
@@ -248,9 +247,9 @@ enum ${resource.data.pascalCaseName}${
                         resource => resource.data.name === field.name
                     )!
 
-                    row[
-                        relatedResource.data.camelCaseNamePlural
-                    ] = (relatedArgs: any) =>
+                    row[relatedResource.data.camelCaseNamePlural] = (
+                        relatedArgs: any
+                    ) =>
                         getMultipleResources(
                             resource,
                             relatedResource,
@@ -299,15 +298,12 @@ enum ${resource.data.pascalCaseName}${
                     })
             }
 
-            return rows.data.map((row: any) => {
-                let result = {
-                    ...row.toJSON()
-                }
-
-                result = populateRowWithRelationShips(result, relatedResource)
-
-                return result
-            })
+            return rows.data.map((row: any) =>
+                populateRowWithRelationShips(
+                    row.toJSON ? row.toJSON() : row,
+                    relatedResource
+                )
+            )
         }
 
         resources.forEach(resource => {
@@ -319,19 +315,14 @@ enum ${resource.data.pascalCaseName}${
             ) => {
                 const resourceManager = manager(resource.data.name)
 
-                // console.log(ql.fieldNodes[0].selectionSet.selections[3])
-
                 const data = await resourceManager.database().findAll(args)
 
-                return data.data.map(row => {
-                    let result = {
-                        ...row
-                    }
-
-                    result = populateRowWithRelationShips(result, resource)
-
-                    return result
-                })
+                return data.data.map(row =>
+                    populateRowWithRelationShips(
+                        row.toJSON ? row.toJSON() : row,
+                        resource
+                    )
+                )
             }
 
             // handle fetch one resolvers
@@ -342,48 +333,7 @@ enum ${resource.data.pascalCaseName}${
                     .database()
                     .findOneById(args.id)
 
-                let result = {
-                    ...data.toJSON()
-                }
-
-                resource.data.fields.forEach(field => {
-                    if (field.component === 'BelongsToField') {
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.name
-                        )!
-
-                        result[relatedResource.data.camelCaseName] = () =>
-                            getSingleResource(
-                                resource,
-                                relatedResource,
-                                field,
-                                result
-                            )
-                    }
-
-                    if (
-                        ['BelongsToManyField', 'HasManyField'].includes(
-                            field.component
-                        )
-                    ) {
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.name
-                        )!
-
-                        result[relatedResource.data.camelCaseNamePlural] = (
-                            relatedArgs: any
-                        ) =>
-                            getMultipleResources(
-                                relatedResource,
-                                relatedResource,
-                                field,
-                                result,
-                                relatedArgs
-                            )
-                    }
-                })
-
-                return result
+                return populateRowWithRelationShips(data.toJSON(), resource)
             }
         })
 

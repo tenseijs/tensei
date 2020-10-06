@@ -19,7 +19,9 @@ import {
     DataPayload,
     InBuiltEndpoints,
     SupportedDatabases,
-    Config
+    Config,
+    FieldContract,
+    hasMany
 } from '@tensei/common'
 
 import {
@@ -166,8 +168,14 @@ class Auth {
     private userResource() {
         let passwordField = text('Password')
 
+        let socialFields: FieldContract[] = []
+
         if (Object.keys(this.config.providers).length === 0) {
             passwordField = passwordField.notNullable()
+        } else {
+            socialFields = [
+                hasMany(this.oauthResource().data.name)
+            ]
         }
 
         const userResource = resource(this.config.nameResource)
@@ -186,6 +194,7 @@ class Auth {
                     .creationRules('required')
                     .onlyOnForms()
                     .hideOnUpdate(),
+                    ...socialFields,
                 ...(this.config.rolesAndPermissions
                     ? [belongsToMany(this.config.roleResource)]
                     : []),
