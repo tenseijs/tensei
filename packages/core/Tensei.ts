@@ -420,10 +420,6 @@ export class Tensei {
             return next()
         }
 
-        if (admin.toJSON) {
-            admin = admin.toJSON()
-        }
-
         admin.permissions = admin['administrator-roles'].reduce(
             (acc: [], role: any) => [
                 ...acc,

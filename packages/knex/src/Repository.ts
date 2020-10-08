@@ -823,7 +823,8 @@ export class SqlRepository extends ResourceHelpers
     public findOneById = async (
         id: number | string,
         fields?: FetchAllRequestQuery['fields'],
-        withRelated: string[] = []
+        withRelated: string[] = [],
+        withHidden = false
     ) => {
         const resource = this.getCurrentResource()
 
@@ -835,7 +836,11 @@ export class SqlRepository extends ResourceHelpers
             withRelated
         })
 
-        return result.toJSON()
+        if (withHidden) {
+            return result ? result.toJSON({ hidden: [] }) : null
+        }
+
+        return result ? result.toJSON() : null
     }
 
     public findOneByField = async (

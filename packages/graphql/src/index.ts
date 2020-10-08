@@ -388,7 +388,7 @@ type DeletePayload {
 
             return rows.map((row: any) =>
                 populateRowWithRelationShips(
-                    row.toJSON ? row.toJSON() : row,
+                    row,
                     relatedResource
                 )
             )
@@ -407,7 +407,7 @@ type DeletePayload {
 
                 return data.map((row: any) =>
                     populateRowWithRelationShips(
-                        row.toJSON ? row.toJSON() : row,
+                        row,
                         resource
                     )
                 )
@@ -418,8 +418,6 @@ type DeletePayload {
                 const resourceManager = manager(resource.data.name)
 
                 let data = await resourceManager.database().findOneById(args.id)
-
-                data = data.toJSON ? data.toJSON() : data
 
                 return populateRowWithRelationShips(data, resource)
             }

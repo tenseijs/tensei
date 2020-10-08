@@ -96,8 +96,6 @@ class ForgotPasswordController {
             ])
         }
 
-        existingPasswordReset = existingPasswordReset.toJSON()
-
         if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
             return response.status(401).json([
                 {

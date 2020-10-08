@@ -623,7 +623,7 @@ class Auth {
             createUserPayload
         )
 
-        const model = await manager(this.userResource())
+        const user = await manager(this.userResource())
             .database()
             .findOneById(
                 id,
@@ -636,8 +636,6 @@ class Auth {
                       ]
                     : []
             )
-
-        const user = model.toJSON ? model.toJSON() : model
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
             mailer.to(user.email).sendRaw(`
@@ -805,7 +803,7 @@ class Auth {
             }
         }
 
-        const model = await request
+        const user = await request
             .manager(this.userResource())
             .database()
             .findOneById(
@@ -820,8 +818,6 @@ class Auth {
                     : []
             )
 
-        const user = model.toJSON ? model.toJSON() : model
-
         if (user.two_factor_enabled === '1') {
             const Speakeasy = require('speakeasy')
 
@@ -835,7 +831,7 @@ class Auth {
             const verified = Speakeasy.totp.verify({
                 token,
                 encoding: 'base32',
-                secret: model.two_factor_secret
+                secret: user.two_factor_secret
             })
 
             if (!verified) {
@@ -909,20 +905,13 @@ class Auth {
                                   this.permissionResource().data.slug
                               }`
                           ]
-                        : []
+                        : [],
+                    true
                 )
 
             const user = {
-                ...model.toJSON(),
-                two_factor_secret: model.get
-                    ? model.get('two_factor_secret')
-                    : model.two_factor_secret,
-                two_factor_enabled: model.get
-                    ? model.get('two_factor_enabled') === '1'
-                    : model.two_factor_enabled,
-                email_verification_token: model.get
-                    ? model.get('email_verification_token')
-                    : model.email_verification_token
+                ...model,
+                two_factor_enabled: model.two_factor_enabled === '1',
             }
 
             if (this.config.rolesAndPermissions) {
@@ -1129,10 +1118,6 @@ class Auth {
                 }
             ])
         }
-
-        existingPasswordReset = existingPasswordReset.toJSON
-            ? existingPasswordReset.toJSON()
-            : existingPasswordReset
 
         if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
             return response.status(422).json([
