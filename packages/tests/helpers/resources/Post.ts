@@ -69,9 +69,7 @@ export default resource('Post')
         textarea('Content')
             .rules('required', 'max:2000', 'min:12')
             .hideOnIndex(),
-        integer('Av. CPC')
-            .rules('required')
-            .hideOnDetail(),
+        integer('Av. CPC').rules('required').hideOnDetail(),
         select('Category')
             .options([
                 {
@@ -93,9 +91,7 @@ export default resource('Post')
             ])
             .rules('required')
             .searchable(),
-        belongsTo('User')
-            .searchable()
-            .rules('required'),
+        belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()
             .rules('required', 'date')

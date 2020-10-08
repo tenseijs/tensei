@@ -71,7 +71,7 @@ require('./app')
             knex('users').truncate(),
             knex('tags').truncate(),
             knex('comments').truncate(),
-            knex('administrators').truncate(),
+            // knex('administrators').truncate(),
         ])
 
         const posts = Array(1000)

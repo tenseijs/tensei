@@ -203,7 +203,8 @@ declare module '@tensei/common/config' {
         abstract findOneById: (
             id: number | string,
             fields?: string[],
-            withRelationships?: string[]
+            withRelationships?: string[],
+            withHidden?: boolean
         ) => Promise<Model | null>
         abstract findOneByField: (
             field: string,

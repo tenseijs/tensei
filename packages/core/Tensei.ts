@@ -420,10 +420,6 @@ export class Tensei {
             return next()
         }
 
-        if (admin.toJSON) {
-            admin = admin.toJSON()
-        }
-
         admin.permissions = admin['administrator-roles'].reduce(
             (acc: [], role: any) => [
                 ...acc,
@@ -758,13 +754,8 @@ export class Tensei {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email')
-                    .unique()
-                    .searchable()
-                    .rules('required', 'email'),
-                text('Password')
-                    .hidden()
-                    .rules('required', 'min:8'),
+                text('Email').unique().searchable().rules('required', 'email'),
+                text('Password').hidden().rules('required', 'min:8'),
                 belongsToMany('Administrator Role')
             ])
             .beforeCreate(payload => ({
@@ -784,9 +775,7 @@ export class Tensei {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
+        this.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }

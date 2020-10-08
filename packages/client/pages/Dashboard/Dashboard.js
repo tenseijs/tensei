@@ -151,7 +151,9 @@ class DashboardPage extends React.Component {
         return (
             <div className="w-full">
                 <div className="w-full h-topbar bg-blue-darkest flex items-center text-white justify-between">
-                    <span></span>
+                    <div className='pl-10'>
+                        <img className='h-6' src="https://res.cloudinary.com/bahdcoder/image/upload/v1604236528/Asset_2_4x_v4mg5t.png" alt=""/>
+                    </div>
                     <span></span>
                     <div>
                         <Dropdown

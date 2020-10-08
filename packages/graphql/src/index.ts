@@ -7,9 +7,7 @@ import {
     ResourceContract,
     ManagerContract
 } from '@tensei/common'
-import {
-    buildSchema,
-} from 'graphql'
+import { buildSchema } from 'graphql'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 
 import { FilterGraphqlTypes } from './Filters'
@@ -53,20 +51,16 @@ class Graphql {
             FieldKey = `${field.databaseField}`
         }
 
-        if (
-            ['HasManyField', 'BelongsToManyField'].includes(field.component)
-        ) {
+        if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
-    
+
             FieldType = `[ID]`
             FieldKey = `${relatedResource?.data.camelCaseNamePlural}`
         }
 
-        if (
-            !field.serialize().isNullable && ! isUpdate
-        ) {
+        if (!field.serialize().isNullable && !isUpdate) {
             FieldType = `${FieldType}!`
         }
 
@@ -187,17 +181,26 @@ type ${resource.data.pascalCaseName} {${resource.data.fields
                 )}
 }
 input create${resource.data.pascalCaseName}Input {${resource.data.fields
-    .filter(field => !field.isHidden)
-    .map(field =>
-        this.getGraphqlFieldDefinitionForCreateInput(field, resource, resources)
-)}
+                .filter(field => !field.isHidden)
+                .map(field =>
+                    this.getGraphqlFieldDefinitionForCreateInput(
+                        field,
+                        resource,
+                        resources
+                    )
+                )}
 }
 
 input update${resource.data.pascalCaseName}Input {${resource.data.fields
-    .filter(field => !field.isHidden)
-    .map(field =>
-        this.getGraphqlFieldDefinitionForCreateInput(field, resource, resources, true)
-)}
+                .filter(field => !field.isHidden)
+                .map(field =>
+                    this.getGraphqlFieldDefinitionForCreateInput(
+                        field,
+                        resource,
+                        resources,
+                        true
+                    )
+                )}
 }
 
 enum ${resource.data.pascalCaseName}FieldsEnum {${this.getFieldsTypeDefinition(
@@ -247,27 +250,17 @@ enum ${resource.data.pascalCaseName}${
         )}
 }
 `
-this.schemaString = `${this.schemaString}type Mutation {${resources.map(
-    resource => {
-        return `${this.defineCreateMutationForResource(
-            resource
-        )}`
-    }
-)}
-${resources.map(
-    resource => {
-        return `${this.defineUpdateMutationForResource(
-            resource
-        )}`
-    }
-)}
-${resources.map(
-    resource => {
-        return `${this.defineDeleteMutationForResource(
-            resource
-        )}`
-    }
-)}
+        this.schemaString = `${this.schemaString}type Mutation {${resources.map(
+            resource => {
+                return `${this.defineCreateMutationForResource(resource)}`
+            }
+        )}
+${resources.map(resource => {
+    return `${this.defineUpdateMutationForResource(resource)}`
+})}
+${resources.map(resource => {
+    return `${this.defineDeleteMutationForResource(resource)}`
+})}
 }
 type DeletePayload {
     success: Boolean!
@@ -387,10 +380,7 @@ type DeletePayload {
             }
 
             return rows.map((row: any) =>
-                populateRowWithRelationShips(
-                    row.toJSON ? row.toJSON() : row,
-                    relatedResource
-                )
+                populateRowWithRelationShips(row, relatedResource)
             )
         }
 
@@ -406,10 +396,7 @@ type DeletePayload {
                 const data = await resourceManager.database().findAllData(args)
 
                 return data.map((row: any) =>
-                    populateRowWithRelationShips(
-                        row.toJSON ? row.toJSON() : row,
-                        resource
-                    )
+                    populateRowWithRelationShips(row, resource)
                 )
             }
 
@@ -419,12 +406,12 @@ type DeletePayload {
 
                 let data = await resourceManager.database().findOneById(args.id)
 
-                data = data.toJSON ? data.toJSON() : data
-
                 return populateRowWithRelationShips(data, resource)
             }
 
-            resolvers[`create${resource.data.pascalCaseName}`] = async (args: any) => {
+            resolvers[`create${resource.data.pascalCaseName}`] = async (
+                args: any
+            ) => {
                 const resourceManager = manager(resource.data.name)
 
                 let data = await resourceManager.create(args.input)
@@ -432,7 +419,9 @@ type DeletePayload {
                 return populateRowWithRelationShips(data, resource)
             }
 
-            resolvers[`update${resource.data.pascalCaseName}`] = async (args: any) => {
+            resolvers[`update${resource.data.pascalCaseName}`] = async (
+                args: any
+            ) => {
                 const resourceManager = manager(resource.data.name)
 
                 let data = await resourceManager.update(args.id, args.input)
@@ -440,7 +429,9 @@ type DeletePayload {
                 return populateRowWithRelationShips(data, resource)
             }
 
-            resolvers[`delete${resource.data.pascalCaseName}`] = async (args: any) => {
+            resolvers[`delete${resource.data.pascalCaseName}`] = async (
+                args: any
+            ) => {
                 const resourceManager = manager(resource.data.name)
 
                 const success = await resourceManager.deleteById(args.id)

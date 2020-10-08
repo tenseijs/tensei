@@ -59,8 +59,8 @@ class RegisterPage extends React.Component {
                 <div className="max-w-md mx-auto pt-20 md:px-0 px-5">
                     <div className="flex justify-center mb-5">
                         <img
-                            src="https://strapi.katifrantz.com/admin/3f6f46544e110a51499353fdc9d12bfe.png"
-                            className="h-10"
+                            src="https://res.cloudinary.com/bahdcoder/image/upload/v1604236130/Asset_1_4x_fhcfyg.png"
+                            className="h-8"
                             alt="company-logo"
                         />
                     </div>

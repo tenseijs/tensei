@@ -50,7 +50,7 @@ jest.mock('speakeasy')
         const Customer = await manager()('Customer').Model()
 
         let freshUser = await new Customer({ id: user.id }).fetch({
-            require: true,
+            require: true
         })
 
         expect(freshUser.get('two_factor_enabled')).toBe('0')
@@ -93,7 +93,7 @@ jest.mock('speakeasy')
         const Customer = await manager()('Customer').Model()
 
         let freshUser = await new Customer({ id: user.id }).fetch({
-            require: true,
+            require: true
         })
 
         expect(freshUser.get('two_factor_enabled')).toBe('1')
@@ -139,9 +139,8 @@ jest.mock('speakeasy')
         const Customer = await manager()('Customer').Model()
 
         let freshUser = await new Customer({ id: user.id }).fetch({
-            require: true,
+            require: true
         })
-
 
         expect(freshUser.get('two_factor_secret')).toBe(null)
         expect(freshUser.get('two_factor_enabled')).toBe('0')

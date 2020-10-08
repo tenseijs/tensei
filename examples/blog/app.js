@@ -2,7 +2,6 @@ require('dotenv').config()
 const { auth } = require('@tensei/auth')
 const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
-const { cashier, plan } = require('@tensei/cashier')
 const { tensei, dashboard, valueMetric } = require('@tensei/core')
 const { AmazonWebServicesS3Storage } = require('@slynova/flydrive-s3')
 
@@ -93,14 +92,6 @@ module.exports = tensei()
             })
             .plugin(),
         trix(),
-        // cashier()
-        //     .customerResourceName('Customer')
-        //     .cardUpfront()
-        //     .plans([
-        //         plan('Basic Sub').monthly().price(29),
-        //         plan('Premium Sub').yearly().price(99),
-        //     ])
-        //     .plugin(),
         graphql().plugin(),
     ])
     .databaseConfig({

@@ -20,7 +20,8 @@ import { array } from '@tensei/common'
 import { belongsTo } from '@tensei/common'
 import { dateTime } from '@tensei/common'
 
-export class Repository extends ResourceHelpers
+export class Repository
+    extends ResourceHelpers
     implements DatabaseRepositoryInterface<any> {
     private $db: MongooseType | null = null
 
@@ -161,12 +162,8 @@ export class Repository extends ResourceHelpers
         return resource('Administrator Role')
             .hideFromNavigation()
             .fields([
-                text('Name')
-                    .rules('required')
-                    .unique(),
-                text('Slug')
-                    .rules('required')
-                    .unique(),
+                text('Name').rules('required').unique(),
+                text('Slug').rules('required').unique(),
                 array('Permissions').of('string')
             ])
     }
@@ -175,13 +172,8 @@ export class Repository extends ResourceHelpers
         return resource('Administrator Password Reset')
             .hideFromNavigation()
             .fields([
-                text('Email')
-                    .searchable()
-                    .unique()
-                    .notNullable(),
-                text('Token')
-                    .unique()
-                    .notNullable(),
+                text('Email').searchable().unique().notNullable(),
+                text('Token').unique().notNullable(),
                 dateTime('Expires At')
             ])
     }
@@ -193,13 +185,8 @@ export class Repository extends ResourceHelpers
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email')
-                    .unique()
-                    .searchable()
-                    .rules('required', 'email'),
-                text('Password')
-                    .hidden()
-                    .rules('required', 'min:8'),
+                text('Email').unique().searchable().rules('required', 'email'),
+                text('Password').hidden().rules('required', 'min:8'),
                 belongsTo('Administrator Role')
             ])
             .beforeCreate(payload => ({
@@ -327,9 +314,7 @@ export class Repository extends ResourceHelpers
         relatedResourceContract: ResourceContract,
         ResourceContractId: number | string,
         query: FetchAllRequestQuery
-    ) {
-
-    }
+    ) {}
 
     async findAllBelongingToManyCount(
         relatedResourceContract: ResourceContract,

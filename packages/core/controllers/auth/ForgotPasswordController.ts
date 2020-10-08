@@ -39,9 +39,7 @@ class ForgotPasswordController {
         const token =
             Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
 
-        const expiresAt = Dayjs()
-            .add(1, 'hour')
-            .format('YYYY-MM-DD HH:mm:ss')
+        const expiresAt = Dayjs().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss')
 
         if (existingPasswordReset) {
             await PasswordResetModel.query()
@@ -95,8 +93,6 @@ class ForgotPasswordController {
                 }
             ])
         }
-
-        existingPasswordReset = existingPasswordReset.toJSON()
 
         if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
             return response.status(401).json([
