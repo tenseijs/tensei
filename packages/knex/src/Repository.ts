@@ -670,7 +670,7 @@ export class SqlRepository extends ResourceHelpers
             })
         )
 
-        return result
+        return result.toJSON()
     }
 
     public update = async (
@@ -764,7 +764,7 @@ export class SqlRepository extends ResourceHelpers
             })
         )
 
-        return result
+        return result.toJSON()
     }
 
     public updateManyByIds = async (ids: number[], valuesToUpdate: {}) => {
@@ -806,7 +806,7 @@ export class SqlRepository extends ResourceHelpers
             ]
         }
 
-        return result
+        return result === 1
     }
 
     public findAllByIds = async (
@@ -835,7 +835,7 @@ export class SqlRepository extends ResourceHelpers
             withRelated
         })
 
-        return result
+        return result.toJSON()
     }
 
     public findOneByField = async (

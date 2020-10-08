@@ -93,14 +93,14 @@ module.exports = tensei()
             })
             .plugin(),
         trix(),
-        cashier()
-            .customerResourceName('Customer')
-            .cardUpfront()
-            .plans([
-                plan('Basic Sub').monthly().price(29),
-                plan('Premium Sub').yearly().price(99),
-            ])
-            .plugin(),
+        // cashier()
+        //     .customerResourceName('Customer')
+        //     .cardUpfront()
+        //     .plans([
+        //         plan('Basic Sub').monthly().price(29),
+        //         plan('Premium Sub').yearly().price(99),
+        //     ])
+        //     .plugin(),
         graphql().plugin(),
     ])
     .databaseConfig({

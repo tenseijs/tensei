@@ -8,23 +8,7 @@ import {
     ManagerContract
 } from '@tensei/common'
 import {
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLString,
-    GraphQLFieldConfig,
-    GraphQLID,
-    GraphQLEnumType,
-    GraphQLType,
-    GraphQLEnumValueConfigMap,
-    GraphQLBoolean,
-    GraphQLInt,
-    GraphQLScalarType,
-    GraphQLList,
-    GraphQLArgs,
-    GraphQLFieldConfigArgumentMap,
-    GraphQLInputObjectType,
     buildSchema,
-    GraphQLNonNull
 } from 'graphql'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 
@@ -42,6 +26,53 @@ class Graphql {
     }
 
     schemaString: string = ''
+
+    private getGraphqlFieldDefinitionForCreateInput = (
+        field: FieldContract,
+        resource: ResourceContract,
+        resources: ResourceContract[],
+        isUpdate?: boolean
+    ) => {
+        let FieldType = 'String'
+        let FieldKey = field.databaseField
+
+        if (field.databaseFieldType === 'increments') {
+            return ``
+        }
+
+        if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
+            FieldType = 'Int'
+        }
+
+        if (field.databaseFieldType === 'boolean') {
+            FieldType = 'Boolean'
+        }
+
+        if (field.component === 'BelongsToField') {
+            FieldType = 'ID'
+            FieldKey = `${field.databaseField}`
+        }
+
+        if (
+            ['HasManyField', 'BelongsToManyField'].includes(field.component)
+        ) {
+            const relatedResource = resources.find(
+                resource => resource.data.name === field.name
+            )
+    
+            FieldType = `[ID]`
+            FieldKey = `${relatedResource?.data.camelCaseNamePlural}`
+        }
+
+        if (
+            !field.serialize().isNullable && ! isUpdate
+        ) {
+            FieldType = `${FieldType}!`
+        }
+
+        return `
+  ${FieldKey}: ${FieldType}`
+    }
 
     private getGraphqlFieldDefinition = (
         field: FieldContract,
@@ -155,6 +186,20 @@ type ${resource.data.pascalCaseName} {${resource.data.fields
                     this.getGraphqlFieldDefinition(field, resource, resources)
                 )}
 }
+input create${resource.data.pascalCaseName}Input {${resource.data.fields
+    .filter(field => !field.isHidden)
+    .map(field =>
+        this.getGraphqlFieldDefinitionForCreateInput(field, resource, resources)
+)}
+}
+
+input update${resource.data.pascalCaseName}Input {${resource.data.fields
+    .filter(field => !field.isHidden)
+    .map(field =>
+        this.getGraphqlFieldDefinitionForCreateInput(field, resource, resources, true)
+)}
+}
+
 enum ${resource.data.pascalCaseName}FieldsEnum {${this.getFieldsTypeDefinition(
                 resource
             )}
@@ -202,8 +247,46 @@ enum ${resource.data.pascalCaseName}${
         )}
 }
 `
-        // console.log(this.schemaString)
+this.schemaString = `${this.schemaString}type Mutation {${resources.map(
+    resource => {
+        return `${this.defineCreateMutationForResource(
+            resource
+        )}`
+    }
+)}
+${resources.map(
+    resource => {
+        return `${this.defineUpdateMutationForResource(
+            resource
+        )}`
+    }
+)}
+${resources.map(
+    resource => {
+        return `${this.defineDeleteMutationForResource(
+            resource
+        )}`
+    }
+)}
+}
+type DeletePayload {
+    success: Boolean!
+}
+`
+
         return buildSchema(this.schemaString)
+    }
+
+    private defineCreateMutationForResource(resource: ResourceContract) {
+        return `create${resource.data.pascalCaseName}(input: create${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!`
+    }
+
+    private defineUpdateMutationForResource(resource: ResourceContract) {
+        return `update${resource.data.pascalCaseName}(id: ID!, input: update${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!`
+    }
+
+    private defineDeleteMutationForResource(resource: ResourceContract) {
+        return `delete${resource.data.pascalCaseName}(id: ID!): DeletePayload!`
     }
 
     private getResolvers(
@@ -217,11 +300,9 @@ enum ${resource.data.pascalCaseName}${
             field: FieldContract,
             row: any
         ) => {
-            const relatedRow = await manager(resource)
+            let relatedRowJson = await manager(resource)
                 .database()
                 .findOneById(row[field.databaseField])
-
-            let relatedRowJson = relatedRow.toJSON()
 
             relatedRowJson.resource_count = 23
 
@@ -341,6 +422,32 @@ enum ${resource.data.pascalCaseName}${
                 data = data.toJSON ? data.toJSON() : data
 
                 return populateRowWithRelationShips(data, resource)
+            }
+
+            resolvers[`create${resource.data.pascalCaseName}`] = async (args: any) => {
+                const resourceManager = manager(resource.data.name)
+
+                let data = await resourceManager.create(args.input)
+
+                return populateRowWithRelationShips(data, resource)
+            }
+
+            resolvers[`update${resource.data.pascalCaseName}`] = async (args: any) => {
+                const resourceManager = manager(resource.data.name)
+
+                let data = await resourceManager.update(args.id, args.input)
+
+                return populateRowWithRelationShips(data, resource)
+            }
+
+            resolvers[`delete${resource.data.pascalCaseName}`] = async (args: any) => {
+                const resourceManager = manager(resource.data.name)
+
+                const success = await resourceManager.deleteById(args.id)
+
+                return {
+                    success
+                }
             }
         })
 
