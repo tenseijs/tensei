@@ -911,7 +911,7 @@ class Auth {
 
             const user = {
                 ...model,
-                two_factor_enabled: model.two_factor_enabled === '1',
+                two_factor_enabled: model.two_factor_enabled === '1'
             }
 
             if (this.config.rolesAndPermissions) {

@@ -22,9 +22,10 @@
         "dev": "tsc --watch --p tsconfig.json"
     },
     "dependencies": {
+        "@tensei/common": "0.0.0",
+        "dataloader": "^2.0.0",
         "graphql": "^15.3.0",
-        "graphql-playground-middleware-express": "^1.7.18",
-        "@tensei/common": "0.0.0"
+        "graphql-playground-middleware-express": "^1.7.18"
     },
     "config": {
         "commitizen": {

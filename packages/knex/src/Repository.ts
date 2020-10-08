@@ -904,7 +904,9 @@ export class SqlRepository extends ResourceHelpers
             page: query.page,
             perPage: query.perPage,
             total: count as number,
-            data: data.relations[relatedResource.data.slug].models,
+            data: data.relations[
+                relatedResource.data.slug
+            ].models.map((model: any) => model.toJSON()),
             pageCount: Math.ceil((count as number) / (query.perPage || 10))
         }
     }
@@ -932,7 +934,9 @@ export class SqlRepository extends ResourceHelpers
 
         const data = await dataResolver()
 
-        return data.relations[relatedResource.data.slug].models
+        return data.relations[
+            relatedResource.data.slug
+        ].models.map((model: any) => model.toJSON())
     }
 
     public findAllBelongingToManyCount = async (
@@ -1006,7 +1010,7 @@ export class SqlRepository extends ResourceHelpers
                             `${relatedResource.data.table}.id`
                         )
                 ).andWhere(`${tableName}.${resourceColumnName}`, resourceId),
-            () =>
+            async () =>
                 Model.forge({
                     id: resourceId
                 }).fetch({
@@ -1088,6 +1092,18 @@ export class SqlRepository extends ResourceHelpers
 
             if (filter.operator === 'not_equals') {
                 builder.whereNot(filter.field, '=', filter.value)
+
+                return
+            }
+
+            if (filter.operator === 'in') {
+                builder.whereIn(filter.field, filter.value.split(','))
+
+                return
+            }
+
+            if (filter.operator === 'not_in') {
+                builder.whereNotIn(filter.field, filter.value.split(','))
 
                 return
             }

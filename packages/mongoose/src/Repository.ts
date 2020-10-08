@@ -327,9 +327,7 @@ export class Repository extends ResourceHelpers
         relatedResourceContract: ResourceContract,
         ResourceContractId: number | string,
         query: FetchAllRequestQuery
-    ) {
-
-    }
+    ) {}
 
     async findAllBelongingToManyCount(
         relatedResourceContract: ResourceContract,
