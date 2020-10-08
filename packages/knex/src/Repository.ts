@@ -23,7 +23,7 @@ import {
 } from '@tensei/common'
 
 export class SqlRepository extends ResourceHelpers
-    implements DatabaseRepositoryInterface {
+    implements DatabaseRepositoryInterface<any> {
     private $db: Knex | null = null
 
     private migrationsTable: string = 'migrations'
@@ -1101,8 +1101,8 @@ export class SqlRepository extends ResourceHelpers
         return results
     }
 
-    public findAllCount = async (baseQuery: FetchAllRequestQuery) => {
-        const query = this.getDefaultQuery(baseQuery)
+    public findAllCount = async (baseQuery?: FetchAllRequestQuery) => {
+        const query = this.getDefaultQuery(baseQuery || {})
 
         const [countResolver]: any = this.findAllResolvers(query)
 

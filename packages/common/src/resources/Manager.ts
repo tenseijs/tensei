@@ -698,8 +698,8 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         })
     }
 
-    findAllCount = async () => {
-        return this.database().findAllCount()
+    findAllCount = async (baseQuery?: FetchAllRequestQuery) => {
+        return this.database().findAllCount(baseQuery)
     }
 
     findOneByField = async (databaseField: string, value: any) => {

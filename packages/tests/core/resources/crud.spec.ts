@@ -11,13 +11,11 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             databaseClient
         })
 
-        const user = (
-            await manager({} as any)('User').create({
-                email: Faker.internet.exampleEmail(),
-                full_name: Faker.name.findName(),
-                password: 'password'
-            })
-        ).toJSON()
+        const user = await manager({} as any)('User').create({
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        })
 
         const post = {
             ...fakePostData(),
@@ -106,9 +104,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             full_name: Faker.name.findName()
         }
 
-        const user = (
-            await await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         const client = Supertest(app)
 
@@ -135,9 +131,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        const user = (
-            await await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         const client = Supertest(app)
 

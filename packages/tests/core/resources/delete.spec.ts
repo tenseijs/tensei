@@ -21,9 +21,7 @@ beforeEach(() => {
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         const [post1, _] = await Promise.all(
             Array.from({ length: 2 }).map(() =>
@@ -38,7 +36,7 @@ beforeEach(() => {
         const client = Supertest(app)
 
         let response = await client
-            .delete(`/admin/api/resources/posts/${post1.toJSON().id}`)
+            .delete(`/admin/api/resources/posts/${post1.id}`)
             .send(userDetails)
 
         expect(response.status).toBe(204)
@@ -64,9 +62,7 @@ beforeEach(() => {
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         await Promise.all(
             Array.from({ length: 2 }).map(() =>

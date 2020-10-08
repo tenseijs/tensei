@@ -27,9 +27,7 @@ beforeEach(() => {
             full_name: Faker.name.findName()
         }
 
-        const user = (
-            await await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         const beforeUpdateHook = jest.spyOn(User.hooks, 'beforeUpdate')
 
@@ -56,9 +54,7 @@ beforeEach(() => {
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         const postDetails = {
             ...fakePostData(),
@@ -71,9 +67,7 @@ beforeEach(() => {
             description: null
         }
 
-        const post = (
-            await manager({} as any)('Post').create(postDetails)
-        ).toJSON()
+        const post = await manager({} as any)('Post').create(postDetails)
         const client = Supertest(app)
 
         const response = await client

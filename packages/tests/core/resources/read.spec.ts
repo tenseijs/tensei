@@ -22,9 +22,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         await Promise.all(
             Array.from({ length: 30 }).map(() =>
@@ -71,9 +69,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         await Promise.all(
             Array.from({ length: 10 }).map(() =>
@@ -176,9 +172,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         await Promise.all(
             Array.from({ length: 30 }).map(() =>
@@ -219,9 +213,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        const user = (
-            await manager({} as any)('User').create(userDetails)
-        ).toJSON()
+        const user = await manager({} as any)('User').create(userDetails)
 
         const titles = ['new title 1', 'new title 2']
 
@@ -300,7 +292,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
                 manager({} as any)('Post').create({
                     ...fakePostData(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user1.toJSON().id
+                    user_id: user1.id
                 })
             )
         )
@@ -310,7 +302,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
                 manager({} as any)('Post').create({
                     ...fakePostData(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user2.toJSON().id
+                    user_id: user2.id
                 })
             )
         )
@@ -321,7 +313,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
 
         let response = await client
             .get(`/admin/api/resources/users/1/posts`)
-            .send({ ...userDetails, email: user1.toJSON().email })
+            .send({ ...userDetails, email: user1.email })
 
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(3)
@@ -334,7 +326,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
 
         response = await client
             .get(`/admin/api/resources/users/2/posts`)
-            .send({ ...userDetails, email: user2.toJSON().email })
+            .send({ ...userDetails, email: user2.email })
 
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(4)

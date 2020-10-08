@@ -41,7 +41,7 @@ jest.mock('speakeasy')
     })
 
     test(`${databaseClient} - throws error when email verification token is invalid`, async () => {
-        const { app, getDatabaseClient, manager } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
 

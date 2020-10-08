@@ -47,9 +47,11 @@ jest.mock('speakeasy')
         expect(response.status).toBe(200)
         expect(response.body.dataURL).toMatch('data:image/png;base64')
 
-        let freshUser = await manager({} as any)('Customer').findOneById(
-            user.id
-        )
+        const Customer = await manager()('Customer').Model()
+
+        let freshUser = await new Customer({ id: user.id }).fetch({
+            require: true,
+        })
 
         expect(freshUser.get('two_factor_enabled')).toBe('0')
         expect(freshUser.get('two_factor_secret')).toBe(sampleBase32)
@@ -88,9 +90,11 @@ jest.mock('speakeasy')
         expect(response.status).toBe(200)
         expect(response.body).toMatchSnapshot()
 
-        let freshUser = await manager({} as any)('Customer').findOneById(
-            user.id
-        )
+        const Customer = await manager()('Customer').Model()
+
+        let freshUser = await new Customer({ id: user.id }).fetch({
+            require: true,
+        })
 
         expect(freshUser.get('two_factor_enabled')).toBe('1')
         expect(freshUser.get('two_factor_secret')).toBe(sampleBase32)
@@ -132,9 +136,12 @@ jest.mock('speakeasy')
         expect(response.status).toBe(200)
         expect(response.body).toMatchSnapshot()
 
-        let freshUser = await manager({} as any)('Customer').findOneById(
-            user.id
-        )
+        const Customer = await manager()('Customer').Model()
+
+        let freshUser = await new Customer({ id: user.id }).fetch({
+            require: true,
+        })
+
 
         expect(freshUser.get('two_factor_secret')).toBe(null)
         expect(freshUser.get('two_factor_enabled')).toBe('0')

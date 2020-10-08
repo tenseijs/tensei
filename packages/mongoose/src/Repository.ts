@@ -21,7 +21,7 @@ import { belongsTo } from '@tensei/common'
 import { dateTime } from '@tensei/common'
 
 export class Repository extends ResourceHelpers
-    implements DatabaseRepositoryInterface {
+    implements DatabaseRepositoryInterface<any> {
     private $db: MongooseType | null = null
 
     private connectionString: string = ''
@@ -311,9 +311,43 @@ export class Repository extends ResourceHelpers
         return Promise.resolve({} as any)
     }
 
+    findAllData(query: FetchAllRequestQuery) {
+        return Promise.resolve({} as any)
+    }
+
+    findAllResolvers(query: FetchAllRequestQuery) {
+        return []
+    }
+
     findAllByIds(ids: number[], fields?: string[]) {
         return Promise.resolve([])
     }
+
+    async findAllBelongingToManyData(
+        relatedResourceContract: ResourceContract,
+        ResourceContractId: number | string,
+        query: FetchAllRequestQuery
+    ) {
+
+    }
+
+    async findAllBelongingToManyCount(
+        relatedResourceContract: ResourceContract,
+        ResourceContractId: number | string,
+        query: FetchAllRequestQuery
+    ) {
+        return 0
+    }
+
+    findAllBelongingToManyResolvers(
+        relatedResourceContract: ResourceContract,
+        ResourceContractId: number | string,
+        query: FetchAllRequestQuery
+    ) {
+        return []
+    }
+
+    public handleFilterQueries() {}
 
     findAllBelongingToMany(
         relatedResourceContract: ResourceContract,

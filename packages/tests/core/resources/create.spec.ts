@@ -16,13 +16,11 @@ beforeEach(() => {
             databaseClient
         })
 
-        const user = (
-            await manager({} as any)('User').create({
-                email: Faker.internet.exampleEmail(),
-                full_name: Faker.name.findName(),
-                password: 'password'
-            })
-        ).toJSON()
+        const user = await manager({} as any)('User').create({
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        })
 
         const post = {
             ...fakePostData(),
@@ -47,13 +45,11 @@ beforeEach(() => {
             } as any
         })
 
-        const user = (
-            await manager({} as any)('User').create({
-                email: Faker.internet.exampleEmail(),
-                full_name: Faker.name.findName(),
-                password: 'password'
-            })
-        ).toJSON()
+        const user = await manager({} as any)('User').create({
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        })
 
         const post = {
             ...fakePostData(),
@@ -87,13 +83,11 @@ beforeEach(() => {
             } as any
         })
 
-        const user = (
-            await manager({} as any)('User').create({
-                email: Faker.internet.exampleEmail(),
-                full_name: Faker.name.findName(),
-                password: 'password'
-            })
-        ).toJSON()
+        const user = await manager({} as any)('User').create({
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        })
 
         const post = {
             ...fakePostData(),
@@ -126,13 +120,11 @@ beforeEach(() => {
             } as any
         })
 
-        const user = (
-            await manager({} as any)('User').create({
-                email: Faker.internet.exampleEmail(),
-                full_name: Faker.name.findName(),
-                password: 'password'
-            })
-        ).toJSON()
+        const user = await manager({} as any)('User').create({
+            email: Faker.internet.exampleEmail(),
+            full_name: Faker.name.findName(),
+            password: 'password'
+        })
 
         const post = {
             ...fakePostData(),

@@ -204,7 +204,7 @@ declare module '@tensei/common/resources' {
             resource?: ResourceContract<{}>
         ): Promise<any>
         findAll(
-            query?: undefined
+            query?: FetchAllRequestQuery
         ): Promise<import('@tensei/common').FetchAllResults<{}>>
         findAllRelatedResource(
             resourceId: string | number,

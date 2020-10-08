@@ -27,7 +27,7 @@ jest.mock('speakeasy')
 
         await manager({} as any)('Customer').create(userData)
 
-        await manager({} as any)('Password Resets').create({
+        await manager({} as any)('Password Reset').create({
             email: userData.email,
             token,
             expires_at: Faker.date.future()
@@ -60,7 +60,7 @@ jest.mock('speakeasy')
 
         await manager({} as any)('Customer').create(userData)
 
-        await manager({} as any)('Password Resets').create({
+        await manager({} as any)('Password Reset').create({
             email: userData.email,
             token,
             expires_at: Faker.date.past()
@@ -113,7 +113,7 @@ jest.mock('speakeasy')
 
         const token = Faker.random.alphaNumeric(64)
 
-        await manager({} as any)('Password Resets').create({
+        await manager({} as any)('Password Reset').create({
             email: Faker.internet.email(),
             token,
             expires_at: Faker.date.future()

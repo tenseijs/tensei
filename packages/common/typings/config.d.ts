@@ -233,7 +233,7 @@ declare module '@tensei/common/config' {
             valuesToUpdate: {}
         ) => Promise<any>
         abstract findAllCount: (
-            baseQuery: FetchAllRequestQuery
+            baseQuery?: FetchAllRequestQuery
         ) => Promise<number>
         abstract findAllBelongingToMany: (
             relatedResource: ResourceContract,
