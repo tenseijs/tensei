@@ -262,10 +262,6 @@ declare module '@tensei/common/config' {
             resourceId: string | number,
             baseQuery: FetchAllRequestQuery
         ) => (() => any)[]
-        abstract handleFilterQueries: (
-            filters: FetchAllRequestQuery['filters'],
-            builder: Knex
-        ) => Knex
         abstract findAllData: (baseQuery: FetchAllRequestQuery) => Promise<any>
         abstract findAll: (
             baseQuery: FetchAllRequestQuery

@@ -22,7 +22,7 @@ import { dateTime } from '@tensei/common'
 
 export class Repository extends ResourceHelpers
     implements DatabaseRepositoryInterface<any> {
-    private $db: MongooseType | null = null
+    private $db: Mongoose.Connection | null = null
 
     private connectionString: string = ''
 
@@ -37,6 +37,8 @@ export class Repository extends ResourceHelpers
         config.pushResource(this.administratorResource())
         config.pushResource(this.roleResource())
         config.pushResource(this.passwordResetsResource())
+
+        Mongoose.set('debug', true)
 
         this.resources = config.resources
 
@@ -79,14 +81,15 @@ export class Repository extends ResourceHelpers
             resource.data.fields.forEach(field => {
                 const serializedField = field.serialize()
 
-                let type: any = null
+                let defaultValue: any = ''
+                let type: any = Mongoose.Schema.Types.String
 
                 if (field.databaseFieldType === 'increments') {
                     return
                 }
 
                 if (
-                    ['string', 'text', 'enu'].includes(field.databaseFieldType)
+                    ['string', 'text', 'enu', 'json'].includes(field.databaseFieldType)
                 ) {
                     type = Mongoose.Schema.Types.String
                 }
@@ -97,6 +100,10 @@ export class Repository extends ResourceHelpers
                     )
                 ) {
                     type = Mongoose.Schema.Types.Date
+
+                    if (field.serialize().defaultToNow) {
+                        defaultValue = new Date()
+                    }
                 }
 
                 if (['boolean'].includes(field.databaseFieldType)) {
@@ -111,27 +118,31 @@ export class Repository extends ResourceHelpers
 
                 if (['array'].includes(field.databaseFieldType)) {
                     type = [String]
+
+                    defaultValue = []
                 }
 
                 if (field.component === 'BelongsToField') {
                     type = Mongoose.Schema.Types.ObjectId
+
+                    defaultValue = null
                 }
 
-                if (field.component === 'HasManyField') {
+                if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
                     type = [Mongoose.Schema.Types.ObjectId]
+
+                    defaultValue = []
                 }
 
                 schemaDefinition[field.databaseField] = {
                     type,
                     unique: field.isUnique,
                     index: field.isUnique || field.isSearchable,
-                    default: serializedField.defaultToNow
-                        ? Date.now
-                        : serializedField.defaultValue
+                    default: serializedField.defaultValue || defaultValue
                 }
 
                 if (
-                    ['BelongsToField', 'HasManyField'].includes(field.component)
+                    ['BelongsToField', 'HasManyField', 'BelongsToManyField'].includes(field.component)
                 ) {
                     schemaDefinition[field.databaseField] = {
                         ...schemaDefinition[field.databaseField],
@@ -184,6 +195,16 @@ export class Repository extends ResourceHelpers
                     .notNullable(),
                 dateTime('Expires At')
             ])
+    }
+
+    private getDefaultQuery = (baseQuery: FetchAllRequestQuery) => {
+        return {
+            ...baseQuery,
+            page: baseQuery.page || 1,
+            search: baseQuery.search || '',
+            fields: baseQuery.fields || ['*'],
+            perPage: baseQuery.perPage || baseQuery.per_page || 10
+        }
     }
 
     private administratorResource() {
@@ -268,7 +289,9 @@ export class Repository extends ResourceHelpers
     }
 
     async establishDatabaseConnection() {
-        this.$db = await Mongoose.connect(this.connectionString, this.config)
+        await Mongoose.connect(this.connectionString, this.config)
+
+        this.$db = Mongoose.connection
     }
 
     async aggregateCount(between: [string, string]) {
@@ -287,36 +310,57 @@ export class Repository extends ResourceHelpers
         return 0
     }
 
-    async create(payload: DataPayload, relationshipPayload?: DataPayload) {
-        const resource = this.getCurrentResource()
+    async create(payload: DataPayload, relationshipPayload: DataPayload = {}) {
         const Model = this.getResourceMongooseModel()!
 
-        const result = await Model.create(payload)
+        const result = await Model.create({
+            ...payload,
+            ...relationshipPayload
+        })
 
-        const relationshipFields = resource
-            .serialize()
-            .fields.filter(field => field.isRelationshipField)
+        return this.resetIdField(
+            result.toJSON()
+        )
     }
 
-    update(
+    async update(
         id: number | string,
         payload: DataPayload,
         relationshipPayload: DataPayload,
-        patch: boolean
     ) {
-        return Promise.resolve()
+        const result = await Model.findByIdAndUpdate(id, {
+            ...payload,
+            ...relationshipPayload
+        })
+
+        return this.resetIdField(
+            result.toJSON()
+        )
     }
 
     findAll(query: FetchAllRequestQuery) {
         return Promise.resolve({} as any)
     }
 
-    findAllData(query: FetchAllRequestQuery) {
-        return Promise.resolve({} as any)
+    async findAllData(query: FetchAllRequestQuery) {
+        const [, dataResolver] = this.findAllResolvers(query)
+
+        return dataResolver()
     }
 
-    findAllResolvers(query: FetchAllRequestQuery) {
-        return []
+    findAllResolvers(baseQuery: FetchAllRequestQuery) {
+        const Model = this.getResourceMongooseModel()!
+
+        const query = this.getDefaultQuery(baseQuery)
+
+        const getQuery = () => Model.find(
+            this.handleFilterQueries(query)
+        )
+
+        return [
+            () => getQuery().count(),
+            () => getQuery().limit(query.perPage).skip((query.page - 1) * query.perPage)
+        ]
     }
 
     findAllByIds(ids: number[], fields?: string[]) {
@@ -345,7 +389,84 @@ export class Repository extends ResourceHelpers
         return []
     }
 
-    public handleFilterQueries() {}
+    public handleFilterQueries(query: FetchAllRequestQuery) {
+        let findQuery: DataPayload = {}
+        
+        query.filters?.forEach(filter => {
+            if(filter.operator === 'in') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $in: Array.isArray(filter.value) ? filter.value : [filter.value]
+                }
+            }
+
+            if(filter.operator === 'not_in') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $nin: Array.isArray(filter.value) ? filter.value : [filter.value]
+                }
+            }
+
+            if (filter.operator === 'matches') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $regex: new RegExp(filter.value)
+                }
+            }
+
+            if (filter.operator === 'equals') {
+                findQuery[filter.field] = filter.value
+            }
+
+            if (filter.operator === 'contains') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $regex: new RegExp(`.*${filter.value}.*`)
+                }
+            }
+
+            if (filter.operator === 'gte') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $gte: filter.value
+                }
+            }
+
+            if (filter.operator === 'gt') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $gt: filter.value
+                }
+            }
+
+            if (filter.operator === 'lte') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $lte: filter.value
+                }
+            }
+
+            if (filter.operator === 'lt') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $lt: filter.value
+                }
+            }
+
+            if (filter.operator === 'is_null') {
+                findQuery[filter.field] = null
+            }
+
+            if (filter.operator === 'not_null') {
+                findQuery[filter.field] = {
+                    ...findQuery[filter.field],
+                    $ne: null
+                }
+            }
+        })
+
+        return findQuery
+    }
 
     findAllBelongingToMany(
         relatedResourceContract: ResourceContract,
@@ -355,16 +476,36 @@ export class Repository extends ResourceHelpers
         return Promise.resolve({} as any)
     }
 
-    findOneById(
+    async findOneById(
         id: number | string,
         fields?: string[],
         withRelationships?: string[]
     ) {
-        return Promise.resolve(null)
+        const Model = this.getResourceMongooseModel()!
+
+        const model = await Model.findOne({
+            _id: id
+        })
+
+        if (! model) {
+            return model
+        }
+
+        return this.resetIdField(model)
     }
 
-    findOneByField(field: string, value: string, fields?: string[]) {
-        return Promise.resolve(null)
+    async findOneByField(field: string, value: string, fields?: string[]) {
+        const Model = this.getResourceMongooseModel()!
+
+        const model = await Model.findOne({
+            [field]: value
+        })
+
+        if (! model) {
+            return model
+        }
+
+        return this.resetIdField(model)
     }
 
     findOneByFieldExcludingOne(
@@ -397,7 +538,23 @@ export class Repository extends ResourceHelpers
         return Promise.resolve()
     }
 
-    findAllCount() {
-        return Promise.resolve(null as any)
+    async findAllCount(query?: FetchAllRequestQuery) {
+        const [countResolver] = this.findAllResolvers(query || {})
+
+        return countResolver() as any
+    }
+
+    private resetIdField(response: any) {
+        if (Array.isArray(response)) {
+            return response.map(r => ({
+                ...r,
+                id: r._id
+            }))
+        }
+
+        return {
+            ...response,
+            id: response._id
+        }
     }
 }

@@ -97,8 +97,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             )
         )
 
-        // TODO: Insert beforeCreate hook for fields here.
-
         const model = await this.database().create(
             nonRelationshipFieldsPayload,
             relationshipFieldsPayload

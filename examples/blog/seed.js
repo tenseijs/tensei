@@ -61,9 +61,85 @@ const postsTagsBuilder = build('PostTag', {
     },
 })
 
+const posts = Array(1000)
+    .fill(undefined)
+    .map(() => postBuilder())
+
+const users = Array(1000)
+    .fill(undefined)
+    .map(() => userBuilder())
+
+const tags = Array(1000)
+    .fill(undefined)
+    .map(() => tagsBuilder())
+
+const comments = Array(1000)
+    .fill(undefined)
+    .map(() => commentsBuilder())
+
+const posts_tags = Array(1000)
+    .fill(undefined)
+    .map(() => postsTagsBuilder())
+
+const administrators = Array(50)
+    .fill(undefined)
+    .map(() => administratorBuilder())
+
+async function seedMongo(resources, connection) {
+    await Promise.all(resources.map(resource => {
+        const Model = resource.Model()
+        return Model.deleteMany({})
+    }))
+
+    await Promise.all(resources.map(resource => {
+        const Model = resource.Model()
+        
+        if (resource.data.name === 'Post') {
+            return Model.insertMany(
+                posts
+            )
+        }
+
+        if (resource.data.name === 'Administrator') {
+            return Model.insertMany(
+                administrators
+            )
+        }
+
+        if (resource.data.name === 'Tag') {
+            return Model.insertMany(
+                tags
+            )
+        }
+
+        if (resource.data.name === 'User') {
+            return Model.insertMany(
+                users
+            )
+        }
+
+        if (resource.data.name === 'Comment') {
+            return Model.insertMany(
+                comments
+            )
+        }
+
+        return Promise.resolve()
+    }))
+
+    await connection.close()
+}
+
 require('./app')
     .register()
-    .then(async ({ getDatabaseClient }) => {
+    .then(async ({ getDatabaseClient, config }) => {
+
+        if (config.database === 'mongodb') {
+            seedMongo(config.resources, getDatabaseClient())
+
+            return
+        }
+
         const knex = getDatabaseClient()
 
         await Promise.all([
@@ -73,25 +149,6 @@ require('./app')
             knex('comments').truncate(),
             knex('administrators').truncate(),
         ])
-
-        const posts = Array(1000)
-            .fill(undefined)
-            .map(() => postBuilder())
-        const users = Array(1000)
-            .fill(undefined)
-            .map(() => userBuilder())
-        const tags = Array(1000)
-            .fill(undefined)
-            .map(() => tagsBuilder())
-        const comments = Array(1000)
-            .fill(undefined)
-            .map(() => commentsBuilder())
-        const posts_tags = Array(1000)
-            .fill(undefined)
-            .map(() => postsTagsBuilder())
-        const administrators = Array(50)
-            .fill(undefined)
-            .map(() => administratorBuilder())
 
         await Promise.all([
             knex('posts').insert(posts),
