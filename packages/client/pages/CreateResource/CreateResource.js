@@ -22,7 +22,8 @@ class CreateResource extends React.Component {
             formInitialized: false,
             resource: this.findResource(),
             editingState: !!this.props.match.params.resourceId,
-            errors: {}
+            errors: {},
+            pendingFields: []
         }
     }
 
@@ -265,13 +266,28 @@ class CreateResource extends React.Component {
                     editingState={editingState}
                     errorMessage={errorMessage}
                     onFieldChange={onFieldChange}
+                    addPendingField={this.addPendingField}
+                    removePendingField={this.removePendingField}
                     resourceId={this.props.match.params.resourceId}
                 />
             </div>
         )
     }
 
+    addPendingField = (fieldName) => {
+        this.setState({ pendingFields: [...this.state.pendingFields, fieldName] })
+    }
+
+    removePendingField = (fieldName) => {
+        this.setState({ pendingFields: this.state.pendingFields.filter(field => field !== fieldName) })
+    }
+
     submit = () => {
+        if(this.state.pendingFields.length) {
+            return Tensei.library.Notification.info(
+                "Please wait, some fields are still pending."
+            )
+        }
         this.setState({
             submitting: true
         })

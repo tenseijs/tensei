@@ -18,6 +18,7 @@ import HasManyDetailField from './detail-fields/HasManyField'
 import TextareaDetailField from './detail-fields/TextareaField'
 import BelongsToDetailField from './detail-fields/BelongsToField'
 import BelongsToManyDetailField from './detail-fields/BelongsToManyField'
+import FileField from './fields/File'
 
 import TextIndexField from './index-fields/Text'
 
@@ -81,7 +82,8 @@ export default class Tensei {
         LinkField: TextField,
         NumberField: TextField,
         IntegerField: TextField,
-        DateField: DateTimeField
+        DateField: DateTimeField,
+        FileField,
     }
 
     cardComponents = {

@@ -1,6 +1,7 @@
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
+import fileUpload from 'express-fileupload'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
@@ -41,6 +42,7 @@ import DeleteResourceController from './controllers/resources/DeleteResourceCont
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
 import { StorageConstructor } from '@tensei/common'
 import { SupportedStorageDrivers } from '@tensei/common'
+import UploadFileController from './controllers/UploadFileController'
 
 export class Tensei {
     public app: Application = Express()
@@ -97,6 +99,10 @@ export class Tensei {
         showRelationController: this.asyncHandler(
             FindResourceController.showRelation
         ),
+        uploadFileController: this.asyncHandler(
+            UploadFileController.store
+        ),
+
 
         scripts: [
             {
@@ -352,6 +358,7 @@ export class Tensei {
                 request.dashboards = this.config.dashboardsMap
                 request.resources = this.config.resourcesMap
                 request.manager = this.manager(request)!
+                request.storage = this.storage
                 request.mailer = this.mailer
                 request.config = this.config
 
@@ -362,6 +369,8 @@ export class Tensei {
         const Store = require(this.getSessionPackage())(ExpressSession)
 
         this.app.use(ExpressSession(this.getSessionPackageConfig(Store)))
+
+        this.app.use(fileUpload({}))
 
         this.app.use(this.setAuthMiddleware)
     }
@@ -398,7 +407,7 @@ export class Tensei {
         next()
     }
 
-    public  setAuthMiddleware = async (
+    public setAuthMiddleware = async (
         request: Express.Request,
         response: Express.Response,
         next: Express.NextFunction
@@ -411,6 +420,8 @@ export class Tensei {
             .manager(this.administratorResource())
             .database()
             .getAdministratorById(request.session?.user!)
+
+        // admin.permissions = ["create:posts", "read:posts", "create:users", "read:users", "read:administrators"]
 
         if (!admin) {
             return next()
@@ -504,6 +515,13 @@ export class Tensei {
             this.setDashboardOrigin,
             this.authMiddleware,
             this.config.createController
+        )
+
+        this.app.post(
+            this.getDashboardApiPath(`resources/:resource/upload`),
+            this.setDashboardOrigin,
+            this.authMiddleware,
+            this.config.uploadFileController
         )
 
         this.app.post(

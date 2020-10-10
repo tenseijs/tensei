@@ -18,6 +18,8 @@ export { belongsTo, BelongsTo } from './fields/BelongsTo'
 export { timestamp, Timestamp } from './fields/Timestamp'
 export { bigInteger, BigInteger } from './fields/BigInteger'
 export { belongsToMany, BelongsToMany } from './fields/BelongsToMany'
+export { file, File } from './fields/File'
+export { image, Image } from './fields/Image'
 
 export { ResourceHelpers } from './helpers'
 export { Manager } from './resources/Manager'

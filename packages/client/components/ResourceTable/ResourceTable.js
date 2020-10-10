@@ -129,16 +129,18 @@ class ResourceTable extends React.Component {
                 }&fields=${fields}`
             )
             .then(({ data }) => {
+                console.log(data, '----->>Data')
                 this.setState({
-                    data: data.data,
+                    data: [],
                     loading: false,
-                    page: data.page,
-                    total: data.total,
-                    perPage: data.perPage,
-                    pageCount: data.pageCount
+                    page: 1,
+                    total: 1,
+                    perPage: 25,
+                    pageCount: 1
                 })
             })
             .catch(error => {
+                console.log(error, '---------')
                 this.setState({
                     loading: false
                 })

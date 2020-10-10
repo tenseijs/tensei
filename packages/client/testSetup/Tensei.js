@@ -7,6 +7,7 @@ import BelongsToField from '~/fields/BelongsTo'
 import LinkField from '~/index-fields/Link'
 import TextIndexField from '~/index-fields/Text'
 import DateIndexField from '~/index-fields/Date'
+import FileField from '~/fields/File'
 
 export default {
     getPath: jest.fn(() => 'string'),
@@ -20,7 +21,8 @@ export default {
         LinkField: TextField,
         NumberField: TextField,
         IntegerField: TextField,
-        DateField: DateTimeField
+        DateField: DateTimeField,
+        FileField
     },
     library: {
         Notification: { success: jest.fn(), error: jest.fn() }
