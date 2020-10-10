@@ -23,6 +23,7 @@ declare global {
             }
             mailer: Mail
             config: Config
+            storage: StorageManager
             originatedFromDashboard: boolean | undefined
         }
     }

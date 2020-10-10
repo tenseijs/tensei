@@ -91,7 +91,6 @@ module.exports = resource('Post')
             .rules('required')
             .searchable()
             .description('Select one of these technologies to write about.'),
-        belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()
             .firstDayOfWeek(4)
@@ -101,8 +100,7 @@ module.exports = resource('Post')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
-        belongsToMany('Tag'),
-    ])
+     ])
     .perPageOptions([25, 50, 100])
     .displayField('title')
     .permissions(['create:matrix', 'update:matrix'])

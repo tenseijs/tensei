@@ -80,6 +80,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     }
 
     public async create(payload: DataPayload) {
+        console.log(this.request?.files, '----')
         const resource = this.getCurrentResource()
 
         let validatedPayload = await this.validate(payload)
@@ -355,7 +356,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 new Set([
                     ...serializedField.rules,
                     ...serializedField[
-                        creationRules ? 'creationRules' : 'updateRules'
+                    creationRules ? 'creationRules' : 'updateRules'
                     ]
                 ])
             ).join('|')
@@ -445,6 +446,10 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             resource
         )
 
+        await this.validateFileFields(
+            payload, resource
+        )
+
         // then we need to validate all unique fields.
         return {
             parsedPayload,
@@ -491,10 +496,48 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             if (exists) {
                 throw [
                     {
-                        message: `A ${resource.data.name.toLowerCase()} already exists with ${
-                            field.inputName
-                        } ${payload[field.inputName]}.`,
+                        message: `A ${resource.data.name.toLowerCase()} already exists with ${field.inputName
+                            } ${payload[field.inputName]}.`,
                         field: field.inputName
+                    }
+                ]
+            }
+        }
+    }
+
+    validateFileFields = async (
+        payload: DataPayload,
+        resource = this.getCurrentResource()
+    ) => {
+        const fileFields = resource
+            .serialize()
+            .fields.filter(
+                field => field.component === 'FileField'
+            )
+
+        for (let index = 0; index < fileFields.length; index++) {
+            const field = fileFields[index]
+
+            if (!payload[field.inputName]) {
+                return
+            }
+
+            const file = payload[field.name]
+
+            if (!field.allowedMimeTypes?.includes(file.mimetype)) {
+                throw [
+                    {
+                        message: `This file format is not allowed `,
+                        format: field.mimeType
+                    }
+                ]
+            }
+
+            if (field.attributes.maxSize > file.size) {
+                throw [
+                    {
+                        message: `This file size bigger than the max size allowed`,
+                        size: field.mimeType
                     }
                 ]
             }
