@@ -3,14 +3,64 @@ import { sentenceCase } from 'change-case'
 
 import { AuthPluginConfig } from './config'
 
-export default async (
+export const SetupMongodb = async (
     config: PluginSetupConfig,
     authConfig: AuthPluginConfig
 ) => {
     const { resources } = config
+    const [, RoleResource, PermissionResource] = getAuthResources(resources, authConfig)
+
+    // @ts-ignore
+    const RoleModel = RoleResource.Model()
+    // @ts-ignore
+    const PermissionModel = PermissionResource.Model()
+
+    const insertPermissions = await getPermissionsToInsert(resources, PermissionModel, 'mongodb')
+
+    if (insertPermissions.length > 0) {
+        await PermissionModel.insertMany(insertPermissions)
+    }
+
+    // Insert default roles
+    // There will be two default roles: Authenticated & Public
+    // Public will have no permissions attached by default
+    let [authenticatedRole, publicRole] = await Promise.all([
+        RoleModel.findOne({
+            slug: 'authenticated'
+        }),
+        RoleModel.findOne({
+            slug: 'public'
+        })
+    ])
+
+    const rolesToCreate = []
+
+    if (!authenticatedRole) {
+        rolesToCreate.push(
+            RoleModel.create({
+                name: 'Authenticated',
+                slug: 'authenticated'
+            })
+        )
+    }
+
+    if (!publicRole) {
+        rolesToCreate.push(
+            RoleModel.create({
+                name: 'Public',
+                slug: 'public'
+            })
+        )
+    }
+
+    await Promise.all(rolesToCreate)
+}
+
+const getAuthResources = (resources: ResourceContract[], authConfig: AuthPluginConfig) => {
     const UserResource = resources.find(
         resource => resource.data.name === authConfig.nameResource
     )
+
     const RoleResource = resources.find(
         resource => resource.data.name === authConfig.roleResource
     )
@@ -24,13 +74,10 @@ export default async (
         )
     }
 
-    // @ts-ignore
-    const UserModel = UserResource.Model()
-    // @ts-ignore
-    const RoleModel = RoleResource.Model()
-    // @ts-ignore
-    const PermissionModel = PermissionResource.Model()
+    return [UserResource, RoleResource, PermissionResource]
+}
 
+const getPermissionsToInsert = async (resources: ResourceContract[], PermissionModel: any, database: 'sql'|'mongodb') => {
     const permissions: Permission[] = []
 
     resources.forEach(resource => {
@@ -49,7 +96,11 @@ export default async (
 
     // find all existing permissions
     const existingPermissions = (
-        await PermissionModel.query().whereIn('slug', permissions)
+        database === 'sql' ? await PermissionModel.query().whereIn('slug', permissions) : await PermissionModel.find({
+            slug: {
+                $in: permissions
+            }
+        })
     ).map((permission: any) => permission.slug)
 
     const newPermissionsToCreate = permissions.filter(
@@ -59,7 +110,7 @@ export default async (
             )
     )
 
-    const insertPermissions = Array.from(new Set(newPermissionsToCreate)).map(
+    return Array.from(new Set(newPermissionsToCreate)).map(
         permission => ({
             name:
                 typeof permission === 'string'
@@ -68,6 +119,21 @@ export default async (
             slug: permission
         })
     )
+}
+
+export const SetupSql =  async (
+    config: PluginSetupConfig,
+    authConfig: AuthPluginConfig
+) => {
+    const { resources } = config
+    const [, RoleResource, PermissionResource] = getAuthResources(resources, authConfig)
+
+    // @ts-ignore
+    const RoleModel = RoleResource.Model()
+    // @ts-ignore
+    const PermissionModel = PermissionResource.Model()
+
+    const insertPermissions = await getPermissionsToInsert(resources, PermissionModel, 'sql')
 
     if (insertPermissions.length > 0) {
         await PermissionModel.query().insert(insertPermissions)
@@ -97,10 +163,12 @@ export default async (
     }
 
     if (!publicRole || !publicRole[0]) {
-        RoleModel.query().insert({
-            name: 'Public',
-            slug: 'public'
-        })
+        rolesToCreate.push(
+            RoleModel.query().insert({
+                name: 'Public',
+                slug: 'public'
+            })
+        )
     }
 
     await Promise.all(rolesToCreate)

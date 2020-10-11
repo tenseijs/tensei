@@ -5,7 +5,7 @@ export class BooleanField extends Field {
 
     public component = 'BooleanField'
 
-    private config = {
+    private booleanConfig = {
         trueLabel: 'Yes',
         falseLabel: 'No'
     }
@@ -24,13 +24,13 @@ export class BooleanField extends Field {
     }
 
     public trueLabel(value: string) {
-        this.config.trueLabel = value
+        this.booleanConfig.trueLabel = value
 
         return this
     }
 
     public falseLabel(value: string) {
-        this.config.falseLabel = value
+        this.booleanConfig.falseLabel = value
 
         return this
     }
@@ -38,8 +38,8 @@ export class BooleanField extends Field {
     public serialize() {
         return {
             ...super.serialize(),
-            trueLabel: this.config.trueLabel,
-            falseLabel: this.config.falseLabel
+            trueLabel: this.booleanConfig.trueLabel,
+            falseLabel: this.booleanConfig.falseLabel
         }
     }
 }

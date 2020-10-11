@@ -282,10 +282,7 @@ class CreateResource extends React.Component {
             `resources/${resource.slug}/${
                 editingState ? this.props.match.params.resourceId : ''
             }`,
-            {
-                ...this.state.form,
-                somethingNotSupposedToBeHere: 'somethingNotSupposedToBeHere'
-            }
+            this.state.form
         )
             .then(() => {
                 this.props.history.push(

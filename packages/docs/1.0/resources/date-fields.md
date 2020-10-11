@@ -5,11 +5,11 @@
 Nova offers two types of date fields: `Date` and `DateTime`. As you may have guessed, the `Date` field does not store time information, while the `DateTime` field does:
 
 ```php
-use Laravel\Nova\Fields\Date;
-use Laravel\Nova\Fields\DateTime;
+const { date, dateTime } = require('@tensei/core')
 
-Date::make('Birthday')
-DateTime::make('Created At')
+date('Birthday')
+
+dateTime('Published At')
 ```
 
 ### Timezones

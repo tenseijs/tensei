@@ -5,9 +5,13 @@ class FindResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const model = await request
-            .manager(request.params.resource)
-            .findOneById(request.params.resourceId)
+        const { manager } = request
+
+        const resourceManager = manager(request.params.resource)
+
+        await resourceManager.authorize('authorizedToShow')
+
+        const model = await resourceManager.findOneById(request.params.resourceId)
 
         if (!model) {
             return response.status(404).json({
@@ -22,9 +26,14 @@ class FindResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
+        const { manager } = request
+
+        const resourceManager = manager(request.params.resource)
+
+        await resourceManager.authorize('authorizedToShow')
+
         return response.json(
-            await request
-                .manager(request.params.resource)
+            await resourceManager
                 .findAllRelatedResource(
                     request.params.resourceId,
                     request.params.relatedResource

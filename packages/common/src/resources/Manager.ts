@@ -74,7 +74,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         ) {
             throw {
                 status: 401,
-                message: 'Unauthorized.'
+                message: `You are not authorized to perform this action.`
             }
         }
     }
@@ -152,69 +152,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             relationshipFieldsPayload,
             patch
         )
-    }
-
-    public async updateRelationshipFields(
-        payload: DataPayload,
-        modelId: string | number
-    ) {
-        const resource = this.getCurrentResource()
-
-        const {
-            relationshipFieldsPayload
-        } = this.breakFieldsIntoRelationshipsAndNonRelationships(
-            this.getResourceFieldsFromPayload(payload)
-        )
-
-        const relationshipFields = resource
-            .serialize()
-            .fields.filter(field => field.isRelationshipField)
-
-        for (let index = 0; index < relationshipFields.length; index++) {
-            const field = relationshipFields[index]
-            const relatedResource = this.resources.find(
-                relatedResource => relatedResource.data.name === field.name
-            )
-
-            if (!relatedResource) {
-                throw [
-                    {
-                        message: `The related resource ${field.name} was not found.`
-                    }
-                ]
-            }
-
-            if (field.component === 'HasManyField') {
-                // first we'll set all related belongs to values to null on the related resource
-                const relatedBelongsToField = relatedResource.data.fields.find(
-                    field =>
-                        field.component === 'BelongsToField' &&
-                        field.name === resource.data.name
-                )
-
-                if (!relatedBelongsToField) {
-                    throw [
-                        {
-                            message: `A related BelongsTo relationship must be registered on the ${relatedResource.data.name} resource. This will link the ${resource.data.name} to the ${relatedResource.data.name} resource.`
-                        }
-                    ]
-                }
-
-                // go to posts table, find all related posts and update the user_id field to be the null
-                await this.database().updateManyWhere(
-                    { [relatedBelongsToField.databaseField]: modelId },
-                    { [relatedBelongsToField.databaseField]: null }
-                )
-
-                // finally, go to posts table, find all related posts (new ones from request body) and update the user_id field to be modelId
-                await this.database().updateManyByIds(
-                    relationshipFieldsPayload[field.inputName],
-                    {
-                        [relatedBelongsToField.databaseField]: modelId
-                    }
-                )
-            }
-        }
     }
 
     public async validateRequestQuery(
@@ -330,6 +267,13 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             field => field.name === relatedResource.data.name
         )
 
+        if (!relationField) {
+            throw {
+                status: 400,
+                message: `Related field not found between ${resource.data.name} and ${relatedResource.data.name}.`
+            }
+        }
+
         const {
             perPage = 10,
             page = 1,
@@ -339,13 +283,6 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             this.request?.query || {},
             relatedResource
         )
-
-        if (!relationField) {
-            throw {
-                status: 404,
-                message: `Related field not found between ${resource.data.name} and ${relatedResource.data.name}.`
-            }
-        }
 
         if (relationField.component === 'BelongsToManyField') {
             return this.database().findAllBelongingToMany(
@@ -361,30 +298,16 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         }
 
         if (relationField.component === 'HasManyField') {
-            const belongsToField = relatedResource.data.fields.find(
-                field => field.name === resource.data.name
-            )
-
-            if (!belongsToField) {
-                throw {
-                    status: 404,
-                    message: `Related 'belongs to' field not found between ${resource.data.name} and ${relatedResource.data.name}.`
+            return this.database().findAllHasMany(
+                relatedResource,
+                resourceId,
+                {
+                    ...rest,
+                    perPage,
+                    page,
+                    filters
                 }
-            }
-
-            return this.database(relatedResource).findAll({
-                ...rest,
-                perPage,
-                page,
-                filters: [
-                    ...filters,
-                    {
-                        field: belongsToField.databaseField,
-                        value: resourceId,
-                        operator: 'equals'
-                    }
-                ]
-            })
+            )
         }
 
         return {}
@@ -584,7 +507,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ) => {
         const fields = resource.data.fields
             .map(field => field.serialize())
-            .filter(field => field.isRelationshipField)
+            .filter(field => field.isRelationshipField || field.component === 'BelongsToField')
 
         for (let index = 0; index < fields.length; index++) {
             const field = fields[index]
@@ -601,12 +524,12 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 ]
             }
 
-            if (!payload[field.inputName]) {
-                return
+            if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
+                payload[field.inputName] = payload[field.inputName] || []
             }
 
-            if (field.component === 'HasManyField') {
-                const allRelatedRows = await this.database().findAllByIds(
+            if (field.component === 'HasManyField' && payload[field.inputName] && payload[field.inputName].length > 0) {
+                const allRelatedRows = await this.database(relatedResource).findAllByIds(
                     payload[field.inputName],
                     ['id']
                 )
@@ -623,7 +546,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
             //the code might never get here, because for it to get here the field must be a relationship component and BelongsToField is not a relationship component
 
-            if (field.component === 'BelongsToField') {
+            if (field.component === 'BelongsToField' && payload[field.inputName]) {
                 if (
                     !(await this.database().findOneById(
                         payload[field.inputName],

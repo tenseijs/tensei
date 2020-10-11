@@ -413,27 +413,13 @@ type DeletePayload {
             let rows: any = []
 
             if (field.component === 'BelongsToManyField') {
-                rows = await manager(resource.data.name)
+                rows = await manager(resource)
                     .database()
                     .findAllBelongingToManyData(relatedResource, row.id, args)
             } else {
-                let relatedBelongsToField = relatedResource.data.fields.find(
-                    field => field.name === resource.data.name
-                )
-
-                rows = await manager(relatedResource)
+                rows = await manager(resource)
                     .database()
-                    .findAllData({
-                        ...args,
-                        filters: [
-                            ...(args.filters || []),
-                            {
-                                field: relatedBelongsToField?.databaseField,
-                                value: row.id,
-                                operator: 'equals'
-                            }
-                        ]
-                    })
+                    .findAllHasManyData(relatedResource, row.id, args)
             }
 
             return populateRowWithRelationShips(rows, relatedResource)
@@ -457,7 +443,7 @@ type DeletePayload {
             resolvers[resource.data.camelCaseName] = async (args: any) => {
                 const resourceManager = manager(resource.data.name)
 
-                let data = await resourceManager.database().findOneById(args.id)
+                let data = await resourceManager.database().findOneById(args.id || args._id)
 
                 const [result] = populateRowWithRelationShips([data], resource)
 
@@ -481,7 +467,7 @@ type DeletePayload {
             ) => {
                 const resourceManager = manager(resource.data.name)
 
-                let data = await resourceManager.update(args.id, args.input)
+                let data = await resourceManager.update(args.id || args._id, args.input)
 
                 const [result] = populateRowWithRelationShips([data], resource)
 
@@ -493,7 +479,7 @@ type DeletePayload {
             ) => {
                 const resourceManager = manager(resource.data.name)
 
-                const success = await resourceManager.deleteById(args.id)
+                const success = await resourceManager.deleteById(args.id || args._id)
 
                 return {
                     success
