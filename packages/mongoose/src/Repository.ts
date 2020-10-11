@@ -140,7 +140,7 @@ export class Repository extends ResourceHelpers
                     ['HasManyField', 'BelongsToManyField'].includes(field.component)
                 ) {
                     const relatedResource = this.resources.find(r => r.data.name === field.name)!
-            
+
                     schemaDefinition[relatedResource.data.camelCaseNamePlural] = [{
                         type: Mongoose.Schema.Types.ObjectId,
                         ref: relatedResource.data.pascalCaseName
@@ -150,13 +150,13 @@ export class Repository extends ResourceHelpers
                 }
 
 
-                if (! ['HasManyField', 'BelongsToField', 'BelongsToManyField'].includes(field.component)) {
+                if (!['HasManyField', 'BelongsToField', 'BelongsToManyField'].includes(field.component)) {
                     schemaDefinition[field.databaseField] = {
                         type,
                         unique: field.isUnique,
                         index: field.isUnique || field.isSearchable,
                         default: serializedField.defaultValue || defaultValue
-                    }    
+                    }
                 }
 
                 if (['enu'].includes(field.databaseFieldType)) {
@@ -368,35 +368,13 @@ export class Repository extends ResourceHelpers
         const Model = this.getResourceMongooseModel()!
 
         this.getCurrentResource().data.fields.forEach(field => {
-            if (field.serialize().isRelationshipField) {}
+            if (field.serialize().isRelationshipField) { }
         })
 
         const result = await Model.create({
             ...payload,
             ...relationshipPayload
         })
-
-        const relationalFields = this.getCurrentResource().data.fields.filter(field => field.serialize().isRelationshipField)
-
-        await Promise.all(relationalFields.map(field => {
-            
-            if (field.component === 'BelongsToManyField') {
-                // update both the related resource and the resource
-                const relatedResource = this.resources.find(r => r.data.name === field.name)!
-
-                if (relationshipPayload[relatedResource.data.camelCaseNamePlural]) {
-                    
-                }
-            }
-
-            if (field.component === 'HasManyField') {
-                // update the related resource
-                // check if there is a related belongs to relation.
-                // if there is, also update the belongs to
-            }
-
-            return Promise.resolve()
-        }))
 
         return this.serializeResponse(
             result.toObject()
@@ -410,7 +388,7 @@ export class Repository extends ResourceHelpers
     ) {
         const Model = this.getResourceMongooseModel()!
 
-        const result = await Model.findByIdAndUpdate({
+        const result = await Model.updateOne({
             _id: id
         }, {
             ...payload,
@@ -543,14 +521,14 @@ export class Repository extends ResourceHelpers
         let findQuery: DataPayload = {}
 
         filters?.forEach(filter => {
-            if(filter.operator === 'in') {
+            if (filter.operator === 'in') {
                 findQuery[filter.field] = {
                     ...findQuery[filter.field],
                     $in: Array.isArray(filter.value) ? filter.value : [filter.value]
                 }
             }
 
-            if(filter.operator === 'not_in') {
+            if (filter.operator === 'not_in') {
                 findQuery[filter.field] = {
                     ...findQuery[filter.field],
                     $nin: Array.isArray(filter.value) ? filter.value : [filter.value]
@@ -618,12 +596,12 @@ export class Repository extends ResourceHelpers
         return findQuery
     }
 
-    public async getAdministratorById(id: string|number) {
+    public async getAdministratorById(id: string | number) {
         this.setResource(this.administratorResource())
 
         const admin = await this.findOneById(id, [], ['administratorRoles.administratorPermissions'])
 
-        if (! admin) {
+        if (!admin) {
             throw {
                 message: `Could not find administrator with _id ${id}`,
                 status: 404
@@ -691,10 +669,10 @@ export class Repository extends ResourceHelpers
         const count = await countResolver()
 
         return {
+            data,
             page: query.page,
             perPage: query.perPage,
             total: count as number,
-            data: this.serializeResponse(data),
             pageCount: Math.ceil((count as number) / (query.perPage || 10))
         }
     }
@@ -752,7 +730,7 @@ export class Repository extends ResourceHelpers
         return countResolver()
     }
 
-    populateSearchQueries (search: string, resource: ResourceContract, modelQuery: FilterQuery<any>) {
+    populateSearchQueries(search: string, resource: ResourceContract, modelQuery: FilterQuery<any>) {
         const searchableFields = resource.data.fields.filter(
             field => field.isSearchable
         )
@@ -783,7 +761,7 @@ export class Repository extends ResourceHelpers
 
         const resourceInstance = await Model.findById(resourceId)
 
-        if (! resourceInstance) throw {
+        if (!resourceInstance) throw {
             status: 404,
             message: `Cannot find a ${resource.data.name} with _id of ${resourceId}`
         }
@@ -815,7 +793,7 @@ export class Repository extends ResourceHelpers
     }
 
     parseRelationshipsToPopulate(relationship: string) {
-        if (! relationship.includes('.')) {
+        if (!relationship.includes('.')) {
             return relationship
         }
 
@@ -876,7 +854,7 @@ export class Repository extends ResourceHelpers
 
         const model = await Query.exec()
 
-        if (! model) {
+        if (!model) {
             return model
         }
 
@@ -890,7 +868,7 @@ export class Repository extends ResourceHelpers
             [field]: value
         }).select(fields)
 
-        if (! model) {
+        if (!model) {
             return model
         }
 
@@ -938,7 +916,7 @@ export class Repository extends ResourceHelpers
     }
 
     private serializeResponse(response: any) {
-        if (! response) return response
+        if (!response) return response
 
         if (Array.isArray(response)) {
             return response.map(r => ({
