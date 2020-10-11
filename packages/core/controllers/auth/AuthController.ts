@@ -64,9 +64,11 @@ class AuthController {
     }
 
     public register = async (
-        { manager, body, resources, session }: Express.Request,
+        request: Express.Request,
         response: Express.Response
     ) => {
+        const { manager, body, resources, session } = request
+
         if ((await manager('administrators').findAllCount()) > 0) {
             return response.status(422).json({
                 message:
@@ -74,31 +76,13 @@ class AuthController {
             })
         }
 
-        const roleResource = resources['administrator-roles']
+        await manager('administrators').validate(body)
 
-        if (!roleResource) {
-            throw {
-                message: `The role resource must be registered.`,
-                status: 422
-            }
-        }
-
-        const superAdmin = await manager(roleResource.data.slug).findOneByField(
-            'slug',
-            'super-admin'
-        )
-
-        if (!superAdmin) {
-            throw {
-                message: `The super-admin role must be setup before creating an administrator user.`,
-                status: 422
-            }
-        }
-
-        const { id } = await manager('administrators').create({
-            ...body,
-            administrator_roles: [superAdmin.id]
-        })
+        const { id } = await manager('administrators')
+            .database()
+            .createAdministrator(
+                resources['administrators'].hooks.beforeCreate(body, request)
+            )
 
         session!.user = id
 

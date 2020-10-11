@@ -4,7 +4,8 @@ import { StorageManager } from '@slynova/flydrive'
 import {
     ManagerContract,
     ResourceContract,
-    DashboardContract
+    DashboardContract,
+    Config
 } from '@tensei/common'
 
 declare global {
@@ -21,6 +22,7 @@ declare global {
                 [key: string]: DashboardContract
             }
             mailer: Mail
+            config: Config
             originatedFromDashboard: boolean | undefined
         }
     }

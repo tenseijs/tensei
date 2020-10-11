@@ -5,9 +5,13 @@ class CreateResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const model = await request
-            .manager(request.params.resource)
-            .create(request.body)
+        const { manager } = request
+
+        const resourceManager = manager(request.params.resource)
+
+        await resourceManager.authorize('authorizedToCreate')
+
+        const model = await resourceManager.create(request.body)
 
         return response.status(201).json(model)
     }

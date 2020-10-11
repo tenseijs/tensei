@@ -5,7 +5,13 @@ class IndexResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        const results = await request.manager(request.params.resource).findAll()
+        const { manager } = request
+
+        const resourceManager = manager(request.params.resource)
+
+        await resourceManager.authorize('authorizedToFetch')
+
+        const results = await resourceManager.findAll()
 
         return response.json(results)
     }

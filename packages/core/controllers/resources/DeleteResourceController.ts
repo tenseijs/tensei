@@ -5,9 +5,13 @@ class DeleteResourceController {
         request: Express.Request,
         response: Express.Response
     ) => {
-        await request
-            .manager(request.params.resource)
-            .deleteById(request.params.resourceId)
+        const { manager } = request
+
+        const resourceManager = manager(request.params.resource)
+
+        await resourceManager.authorize('authorizedToDelete')
+
+        await resourceManager.deleteById(request.params.resourceId)
 
         return response.status(204).json({})
     }

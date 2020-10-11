@@ -1,6 +1,6 @@
 module.exports = {
-  title: "Tensei CMS",
-  description: "Tensei CMS is an open-source, easy to use, developer first headless CMS for rapidly building javascript applications",
+  title: "Tensei JS",
+  description: "Tensei JS is an open-source, easy to use, developer first headless CMS for rapidly building javascript applications",
   base: "/",
 
   serviceWorker: true,

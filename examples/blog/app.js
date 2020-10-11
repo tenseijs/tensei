@@ -3,8 +3,8 @@ const { auth } = require('@tensei/auth')
 const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
 const { cashier, plan } = require('@tensei/cashier')
-const { tensei, dashboard, valueMetric } = require('@tensei/core')
 const { AmazonWebServicesS3Storage } = require('@slynova/flydrive-s3')
+const { tensei, dashboard, valueMetric, plugin } = require('@tensei/core')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -102,8 +102,17 @@ module.exports = tensei()
         //     ])
         //     .plugin(),
         graphql().plugin(),
+        plugin('Custom Slug Validation')
+            .beforeDatabaseSetup(({ indicative }) => {
+                indicative.validator.extend('slug', {
+                    async: false,
+                    validate(data, field, args, config) {
+                        return data.original[field].match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+                    }
+                })
+            })
     ])
-    .databaseConfig('mongodb://localhost/tensei-x', {
+    .databaseConfig('mongodb://localhost/tensei-y', {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     })

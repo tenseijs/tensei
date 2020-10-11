@@ -1,5 +1,6 @@
 declare module '@tensei/common/config' {
     import { Storage } from '@slynova/flydrive'
+    import { sanitizer, validator } from 'indicative'
     import { ResourceContract } from '@tensei/common/resources'
     import { DashboardContract } from '@tensei/common/dashboards'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
@@ -132,6 +133,11 @@ declare module '@tensei/common/config' {
         runActionController: Handler
         showRelationController: Handler
 
+        indicative: {
+            validator: typeof validator
+            sanitizer: typeof sanitizer
+        }
+
         middleware: EndpointMiddleware[]
         pushMiddleware: (middleware: EndpointMiddleware) => void
     }
@@ -151,6 +157,8 @@ declare module '@tensei/common/config' {
     abstract class DatabaseRepositoryInterface<Model = any> {
         static databases: string[]
         abstract setup: (config: Config) => Promise<any>
+        abstract getAdministratorById: (id: string|number) => Promise<Model>
+        abstract createAdministrator: (payload: DataPayload) => Promise<Model>
         abstract setResourceModels: (
             resources: ResourceContract[]
         ) => ResourceContract[]
@@ -227,12 +235,6 @@ declare module '@tensei/common/config' {
             payload: DataPayload = {}
         ) => Promise<any>
         abstract deleteById: (id: number | string) => Promise<any>
-        abstract updateManyWhere: (
-            whereClause: {
-                [key: string]: string | number
-            },
-            valuesToUpdate: {}
-        ) => Promise<any>
         abstract findAllCount: (
             baseQuery?: FetchAllRequestQuery
         ) => Promise<number>
@@ -261,7 +263,37 @@ declare module '@tensei/common/config' {
             relatedResource: ResourceContract,
             resourceId: string | number,
             baseQuery: FetchAllRequestQuery
-        ) => (() => any)[]
+        ) => Promise<(() => any)[]>
+
+
+        abstract findAllHasMany: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<{
+            page: number
+            perPage: number
+            total: number
+            data: any
+            pageCount: number
+        }>
+        abstract findAllHasManyData: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<any>
+        abstract findAllHasManyCount: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<any>
+        abstract findAllHasManyResolvers: (
+            relatedResource: ResourceContract,
+            resourceId: string | number,
+            baseQuery: FetchAllRequestQuery
+        ) => Promise<(() => any)[]>
+
+
         abstract findAllData: (baseQuery: FetchAllRequestQuery) => Promise<any>
         abstract findAll: (
             baseQuery: FetchAllRequestQuery

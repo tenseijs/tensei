@@ -4,7 +4,9 @@ import {
     FieldHookFunction,
     AuthorizeFunction,
     FieldContract,
-    SerializedField
+    SerializedField,
+    Config,
+    ResourceContract
 } from '@tensei/common'
 
 interface Constructor<M> {

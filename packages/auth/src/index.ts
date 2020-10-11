@@ -33,7 +33,7 @@ import {
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
-import SetupSql from './setup-sql'
+import { SetupMongodb, SetupSql } from './setup-sql'
 
 class Auth {
     private config: AuthPluginConfig = {
@@ -286,7 +286,13 @@ class Auth {
         ])
     }
 
-    private permissionResource() {
+    private permissionResource(database: SupportedDatabases) {
+        let sqlFields = []
+
+        if (['mysql', 'pg', 'sqlite'].includes(database)) {
+            sqlFields.push(belongsToMany(this.config.roleResource))
+        }
+
         return resource(this.config.permissionResource)
             .fields([
                 text('Name').searchable().rules('required'),
@@ -295,13 +301,30 @@ class Auth {
                     .unique()
                     .searchable()
                     .rules('required'),
-                belongsToMany(this.config.roleResource)
+                ...sqlFields
             ])
             .displayField('name')
             .group('Users & Permissions')
     }
 
-    private roleResource() {
+    private roleResource(database: SupportedDatabases) {
+        let conditionalFields = []
+
+        if (['mysql', 'pg', 'sqlite'].includes(database)) {
+            conditionalFields.push(
+                belongsToMany(this.config.nameResource),
+            )
+            conditionalFields.push(
+                belongsToMany(this.config.permissionResource)
+            )
+        }
+
+        if (database === 'mongodb') {
+            conditionalFields.push(
+                hasMany(this.config.permissionResource)
+            )
+        }
+
         return resource(this.config.roleResource)
             .fields([
                 text('Name')
@@ -315,9 +338,7 @@ class Auth {
                     .searchable()
                     .hideOnUpdate()
                     .rules('required'),
-
-                belongsToMany(this.config.nameResource),
-                belongsToMany(this.config.permissionResource)
+                ...conditionalFields
             ])
             .displayField('name')
             .group('Users & Permissions')
@@ -356,14 +377,14 @@ class Auth {
     public plugin() {
         return (
             plugin('Auth')
-                .beforeDatabaseSetup(({ pushResource, pushMiddleware }) => {
+                .beforeDatabaseSetup(({ pushResource, pushMiddleware, database }) => {
                     pushResource(this.userResource())
                     pushResource(this.passwordResetsResource())
 
                     if (this.config.rolesAndPermissions) {
-                        pushResource(this.roleResource())
+                        pushResource(this.roleResource(database))
 
-                        pushResource(this.permissionResource())
+                        pushResource(this.permissionResource(database))
                     }
 
                     if (this.config.teams) {
@@ -405,11 +426,11 @@ class Auth {
 
                     if (this.config.rolesAndPermissions) {
                         if (['mysql', 'pg', 'sqlite'].includes(database)) {
-                            SetupSql(config, this.config)
+                            await SetupSql(config, this.config)
                         }
 
                         if (['mongodb'].includes(database)) {
-                            // TODO: Setup mongodb
+                            await SetupMongodb(config, this.config)
                         }
                     }
 
@@ -614,7 +635,7 @@ class Auth {
     }
 
     private register = async (
-        { manager, mailer, body }: Request,
+        { manager, mailer, body, config }: Request,
         response: Response
     ) => {
         let createUserPayload = body
@@ -630,8 +651,8 @@ class Auth {
                 [],
                 this.config.rolesAndPermissions
                     ? [
-                          `${this.roleResource().data.slug}.${
-                              this.permissionResource().data.slug
+                          `${this.roleResource(config.database).data.slug}.${
+                              this.permissionResource(config.database).data.slug
                           }`
                       ]
                     : []
@@ -782,7 +803,7 @@ class Auth {
     }
 
     private login = async (request: Request, response: Response) => {
-        const { manager } = request
+        const { manager, config } = request
         const { email, password, token } = await this.validate(request.body)
 
         const userWithPassword = await manager(
@@ -811,8 +832,8 @@ class Auth {
                 [],
                 this.config.rolesAndPermissions
                     ? [
-                          `${this.roleResource().data.slug}.${
-                              this.permissionResource().data.slug
+                          `${this.roleResource(config.database).data.slug}.${
+                              this.permissionResource(config.database).data.slug
                           }`
                       ]
                     : []
@@ -882,7 +903,7 @@ class Auth {
         response: Response,
         next: NextFunction
     ) => {
-        const { headers, manager } = request
+        const { headers, manager, config } = request
         const [, token] = (headers['authorization'] || '').split('Bearer ')
 
         if (!token) {
@@ -901,8 +922,8 @@ class Auth {
                     [],
                     this.config.rolesAndPermissions
                         ? [
-                              `${this.roleResource().data.slug}.${
-                                  this.permissionResource().data.slug
+                              `${this.roleResource(config.database).data.slug}.${
+                                  this.permissionResource(config.database).data.slug
                               }`
                           ]
                         : [],
@@ -915,11 +936,11 @@ class Auth {
             }
 
             if (this.config.rolesAndPermissions) {
-                user.permissions = user[this.roleResource().data.slug].reduce(
+                user.permissions = user[this.roleResource(config.database).data.slug].reduce(
                     (acc: [], role: any) => [
                         ...acc,
                         ...(
-                            role[this.permissionResource().data.slug] || []
+                            role[this.permissionResource(config.database).data.slug] || []
                         ).map((permission: any) => permission.slug)
                     ],
                     []

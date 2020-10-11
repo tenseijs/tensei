@@ -3,6 +3,7 @@ import { Signale } from 'signale'
 import BodyParser from 'body-parser'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
+import { validator, sanitizer } from 'indicative'
 import ClientController from './controllers/ClientController'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
 import {
@@ -113,7 +114,11 @@ export class Tensei {
             port: process.env.PORT || 1377,
             sessionSecret: process.env.SESSION_SECRET || 'test-session-secret'
         },
-        logger: new Signale()
+        logger: new Signale(),
+        indicative: {
+            validator,
+            sanitizer
+        }
     }
 
     public async register() {
@@ -249,9 +254,7 @@ export class Tensei {
             }
         }
 
-        const repository: DatabaseRepositoryInterface = new Repository(
-            this.config.env
-        )
+        const repository: DatabaseRepositoryInterface = new Repository()
 
         const client = await repository.setup(this.config)
 
@@ -350,6 +353,7 @@ export class Tensei {
                 request.resources = this.config.resourcesMap
                 request.manager = this.manager(request)!
                 request.mailer = this.mailer
+                request.config = this.config
 
                 next()
             }
@@ -394,7 +398,7 @@ export class Tensei {
         next()
     }
 
-    public setAuthMiddleware = async (
+    public  setAuthMiddleware = async (
         request: Express.Request,
         response: Express.Response,
         next: Express.NextFunction
@@ -403,32 +407,10 @@ export class Tensei {
             return next()
         }
 
-        // const admin = await this.databaseRepository.findAdministratorById(request.session?.user)
-
-        //
-
         let admin = await request
             .manager(this.administratorResource())
             .database()
-            .findOneById(
-                request.session?.user,
-                [],
-                [`administrator-roles.administrator-permissions`]
-            )
-
-        if (!admin) {
-            return next()
-        }
-
-        admin.permissions = admin['administrator-roles'].reduce(
-            (acc: [], role: any) => [
-                ...acc,
-                ...(role['administrator-permissions'] || []).map(
-                    (permission: any) => permission.slug
-                )
-            ],
-            []
-        )
+            .getAdministratorById(request.session?.user!)
 
         if (!admin) {
             return next()
@@ -692,15 +674,6 @@ export class Tensei {
         return AsyncHandler(handler)
     }
 
-    private setValue(key: keyof Config, value: any) {
-        this.config = {
-            ...this.config,
-            [key]: value
-        }
-
-        return this
-    }
-
     public resources(resources: ResourceContract[]) {
         const updatedResources = [...this.config.resources, ...resources]
 
@@ -720,6 +693,8 @@ export class Tensei {
 
         uniqueResources.forEach(resource => {
             resourcesMap[resource.data.slug] = resource
+            // resourcesMap[resource.data.name] = resource
+            // resourcesMap[resource.data.pascalCaseName] = resource
         })
 
         this.config.resourcesMap = resourcesMap

@@ -61,6 +61,7 @@ module.exports = resource('Post')
             .falseLabel('Pending')
             .default(false)
             .hideOnIndex(),
+        text('Slug').rules('required', 'slug'),
         text('Description').rules('required').hideOnIndex(),
         trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
         integer('Av. CPC').rules('required').hideOnDetail(),

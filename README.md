@@ -1,4 +1,4 @@
-# Tensei CMS
+# Tensei JS
 
 ## How to setup
 

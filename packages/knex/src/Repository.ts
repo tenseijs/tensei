@@ -43,6 +43,7 @@ export class SqlRepository extends ResourceHelpers
 
         this.connectionEstablished = true
     }
+    
 
     private roleResource() {
         return resource('Administrator Role')
@@ -341,6 +342,56 @@ export class SqlRepository extends ResourceHelpers
 
     public async aggregateMax(between: [string, string], columns: string[]) {
         return this.aggregate(between, 'max', [columns])
+    }
+
+    public async getAdministratorById(id: string|number) {
+        this.setResource(this.administratorResource())
+
+        const admin = await this.findOneById(id, [], [`${this.roleResource().data.slug}.${this.permissionResource().data.slug}`])
+
+        if (! admin) {
+            throw {
+                message: `Could not find administrator with id ${id}`,
+                status: 404
+            }
+        }
+
+        admin.permissions = admin['administrator-roles'].reduce(
+            (acc: [], role: any) => [
+                ...acc,
+                ...(role['administrator-permissions'] || []).map(
+                    (permission: any) => permission.slug
+                )
+            ],
+            []
+        )
+
+        return admin
+    }
+
+    public async createAdministrator(payload: DataPayload) {
+        this.setResource(this.roleResource())
+
+        const superAdmin = await this.findOneByField(
+            'slug',
+            'super-admin'
+        )
+
+        if (!superAdmin) {
+            throw {
+                message: `The super-admin role must be setup before creating an administrator user.`,
+                status: 422
+            }
+        }
+
+        this.setResource(this.administratorResource())
+
+        const administrator = await this.create({
+            ...payload,
+            administrator_roles: [superAdmin.id]
+        })
+
+        return administrator
     }
 
     private handleBelongsToManyField = async (
@@ -889,7 +940,7 @@ export class SqlRepository extends ResourceHelpers
         const [
             countResolver,
             dataResolver
-        ]: any = this.findAllBelongingToManyResolvers(
+        ]: any = await this.findAllBelongingToManyResolvers(
             relatedResource,
             resourceId,
             query
@@ -911,6 +962,40 @@ export class SqlRepository extends ResourceHelpers
         }
     }
 
+    async findAllHasMany(
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) {
+        return {} as any
+    }
+
+    async findAllHasManyData(
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) {
+        return []
+    }
+
+    async findAllHasManyCount(
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) {
+        return []
+    }
+
+    async findAllHasManyResolvers(
+        relatedResource: ResourceContract,
+        resourceId: string | number,
+        baseQuery: FetchAllRequestQuery
+    ) {
+        const resource = this.getCurrentResource()
+
+        return []
+    }
+
     private getDefaultQuery = (baseQuery: FetchAllRequestQuery) => {
         return {
             ...baseQuery,
@@ -926,7 +1011,7 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) => {
-        const [, dataResolver]: any = this.findAllBelongingToManyResolvers(
+        const [, dataResolver]: any = await this.findAllBelongingToManyResolvers(
             relatedResource,
             resourceId,
             this.getDefaultQuery(baseQuery)
@@ -944,7 +1029,7 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) => {
-        const [countResolver]: any = this.findAllBelongingToManyResolvers(
+        const [countResolver]: any = await this.findAllBelongingToManyResolvers(
             relatedResource,
             resourceId,
             this.getDefaultQuery(baseQuery)
@@ -955,7 +1040,7 @@ export class SqlRepository extends ResourceHelpers
         return count[0]['count(*)'] || count[0]['count']
     }
 
-    public findAllBelongingToManyResolvers = (
+    public findAllBelongingToManyResolvers = async (
         relatedResource: ResourceContract,
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
