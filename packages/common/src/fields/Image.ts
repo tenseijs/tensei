@@ -1,14 +1,14 @@
 import Field from './Field'
 
-type AllowedDisks = "public" | "private"
+type AllowedDisks = 'public' | 'private'
 
 export class Image extends Field {
-    public selectedDisk: AllowedDisks = "public"
+    public selectedDisk: AllowedDisks = 'public'
 
     public component = 'FileField'
 
     /**
-     * When a new file is made, 
+     * When a new file is made,
      * we'll allow it to be downloaded
      *
      */

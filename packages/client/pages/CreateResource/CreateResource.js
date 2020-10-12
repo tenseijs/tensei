@@ -274,18 +274,24 @@ class CreateResource extends React.Component {
         )
     }
 
-    addPendingField = (fieldName) => {
-        this.setState({ pendingFields: [...this.state.pendingFields, fieldName] })
+    addPendingField = fieldName => {
+        this.setState({
+            pendingFields: [...this.state.pendingFields, fieldName]
+        })
     }
 
-    removePendingField = (fieldName) => {
-        this.setState({ pendingFields: this.state.pendingFields.filter(field => field !== fieldName) })
+    removePendingField = fieldName => {
+        this.setState({
+            pendingFields: this.state.pendingFields.filter(
+                field => field !== fieldName
+            )
+        })
     }
 
     submit = () => {
-        if(this.state.pendingFields.length) {
+        if (this.state.pendingFields.length) {
             return Tensei.library.Notification.info(
-                "Please wait, some fields are still pending."
+                'Please wait, some fields are still pending.'
             )
         }
         this.setState({

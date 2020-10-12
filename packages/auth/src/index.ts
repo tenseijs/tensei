@@ -311,18 +311,14 @@ class Auth {
         let conditionalFields = []
 
         if (['mysql', 'pg', 'sqlite'].includes(database)) {
-            conditionalFields.push(
-                belongsToMany(this.config.nameResource),
-            )
+            conditionalFields.push(belongsToMany(this.config.nameResource))
             conditionalFields.push(
                 belongsToMany(this.config.permissionResource)
             )
         }
 
         if (database === 'mongodb') {
-            conditionalFields.push(
-                hasMany(this.config.permissionResource)
-            )
+            conditionalFields.push(hasMany(this.config.permissionResource))
         }
 
         return resource(this.config.roleResource)
@@ -377,48 +373,50 @@ class Auth {
     public plugin() {
         return (
             plugin('Auth')
-                .beforeDatabaseSetup(({ pushResource, pushMiddleware, database }) => {
-                    pushResource(this.userResource())
-                    pushResource(this.passwordResetsResource())
+                .beforeDatabaseSetup(
+                    ({ pushResource, pushMiddleware, database }) => {
+                        pushResource(this.userResource())
+                        pushResource(this.passwordResetsResource())
 
-                    if (this.config.rolesAndPermissions) {
-                        pushResource(this.roleResource(database))
+                        if (this.config.rolesAndPermissions) {
+                            pushResource(this.roleResource(database))
 
-                        pushResource(this.permissionResource(database))
-                    }
+                            pushResource(this.permissionResource(database))
+                        }
 
-                    if (this.config.teams) {
-                        pushResource(this.teamResource())
+                        if (this.config.teams) {
+                            pushResource(this.teamResource())
 
-                        pushResource(this.teamInviteResource())
-                    }
+                            pushResource(this.teamInviteResource())
+                        }
 
-                    if (Object.keys(this.config.providers).length > 0) {
-                        pushResource(this.oauthResource())
-                    }
+                        if (Object.keys(this.config.providers).length > 0) {
+                            pushResource(this.oauthResource())
+                        }
 
-                    ;([
-                        'show',
-                        'index',
-                        'delete',
-                        'create',
-                        'runAction',
-                        'showRelation',
-                        'update'
-                    ] as InBuiltEndpoints[]).forEach(endpoint => {
-                        pushMiddleware({
-                            type: endpoint,
-                            handler: this.setAuthMiddleware
+                        ;([
+                            'show',
+                            'index',
+                            'delete',
+                            'create',
+                            'runAction',
+                            'showRelation',
+                            'update'
+                        ] as InBuiltEndpoints[]).forEach(endpoint => {
+                            pushMiddleware({
+                                type: endpoint,
+                                handler: this.setAuthMiddleware
+                            })
+
+                            pushMiddleware({
+                                type: endpoint,
+                                handler: this.authMiddleware
+                            })
                         })
 
-                        pushMiddleware({
-                            type: endpoint,
-                            handler: this.authMiddleware
-                        })
-                    })
-
-                    return Promise.resolve()
-                })
+                        return Promise.resolve()
+                    }
+                )
 
                 // TODO: If we support more databases, add a setup method for each database.
                 .afterDatabaseSetup(async config => {
@@ -922,8 +920,11 @@ class Auth {
                     [],
                     this.config.rolesAndPermissions
                         ? [
-                              `${this.roleResource(config.database).data.slug}.${
-                                  this.permissionResource(config.database).data.slug
+                              `${
+                                  this.roleResource(config.database).data.slug
+                              }.${
+                                  this.permissionResource(config.database).data
+                                      .slug
                               }`
                           ]
                         : [],
@@ -936,11 +937,16 @@ class Auth {
             }
 
             if (this.config.rolesAndPermissions) {
-                user.permissions = user[this.roleResource(config.database).data.slug].reduce(
+                user.permissions = user[
+                    this.roleResource(config.database).data.slug
+                ].reduce(
                     (acc: [], role: any) => [
                         ...acc,
                         ...(
-                            role[this.permissionResource(config.database).data.slug] || []
+                            role[
+                                this.permissionResource(config.database).data
+                                    .slug
+                            ] || []
                         ).map((permission: any) => permission.slug)
                     ],
                     []

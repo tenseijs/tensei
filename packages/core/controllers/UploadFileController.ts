@@ -9,7 +9,9 @@ class UploadFileController {
 
         const storagePath = `${Date.now()}.${mimeType}`
 
-        const file: any = await storage.disk().put(storagePath, fileFields[0].data)
+        const file: any = await storage
+            .disk()
+            .put(storagePath, fileFields[0].data)
 
         if (!file.raw) {
             return response.status(201).json({

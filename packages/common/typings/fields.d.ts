@@ -1,8 +1,12 @@
 declare module '@tensei/common/fields' {
-    import { FieldHookFunction, AuthorizeFunction, AllowedMimeTypes } from '@tensei/common/config'
+    import {
+        FieldHookFunction,
+        AuthorizeFunction,
+        AllowedMimeTypes
+    } from '@tensei/common/config'
 
     interface Constructor<M> {
-        new(...args: any[]): M
+        new (...args: any[]): M
     }
 
     interface SerializedField {
@@ -324,7 +328,7 @@ declare module '@tensei/common/fields' {
          */
         serialize(): SerializedField
     }
-    interface TextContract extends FieldContract { }
+    interface TextContract extends FieldContract {}
     const text: (
         name: string,
         databaseField?: string | undefined
@@ -390,7 +394,7 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => SelectContract
-    interface TextareaContract extends TextContract { }
+    interface TextareaContract extends TextContract {}
     const textarea: (
         name: string,
         databaseField?: string | undefined
@@ -411,9 +415,9 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => DateFieldContract
-    interface TimestampContract extends DateFieldContract { }
-    interface JsonContract extends DateFieldContract { }
-    interface LinkContract extends TextContract { }
+    interface TimestampContract extends DateFieldContract {}
+    interface JsonContract extends DateFieldContract {}
+    interface LinkContract extends TextContract {}
     interface ArrayContract extends FieldContract {
         of(arrayOf: 'string' | 'number'): this
     }
@@ -425,9 +429,9 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => BooleanFieldContract
-    interface BelongsToContract extends IntegerContract { }
-    interface DateTimeContract extends DateFieldContract { }
-    interface BigIntegerContract extends IntegerContract { }
+    interface BelongsToContract extends IntegerContract {}
+    interface DateTimeContract extends DateFieldContract {}
+    interface BigIntegerContract extends IntegerContract {}
     const bigInteger: (
         name: string,
         databaseField?: string | undefined
@@ -435,8 +439,8 @@ declare module '@tensei/common/fields' {
     interface BelongsToManyContract extends IntegerContract {
         notNullable<T extends FieldContract>(this: T): T
     }
-    interface HasManyContract extends FieldContract { }
-    interface IDContract extends FieldContract { }
+    interface HasManyContract extends FieldContract {}
+    interface IDContract extends FieldContract {}
     const id: (name: string, databaseField?: string | undefined) => IDContract
     const belongsToMany: (name: string) => BelongsToManyContract
     const hasMany: (
@@ -746,5 +750,5 @@ declare module '@tensei/common/fields' {
         public databaseFieldType: string
     }
 
-    export declare class ArrayField extends Field { }
+    export declare class ArrayField extends Field {}
 }

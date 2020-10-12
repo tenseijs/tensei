@@ -146,7 +146,10 @@ class Graphql {
   ${FieldKey}: ${FieldType}`
     }
 
-    private defineFetchAllQueryForResource(resource: ResourceContract, config: PluginSetupConfig) {
+    private defineFetchAllQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
         return `
   ${resource.data.camelCaseNamePlural}(page: Int = 1, per_page: Int = ${
             resource.data.perPageOptions[0] || 10
@@ -155,9 +158,14 @@ class Graphql {
         }]`
     }
 
-    private defineFetchSingleQueryForResource(resource: ResourceContract, config: PluginSetupConfig) {
+    private defineFetchSingleQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
         return `
-  ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${resource.data.pascalCaseName}`
+  ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${
+            resource.data.pascalCaseName
+        }`
     }
 
     getFieldsTypeDefinition(resource: ResourceContract) {
@@ -180,13 +188,21 @@ class Graphql {
         return ``
     }
 
-    private setupResourceGraphqlTypes(resources: ResourceContract[], config: PluginSetupConfig) {
+    private setupResourceGraphqlTypes(
+        resources: ResourceContract[],
+        config: PluginSetupConfig
+    ) {
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
 type ${resource.data.pascalCaseName} {${resource.data.fields
                 .filter(field => !field.isHidden)
                 .map(field =>
-                    this.getGraphqlFieldDefinition(field, resource, resources, config)
+                    this.getGraphqlFieldDefinition(
+                        field,
+                        resource,
+                        resources,
+                        config
+                    )
                 )}
 }
 input create${resource.data.pascalCaseName}Input {${resource.data.fields
@@ -253,15 +269,19 @@ enum ${resource.data.pascalCaseName}${
         this.schemaString = `${this.schemaString}type Query {${resources.map(
             resource => {
                 return `${this.defineFetchSingleQueryForResource(
-                    resource
-                , config)}${this.defineFetchAllQueryForResource(resource, config)}`
+                    resource,
+                    config
+                )}${this.defineFetchAllQueryForResource(resource, config)}`
             }
         )}
 }
 `
         this.schemaString = `${this.schemaString}type Mutation {${resources.map(
             resource => {
-                return `${this.defineCreateMutationForResource(resource, config)}`
+                return `${this.defineCreateMutationForResource(
+                    resource,
+                    config
+                )}`
             }
         )}
 ${resources.map(resource => {
@@ -279,16 +299,31 @@ type DeletePayload {
         return buildSchema(this.schemaString)
     }
 
-    private defineCreateMutationForResource(resource: ResourceContract, config: PluginSetupConfig) {
+    private defineCreateMutationForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
         return `create${resource.data.pascalCaseName}(input: create${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!`
     }
 
-    private defineUpdateMutationForResource(resource: ResourceContract, config: PluginSetupConfig) {
-        return `update${resource.data.pascalCaseName}(${this.getIdKey(config)}: ID!, input: update${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!`
+    private defineUpdateMutationForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `update${resource.data.pascalCaseName}(${this.getIdKey(
+            config
+        )}: ID!, input: update${resource.data.pascalCaseName}Input!): ${
+            resource.data.pascalCaseName
+        }!`
     }
 
-    private defineDeleteMutationForResource(resource: ResourceContract, config: PluginSetupConfig) {
-        return `delete${resource.data.pascalCaseName}(${this.getIdKey(config)}: ID!): DeletePayload!`
+    private defineDeleteMutationForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `delete${resource.data.pascalCaseName}(${this.getIdKey(
+            config
+        )}: ID!): DeletePayload!`
     }
 
     private getIdKey(config: PluginSetupConfig) {
@@ -443,7 +478,9 @@ type DeletePayload {
             resolvers[resource.data.camelCaseName] = async (args: any) => {
                 const resourceManager = manager(resource.data.name)
 
-                let data = await resourceManager.database().findOneById(args.id || args._id)
+                let data = await resourceManager
+                    .database()
+                    .findOneById(args.id || args._id)
 
                 const [result] = populateRowWithRelationShips([data], resource)
 
@@ -467,7 +504,10 @@ type DeletePayload {
             ) => {
                 const resourceManager = manager(resource.data.name)
 
-                let data = await resourceManager.update(args.id || args._id, args.input)
+                let data = await resourceManager.update(
+                    args.id || args._id,
+                    args.input
+                )
 
                 const [result] = populateRowWithRelationShips([data], resource)
 
@@ -479,7 +519,9 @@ type DeletePayload {
             ) => {
                 const resourceManager = manager(resource.data.name)
 
-                const success = await resourceManager.deleteById(args.id || args._id)
+                const success = await resourceManager.deleteById(
+                    args.id || args._id
+                )
 
                 return {
                     success
@@ -491,33 +533,34 @@ type DeletePayload {
     }
 
     plugin() {
-        return plugin('Graph QL').afterDatabaseSetup(
-            async (config) => {
-                const { app, resources, manager, database } = config
-                const exposedResources = resources.filter(
-                    resource => !resource.data.hideFromApi
-                )
-                const schema = this.setupResourceGraphqlTypes(exposedResources, config)
+        return plugin('Graph QL').afterDatabaseSetup(async config => {
+            const { app, resources, manager, database } = config
+            const exposedResources = resources.filter(
+                resource => !resource.data.hideFromApi
+            )
+            const schema = this.setupResourceGraphqlTypes(
+                exposedResources,
+                config
+            )
 
-                app.post(
-                    this.config.graphqlPath,
-                    graphqlHTTP({
-                        schema,
-                        graphiql: this.config.graphiql,
-                        rootValue: this.getResolvers(exposedResources, manager)
-                    })
-                )
+            app.post(
+                this.config.graphqlPath,
+                graphqlHTTP({
+                    schema,
+                    graphiql: this.config.graphiql,
+                    rootValue: this.getResolvers(exposedResources, manager)
+                })
+            )
 
-                app.get(
-                    this.config.graphqlPath,
-                    GraphqlPlayground({
-                        endpoint: this.config.graphqlPath
-                    })
-                )
+            app.get(
+                this.config.graphqlPath,
+                GraphqlPlayground({
+                    endpoint: this.config.graphqlPath
+                })
+            )
 
-                return {}
-            }
-        )
+            return {}
+        })
     }
 }
 

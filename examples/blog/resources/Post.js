@@ -100,7 +100,7 @@ module.exports = resource('Post')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
-     ])
+    ])
     .perPageOptions([25, 50, 100])
     .displayField('title')
     .permissions(['create:matrix', 'update:matrix'])

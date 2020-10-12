@@ -299,16 +299,12 @@ export class Manager extends ResourceHelpers implements ManagerContract {
         }
 
         if (relationField.component === 'HasManyField') {
-            return this.database().findAllHasMany(
-                relatedResource,
-                resourceId,
-                {
-                    ...rest,
-                    perPage,
-                    page,
-                    filters
-                }
-            )
+            return this.database().findAllHasMany(relatedResource, resourceId, {
+                ...rest,
+                perPage,
+                page,
+                filters
+            })
         }
 
         return {}
@@ -356,7 +352,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 new Set([
                     ...serializedField.rules,
                     ...serializedField[
-                    creationRules ? 'creationRules' : 'updateRules'
+                        creationRules ? 'creationRules' : 'updateRules'
                     ]
                 ])
             ).join('|')
@@ -446,9 +442,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             resource
         )
 
-        await this.validateFileFields(
-            payload, resource
-        )
+        await this.validateFileFields(payload, resource)
 
         // then we need to validate all unique fields.
         return {
@@ -496,8 +490,9 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             if (exists) {
                 throw [
                     {
-                        message: `A ${resource.data.name.toLowerCase()} already exists with ${field.inputName
-                            } ${payload[field.inputName]}.`,
+                        message: `A ${resource.data.name.toLowerCase()} already exists with ${
+                            field.inputName
+                        } ${payload[field.inputName]}.`,
                         field: field.inputName
                     }
                 ]
@@ -511,9 +506,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ) => {
         const fileFields = resource
             .serialize()
-            .fields.filter(
-                field => field.component === 'FileField'
-            )
+            .fields.filter(field => field.component === 'FileField')
 
         for (let index = 0; index < fileFields.length; index++) {
             const field = fileFields[index]
@@ -550,7 +543,11 @@ export class Manager extends ResourceHelpers implements ManagerContract {
     ) => {
         const fields = resource.data.fields
             .map(field => field.serialize())
-            .filter(field => field.isRelationshipField || field.component === 'BelongsToField')
+            .filter(
+                field =>
+                    field.isRelationshipField ||
+                    field.component === 'BelongsToField'
+            )
 
         for (let index = 0; index < fields.length; index++) {
             const field = fields[index]
@@ -567,15 +564,20 @@ export class Manager extends ResourceHelpers implements ManagerContract {
                 ]
             }
 
-            if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
+            if (
+                ['HasManyField', 'BelongsToManyField'].includes(field.component)
+            ) {
                 payload[field.inputName] = payload[field.inputName] || []
             }
 
-            if (field.component === 'HasManyField' && payload[field.inputName] && payload[field.inputName].length > 0) {
-                const allRelatedRows = await this.database(relatedResource).findAllByIds(
-                    payload[field.inputName],
-                    ['id']
-                )
+            if (
+                field.component === 'HasManyField' &&
+                payload[field.inputName] &&
+                payload[field.inputName].length > 0
+            ) {
+                const allRelatedRows = await this.database(
+                    relatedResource
+                ).findAllByIds(payload[field.inputName], ['id'])
 
                 if (allRelatedRows.length !== payload[field.inputName].length) {
                     throw [
@@ -589,7 +591,10 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
             //the code might never get here, because for it to get here the field must be a relationship component and BelongsToField is not a relationship component
 
-            if (field.component === 'BelongsToField' && payload[field.inputName]) {
+            if (
+                field.component === 'BelongsToField' &&
+                payload[field.inputName]
+            ) {
                 if (
                     !(await this.database().findOneById(
                         payload[field.inputName],

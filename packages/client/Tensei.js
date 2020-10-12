@@ -83,7 +83,7 @@ export default class Tensei {
         NumberField: TextField,
         IntegerField: TextField,
         DateField: DateTimeField,
-        FileField,
+        FileField
     }
 
     cardComponents = {

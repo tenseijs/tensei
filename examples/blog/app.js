@@ -102,27 +102,30 @@ module.exports = tensei()
         //     ])
         //     .plugin(),
         graphql().plugin(),
-        plugin('Custom Slug Validation')
-            .beforeDatabaseSetup(({ indicative }) => {
+        plugin('Custom Slug Validation').beforeDatabaseSetup(
+            ({ indicative }) => {
                 indicative.validator.extend('slug', {
                     async: false,
                     validate(data, field, args, config) {
-                        return data.original[field].match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-                    }
+                        return data.original[field].match(
+                            /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+                        )
+                    },
                 })
-            })
+            }
+        ),
     ])
     .databaseConfig('mongodb://localhost/tensei-y', {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     })
-    // .databaseConfig({
-    //     client: 'mysql',
-    //     connection: {
-    //         host: '127.0.0.1',
-    //         user: 'root',
-    //         pass: '',
-    //         database: 'flmg',
-    //     },
-    //     debug: true,
-    // })
+// .databaseConfig({
+//     client: 'mysql',
+//     connection: {
+//         host: '127.0.0.1',
+//         user: 'root',
+//         pass: '',
+//         database: 'flmg',
+//     },
+//     debug: true,
+// })

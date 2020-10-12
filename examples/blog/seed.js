@@ -86,46 +86,40 @@ const administrators = Array(50)
     .map(() => administratorBuilder())
 
 async function seedMongo(resources, connection) {
-    await Promise.all(resources.map(resource => {
-        const Model = resource.Model()
-        return Model.deleteMany({})
-    }))
+    await Promise.all(
+        resources.map((resource) => {
+            const Model = resource.Model()
+            return Model.deleteMany({})
+        })
+    )
 
-    await Promise.all(resources.map(resource => {
-        const Model = resource.Model()
-        
-        if (resource.data.name === 'Post') {
-            return Model.insertMany(
-                posts
-            )
-        }
+    await Promise.all(
+        resources.map((resource) => {
+            const Model = resource.Model()
 
-        if (resource.data.name === 'Administrator') {
-            return Model.insertMany(
-                administrators
-            )
-        }
+            if (resource.data.name === 'Post') {
+                return Model.insertMany(posts)
+            }
 
-        if (resource.data.name === 'Tag') {
-            return Model.insertMany(
-                tags
-            )
-        }
+            if (resource.data.name === 'Administrator') {
+                return Model.insertMany(administrators)
+            }
 
-        if (resource.data.name === 'User') {
-            return Model.insertMany(
-                users
-            )
-        }
+            if (resource.data.name === 'Tag') {
+                return Model.insertMany(tags)
+            }
 
-        if (resource.data.name === 'Comment') {
-            return Model.insertMany(
-                comments
-            )
-        }
+            if (resource.data.name === 'User') {
+                return Model.insertMany(users)
+            }
 
-        return Promise.resolve()
-    }))
+            if (resource.data.name === 'Comment') {
+                return Model.insertMany(comments)
+            }
+
+            return Promise.resolve()
+        })
+    )
 
     await connection.close()
 }
@@ -133,7 +127,6 @@ async function seedMongo(resources, connection) {
 require('./app')
     .register()
     .then(async ({ getDatabaseClient, config }) => {
-
         if (config.database === 'mongodb') {
             seedMongo(config.resources, getDatabaseClient())
 

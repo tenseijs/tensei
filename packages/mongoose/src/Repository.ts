@@ -376,6 +376,28 @@ export class Repository extends ResourceHelpers
             ...relationshipPayload
         })
 
+        const relationalFields = this.getCurrentResource().data.fields.filter(field => field.serialize().isRelationshipField)
+
+        await Promise.all(relationalFields.map(field => {
+
+            if (field.component === 'BelongsToManyField') {
+                // update both the related resource and the resource
+                const relatedResource = this.resources.find(r => r.data.name === field.name)!
+
+                if (relationshipPayload[relatedResource.data.camelCaseNamePlural]) {
+
+                }
+            }
+
+            if (field.component === 'HasManyField') {
+                // update the related resource
+                // check if there is a related belongs to relation.
+                // if there is, also update the belongs to
+            }
+
+            return Promise.resolve()
+        }))
+
         return this.serializeResponse(
             result.toObject()
         )
@@ -388,7 +410,7 @@ export class Repository extends ResourceHelpers
     ) {
         const Model = this.getResourceMongooseModel()!
 
-        const result = await Model.updateOne({
+        const result = await Model.findByIdAndUpdate({
             _id: id
         }, {
             ...payload,
@@ -669,10 +691,10 @@ export class Repository extends ResourceHelpers
         const count = await countResolver()
 
         return {
-            data,
             page: query.page,
             perPage: query.perPage,
             total: count as number,
+            data: this.serializeResponse(data),
             pageCount: Math.ceil((count as number) / (query.perPage || 10))
         }
     }

@@ -99,10 +99,7 @@ export class Tensei {
         showRelationController: this.asyncHandler(
             FindResourceController.showRelation
         ),
-        uploadFileController: this.asyncHandler(
-            UploadFileController.store
-        ),
-
+        uploadFileController: this.asyncHandler(UploadFileController.store),
 
         scripts: [
             {
@@ -747,13 +744,8 @@ export class Tensei {
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email')
-                    .unique()
-                    .searchable()
-                    .rules('required', 'email'),
-                text('Password')
-                    .hidden()
-                    .rules('required', 'min:8'),
+                text('Email').unique().searchable().rules('required', 'email'),
+                text('Password').hidden().rules('required', 'min:8'),
                 belongsToMany('Administrator Role')
             ])
             .beforeCreate(payload => ({
@@ -773,9 +765,7 @@ export class Tensei {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
+        this.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }

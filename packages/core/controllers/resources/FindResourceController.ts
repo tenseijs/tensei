@@ -11,7 +11,9 @@ class FindResourceController {
 
         await resourceManager.authorize('authorizedToShow')
 
-        const model = await resourceManager.findOneById(request.params.resourceId)
+        const model = await resourceManager.findOneById(
+            request.params.resourceId
+        )
 
         if (!model) {
             return response.status(404).json({
@@ -33,11 +35,10 @@ class FindResourceController {
         await resourceManager.authorize('authorizedToShow')
 
         return response.json(
-            await resourceManager
-                .findAllRelatedResource(
-                    request.params.resourceId,
-                    request.params.relatedResource
-                )
+            await resourceManager.findAllRelatedResource(
+                request.params.resourceId,
+                request.params.relatedResource
+            )
         )
     }
 }
