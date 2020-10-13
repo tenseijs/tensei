@@ -418,8 +418,6 @@ export class Tensei {
             .database()
             .getAdministratorById(request.session?.user!)
 
-        // admin.permissions = ["create:posts", "read:posts", "create:users", "read:users", "read:administrators"]
-
         if (!admin) {
             return next()
         }
