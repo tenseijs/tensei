@@ -353,6 +353,38 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => NumberFieldContract
+    interface FileFieldContract extends FieldContract {
+        /**
+         * Upload a file and make it publicly accessible to anyone
+         *
+         */
+        public(): this
+        /**
+         * Upload a file and make it private
+         *
+         */
+        public private(): this
+        /**
+         * Ensure that users cannot download the
+         * created file
+         *
+         */
+        public disableDownload(): this
+        /**
+         * Set the mimetypes too be allowed for file upload.
+         *
+         */
+        public allowedMimeTypes(mimeTypes: AllowedMimeTypes[]): this
+        /**
+         * Set the max size for this file.
+         *
+         */
+        public maxSize(size: number): this
+    }
+    const file: (
+        name: string,
+        databaseField?: string | undefined
+    ) => FileFieldContract
     interface IntegerContract extends NumberFieldContract {
         isUnsigned: boolean
         isForeign: boolean

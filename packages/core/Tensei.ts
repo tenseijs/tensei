@@ -515,7 +515,9 @@ export class Tensei {
         )
 
         this.app.post(
-            this.getDashboardApiPath(`resources/:resource/upload`),
+            this.getDashboardApiPath(
+                `resources/:resource/upload/:fieldInputName`
+            ),
             this.setDashboardOrigin,
             this.authMiddleware,
             this.config.uploadFileController

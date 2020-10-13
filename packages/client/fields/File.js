@@ -20,29 +20,39 @@ class FileField extends React.Component {
 
         Tensei.request
             .post(
-                `resources/${this.props.resource.slug}/upload`,
+                `resources/${this.props.resource.slug}/upload/${this.props.field.inputName}`,
                 imageUploadData
             )
             .then(({ data }) => {
                 this.props.removePendingField(this.props.field.inputName)
                 this.setState({ uploadedFile: data.filePath, loading: false })
             })
+            .catch(error => {
+                let errorMessage = 'Could not upload file, try again!'
+                if (error.response.status === 422) {
+                    errorMessage = error.response.data.message
+                }
+                Tensei.library.Notification.error(errorMessage)
+
+                this.props.removePendingField(this.props.field.inputName)
+                this.setState({ loading: false })
+            })
     }
 
     render() {
-        const { value, onFieldChange, field, errorMessage } = this.props
+        const { loading, uploadedFile } = this.state
 
         return (
             <div className="TextField">
                 <div className="flex items-center">
                     <Button
                         onClick={() => this.inputFile.current.click()}
-                        loading={this.state.loading}
+                        loading={loading}
                     >
                         Choose file
                     </Button>
                     <span className="ml-2 text-sm">
-                        {this.state.uploadedFile || 'No file selected'}
+                        {uploadedFile || 'No file selected'}
                     </span>
                 </div>
                 <input
