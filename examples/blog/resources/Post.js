@@ -91,6 +91,7 @@ module.exports = resource('Post')
             .rules('required')
             .searchable()
             .description('Select one of these technologies to write about.'),
+        belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()
             .firstDayOfWeek(4)

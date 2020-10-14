@@ -40,9 +40,10 @@ import FindResourceController from './controllers/resources/FindResourceControll
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
+import UploadFileController from './controllers/UploadFileController'
+
 import { StorageConstructor } from '@tensei/common'
 import { SupportedStorageDrivers } from '@tensei/common'
-import UploadFileController from './controllers/UploadFileController'
 
 export class Tensei {
     public app: Application = Express()

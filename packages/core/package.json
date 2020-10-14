@@ -51,7 +51,8 @@
         "readline-sync": "^1.4.10",
         "signale": "^1.4.0",
         "sqlite3": "^5.0.0",
-        "throttle-debounce": "^2.2.1"
+        "throttle-debounce": "^2.2.1",
+        "uuid": "^8.3.1"
     },
     "config": {
         "commitizen": {

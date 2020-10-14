@@ -1,20 +1,18 @@
 import { AllowedMimeTypes } from '@tensei/common'
 import Field from './Field'
 
-type AllowedDisks = 'public' | 'private'
+type UploadTypes = 'public' | 'private'
 
 export class File extends Field {
-    public uploadType: AllowedDisks = 'public'
+    public uploadType: UploadTypes = 'public'
 
     public component = 'FileField'
 
     private config: {
-        allowedMimeTypes: AllowedMimeTypes[]
         disableDownload: boolean
     } = {
-        disableDownload: false,
-        allowedMimeTypes: ['*']
-    }
+            disableDownload: false,
+        }
 
     /**
      * When a new file is made,
@@ -26,7 +24,8 @@ export class File extends Field {
 
         this.config.disableDownload = false
         this.attributes = {
-            maxSize: 20000
+            maxSize: 20000,
+            allowedMimeTypes: ['*']
         }
     }
 
@@ -60,9 +59,18 @@ export class File extends Field {
 
         return this
     }
+    /**
+     * Set the mimetypes this file filed accepts.
+     *
+     */
 
     public allowedMimeTypes(mimeTypes: AllowedMimeTypes[]) {
-        this.config.allowedMimeTypes = mimeTypes
+        this.attributes = {
+            ...this.attributes,
+            allowedMimeTypes: mimeTypes
+        }
+
+        return this
     }
 
     /**
@@ -82,7 +90,6 @@ export class File extends Field {
         return {
             ...super.serialize(),
             disableDownload: this.config.disableDownload,
-            allowedMimeTypes: this.config.allowedMimeTypes
         }
     }
 }

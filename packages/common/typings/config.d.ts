@@ -20,18 +20,18 @@ declare module '@tensei/common/config' {
         field: string
         value: string
         operator:
-            | 'equals'
-            | 'contains'
-            | 'not_equals'
-            | 'is_null'
-            | 'not_null'
-            | 'gt'
-            | 'gte'
-            | 'lt'
-            | 'lte'
-            | 'matches'
-            | 'in'
-            | 'not_in'
+        | 'equals'
+        | 'contains'
+        | 'not_equals'
+        | 'is_null'
+        | 'not_null'
+        | 'gt'
+        | 'gte'
+        | 'lt'
+        | 'lte'
+        | 'matches'
+        | 'in'
+        | 'not_in'
     }
     interface FetchAllRequestQuery {
         perPage?: number
@@ -44,21 +44,20 @@ declare module '@tensei/common/config' {
         noPagination?: 'true' | 'false'
     }
     interface StorageConstructor<T extends Storage = Storage> {
-        new (...args: any[]): T
+        new(...args: any[]): T
     }
 
     type SupportedStorageDrivers = 'local' | 's3' | any
 
     type AllowedMimeTypes =
         | '*'
-        | 'png'
-        | 'csv'
-        | 'jpeg'
-        | 'jpg'
-        | 'svg'
-        | 'pdf'
-        | 'docx'
-        | 'txt'
+        | 'image/png'
+        | 'text/csv'
+        | 'image/jpeg'
+        | 'image/svg+xml'
+        | 'application/pdf'
+        | 'application/msword'
+        | 'text/plain'
 
     interface FetchAllResults<Model = any> {
         data: Model[]
@@ -155,9 +154,9 @@ declare module '@tensei/common/config' {
     }
     type Permission =
         | {
-              name: string
-              slug: string
-          }
+            name: string
+            slug: string
+        }
         | string
     interface DataPayload {
         [key: string]: any

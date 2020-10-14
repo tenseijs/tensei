@@ -26,6 +26,10 @@ class FileField extends React.Component {
             .then(({ data }) => {
                 this.props.removePendingField(this.props.field.inputName)
                 this.setState({ uploadedFile: data.filePath, loading: false })
+                this.props.onFieldChange(data.filePath)
+                Tensei.library.Notification.success(
+                    'File uploaded successfully'
+                )
             })
             .catch(error => {
                 let errorMessage = 'Could not upload file, try again!'

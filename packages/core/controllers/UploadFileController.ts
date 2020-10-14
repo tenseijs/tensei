@@ -1,5 +1,5 @@
-import { FieldContract } from '@tensei/common'
 import Express from 'express'
+import { v4 as uuidv4 } from 'uuid';
 
 type File = {
     name: string
@@ -26,21 +26,22 @@ class UploadFileController {
 
         if (isFileValid) {
             return response.status(422).json({
-                message: isFileValid
+                message: isFileValid,
+                status: 422
             })
         }
 
-        const mimeType = fileFields[0].mimetype.split('/')[1]
+        const mimeType = fileFields.mimetype.split('/')[1]
 
-        const storagePath = `${Date.now()}.${mimeType}`
+        const storagePath = `${uuidv4()}.${mimeType}`
 
         const file: any = await storage
             .disk()
-            .put(storagePath, fileFields[0].data)
+            .put(storagePath, fileFields.data)
 
         if (!file.raw) {
             return response.status(201).json({
-                filePath: storagePath
+                filePath: `storage/${storagePath}`
             })
         }
         return response.status(201).json({
@@ -51,7 +52,7 @@ class UploadFileController {
     private validateFile = (resourceFields: any, file: File) => {
         let validationError = null
         const fieldMaxSize = resourceFields.attributes.maxSize
-        const fieldMimeTypesAllowed = resourceFields.config.allowedMimeTypes
+        const fieldMimeTypesAllowed = resourceFields.attributes.allowedMimeTypes
 
         const fileSizeInKB = (file.size * 0.001).toFixed()
         const fileMimeType = file.mimetype
