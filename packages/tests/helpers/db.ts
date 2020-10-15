@@ -9,6 +9,10 @@ export default new (class DB {
     findAll = jest.fn(() => Promise.resolve({}))
     findAllByIds = jest.fn(() => Promise.resolve([]))
     findAllBelongingToMany = jest.fn(() => Promise.resolve({}))
+    findAllHasMany = jest.fn(() => Promise.resolve({
+        data: []
+    }))
+    findAllHasManyData = jest.fn(() => Promise.resolve([]))
     findOneById = jest.fn()
     findOneByField = jest.fn(() => true)
     findOneByFieldExcludingOne = jest.fn()

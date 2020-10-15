@@ -1,7 +1,7 @@
 import { Manager, ResourceContract } from '@tensei/common'
 
 import db from '../helpers/db'
-import { Tag, Comment, User, Post, UserNoRel } from '../helpers/resources'
+import { Tag, Comment, User, Post } from '../helpers/resources'
 
 const setup = (
     resource: string | ResourceContract = 'users',
@@ -385,7 +385,7 @@ describe('Manager', () => {
     })
 
     describe('findAllRelatedResource', () => {
-        test('calls findAll method from db when resource is a HasMany Field', async () => {
+        test('calls findAllHasMany method from db when resource is a HasMany Field', async () => {
             expect.assertions(1)
             await setup(User, [], {
                 query: {
@@ -395,7 +395,7 @@ describe('Manager', () => {
                 }
             }).findAllRelatedResource(1, Post)
 
-            expect(db.findAll).toHaveBeenCalled()
+            expect(db.findAllHasMany).toHaveBeenCalled()
         })
 
         test('throw error when it manager cannot find related HasManyField in the resources', async () => {
@@ -413,7 +413,7 @@ describe('Manager', () => {
             } catch (error) {
                 expect(error).toEqual({
                     message: 'Related field not found between User and postas.',
-                    status: 404
+                    status: 400
                 })
             }
 
@@ -546,7 +546,7 @@ describe('Manager', () => {
             } catch (error) {
                 expect(error).toEqual({
                     message: 'Related field not found between User and postas.',
-                    status: 404
+                    status: 400
                 })
             }
             Post.data.name = 'Post'

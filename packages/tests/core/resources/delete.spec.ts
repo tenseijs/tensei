@@ -48,6 +48,7 @@ beforeEach(() => {
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(1)
     })
+
     test(`${databaseClient} - throws error when resource ID is not found (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -80,11 +81,8 @@ beforeEach(() => {
             .delete(`/admin/api/resources/posts/21`)
             .send(userDetails)
 
-        expect(response.status).toBe(422)
-        expect(response.body.message).toBe('Validation failed.')
-        expect(response.body.errors).toEqual([
-            { message: 'Post resource with id 21 was not found.' }
-        ])
+        expect(response.status).toBe(404)
+        expect(response.body).toEqual({ message: 'Post resource with id 21 was not found.' })
     })
 })
 

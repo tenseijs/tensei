@@ -365,6 +365,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             `Resource ${wrongResource} not found.`
         )
     })
+
     test(`${databaseClient} - throws error when related resource has no relation with resource (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -389,11 +390,12 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             .get('/admin/api/resources/users/1/reactions')
             .send(userDetails)
 
-        expect(response.status).toBe(404)
+        expect(response.status).toBe(400)
         expect(response.body.message).toEqual(
             `Related field not found between User and ${noRelationResource}.`
         )
     })
+
     test(`${databaseClient} - throw error when getting a single resource is not found (user)`, async () => {
         const { app, manager } = await setup({
             admin: {

@@ -390,8 +390,7 @@ export class SqlRepository extends ResourceHelpers
 
         this.setResource(this.administratorResource())
 
-        const administrator = await this.create({
-            ...payload,
+        const administrator = await this.create(payload, {
             administrator_roles: [superAdmin.id]
         })
 
