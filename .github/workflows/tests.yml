@@ -24,6 +24,10 @@ jobs:
           POSTGRES_DB: 'tensei'
         ports:
           - 5432:5432
+      mongodb:
+        image: mongo:4.0
+        ports:
+          - 27017:27017
     strategy:
       fail-fast: true
       max-parallel: 6
