@@ -3,7 +3,7 @@ import Supertest from 'supertest'
 import isAfter from 'date-fns/isAfter'
 
 import { setup, createAdminUser, cleanup } from '../../helpers'
-;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
+;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - validates login data and returns error messages with a 422`, async () => {
         const { app } = await setup({
             databaseClient

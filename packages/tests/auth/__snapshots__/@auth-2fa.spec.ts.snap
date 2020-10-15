@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`mongodb - a user can confirm enable 2fa on her account 1`] = `
+Object {
+  "message": "Two factor authentication has been enabled.",
+}
+`;
+
+exports[`mongodb - a user can disable 2fa on her account 1`] = `
+Object {
+  "message": "Two factor auth has been disabled.",
+}
+`;
+
 exports[`mysql - a user can confirm enable 2fa on her account 1`] = `
 Object {
   "message": "Two factor authentication has been enabled.",

@@ -1,5 +1,59 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`mongodb - can login correctly with remember me 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`mongodb - returns a 200, and creates a new session when correct credentials are passed 1`] = `
+Object {
+  "message": "Login successful.",
+}
+`;
+
+exports[`mongodb - returns a 422 if user does not exist in database 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "These credentials do not match our records.",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`mongodb - returns a 422 if user password is wrong 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "These credentials do not match our records.",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`mongodb - validates login data and returns error messages with a 422 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "The email is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "password",
+      "message": "The password is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
 exports[`mysql - can login correctly with remember me 1`] = `
 Object {
   "message": "Login successful.",

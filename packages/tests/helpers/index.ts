@@ -17,7 +17,7 @@ interface ConfigureSetup {
     admin?: IUser
     apiPath?: string
     authApiPath?: string
-    databaseClient?: 'mysql' | 'sqlite3' | 'pg'
+    databaseClient?: 'mysql' | 'sqlite3' | 'pg' | 'mongodb'
     dashboardPath?: string
     createAndLoginAdmin?: boolean
 }
@@ -50,36 +50,52 @@ export const setup = async (
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
-    let dbConfig: Knex.Config = {
-        client: 'mysql',
-        connection: {
-            host: process.env.DATABASE_HOST || '127.0.0.1',
-            user: process.env.DATABASE_USER || 'root',
-            password: process.env.DATABASE_PASSSWORD || '',
-            database: process.env.DATABASE_DB || 'testdb'
-        },
-        useNullAsDefault: true
-    }
-
-    if (databaseClient === 'sqlite3') {
-        dbConfig = {
-            client: 'sqlite3',
-            connection: './tensei.sqlite',
-            useNullAsDefault: true
-        }
-    }
-
-    if (databaseClient === 'pg') {
-        dbConfig = {
-            client: 'pg',
+    let dbConfig: any = [
+        {
+            client: 'mysql',
             connection: {
                 host: process.env.DATABASE_HOST || '127.0.0.1',
                 user: process.env.DATABASE_USER || 'root',
-                password: process.env.DATABASE_PASSWORD || '',
-                database: process.env.DATABASE_DB || 'tensei'
+                password: process.env.DATABASE_PASSSWORD || '',
+                database: process.env.DATABASE_DB || 'testdb'
             },
             useNullAsDefault: true
         }
+    ]
+
+    if (databaseClient === 'sqlite3') {
+        dbConfig = [
+            {
+                client: 'sqlite3',
+                connection: './tensei.sqlite',
+                useNullAsDefault: true
+            }
+        ]
+    }
+
+    if (databaseClient === 'pg') {
+        dbConfig = [
+            {
+                client: 'pg',
+                connection: {
+                    host: process.env.DATABASE_HOST || '127.0.0.1',
+                    user: process.env.DATABASE_USER || 'root',
+                    password: process.env.DATABASE_PASSWORD || '',
+                    database: process.env.DATABASE_DB || 'tensei'
+                },
+                useNullAsDefault: true
+            }
+        ]
+    }
+
+    if (databaseClient === 'mongodb') {
+        dbConfig = [
+            'mongodb://localhost/tensei-tests',
+            {
+                useUnifiedTopology: true,
+                useNewUrlParser: true
+            }
+        ]
     }
 
     const derivedDatabaseFromClient =
@@ -93,13 +109,13 @@ export const setup = async (
         ? tensei()
               .database(derivedDatabaseFromClient as SupportedDatabases)
               // @ts-ignore
-              .databaseConfig(dbConfig)
+              .databaseConfig(...dbConfig)
         : cachedInstance
         ? cachedInstance
         : tensei()
               .database(derivedDatabaseFromClient as SupportedDatabases)
               // @ts-ignore
-              .databaseConfig(dbConfig)
+              .databaseConfig(...dbConfig)
 
     cachedInstance = instance
 
@@ -154,9 +170,11 @@ export const setup = async (
 }
 
 export const cleanup = async (
-    databaseClient: Knex = cachedInstance.getDatabaseClient()
+    databaseClient: any = cachedInstance.getDatabaseClient()
 ) => {
-    await databaseClient.destroy()
+    await (databaseClient.destroy
+        ? databaseClient.destroy()
+        : databaseClient.close())
 }
 
 export const createAuthUser = async (knex: Knex, extraArguments = {}) => {

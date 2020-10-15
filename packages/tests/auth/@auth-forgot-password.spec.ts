@@ -9,7 +9,7 @@ beforeEach(() => {
 })
 
 jest.mock('speakeasy')
-;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
+;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - sends email on successful forgot password request`, async () => {
         const { app, manager, mailer } = await setup({
             databaseClient

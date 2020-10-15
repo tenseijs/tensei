@@ -9,7 +9,7 @@ beforeEach(() => {
 })
 
 jest.mock('speakeasy')
-;['mysql', 'sqlite3', 'pg'].forEach((databaseClient: any) => {
+;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
         const { app, getDatabaseClient, manager } = await setup({
             databaseClient

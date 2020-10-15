@@ -7,7 +7,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
 beforeEach(() => {
     jest.clearAllMocks()
 })
-;['sqlite3', 'mysql', 'pg'].forEach((databaseClient: any) => {
+;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - calls before update hook during resource update (users)`, async () => {
         const { app, manager } = await setup({
             admin: {
