@@ -2,7 +2,8 @@ const {
     text,
     textarea,
     resource,
-    belongsToMongo: belongsTo,
+    // belongsToMongo: belongsTo,
+    belongsTo,
 } = require('@tensei/core')
 
 module.exports = resource('Comment').fields([

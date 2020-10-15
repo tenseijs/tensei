@@ -695,6 +695,10 @@ export class SqlRepository extends ResourceHelpers
                     relatedResource => relatedResource.data.name === field.name
                 )
 
+                const RelatedModel = this.getResourceBookshelfModel(
+                    relatedResource
+                )
+
                 if (!relatedResource) {
                     return Promise.resolve()
                 }
@@ -716,9 +720,24 @@ export class SqlRepository extends ResourceHelpers
                     field.component === 'HasManyField' &&
                     relationshipPayload[field.databaseField]
                 ) {
-                    console.log(
-                        'TODO: Handle HasManyField after resource is created.'
+                    const relatedBelongsToField = relatedResource.data.fields.find(
+                        field =>
+                            field.component === 'BelongsToField' &&
+                            field.name === resource.data.name
                     )
+
+                    if (!relatedBelongsToField) {
+                        console.warn(
+                            `You must define the corresponding BelongsTo relationship for the ${resource.data.name}.`
+                        )
+                        return Promise.resolve()
+                    }
+
+                    return RelatedModel.query()
+                        .whereIn('id', relationshipPayload[field.databaseField])
+                        .update({
+                            [relatedBelongsToField.databaseField]: result.id
+                        })
                 }
 
                 return Promise.resolve()
@@ -971,7 +990,29 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) {
-        return {} as any
+        const query = this.getDefaultQuery(baseQuery)
+
+        const [
+            countResolver,
+            dataResolver
+        ] = await this.findAllHasManyResolvers(
+            relatedResource,
+            resourceId,
+            query
+        )
+
+        const data = await dataResolver()
+        const countResult = await countResolver()
+
+        const count = countResult[0]['count(*)'] || countResult[0]['count']
+
+        return {
+            data,
+            page: query.page,
+            perPage: query.perPage,
+            total: count as number,
+            pageCount: Math.ceil((count as number) / (query.perPage || 10))
+        }
     }
 
     async findAllHasManyData(
@@ -979,7 +1020,13 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) {
-        return []
+        const [, dataResolver] = await this.findAllHasManyResolvers(
+            relatedResource,
+            resourceId,
+            baseQuery
+        )
+
+        return dataResolver()
     }
 
     async findAllHasManyCount(
@@ -987,7 +1034,15 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) {
-        return []
+        const [countResolver] = await this.findAllHasManyResolvers(
+            relatedResource,
+            resourceId,
+            baseQuery
+        )
+
+        const count = await countResolver()
+
+        return count[0]['count(*)'] || count[0]['count']
     }
 
     async findAllHasManyResolvers(
@@ -997,7 +1052,33 @@ export class SqlRepository extends ResourceHelpers
     ) {
         const resource = this.getCurrentResource()
 
-        return []
+        const belongsToField = relatedResource.data.fields.find(
+            field => field.name === resource.data.name
+        )
+
+        if (!belongsToField) {
+            throw {
+                status: 404,
+                message: `Related 'belongs to' field not found between ${resource.data.name} and ${relatedResource.data.name}.`
+            }
+        }
+
+        const query = this.getDefaultQuery(baseQuery)
+
+        return this.findAllResolvers(
+            {
+                ...this.getDefaultQuery(baseQuery),
+                filters: [
+                    ...(query.filters || []),
+                    {
+                        field: belongsToField.databaseField,
+                        value: resourceId.toString(),
+                        operator: 'equals'
+                    }
+                ]
+            },
+            relatedResource
+        )
     }
 
     private getDefaultQuery = (baseQuery: FetchAllRequestQuery) => {
@@ -1243,8 +1324,10 @@ export class SqlRepository extends ResourceHelpers
         }
     }
 
-    public findAllResolvers = (baseQuery: FetchAllRequestQuery) => {
-        const resource = this.getCurrentResource()
+    public findAllResolvers = (
+        baseQuery: FetchAllRequestQuery,
+        resource = this.getCurrentResource()
+    ) => {
         const Model = this.getResourceBookshelfModel(resource)
 
         const query = this.getDefaultQuery(baseQuery)

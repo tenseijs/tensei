@@ -83,7 +83,7 @@ class Graphql {
             FieldType = 'ID'
 
             if (config.database === 'mongodb') {
-                FieldKey = '_id'
+                FieldKey = 'id'
             }
         }
 
@@ -325,16 +325,13 @@ type DeletePayload {
     }
 
     private getIdKey(config: PluginSetupConfig) {
-        if (config.database === 'mongodb') {
-            return '_id'
-        }
-
         return 'id'
     }
 
     private getResolvers(
         resources: ResourceContract[],
-        manager: ManagerContract['setResource']
+        manager: ManagerContract['setResource'],
+        config: PluginSetupConfig
     ) {
         let resolvers: any = {}
 
@@ -384,8 +381,7 @@ type DeletePayload {
                         keys.map(key =>
                             rows.find(row =>
                                 [
-                                    row.id.toString(),
-                                    row._id.toString()
+                                    row[this.getIdKey(config)].toString()
                                 ].includes(key.toString())
                             )
                         ),
@@ -414,8 +410,10 @@ type DeletePayload {
 
                         const relatedId = row[field.databaseField]
 
-                        row[relatedResource.data.camelCaseName] = () =>
-                            loader.load(relatedId)
+                        if (relatedId && typeof relatedId !== 'function') {
+                            row[relatedResource.data.camelCaseName] = () =>
+                                loader.load(relatedId)
+                        }
 
                         return
                     }
@@ -556,7 +554,11 @@ type DeletePayload {
                 graphqlHTTP({
                     schema,
                     graphiql: this.config.graphiql,
-                    rootValue: this.getResolvers(exposedResources, manager)
+                    rootValue: this.getResolvers(
+                        exposedResources,
+                        manager,
+                        config
+                    )
                 })
             )
 

@@ -10,7 +10,8 @@ const {
     textarea,
     hasMany,
     belongsToMany,
-    belongsToMongo: belongsTo,
+    // belongsToMongo: belongsTo,
+    belongsTo,
 } = require('@tensei/core')
 const { trix } = require('@tensei/trix')
 
