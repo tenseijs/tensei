@@ -1,5 +1,8 @@
 import React from 'react'
-import { Button } from '@contentful/forma-36-react-components'
+import {
+    Button,
+    ValidationMessage
+} from '@contentful/forma-36-react-components'
 
 class FileField extends React.Component {
     constructor() {
@@ -7,7 +10,7 @@ class FileField extends React.Component {
         this.inputFile = React.createRef()
     }
 
-    state = { uploadedFile: null, loading: false }
+    state = { uploadedFile: null, loading: false, errorMessage: null }
 
     uploadFile = async e => {
         this.setState({ loading: true })
@@ -27,24 +30,20 @@ class FileField extends React.Component {
                 this.props.removePendingField(this.props.field.inputName)
                 this.setState({ uploadedFile: data.filePath, loading: false })
                 this.props.onFieldChange(data.filePath)
-                Tensei.library.Notification.success(
-                    'File uploaded successfully'
-                )
             })
             .catch(error => {
                 let errorMessage = 'Could not upload file, try again!'
                 if (error.response.status === 422) {
                     errorMessage = error.response.data.message
                 }
-                Tensei.library.Notification.error(errorMessage)
 
                 this.props.removePendingField(this.props.field.inputName)
-                this.setState({ loading: false })
+                this.setState({ loading: false, errorMessage })
             })
     }
 
     render() {
-        const { loading, uploadedFile } = this.state
+        const { loading, uploadedFile, errorMessage } = this.state
 
         return (
             <div className="TextField">
@@ -59,6 +58,11 @@ class FileField extends React.Component {
                         {uploadedFile || 'No file selected'}
                     </span>
                 </div>
+                {errorMessage ? (
+                    <ValidationMessage className="TextFieldValidationMessage">
+                        {errorMessage}
+                    </ValidationMessage>
+                ) : null}
                 <input
                     type="file"
                     className="hidden"
