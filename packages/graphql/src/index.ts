@@ -383,7 +383,7 @@ type DeletePayload {
                                 [
                                     row[this.getIdKey(config)].toString()
                                 ].includes(key.toString())
-                            )
+                            ) || null
                         ),
                         relatedBelongsToResource!
                     )
@@ -410,7 +410,7 @@ type DeletePayload {
 
                         const relatedId = row[field.databaseField]
 
-                        if (relatedId && typeof relatedId !== 'function') {
+                        if (row && relatedId && typeof relatedId !== 'function') {
                             row[relatedResource.data.camelCaseName] = () =>
                                 loader.load(relatedId)
                         }
@@ -427,16 +427,18 @@ type DeletePayload {
                             resource => resource.data.name === field.name
                         )!
 
-                        row[relatedResource.data.camelCaseNamePlural] = (
-                            relatedArgs: any
-                        ) =>
-                            getMultipleResources(
-                                resource,
-                                relatedResource,
-                                field,
-                                row,
-                                relatedArgs
-                            )
+                        if (row) {
+                            row[relatedResource.data.camelCaseNamePlural] = (
+                                relatedArgs: any
+                            ) =>
+                                getMultipleResources(
+                                    resource,
+                                    relatedResource,
+                                    field,
+                                    row,
+                                    relatedArgs
+                                )
+                        }
                     }
                 })
 

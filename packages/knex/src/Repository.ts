@@ -810,10 +810,7 @@ export class SqlRepository extends ResourceHelpers
                     )
 
                     if (!relatedBelongsToField) {
-                        console.warn(
-                            `You must define the corresponding BelongsTo relationship for the ${resource.data.name}.`
-                        )
-                        return
+                        return Promise.resolve()
                     }
 
                     return (async function() {
@@ -867,18 +864,74 @@ export class SqlRepository extends ResourceHelpers
 
     public deleteById = async (id: number | string) => {
         const resource = this.getCurrentResource()
-        const result = await this.$db!(resource.data.table)
-            .where('id', id)
-            .limit(1)
-            .delete()
+        const Model = this.getResourceBookshelfModel(
+            resource
+        )!
 
-        if (result === 0) {
-            throw [
-                {
-                    message: `${resource.data.name} resource with id ${id} was not found.`
-                }
-            ]
+        const modelToDelete = await this.findOneById(id)
+
+        if (! modelToDelete) {
+            throw {
+                status: 404,
+                message: `${resource.data.name} resource with id ${id} was not found.`
+            }
         }
+
+        const relationalFields = resource.data.fields.filter(
+            field =>
+                field.serialize().isRelationshipField ||
+                field.component === 'BelongsToField'
+        )
+
+        await Promise.all([
+            await Promise.all(
+                relationalFields.map(field => {
+                    if (['BelongsToManyField'].includes(field.component)) {
+                        // update both the related resource and the resource
+                        const relatedResource = this.resources.find(
+                            r => r.data.name === field.name
+                        )!
+
+                        return (new Model({
+                            id: modelToDelete.id
+                        }))[relatedResource.data.slug]().detach()
+                    }
+
+                    if (field.component === 'HasManyField') {
+                        // get related belongs to field
+                        const relatedResource = this.resources.find(
+                            r => r.data.name === field.name
+                        )!
+                        const RelatedModel = this.getResourceBookshelfModel(
+                            relatedResource
+                        )!
+
+
+                        const relatedBelongsToField = relatedResource.data.fields.find(
+                            f =>
+                                f.component === 'BelongsToField' &&
+                                f.name === resource.data.name
+                        )
+
+                        if (!relatedBelongsToField) {
+                            return Promise.resolve()
+                        }
+
+                        return RelatedModel.query().where(relatedBelongsToField.databaseField, modelToDelete.id)
+                            .update({
+                                [relatedBelongsToField.databaseField]: null
+                            })
+                    }
+
+                    return async function () {}
+                })
+            ),
+        ])
+
+        const result = await this.$db!(resource.data.table)
+                .where('id', id)
+                .limit(1)
+                .delete()
 
         return result === 1
     }
@@ -920,7 +973,8 @@ export class SqlRepository extends ResourceHelpers
     public findOneByField = async (
         field: string,
         value: string,
-        fields?: FetchAllRequestQuery['fields']
+        fields?: FetchAllRequestQuery['fields'],
+        withHidden = false
     ) => {
         const resource = this.getCurrentResource()
 
@@ -938,19 +992,15 @@ export class SqlRepository extends ResourceHelpers
         field: string,
         value: string,
         excludeId: string | number,
-        fields?: FetchAllRequestQuery['fields']
+        fields?: FetchAllRequestQuery['fields'],
     ) => {
-        const resource = this.getCurrentResource()
-
         return (
-            (
-                await this.$db!.select(fields || '*')
-                    .from(resource.data.table)
-                    .where(field, value)
-                    .whereNot(`id`, excludeId)
-                    .limit(1)
-            )[0] || null
-        )
+            await this.$db!.select(fields || '*')
+            .from(this.getCurrentResource().data.table)
+            .where(field, value)
+            .whereNot(`id`, excludeId)
+            .limit(1)
+        )[0] || null
     }
 
     public findAllBelongingToMany = async (
