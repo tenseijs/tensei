@@ -8,7 +8,7 @@ import {
     resource,
     textarea,
     belongsTo,
-    belongsToMany,
+    belongsToMany
 } from '@tensei/common'
 
 export default resource('Post')

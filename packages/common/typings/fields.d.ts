@@ -76,7 +76,7 @@ declare module '@tensei/common/fields' {
              */
             showOnCreation: boolean
         }
-        tenseiConfig: Config|null
+        tenseiConfig: Config | null
         authorizeCallbacks: {
             authorizedToSee: AuthorizeFunction
             authorizedToCreate: AuthorizeFunction
@@ -499,7 +499,7 @@ declare module '@tensei/common/fields' {
              */
             showOnCreation: boolean
         }
-        tenseiConfig: Config|null
+        tenseiConfig: Config | null
         authorizeCallbacks: {
             authorizedToSee: AuthorizeFunction
             authorizedToCreate: AuthorizeFunction

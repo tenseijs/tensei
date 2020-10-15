@@ -378,12 +378,13 @@ type DeletePayload {
                         .findAllByIds(keysWithoutDuplicates)
 
                     return populateRowWithRelationShips(
-                        keys.map(key =>
-                            rows.find(row =>
-                                [
-                                    row[this.getIdKey(config)].toString()
-                                ].includes(key.toString())
-                            ) || null
+                        keys.map(
+                            key =>
+                                rows.find(row =>
+                                    [
+                                        row[this.getIdKey(config)].toString()
+                                    ].includes(key.toString())
+                                ) || null
                         ),
                         relatedBelongsToResource!
                     )
@@ -410,7 +411,11 @@ type DeletePayload {
 
                         const relatedId = row[field.databaseField]
 
-                        if (row && relatedId && typeof relatedId !== 'function') {
+                        if (
+                            row &&
+                            relatedId &&
+                            typeof relatedId !== 'function'
+                        ) {
                             row[relatedResource.data.camelCaseName] = () =>
                                 loader.load(relatedId)
                         }

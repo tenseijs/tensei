@@ -270,9 +270,7 @@ class Auth {
         return resource('Team')
             .fields([
                 text('Name').unique(),
-                belongsTo(
-                    this.config.nameResource
-                ),
+                belongsTo(this.config.nameResource),
                 belongsToMany(this.config.nameResource),
                 ...this.config.teamFields
             ])
@@ -284,12 +282,8 @@ class Auth {
             text('Email'),
             text('Role'),
             text('Token').unique().rules('required'),
-            belongsTo(
-                this.teamResource(database).data.name
-            ),
-            belongsTo(
-                this.config.nameResource
-            )
+            belongsTo(this.teamResource(database).data.name),
+            belongsTo(this.config.nameResource)
         ])
     }
 
@@ -362,9 +356,7 @@ class Auth {
         return resource('Oauth Identity')
             .hideFromNavigation()
             .fields([
-                belongsTo(
-                    this.config.nameResource
-                ),
+                belongsTo(this.config.nameResource),
                 textarea('Access Token')
                     .hidden()
                     .hideOnUpdate()

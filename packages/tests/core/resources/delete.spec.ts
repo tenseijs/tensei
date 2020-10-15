@@ -82,7 +82,9 @@ beforeEach(() => {
             .send(userDetails)
 
         expect(response.status).toBe(404)
-        expect(response.body).toEqual({ message: 'Post resource with id 21 was not found.' })
+        expect(response.body).toEqual({
+            message: 'Post resource with id 21 was not found.'
+        })
     })
 })
 
