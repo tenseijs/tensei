@@ -157,7 +157,7 @@ declare module '@tensei/common/config' {
     abstract class DatabaseRepositoryInterface<Model = any> {
         static databases: string[]
         abstract setup: (config: Config) => Promise<any>
-        abstract getAdministratorById: (id: string|number) => Promise<Model>
+        abstract getAdministratorById: (id: string | number) => Promise<Model>
         abstract createAdministrator: (payload: DataPayload) => Promise<Model>
         abstract setResourceModels: (
             resources: ResourceContract[]
@@ -200,7 +200,7 @@ declare module '@tensei/common/config' {
             query: FetchAllRequestQuery
         ) => Promise<FetchAllResults>
         abstract findAllByIds: (
-            ids: number[],
+            ids: string[],
             fields?: string[]
         ) => Promise<Model[]>
         abstract findAllBelongingToMany: (
@@ -265,7 +265,6 @@ declare module '@tensei/common/config' {
             baseQuery: FetchAllRequestQuery
         ) => Promise<(() => any)[]>
 
-
         abstract findAllHasMany: (
             relatedResource: ResourceContract,
             resourceId: string | number,
@@ -292,7 +291,6 @@ declare module '@tensei/common/config' {
             resourceId: string | number,
             baseQuery: FetchAllRequestQuery
         ) => Promise<(() => any)[]>
-
 
         abstract findAllData: (baseQuery: FetchAllRequestQuery) => Promise<any>
         abstract findAll: (

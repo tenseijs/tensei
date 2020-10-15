@@ -50,7 +50,7 @@ declare module '@tensei/common' {
             query: FetchAllRequestQuery
         ) => Promise<FetchAllResults>
         abstract findAllByIds: (
-            ids: number[],
+            ids: string[],
             fields?: string[]
         ) => Promise<Mongoose.Model<any, any>[]>
         abstract findAllBelongingToMany: (

@@ -4,12 +4,13 @@ const {
     text,
     date,
     boolean,
-    belongsTo,
     select,
     resource,
     action,
     textarea,
+    hasMany,
     belongsToMany,
+    belongsToMongo: belongsTo,
 } = require('@tensei/core')
 const { trix } = require('@tensei/trix')
 
@@ -102,6 +103,7 @@ module.exports = resource('Post')
             .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
         belongsToMany('Tag'),
+        hasMany('Comment'),
     ])
     .perPageOptions([25, 50, 100])
     .displayField('title')

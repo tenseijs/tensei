@@ -1,4 +1,9 @@
-const { text, textarea, belongsTo, resource } = require('@tensei/core')
+const {
+    text,
+    textarea,
+    resource,
+    belongsToMongo: belongsTo,
+} = require('@tensei/core')
 
 module.exports = resource('Comment').fields([
     text('Title').rules('required').searchable(),

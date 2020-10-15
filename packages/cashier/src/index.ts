@@ -5,7 +5,9 @@ import {
     text,
     integer,
     timestamp,
-    belongsTo
+    belongsTo,
+    Config,
+    belongsToMongo
 } from '@tensei/common'
 
 interface CashierConfig {
@@ -29,7 +31,7 @@ class Cashier {
         return this
     }
 
-    private subscriptionsResource() {
+    private subscriptionsResource(database: Config['database']) {
         return resource('Subscription')
             .hideFromNavigation()
             .fields([
@@ -40,7 +42,9 @@ class Cashier {
                 integer('Quantity').default('0'),
                 timestamp('Trial Ends At'),
                 timestamp('Ends At'),
-                belongsTo(this.config.customerResourceName)
+                (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                    this.config.customerResourceName
+                )
             ])
     }
 
@@ -68,8 +72,8 @@ class Cashier {
 
     public plugin() {
         return plugin('Cashier')
-            .beforeDatabaseSetup(({ pushResource }) => {
-                pushResource(this.subscriptionsResource())
+            .beforeDatabaseSetup(({ pushResource, database }) => {
+                pushResource(this.subscriptionsResource(database))
 
                 return Promise.resolve()
             })

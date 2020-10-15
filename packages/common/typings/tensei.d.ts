@@ -1,16 +1,18 @@
 declare module '@tensei/core' {
     import { SupportedDrivers } from '@tensei/mail'
-    import { StorageManager } from '@slynova/flydrive'
+    import { StorageManager, Storage } from '@slynova/flydrive'
     import Express, { Application, Request } from 'express'
-    import { SupportedStorageDrivers, StorageConstructor } from '@tensei/common'
     import {
+        Config,
         PluginContract,
-        ResourceContract,
         SetupFunctions,
         ManagerContract,
-        SupportedDatabases,
+        ResourceContract,
         PluginSetupConfig,
-        DashboardContract
+        DashboardContract,
+        StorageConstructor,
+        SupportedDatabases,
+        SupportedStorageDrivers
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -19,6 +21,7 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
+        config: Config
         storage: StorageManager
         register(): Promise<this>
         getPluginArguments(): PluginSetupConfig
@@ -29,7 +32,7 @@ declare module '@tensei/core' {
         apiPath(apiPath: string): this
         serverUrl(url: string): this
         clientUrl(url: string): this
-        manager: (request?: Request) => ManagerContract | null
+        manager: (request: Request) => ManagerContract['setResource'] | null
         registerMiddleware(): void
         authMiddleware: (
             request: Express.Request,
@@ -75,6 +78,7 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
+        config: Config
         storage: StorageManager
         register(): Promise<this>
         getPluginArguments(): PluginSetupConfig
@@ -85,7 +89,8 @@ declare module '@tensei/core' {
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this
-        manager: () => Manager | null
+        manager: () => ManagerContract['setResource'] | null
+        dashboards(dashboards: DashboardContract[]): this
         registerMiddleware(): void
         serverUrl(url: string): this
         clientUrl(url: string): this

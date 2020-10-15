@@ -1,4 +1,9 @@
-import { text, belongsTo, resource, textarea } from '@tensei/common'
+import {
+    text,
+    belongsToMongo as belongsTo,
+    resource,
+    textarea
+} from '@tensei/common'
 
 export default resource('Comment').fields([
     text('Title')

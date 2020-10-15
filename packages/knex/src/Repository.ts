@@ -43,7 +43,6 @@ export class SqlRepository extends ResourceHelpers
 
         this.connectionEstablished = true
     }
-    
 
     private roleResource() {
         return resource('Administrator Role')
@@ -344,12 +343,20 @@ export class SqlRepository extends ResourceHelpers
         return this.aggregate(between, 'max', [columns])
     }
 
-    public async getAdministratorById(id: string|number) {
+    public async getAdministratorById(id: string | number) {
         this.setResource(this.administratorResource())
 
-        const admin = await this.findOneById(id, [], [`${this.roleResource().data.slug}.${this.permissionResource().data.slug}`])
+        const admin = await this.findOneById(
+            id,
+            [],
+            [
+                `${this.roleResource().data.slug}.${
+                    this.permissionResource().data.slug
+                }`
+            ]
+        )
 
-        if (! admin) {
+        if (!admin) {
             throw {
                 message: `Could not find administrator with id ${id}`,
                 status: 404
@@ -372,10 +379,7 @@ export class SqlRepository extends ResourceHelpers
     public async createAdministrator(payload: DataPayload) {
         this.setResource(this.roleResource())
 
-        const superAdmin = await this.findOneByField(
-            'slug',
-            'super-admin'
-        )
+        const superAdmin = await this.findOneByField('slug', 'super-admin')
 
         if (!superAdmin) {
             throw {
@@ -861,7 +865,7 @@ export class SqlRepository extends ResourceHelpers
     }
 
     public findAllByIds = async (
-        ids: number[],
+        ids: string[],
         fields?: FetchAllRequestQuery['fields']
     ) => {
         const resource = this.getCurrentResource()
@@ -1011,7 +1015,10 @@ export class SqlRepository extends ResourceHelpers
         resourceId: string | number,
         baseQuery: FetchAllRequestQuery
     ) => {
-        const [, dataResolver]: any = await this.findAllBelongingToManyResolvers(
+        const [
+            ,
+            dataResolver
+        ]: any = await this.findAllBelongingToManyResolvers(
             relatedResource,
             resourceId,
             this.getDefaultQuery(baseQuery)

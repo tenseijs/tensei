@@ -45,6 +45,7 @@
         "mustache": "^4.0.1",
         "mysql": "^2.18.1",
         "numeral": "^2.0.6",
+        "observable-slim": "^0.1.5",
         "pluralize": "^8.0.0",
         "readline-sync": "^1.4.10",
         "signale": "^1.4.0",

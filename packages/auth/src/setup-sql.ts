@@ -8,14 +8,21 @@ export const SetupMongodb = async (
     authConfig: AuthPluginConfig
 ) => {
     const { resources } = config
-    const [, RoleResource, PermissionResource] = getAuthResources(resources, authConfig)
+    const [, RoleResource, PermissionResource] = getAuthResources(
+        resources,
+        authConfig
+    )
 
     // @ts-ignore
     const RoleModel = RoleResource.Model()
     // @ts-ignore
     const PermissionModel = PermissionResource.Model()
 
-    const insertPermissions = await getPermissionsToInsert(resources, PermissionModel, 'mongodb')
+    const insertPermissions = await getPermissionsToInsert(
+        resources,
+        PermissionModel,
+        'mongodb'
+    )
 
     if (insertPermissions.length > 0) {
         await PermissionModel.insertMany(insertPermissions)
@@ -56,7 +63,10 @@ export const SetupMongodb = async (
     await Promise.all(rolesToCreate)
 }
 
-const getAuthResources = (resources: ResourceContract[], authConfig: AuthPluginConfig) => {
+const getAuthResources = (
+    resources: ResourceContract[],
+    authConfig: AuthPluginConfig
+) => {
     const UserResource = resources.find(
         resource => resource.data.name === authConfig.nameResource
     )
@@ -77,7 +87,11 @@ const getAuthResources = (resources: ResourceContract[], authConfig: AuthPluginC
     return [UserResource, RoleResource, PermissionResource]
 }
 
-const getPermissionsToInsert = async (resources: ResourceContract[], PermissionModel: any, database: 'sql'|'mongodb') => {
+const getPermissionsToInsert = async (
+    resources: ResourceContract[],
+    PermissionModel: any,
+    database: 'sql' | 'mongodb'
+) => {
     const permissions: Permission[] = []
 
     resources.forEach(resource => {
@@ -95,12 +109,13 @@ const getPermissionsToInsert = async (resources: ResourceContract[], PermissionM
     })
 
     // find all existing permissions
-    const existingPermissions = (
-        database === 'sql' ? await PermissionModel.query().whereIn('slug', permissions) : await PermissionModel.find({
-            slug: {
-                $in: permissions
-            }
-        })
+    const existingPermissions = (database === 'sql'
+        ? await PermissionModel.query().whereIn('slug', permissions)
+        : await PermissionModel.find({
+              slug: {
+                  $in: permissions
+              }
+          })
     ).map((permission: any) => permission.slug)
 
     const newPermissionsToCreate = permissions.filter(
@@ -110,30 +125,35 @@ const getPermissionsToInsert = async (resources: ResourceContract[], PermissionM
             )
     )
 
-    return Array.from(new Set(newPermissionsToCreate)).map(
-        permission => ({
-            name:
-                typeof permission === 'string'
-                    ? sentenceCase(permission.split(':').join(' '))
-                    : permission.name,
-            slug: permission
-        })
-    )
+    return Array.from(new Set(newPermissionsToCreate)).map(permission => ({
+        name:
+            typeof permission === 'string'
+                ? sentenceCase(permission.split(':').join(' '))
+                : permission.name,
+        slug: permission
+    }))
 }
 
-export const SetupSql =  async (
+export const SetupSql = async (
     config: PluginSetupConfig,
     authConfig: AuthPluginConfig
 ) => {
     const { resources } = config
-    const [, RoleResource, PermissionResource] = getAuthResources(resources, authConfig)
+    const [, RoleResource, PermissionResource] = getAuthResources(
+        resources,
+        authConfig
+    )
 
     // @ts-ignore
     const RoleModel = RoleResource.Model()
     // @ts-ignore
     const PermissionModel = PermissionResource.Model()
 
-    const insertPermissions = await getPermissionsToInsert(resources, PermissionModel, 'sql')
+    const insertPermissions = await getPermissionsToInsert(
+        resources,
+        PermissionModel,
+        'sql'
+    )
 
     if (insertPermissions.length > 0) {
         await PermissionModel.query().insert(insertPermissions)

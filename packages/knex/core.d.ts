@@ -51,7 +51,7 @@ declare module '@tensei/knex' {
             query: FetchAllRequestQuery
         ) => Promise<FetchAllResults>
         abstract findAllByIds: (
-            ids: number[],
+            ids: string[],
             fields?: string[]
         ) => Promise<Model[]>
         abstract findAllBelongingToMany: (

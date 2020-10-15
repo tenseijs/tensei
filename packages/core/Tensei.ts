@@ -32,6 +32,8 @@ import {
     DashboardContract,
     SupportedDatabases,
     EndpointMiddleware,
+    StorageConstructor,
+    SupportedStorageDrivers,
     DatabaseRepositoryInterface
 } from '@tensei/common'
 import MetricController from './controllers/MetricController'
@@ -39,10 +41,9 @@ import FindResourceController from './controllers/resources/FindResourceControll
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { StorageConstructor } from '@tensei/common'
-import { SupportedStorageDrivers } from '@tensei/common'
+import { TenseiContract } from '@tensei/core'
 
-export class Tensei {
+export class Tensei implements TenseiContract {
     public app: Application = Express()
     public extensions: {
         [key: string]: any
@@ -62,7 +63,7 @@ export class Tensei {
             }
         }
     }
-    private storage: StorageManager = new StorageManager(this.storageConfig)
+    public storage: StorageManager = new StorageManager(this.storageConfig)
 
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
@@ -77,7 +78,7 @@ export class Tensei {
         dashboardsMap: {},
         database: 'sqlite',
         pushResource: (resource: ResourceContract) => {
-            this.config.resources.push(resource)
+            this.config.resources = [...this.config.resources, resource]
         },
         adminTable: 'administrators',
         dashboardPath: 'admin',
@@ -85,7 +86,7 @@ export class Tensei {
         middleware: [],
 
         pushMiddleware: (middleware: EndpointMiddleware) => {
-            this.config.middleware.push(middleware)
+            this.config.middleware = [...this.config.middleware, middleware]
         },
 
         showController: this.asyncHandler(FindResourceController.show),
@@ -398,7 +399,7 @@ export class Tensei {
         next()
     }
 
-    public  setAuthMiddleware = async (
+    public setAuthMiddleware = async (
         request: Express.Request,
         response: Express.Response,
         next: Express.NextFunction

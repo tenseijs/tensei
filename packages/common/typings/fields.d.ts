@@ -1,5 +1,9 @@
 declare module '@tensei/common/fields' {
-    import { FieldHookFunction, AuthorizeFunction } from '@tensei/common/config'
+    import {
+        FieldHookFunction,
+        AuthorizeFunction,
+        Config
+    } from '@tensei/common/config'
 
     interface Constructor<M> {
         new (...args: any[]): M
@@ -445,6 +449,10 @@ declare module '@tensei/common/fields' {
         databaseField?: string | undefined
     ) => DateTimeContract
     const belongsTo: (
+        name: string,
+        databaseField?: string | undefined
+    ) => BelongsToContract
+    const belongsToMongo: (
         name: string,
         databaseField?: string | undefined
     ) => BelongsToContract

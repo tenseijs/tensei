@@ -15,6 +15,7 @@ import {
     belongsTo,
     belongsToMany,
     dateTime,
+    belongsToMongo,
     HookFunction,
     DataPayload,
     InBuiltEndpoints,
@@ -165,7 +166,7 @@ class Auth {
         return this
     }
 
-    private userResource() {
+    private userResource(database: Config['database']) {
         let passwordField = text('Password')
 
         let socialFields: FieldContract[] = []
@@ -173,7 +174,7 @@ class Auth {
         if (Object.keys(this.config.providers).length === 0) {
             passwordField = passwordField.notNullable()
         } else {
-            socialFields = [hasMany(this.oauthResource().data.name)]
+            socialFields = [hasMany(this.oauthResource(database).data.name)]
         }
 
         const userResource = resource(this.config.nameResource)
@@ -235,6 +236,7 @@ class Auth {
                 }
 
                 if (this.config.verifyEmails) {
+                    parsedPayload.email_verified_at = null
                     parsedPayload.email_verification_token = this.generateRandomToken()
                 }
 
@@ -265,24 +267,30 @@ class Auth {
         return userResource
     }
 
-    private teamResource() {
+    private teamResource(database: Config['database']) {
         return resource('Team')
             .fields([
                 text('Name').unique(),
-                belongsTo(this.config.nameResource),
+                (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                    this.config.nameResource
+                ),
                 belongsToMany(this.config.nameResource),
                 ...this.config.teamFields
             ])
             .hideFromNavigation()
     }
 
-    private teamInviteResource() {
+    private teamInviteResource(database: Config['database']) {
         return resource('Team Invite').fields([
             text('Email'),
             text('Role'),
             text('Token').unique().rules('required'),
-            belongsTo(this.teamResource().data.name),
-            belongsTo(this.config.nameResource)
+            (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                this.teamResource(database).data.name
+            ),
+            (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                this.config.nameResource
+            )
         ])
     }
 
@@ -311,18 +319,14 @@ class Auth {
         let conditionalFields = []
 
         if (['mysql', 'pg', 'sqlite'].includes(database)) {
-            conditionalFields.push(
-                belongsToMany(this.config.nameResource),
-            )
+            conditionalFields.push(belongsToMany(this.config.nameResource))
             conditionalFields.push(
                 belongsToMany(this.config.permissionResource)
             )
         }
 
         if (database === 'mongodb') {
-            conditionalFields.push(
-                hasMany(this.config.permissionResource)
-            )
+            conditionalFields.push(hasMany(this.config.permissionResource))
         }
 
         return resource(this.config.roleResource)
@@ -355,11 +359,13 @@ class Auth {
             .hideFromApi()
     }
 
-    private oauthResource() {
+    private oauthResource(database: Config['database']) {
         return resource('Oauth Identity')
             .hideFromNavigation()
             .fields([
-                belongsTo(this.config.nameResource),
+                (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                    this.config.nameResource
+                ),
                 textarea('Access Token')
                     .hidden()
                     .hideOnUpdate()
@@ -377,48 +383,50 @@ class Auth {
     public plugin() {
         return (
             plugin('Auth')
-                .beforeDatabaseSetup(({ pushResource, pushMiddleware, database }) => {
-                    pushResource(this.userResource())
-                    pushResource(this.passwordResetsResource())
+                .beforeDatabaseSetup(
+                    ({ pushResource, pushMiddleware, database }) => {
+                        pushResource(this.userResource(database))
+                        pushResource(this.passwordResetsResource())
 
-                    if (this.config.rolesAndPermissions) {
-                        pushResource(this.roleResource(database))
+                        if (this.config.rolesAndPermissions) {
+                            pushResource(this.roleResource(database))
 
-                        pushResource(this.permissionResource(database))
-                    }
+                            pushResource(this.permissionResource(database))
+                        }
 
-                    if (this.config.teams) {
-                        pushResource(this.teamResource())
+                        if (this.config.teams) {
+                            pushResource(this.teamResource(database))
 
-                        pushResource(this.teamInviteResource())
-                    }
+                            pushResource(this.teamInviteResource(database))
+                        }
 
-                    if (Object.keys(this.config.providers).length > 0) {
-                        pushResource(this.oauthResource())
-                    }
+                        if (Object.keys(this.config.providers).length > 0) {
+                            pushResource(this.oauthResource(database))
+                        }
 
-                    ;([
-                        'show',
-                        'index',
-                        'delete',
-                        'create',
-                        'runAction',
-                        'showRelation',
-                        'update'
-                    ] as InBuiltEndpoints[]).forEach(endpoint => {
-                        pushMiddleware({
-                            type: endpoint,
-                            handler: this.setAuthMiddleware
+                        ;([
+                            'show',
+                            'index',
+                            'delete',
+                            'create',
+                            'runAction',
+                            'showRelation',
+                            'update'
+                        ] as InBuiltEndpoints[]).forEach(endpoint => {
+                            pushMiddleware({
+                                type: endpoint,
+                                handler: this.setAuthMiddleware
+                            })
+
+                            pushMiddleware({
+                                type: endpoint,
+                                handler: this.authMiddleware
+                            })
                         })
 
-                        pushMiddleware({
-                            type: endpoint,
-                            handler: this.authMiddleware
-                        })
-                    })
-
-                    return Promise.resolve()
-                })
+                        return Promise.resolve()
+                    }
+                )
 
                 // TODO: If we support more databases, add a setup method for each database.
                 .afterDatabaseSetup(async config => {
@@ -478,7 +486,7 @@ class Auth {
 
                             if (
                                 resource.data.name ===
-                                this.userResource().data.name
+                                this.userResource(database).data.name
                             ) {
                                 resource.canUpdate(({ user }) => {
                                     if (
@@ -640,11 +648,11 @@ class Auth {
     ) => {
         let createUserPayload = body
 
-        const { id } = await manager(this.userResource()).create(
+        const { id } = await manager(this.userResource(config.database)).create(
             createUserPayload
         )
 
-        const user = await manager(this.userResource())
+        const user = await manager(this.userResource(config.database))
             .database()
             .findOneById(
                 id,
@@ -673,11 +681,11 @@ class Auth {
     }
 
     private confirmEmail = async (
-        { manager, body, user }: Request,
+        { manager, body, user, config }: Request,
         response: Response
     ) => {
         if (user?.email_verification_token === body.email_verification_token) {
-            await manager(this.userResource())
+            await manager(this.userResource(config.database))
                 .database()
                 .updateOneByField('id', user?.id, {
                     email_verification_token: null,
@@ -695,7 +703,7 @@ class Auth {
     }
 
     private socialAuth = async (request: Request, response: Response) => {
-        const { params, body, manager } = request
+        const { params, body, manager, config } = request
 
         const { action } = params
 
@@ -750,7 +758,9 @@ class Auth {
             throw [
                 {
                     field: 'email',
-                    message: `A ${this.userResource().data.name.toLowerCase()} already exists with email ${
+                    message: `A ${this.userResource(
+                        config.database
+                    ).data.name.toLowerCase()} already exists with email ${
                         oauthIdentity.email
                     }.`
                 }
@@ -778,9 +788,9 @@ class Auth {
                 .create(createPayload)
         }
 
-        const belongsToField = this.oauthResource().data.fields.find(
-            field => field.name === this.config.nameResource
-        )!
+        const belongsToField = this.oauthResource(
+            config.database
+        ).data.fields.find(field => field.name === this.config.nameResource)!
 
         await manager('Oauth Identity')
             .database()
@@ -807,7 +817,7 @@ class Auth {
         const { email, password, token } = await this.validate(request.body)
 
         const userWithPassword = await manager(
-            this.userResource()
+            this.userResource(config.database)
         ).findOneByField('email', email)
 
         if (!userWithPassword) {
@@ -825,7 +835,7 @@ class Auth {
         }
 
         const user = await request
-            .manager(this.userResource())
+            .manager(this.userResource(config.database))
             .database()
             .findOneById(
                 userWithPassword.id,
@@ -915,15 +925,18 @@ class Auth {
                 id: number
             }
 
-            const model = await manager(this.userResource())
+            const model = await manager(this.userResource(config.database))
                 .database()
                 .findOneById(
                     id,
                     [],
                     this.config.rolesAndPermissions
                         ? [
-                              `${this.roleResource(config.database).data.slug}.${
-                                  this.permissionResource(config.database).data.slug
+                              `${
+                                  this.roleResource(config.database).data.slug
+                              }.${
+                                  this.permissionResource(config.database).data
+                                      .slug
                               }`
                           ]
                         : [],
@@ -936,11 +949,16 @@ class Auth {
             }
 
             if (this.config.rolesAndPermissions) {
-                user.permissions = user[this.roleResource(config.database).data.slug].reduce(
+                user.permissions = user[
+                    this.roleResource(config.database).data.slug
+                ].reduce(
                     (acc: [], role: any) => [
                         ...acc,
                         ...(
-                            role[this.permissionResource(config.database).data.slug] || []
+                            role[
+                                this.permissionResource(config.database).data
+                                    .slug
+                            ] || []
                         ).map((permission: any) => permission.slug)
                     ],
                     []
@@ -979,14 +997,16 @@ class Auth {
             })
         }
 
-        await request.manager(this.userResource()).update(
-            request.user!.id,
-            {
-                two_factor_secret: null,
-                two_factor_enabled: false
-            },
-            true
-        )
+        await request
+            .manager(this.userResource(request.config.database))
+            .update(
+                request.user!.id,
+                {
+                    two_factor_secret: null,
+                    two_factor_enabled: false
+                },
+                true
+            )
 
         return response.json({
             message: `Two factor auth has been disabled.`
@@ -1021,13 +1041,15 @@ class Auth {
             })
         }
 
-        await request.manager(this.userResource()).update(
-            request.user!.id,
-            {
-                two_factor_enabled: true
-            },
-            true
-        )
+        await request
+            .manager(this.userResource(request.config.database))
+            .update(
+                request.user!.id,
+                {
+                    two_factor_enabled: true
+                },
+                true
+            )
 
         return response.json({
             message: `Two factor authentication has been enabled.`
@@ -1043,14 +1065,16 @@ class Auth {
 
         const { base32, otpauth_url } = Speakeasy.generateSecret()
 
-        await request.manager(this.userResource()).update(
-            request.user!.id,
-            {
-                two_factor_secret: base32,
-                two_factor_enabled: false
-            },
-            true
-        )
+        await request
+            .manager(this.userResource(request.config.database))
+            .update(
+                request.user!.id,
+                {
+                    two_factor_secret: base32,
+                    two_factor_enabled: false
+                },
+                true
+            )
 
         Qr.toDataURL(otpauth_url, (error: null | Error, dataURL: string) => {
             if (error) {
@@ -1067,15 +1091,14 @@ class Auth {
     }
 
     protected forgotPassword = async (request: Request, response: Response) => {
-        const { body, mailer, manager } = request
+        const { body, mailer, manager, config } = request
         const { email } = await validateAll(body, {
             email: 'required|email'
         })
 
-        const existingUser = await manager(this.userResource()).findOneByField(
-            'email',
-            email
-        )
+        const existingUser = await manager(
+            this.userResource(config.database)
+        ).findOneByField('email', email)
         const existingPasswordReset = await manager(
             this.passwordResetsResource()
         ).findOneByField('email', email)
@@ -1120,7 +1143,7 @@ class Auth {
     }
 
     protected resetPassword = async (request: Request, response: Response) => {
-        const { body, manager } = request
+        const { body, manager, config } = request
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
@@ -1149,10 +1172,9 @@ class Auth {
             ])
         }
 
-        let user = await manager(this.userResource()).findOneByField(
-            'email',
-            existingPasswordReset.email
-        )
+        let user = await manager(
+            this.userResource(config.database)
+        ).findOneByField('email', existingPasswordReset.email)
 
         if (!user) {
             await manager(this.passwordResetsResource())
@@ -1165,7 +1187,7 @@ class Auth {
         }
 
         // TODO: Rename update to updateOneByField
-        await manager(this.userResource()).update(
+        await manager(this.userResource(config.database)).update(
             user.id,
             {
                 password
