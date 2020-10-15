@@ -7,7 +7,6 @@ import {
     timestamp,
     belongsTo,
     Config,
-    belongsToMongo
 } from '@tensei/common'
 
 interface CashierConfig {
@@ -42,7 +41,7 @@ class Cashier {
                 integer('Quantity').default('0'),
                 timestamp('Trial Ends At'),
                 timestamp('Ends At'),
-                (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                belongsTo(
                     this.config.customerResourceName
                 )
             ])
