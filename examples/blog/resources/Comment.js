@@ -2,7 +2,6 @@ const {
     text,
     textarea,
     resource,
-    // belongsToMongo: belongsTo,
     belongsTo,
 } = require('@tensei/core')
 

@@ -122,10 +122,22 @@ export class Tensei implements TenseiContract {
         }
     }
 
+    public setConfigOnResourceFields() {
+        this.config.resources.forEach(resource => {
+            resource.data.fields.forEach(field => {
+                field.tenseiConfig = this.config
+
+                field.afterConfigSet()
+            })
+        })
+    }
+
     public async register() {
         if (this.registeredApplication) {
             return this
         }
+
+        this.setConfigOnResourceFields()
 
         await this.callPluginHook('beforeDatabaseSetup')
         await this.registerDatabase()
@@ -409,7 +421,7 @@ export class Tensei implements TenseiContract {
         }
 
         let admin = await request
-            .manager(this.administratorResource())
+            .manager('Administrator')
             .database()
             .getAdministratorById(request.session?.user!)
 
@@ -694,8 +706,6 @@ export class Tensei implements TenseiContract {
 
         uniqueResources.forEach(resource => {
             resourcesMap[resource.data.slug] = resource
-            // resourcesMap[resource.data.name] = resource
-            // resourcesMap[resource.data.pascalCaseName] = resource
         })
 
         this.config.resourcesMap = resourcesMap
@@ -721,32 +731,6 @@ export class Tensei implements TenseiContract {
         })
 
         return this
-    }
-
-    private administratorResource() {
-        const Bcrypt = require('bcryptjs')
-
-        return resource('Administrator')
-            .hideFromNavigation()
-            .fields([
-                text('Name'),
-                text('Email')
-                    .unique()
-                    .searchable()
-                    .rules('required', 'email'),
-                text('Password')
-                    .hidden()
-                    .rules('required', 'min:8'),
-                belongsToMany('Administrator Role')
-            ])
-            .beforeCreate(payload => ({
-                ...payload,
-                password: Bcrypt.hashSync(payload.password)
-            }))
-            .beforeUpdate(payload => ({
-                ...payload,
-                password: Bcrypt.hashSync(payload.password)
-            }))
     }
 
     public plugins(plugins: PluginContract[]) {

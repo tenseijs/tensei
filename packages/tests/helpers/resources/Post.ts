@@ -7,8 +7,8 @@ import {
     select,
     resource,
     textarea,
+    belongsTo,
     belongsToMany,
-    belongsToMongo as belongsTo
 } from '@tensei/common'
 
 export default resource('Post')

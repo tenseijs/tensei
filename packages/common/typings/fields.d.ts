@@ -76,6 +76,7 @@ declare module '@tensei/common/fields' {
              */
             showOnCreation: boolean
         }
+        tenseiConfig: Config|null
         authorizeCallbacks: {
             authorizedToSee: AuthorizeFunction
             authorizedToCreate: AuthorizeFunction
@@ -89,6 +90,7 @@ declare module '@tensei/common/fields' {
             afterUpdate: FieldHookFunction
         }
         databaseFieldType: string
+        afterConfigSet(): void
         beforeCreate(hook: FieldHookFunction): this
         beforeUpdate(hook: FieldHookFunction): this
         afterCreate(hook: FieldHookFunction): this
@@ -452,10 +454,6 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => BelongsToContract
-    const belongsToMongo: (
-        name: string,
-        databaseField?: string | undefined
-    ) => BelongsToContract
     const json: (
         name: string,
         databaseField?: string | undefined
@@ -501,6 +499,7 @@ declare module '@tensei/common/fields' {
              */
             showOnCreation: boolean
         }
+        tenseiConfig: Config|null
         authorizeCallbacks: {
             authorizedToSee: AuthorizeFunction
             authorizedToCreate: AuthorizeFunction

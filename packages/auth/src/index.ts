@@ -15,7 +15,6 @@ import {
     belongsTo,
     belongsToMany,
     dateTime,
-    belongsToMongo,
     HookFunction,
     DataPayload,
     InBuiltEndpoints,
@@ -271,7 +270,7 @@ class Auth {
         return resource('Team')
             .fields([
                 text('Name').unique(),
-                (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                belongsTo(
                     this.config.nameResource
                 ),
                 belongsToMany(this.config.nameResource),
@@ -285,10 +284,10 @@ class Auth {
             text('Email'),
             text('Role'),
             text('Token').unique().rules('required'),
-            (database === 'mongodb' ? belongsToMongo : belongsTo)(
+            belongsTo(
                 this.teamResource(database).data.name
             ),
-            (database === 'mongodb' ? belongsToMongo : belongsTo)(
+            belongsTo(
                 this.config.nameResource
             )
         ])
@@ -363,7 +362,7 @@ class Auth {
         return resource('Oauth Identity')
             .hideFromNavigation()
             .fields([
-                (database === 'mongodb' ? belongsToMongo : belongsTo)(
+                belongsTo(
                     this.config.nameResource
                 ),
                 textarea('Access Token')

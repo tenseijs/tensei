@@ -44,7 +44,7 @@ export class Field implements FieldContract {
          */
         showOnCreation: true
     }
-
+    public tenseiConfig: Config|null = null
     public authorizeCallbacks: {
         authorizedToSee: AuthorizeFunction
         authorizedToCreate: AuthorizeFunction
@@ -79,6 +79,8 @@ export class Field implements FieldContract {
             return payload
         }
     }
+
+    public afterConfigSet() {}
 
     public beforeCreate(hook: FieldHookFunction) {
         this.hooks = {

@@ -1,8 +1,8 @@
 import {
     text,
-    belongsToMongo as belongsTo,
     resource,
-    textarea
+    textarea,
+    belongsTo,
 } from '@tensei/common'
 
 export default resource('Comment').fields([

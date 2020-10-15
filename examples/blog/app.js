@@ -14,7 +14,7 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
-    .database('mysql')
+    .database('mongodb')
     .serverUrl('http://localhost:5000')
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
@@ -115,17 +115,17 @@ module.exports = tensei()
             }
         ),
     ])
-    // .databaseConfig('mongodb://localhost/tensei-y', {
-    //     useUnifiedTopology: true,
-    //     useNewUrlParser: true,
-    // })
-    .databaseConfig({
-        client: 'mysql',
-        connection: {
-            host: '127.0.0.1',
-            user: 'root',
-            pass: '',
-            database: 'flmg',
-        },
-        debug: true,
+    .databaseConfig('mongodb://localhost/tensei-y', {
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
     })
+    // .databaseConfig({
+    //     client: 'mysql',
+    //     connection: {
+    //         host: '127.0.0.1',
+    //         user: 'root',
+    //         pass: '',
+    //         database: 'flmg',
+    //     },
+    //     debug: true,
+    // })

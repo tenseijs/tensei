@@ -1,6 +1,6 @@
 import Integer from './Integer'
-import { snakeCase } from 'change-case'
 import { FieldContract } from '@tensei/common'
+import { snakeCase, camelCase } from 'change-case'
 
 export class BelongsTo extends Integer {
     /**
@@ -26,6 +26,12 @@ export class BelongsTo extends Integer {
         this.unsigned()
 
         this.hideOnIndex()
+    }
+
+    public afterConfigSet() {
+        if (this.tenseiConfig?.database === 'mongodb') {
+            this.databaseField = camelCase(this.name)
+        }
     }
 
     /**
