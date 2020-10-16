@@ -11,5 +11,6 @@
         "forceConsistentCasingInFileNames": true,
         "types": ["@types/jest"]
     },
+    "include": ["core.d.ts", "index.ts"],
     "exclude": ["__tests__", "build", "Tensei.ts"]
 }

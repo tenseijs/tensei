@@ -1,8 +1,11 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
+import Mongoose from 'mongoose'
 import { auth } from '@tensei/auth'
+import { graphql } from '@tensei/graphql'
 import { tensei, TenseiContract } from '@tensei/core'
+import { build, fake, sequence } from '@jackfranklin/test-data-bot'
 import {
     plugin,
     Plugin,
@@ -17,12 +20,16 @@ interface ConfigureSetup {
     admin?: IUser
     apiPath?: string
     authApiPath?: string
-    databaseClient?: 'mysql' | 'sqlite3' | 'pg' | 'mongodb'
+    databaseClient?: 'mysql' | 'sqlite3' | 'pg' | 'mongodb' | 'sqlite'
     dashboardPath?: string
     createAndLoginAdmin?: boolean
 }
 
-export let cachedInstance: TenseiContract | null = null
+// export let cachedInstance: TenseiContract | null = null
+
+export let cachedInstances: {
+    [key: string]: TenseiContract | null
+} = {}
 
 export const fakePostData = () => ({
     title: Faker.lorem.word(),
@@ -63,11 +70,13 @@ export const setup = async (
         }
     ]
 
-    if (databaseClient === 'sqlite3') {
+    if (databaseClient === 'sqlite3' || databaseClient === 'sqlite') {
         dbConfig = [
             {
                 client: 'sqlite3',
-                connection: './tensei.sqlite',
+                connection: {
+                    filename: './tensei.sqlite'
+                },
                 useNullAsDefault: true
             }
         ]
@@ -81,7 +90,7 @@ export const setup = async (
                     host: process.env.DATABASE_HOST || '127.0.0.1',
                     user: process.env.DATABASE_USER || 'root',
                     password: process.env.DATABASE_PASSWORD || '',
-                    database: process.env.DATABASE_DB || 'tensei'
+                    database: process.env.DATABASE_DB || 'tenseitestdb'
                 },
                 useNullAsDefault: true
             }
@@ -102,22 +111,24 @@ export const setup = async (
         {
             pg: 'pg',
             mysql: 'mysql',
-            sqlite3: 'sqlite'
-        }[databaseClient] || 'mysql'
+            sqlite3: 'sqlite',
+            mongodb: 'mongodb',
+            sqlite: 'sqlite'
+        }[databaseClient!] || 'mysql'
 
-    let instance = forceNewInstance
+    let instance = (forceNewInstance
         ? tensei()
               .database(derivedDatabaseFromClient as SupportedDatabases)
               // @ts-ignore
               .databaseConfig(...dbConfig)
-        : cachedInstance
-        ? cachedInstance
+        : cachedInstances[databaseClient!]
+        ? cachedInstances[databaseClient!]
         : tensei()
               .database(derivedDatabaseFromClient as SupportedDatabases)
               // @ts-ignore
-              .databaseConfig(...dbConfig)
+              .databaseConfig(...dbConfig))!
 
-    cachedInstance = instance
+    cachedInstances[databaseClient!] = instance
 
     instance.plugins([
         ...(plugins || []),
@@ -139,7 +150,8 @@ export const setup = async (
             .verifyEmails()
             .apiPath(authApiPath || 'auth')
             .twoFactorAuth()
-            .plugin()
+            .plugin(),
+        graphql().plugin()
     ])
 
     if (apiPath) {
@@ -154,27 +166,46 @@ export const setup = async (
         .resources([Post, Tag, User, Comment, Reaction])
         .register()
 
-    const knex: Knex = instance.getDatabaseClient()
-    ;(await knex.schema.hasTable('sessions'))
-        ? await knex('sessions').truncate()
-        : null
+    if ((['mysql', 'sqlite3', 'pg', 'sqlite'] as any).includes(databaseClient)) {
+        const knex: Knex = instance.getDatabaseClient()
+        ;(await knex.schema.hasTable('sessions'))
+            ? await knex('sessions').truncate()
+            : null
 
-    await Promise.all([
-        knex('users').truncate(),
-        knex('posts').truncate(),
-        knex('customers').truncate(),
-        knex('administrators').truncate()
-    ])
+        await Promise.all([
+            knex('users').truncate(),
+            knex('tags').truncate(),
+            knex('posts').truncate(),
+            knex('comments').truncate(),
+            knex('customers').truncate(),
+            knex('posts_tags').truncate(),
+            knex('administrators').truncate(),
+            knex('password_resets').truncate(),
+            knex('administrator_roles').truncate(),
+            knex('administrator_permissions').truncate(),
+            knex('administrator_password_resets').truncate(),
+        ])
+    }
+
+    if (databaseClient === 'mongodb') {
+        const connection: Mongoose.Connection = instance.getDatabaseClient()
+
+        await connection.dropDatabase()
+    }
 
     return instance
 }
 
-export const cleanup = async (
-    databaseClient: any = cachedInstance.getDatabaseClient()
-) => {
-    await (databaseClient.destroy
-        ? databaseClient.destroy()
-        : databaseClient.close())
+export const cleanup = async () => {
+    await Promise.all(
+        Object.keys(cachedInstances).map(dbType => {
+            const databaseClient = cachedInstances[dbType]?.getDatabaseClient()
+
+            return databaseClient.destroy
+                ? databaseClient.destroy()
+                : databaseClient.close()
+        })
+    )
 }
 
 export const createAuthUser = async (knex: Knex, extraArguments = {}) => {
@@ -205,3 +236,71 @@ export const createAdminUser = async (
         ...user
     }
 }
+
+export const userBuilder = (args?: any) =>
+    build('User', {
+        fields: {
+            full_name: fake(f => f.name.findName()),
+            email: fake(f => f.internet.exampleEmail()),
+            password: Bcrypt.hashSync('password')
+            // created_at: fake((f) => f.date.recent(f.random.number())),
+        }
+    })(args)
+
+export const administratorBuilder = (args?: any) =>
+    build('User', {
+        fields: {
+            name: fake(f => f.name.findName()),
+            email: fake(
+                f => f.random.number() + '_' + f.internet.exampleEmail()
+            ),
+            password: Bcrypt.hashSync('password')
+            // created_at: fake((f) => f.date.recent(f.random.number())),
+        }
+    })(args)
+
+export const postBuilder = (args?: any) =>
+    build('Post', {
+        fields: {
+            user_id: sequence(),
+            title: fake(f => f.lorem.sentence()),
+            approved: fake(f => f.random.boolean()),
+            description: fake(f => f.lorem.sentence()),
+            content: fake(f => f.lorem.sentence(10)),
+            av_cpc: fake(f => f.random.number()),
+            category: fake(f =>
+                f.random.arrayElement(['angular', 'javascript', 'mysql', 'pg'])
+            ),
+            published_at: fake(f => f.date.past()),
+            scheduled_for: fake(f => f.date.future())
+            // created_at: fake((f) => f.date.recent(f.random.number())),
+        }
+    })(args)
+
+export const tagsBuilder = (args?: any) =>
+    build('Tag', {
+        fields: {
+            name: fake(f => f.lorem.sentence()),
+            description: fake(f => f.lorem.sentence(10))
+            // created_at: fake((f) => f.date.recent(f.random.number())),
+        }
+    })(args)
+
+export const commentBuilder = (args?: any) =>
+    build('Comment', {
+        fields: {
+            post_id: sequence(),
+            title: fake(f => f.lorem.sentence()),
+            body: fake(f => f.lorem.paragraph(2))
+            // created_at: fake((f) => f.date.recent(f.random.number())),
+        }
+    })(args)
+
+export const postsTagsBuilder = (args?: any) =>
+    build('PostTag', {
+        fields: {
+            post_id: sequence(),
+            tag_id: sequence()
+            // created_at: fake((f) => f.date.recent(f.random.number())),
+        }
+    })(args)

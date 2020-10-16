@@ -6,7 +6,7 @@ import {
     integer,
     timestamp,
     belongsTo,
-    Config,
+    Config
 } from '@tensei/common'
 
 interface CashierConfig {
@@ -41,9 +41,7 @@ class Cashier {
                 integer('Quantity').default('0'),
                 timestamp('Trial Ends At'),
                 timestamp('Ends At'),
-                belongsTo(
-                    this.config.customerResourceName
-                )
+                belongsTo(this.config.customerResourceName)
             ])
     }
 

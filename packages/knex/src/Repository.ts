@@ -1029,12 +1029,10 @@ export class SqlRepository extends ResourceHelpers
         const count = countResult[0]['count(*)'] || countResult[0]['count']
 
         return {
+            data,
             page: query.page,
             perPage: query.perPage,
             total: count as number,
-            data: data.relations[
-                relatedResource.data.slug
-            ].models.map((model: any) => model.toJSON()),
             pageCount: Math.ceil((count as number) / (query.perPage || 10))
         }
     }
@@ -1161,9 +1159,7 @@ export class SqlRepository extends ResourceHelpers
 
         const data = await dataResolver()
 
-        return data.relations[
-            relatedResource.data.slug
-        ].models.map((model: any) => model.toJSON())
+        return data
     }
 
     public findAllBelongingToManyCount = async (
@@ -1190,7 +1186,6 @@ export class SqlRepository extends ResourceHelpers
         const resource = this.getCurrentResource()
 
         const query = this.getDefaultQuery(baseQuery)
-        const Model = this.getResourceBookshelfModel(resource)
 
         const getBuilder = (builder: any) => {
             if (query.search) {
@@ -1236,31 +1231,20 @@ export class SqlRepository extends ResourceHelpers
                             `${tableName}.${relatedResourceColumnName}`,
                             `${relatedResource.data.table}.id`
                         )
-                ).andWhere(`${tableName}.${resourceColumnName}`, resourceId),
-            async () =>
-                Model.forge({
-                    id: resourceId
-                }).fetch({
-                    withRelated: [
-                        {
-                            [relatedResource.data.slug]: function(
-                                builder: any
-                            ) {
-                                return getBuilder(builder)
-                                    .select(
-                                        Array.isArray(query.fields)
-                                            ? query.fields.map(
-                                                  field =>
-                                                      `${relatedResource.data.table}.${field}`
-                                              )
-                                            : '*'
-                                    )
-                                    .limit(query.perPage)
-                                    .offset((query.page - 1) * query.perPage)
-                            }
-                        }
-                    ]
-                })
+                        .where(`${tableName}.${resourceColumnName}`, resourceId)
+                ),
+            () =>
+                getBuilder(
+                    this.$db!(relatedResource.data.table)
+                        .innerJoin(
+                            tableName,
+                            `${tableName}.${relatedResourceColumnName}`,
+                            `${relatedResource.data.table}.id`
+                        )
+                        .where(`${tableName}.${resourceColumnName}`, resourceId)
+                )
+                    .limit(query.perPage)
+                    .offset((query.page - 1) * query.perPage)
         ]
     }
 
@@ -1356,7 +1340,7 @@ export class SqlRepository extends ResourceHelpers
 
         const count = await countResolver()
 
-        return count[0]['count(*)'] || count[0]['count']
+        return count[0]['count(*)'] || count[0]['count'] || 0
     }
 
     public findAll = async (baseQuery: FetchAllRequestQuery) => {

@@ -1,7 +1,7 @@
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, fakePostData, cleanup } from '../../helpers'
+import { setup, fakePostData, cleanup, postBuilder } from '../../helpers'
 ;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - can create a resource with correct values (posts)`, async () => {
         const { app, manager } = await setup({
@@ -18,8 +18,8 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         })
 
         const post = {
-            ...fakePostData(),
-            user_id: user.id
+            ...postBuilder(),
+            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
         }
 
         const client = Supertest(app)

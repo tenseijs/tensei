@@ -11,5 +11,5 @@
         "forceConsistentCasingInFileNames": true,
         "types": ["@types/jest"]
     },
-    "include": ["types.d.ts"]
+    "include": ["types.d.ts", "src/"]
 }

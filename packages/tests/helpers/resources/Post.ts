@@ -5,6 +5,7 @@ import {
     date,
     action,
     select,
+    boolean,
     resource,
     textarea,
     belongsTo,
@@ -100,6 +101,8 @@ export default resource('Post')
             .notNullable()
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a'),
+
+        boolean('Approved'),
         dateTime('Scheduled For')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a'),
