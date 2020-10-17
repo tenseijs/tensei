@@ -1,13 +1,34 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`runs an action with fields that returns a push 1`] = `
+exports[`runs an action with fields that returns a push (mongodb) 1`] = `
 Object {
   "route": "/resources/posts/12",
   "type": "push",
 }
 `;
 
-exports[`runs an action with fields that returns an array of validation errors 1`] = `
+exports[`runs an action with fields that returns a push (mysql) 1`] = `
+Object {
+  "route": "/resources/posts/12",
+  "type": "push",
+}
+`;
+
+exports[`runs an action with fields that returns a push (pg) 1`] = `
+Object {
+  "route": "/resources/posts/12",
+  "type": "push",
+}
+`;
+
+exports[`runs an action with fields that returns a push (sqlite) 1`] = `
+Object {
+  "route": "/resources/posts/12",
+  "type": "push",
+}
+`;
+
+exports[`runs an action with fields that returns an array of validation errors (mongodb) 1`] = `
 Object {
   "errors": Array [
     Object {
@@ -19,7 +40,112 @@ Object {
 }
 `;
 
-exports[`validates an action with input fields 1`] = `
+exports[`runs an action with fields that returns an array of validation errors (mysql) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "custom-field-name",
+      "message": "Custom validation message",
+    },
+  ],
+  "type": "validation-errors",
+}
+`;
+
+exports[`runs an action with fields that returns an array of validation errors (pg) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "custom-field-name",
+      "message": "Custom validation message",
+    },
+  ],
+  "type": "validation-errors",
+}
+`;
+
+exports[`runs an action with fields that returns an array of validation errors (sqlite) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "custom-field-name",
+      "message": "Custom validation message",
+    },
+  ],
+  "type": "validation-errors",
+}
+`;
+
+exports[`validates an action with input fields (mongodb) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "published_at",
+      "message": "The published_at is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "reason",
+      "message": "The reason is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "content",
+      "message": "The content is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`validates an action with input fields (mysql) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "published_at",
+      "message": "The published_at is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "reason",
+      "message": "The reason is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "content",
+      "message": "The content is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`validates an action with input fields (pg) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "published_at",
+      "message": "The published_at is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "reason",
+      "message": "The reason is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "content",
+      "message": "The content is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`validates an action with input fields (sqlite) 1`] = `
 Object {
   "errors": Array [
     Object {

@@ -1,4 +1,5 @@
 import Knex from 'knex'
+import Path from 'path'
 import Faker from 'faker'
 import Bcrypt from 'bcryptjs'
 import Mongoose from 'mongoose'
@@ -75,7 +76,7 @@ export const setup = async (
             {
                 client: 'sqlite3',
                 connection: {
-                    filename: './tensei.sqlite'
+                    filename: Path.resolve('./tensei.sqlite')
                 },
                 useNullAsDefault: true
             }
@@ -212,6 +213,41 @@ export const createAuthUser = async (knex: Knex, extraArguments = {}) => {
     return createAdminUser(knex, 'customers', extraArguments)
 }
 
+export const getAllRecordsMongoDB = async (connection: Mongoose.Connection, collection: string) => {
+    return (connection.db.collection(collection).find()).toArray()
+}
+
+export const getAllRecordsKnex = async (knex: Knex, table: string) => {
+    return knex(table).select('*')
+}
+
+export const createAdminUserMongoDB = async (
+    connection: Mongoose.Connection,
+    collection = 'administrators',
+    extraArguments = {}
+) => {
+    const user = {
+        name: Faker.name.findName(),
+        email: Faker.internet.email(),
+        password: 'password',
+        ...extraArguments
+    }
+
+    await connection.db.collection(collection).insertOne({
+        ...user,
+        password: Bcrypt.hashSync(user.password)
+    })
+
+    const dbUser = await connection.db.collection(collection).findOne({
+        email: user.email
+    })
+
+    return {
+        ...user,
+        id: dbUser._id
+    }
+}
+
 export const createAdminUser = async (
     knex: Knex,
     table = 'administrators',
@@ -232,7 +268,7 @@ export const createAdminUser = async (
     })
 
     return {
-        id: id[0],
+        ... (await knex(table).where('email', user.email).limit(1))[0],
         ...user
     }
 }
@@ -262,8 +298,7 @@ export const administratorBuilder = (args?: any) =>
 export const postBuilder = (args?: any) =>
     build('Post', {
         fields: {
-            user_id: sequence(),
-            title: fake(f => f.lorem.sentence()),
+            title: fake(f => f.lorem.sentence(4)),
             approved: fake(f => f.random.boolean()),
             description: fake(f => f.lorem.sentence()),
             content: fake(f => f.lorem.sentence(10)),

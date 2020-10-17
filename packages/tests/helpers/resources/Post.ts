@@ -65,7 +65,7 @@ export default resource('Post')
             .sortable()
             .searchable()
             .unique()
-            .rules('required', 'max:24'),
+            .rules('required', 'max:64'),
         text('Description').rules('required'),
         textarea('Content')
             .rules('required', 'max:2000', 'min:12')

@@ -1,7 +1,8 @@
 import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
+import Mongoose from 'mongoose'
 
-import { setup, fakePostData, cleanup } from '../../helpers'
+import { setup, cleanup, postBuilder } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -26,9 +27,9 @@ beforeEach(() => {
         const [post1, _] = await Promise.all(
             Array.from({ length: 2 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
                 })
             )
         )
@@ -68,22 +69,24 @@ beforeEach(() => {
         await Promise.all(
             Array.from({ length: 2 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
                 })
             )
         )
 
         const client = Supertest(app)
 
+        const id = databaseClient === 'mongodb' ? Mongoose.Types.ObjectId() : '1234'
+
         const response = await client
-            .delete(`/admin/api/resources/posts/21`)
+            .delete(`/admin/api/resources/posts/${id}`)
             .send(userDetails)
 
         expect(response.status).toBe(404)
         expect(response.body).toEqual({
-            message: 'Post resource with id 21 was not found.'
+            message: `Post resource with id ${id} was not found.`
         })
     })
 })

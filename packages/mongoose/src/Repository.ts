@@ -926,7 +926,7 @@ export class Repository extends ResourceHelpers
         if (!resourceInstance)
             throw {
                 status: 404,
-                message: `Cannot find a ${resource.data.name} with _id of ${resourceId}`
+                message: `${resource.data.name} resource with id ${resourceId} was not found.`
             }
 
         const getQuery = () => {
@@ -1075,7 +1075,7 @@ export class Repository extends ResourceHelpers
         if (!modelToDelete) {
             throw {
                 status: 404,
-                message: `Cannot find a ${resource.data.name} with _id ${id}.`
+                message: `${resource.data.name} resource with id ${id} was not found.`
             }
         }
 

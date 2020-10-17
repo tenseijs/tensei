@@ -2,7 +2,8 @@ import Knex from 'knex'
 import Supertest from 'supertest'
 import isAfter from 'date-fns/isAfter'
 
-import { setup, createAdminUser, cleanup } from '../../helpers'
+import { setup, createAdminUser, cleanup, createAdminUserMongoDB, getAllRecordsKnex, getAllRecordsMongoDB } from '../../helpers'
+
 ;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - validates login data and returns error messages with a 422`, async () => {
         const { app } = await setup({
@@ -18,7 +19,9 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 422 if user does not exist in database`, async () => {
-        const { app } = await setup()
+        const { app } = await setup({
+            databaseClient
+        })
 
         const client = Supertest(app)
 
@@ -33,11 +36,13 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 422 if user password is wrong`, async () => {
-        const { app, getDatabaseClient } = await setup()
+        const { app, getDatabaseClient } = await setup({
+            databaseClient
+        })
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(getDatabaseClient())
+        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(getDatabaseClient()) : await createAdminUser(getDatabaseClient())
 
         const response = await client.post('/admin/api/login').send({
             email: user.email,
@@ -50,15 +55,21 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, getDatabaseClient } = await setup()
+        const { app, getDatabaseClient } = await setup({
+            databaseClient
+        })
 
-        const knex: Knex = getDatabaseClient()
+        const dbClient = getDatabaseClient()
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(knex)
+        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(dbClient) :  await createAdminUser(dbClient)
 
-        expect(await knex('sessions').select('*')).toHaveLength(0)
+        if (databaseClient === 'mongodb') {
+            expect(await getAllRecordsMongoDB(dbClient, 'sessions')).toHaveLength(0)
+        } else {
+            expect(await getAllRecordsKnex(dbClient, 'sessions')).toHaveLength(0)
+        }
 
         const response = await client.post('/admin/api/login').send({
             email: user.email,
@@ -70,23 +81,43 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
 
         expect(response.body).toMatchSnapshot()
 
-        const sessions = await knex('sessions').select('*')
+        let sessions: any[] = []
 
-        expect(sessions).toHaveLength(1)
+        if (databaseClient === 'mongodb') {
+            sessions = await getAllRecordsMongoDB(dbClient, 'sessions')
+        } else {
+            sessions = await getAllRecordsKnex(dbClient, 'sessions')
+        }
 
-        const session = JSON.parse(sessions[0].sess)
+        if (databaseClient === 'mongodb') {
+            expect(
+                (JSON.parse(sessions[0].session)).user
+            ).toBe(user.id.toString())
+        }
 
-        expect(session.user).toBe(user.id)
+        else if (databaseClient === 'pg') {
+            expect(
+                sessions[0].sess.user
+            ).toBe(user.id)
+        }
+
+        else {
+            expect(
+                (JSON.parse(sessions[0].sess)).user
+            ).toBe(user.id)
+        }
     })
 
     test(`${databaseClient} - can login correctly with remember me`, async () => {
-        const { app, getDatabaseClient } = await setup()
+        const { app, getDatabaseClient } = await setup({
+            databaseClient
+        })
 
-        const knex: Knex = getDatabaseClient()
+        const dbClient: any = getDatabaseClient()
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(knex)
+        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(dbClient) :  await createAdminUser(dbClient)
 
         const response = await client.post('/admin/api/login').send({
             email: user.email,
@@ -99,13 +130,31 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
 
         expect(response.body).toMatchSnapshot()
 
-        const sessions = await knex('sessions').select('*')
+        let sessions: any[] = []
 
-        const session = JSON.parse(sessions[0].sess)
+        if (databaseClient === 'mongodb') {
+            sessions = await getAllRecordsMongoDB(dbClient, 'sessions')
+        } else {
+            sessions = await getAllRecordsKnex(dbClient, 'sessions')
+        }
 
-        expect(
-            isAfter(new Date(session.cookie.expires), new Date())
-        ).toBeTruthy()
+        if (databaseClient === 'mongodb') {
+            expect(
+                isAfter(new Date(JSON.parse(sessions[0].session).cookie.expires), new Date())
+            ).toBeTruthy()
+        }
+        
+        else if (databaseClient === 'pg') {
+            expect(
+                isAfter(new Date(sessions[0].sess.cookie.expires), new Date())
+            ).toBeTruthy()
+        }
+
+        else {
+            expect(
+                isAfter(new Date(JSON.parse(sessions[0].sess).cookie.expires), new Date())
+            ).toBeTruthy()
+        }
     })
 })
 

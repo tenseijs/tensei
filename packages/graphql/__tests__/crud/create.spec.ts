@@ -173,7 +173,6 @@ import { TenseiContract } from '@tensei/core'
     })
 
     test(`${databaseClient} - can creates a record in the database with belongs to many relationship`, async () => {
-        if (databaseClient !== 'sqlite') return true
         const { app, manager } = (await setup({
             databaseClient
         })) as TenseiContract

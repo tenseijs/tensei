@@ -21,7 +21,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: ''
-          POSTGRES_DB: 'tensei'
+          POSTGRES_DB: 'tenseitestdb'
         ports:
           - 5432:5432
       mongodb:
@@ -47,3 +47,5 @@ jobs:
         run: yarn build
       - name: Run package tests
         run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
+      - name: Run graphql tests
+        run: cd /home/runner/work/tensei/tensei/packages/graphql && yarn test

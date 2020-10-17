@@ -2,7 +2,7 @@ import Faker from 'faker'
 import Supertest from 'supertest'
 
 import { Post } from '../../helpers/resources'
-import { setup, fakePostData, cleanup } from '../../helpers'
+import { setup, fakePostData, cleanup, postBuilder } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -23,8 +23,8 @@ beforeEach(() => {
         })
 
         const post = {
-            ...fakePostData(),
-            user_id: user.id
+            ...postBuilder(),
+            [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
         }
         const beforeCreateHook = jest.spyOn(Post.hooks, 'beforeCreate')
 
@@ -38,11 +38,13 @@ beforeEach(() => {
 
         expect(response.status).toBe(201)
     })
+
     test(`${databaseClient} - cannot create another resource with unique constraint (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
                 permissions: ['create:posts']
-            } as any
+            } as any,
+            databaseClient
         })
 
         const user = await manager({} as any)('User').create({
@@ -52,9 +54,8 @@ beforeEach(() => {
         })
 
         const post = {
-            ...fakePostData(),
-            title: 'A new post',
-            user_id: user.id
+            ...postBuilder(),
+            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
         }
 
         const client = Supertest(app)
@@ -67,20 +68,23 @@ beforeEach(() => {
 
         response = await client.post(`/admin/api/resources/posts`).send(post)
 
+
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')
         expect(response.body.errors).toEqual([
             {
-                message: 'A post already exists with title A new post.',
+                message: `A post already exists with title ${post.title}.`,
                 field: 'title'
             }
         ])
     })
+
     test(`${databaseClient} - cannot create resource if required field is null (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
                 permissions: ['create:posts']
-            } as any
+            } as any,
+            databaseClient
         })
 
         const user = await manager({} as any)('User').create({
@@ -90,10 +94,9 @@ beforeEach(() => {
         })
 
         const post = {
-            ...fakePostData(),
-            title: 'A new post',
+            ...postBuilder(),
             description: null,
-            user_id: user.id
+            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
         }
 
         const client = Supertest(app)
@@ -117,7 +120,8 @@ beforeEach(() => {
         const { app, manager } = await setup({
             admin: {
                 permissions: ['create:posts']
-            } as any
+            } as any,
+            databaseClient
         })
 
         const user = await manager({} as any)('User').create({
@@ -130,7 +134,7 @@ beforeEach(() => {
             ...fakePostData(),
             title: 'A new post',
             content: Faker.lorem.sentence(10000),
-            user_id: user.id
+            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
         }
 
         const client = Supertest(app)

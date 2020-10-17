@@ -2,7 +2,7 @@ import Faker from 'faker'
 import Supertest from 'supertest'
 
 import { User } from '../../helpers/resources'
-import { setup, fakePostData, cleanup } from '../../helpers'
+import { setup, cleanup, postBuilder } from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
@@ -40,6 +40,7 @@ beforeEach(() => {
         expect(response.status).toBe(200)
         expect(beforeUpdateHook).toHaveBeenCalledTimes(1)
     })
+
     test(`${databaseClient} - validate payload before reousrce update (users)`, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -57,9 +58,9 @@ beforeEach(() => {
         const user = await manager({} as any)('User').create(userDetails)
 
         const postDetails = {
-            ...fakePostData(),
+            ...postBuilder(),
             title: 'A new post',
-            user_id: user.id
+            [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
         }
 
         const updateDetails = {
