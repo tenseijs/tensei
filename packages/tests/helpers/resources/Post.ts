@@ -95,7 +95,6 @@ export default resource('Post')
             .rules('required')
             .searchable(),
         belongsTo('User')
-            .searchable()
             .rules('required'),
         date('Published At')
             .notNullable()

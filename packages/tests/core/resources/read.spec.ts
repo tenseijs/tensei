@@ -1,7 +1,8 @@
 import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
+import Mongoose from 'mongoose'
 
-import { setup, fakePostData, cleanup } from '../../helpers'
+import { setup, postBuilder, cleanup } from '../../helpers'
 ;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
     test(`${databaseClient} - paginates resources appropriately (posts)`, async () => {
         const { app, manager } = await setup({
@@ -27,9 +28,9 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             Array.from({ length: 30 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
@@ -55,6 +56,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         expect(response.body.page).toBe(2)
         expect(response.body.perPage).toBe(25)
     })
+
     test(`${databaseClient} - filters resources correctly (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -74,10 +76,10 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             Array.from({ length: 10 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
                     av_cpc: 1200,
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
@@ -85,20 +87,19 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             Array.from({ length: 15 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
                     av_cpc: 10410,
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
 
         await manager({} as any)('Post').create({
-            ...fakePostData(),
+            ...postBuilder(),
             title: 'example title',
             av_cpc: 11,
-            // published_at: new Date("3/3/2020"),
-            user_id: user.id
+            [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
         })
 
         const client = Supertest(app)
@@ -158,6 +159,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(25)
     })
+
     test(`${databaseClient} - show only selected fields (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -177,9 +179,9 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             Array.from({ length: 30 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
@@ -196,9 +198,10 @@ import { setup, fakePostData, cleanup } from '../../helpers'
 
         response.body.data.map(d => {
             expect(Object.keys(d)).toHaveLength(3)
-            expect(Object.keys(d)).toEqual(['id', 'title', 'category'])
+            expect(Object.keys(d).sort()).toEqual(['id', 'title', 'category'].sort())
         })
     })
+
     test(`${databaseClient} - can search on searchable fields on resource (posts) `, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -220,9 +223,9 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             titles.map(title =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title,
-                    user_id: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
@@ -258,9 +261,7 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(2)
 
-        response.body.data.map((d: { title: string }, i: number) => {
-            expect(d.title).toBe(titles[i])
-        })
+        expect(response.body.data.map(post => post.title).sort()).toEqual(titles)
     })
 
     test(`${databaseClient} - find all related resources (posts) `, async () => {
@@ -290,9 +291,9 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             Array.from({ length: 3 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user1.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user1.id
                 })
             )
         )
@@ -300,9 +301,9 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         await Promise.all(
             Array.from({ length: 4 }).map(() =>
                 manager({} as any)('Post').create({
-                    ...fakePostData(),
+                    ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    user_id: user2.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user2.id
                 })
             )
         )
@@ -312,27 +313,27 @@ import { setup, fakePostData, cleanup } from '../../helpers'
         // this is to test for the first user
 
         let response = await client
-            .get(`/admin/api/resources/users/1/posts`)
+            .get(`/admin/api/resources/users/${user1.id}/posts`)
             .send({ ...userDetails, email: user1.email })
 
         expect(response.status).toBe(200)
-        expect(response.body.total).toBe(3)
+        expect(response.body.total.toString()).toBe((3).toString())
 
-        response.body.data.map((d: { user_id: number }) => {
-            expect(d.user_id).toBe(1)
+        response.body.data.forEach((post) => {
+            expect((post[databaseClient === 'mongodb' ? 'user' : 'user_id']).toString()).toBe(user1.id.toString())
         })
 
         // this is to test for the second user
 
         response = await client
-            .get(`/admin/api/resources/users/2/posts`)
+            .get(`/admin/api/resources/users/${user2.id}/posts`)
             .send({ ...userDetails, email: user2.email })
 
         expect(response.status).toBe(200)
-        expect(response.body.total).toBe(4)
+        expect(response.body.total.toString()).toBe((4).toString())
 
-        response.body.data.map((d: { user_id: number }) => {
-            expect(d.user_id).toBe(2)
+        response.body.data.forEach((post) => {
+            expect((post[databaseClient === 'mongodb' ? 'user' : 'user_id']).toString()).toBe(user2.id.toString())
         })
     })
 
@@ -350,14 +351,14 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        await manager({} as any)('User').create(userDetails)
+        const user = await manager({} as any)('User').create(userDetails)
 
         const client = Supertest(app)
 
         const wrongResource = 'pictures'
 
         let response = await client
-            .get(`/admin/api/resources/users/1/${wrongResource}`)
+            .get(`/admin/api/resources/users/${user.id}/${wrongResource}`)
             .send(userDetails)
 
         expect(response.status).toBe(404)
@@ -380,14 +381,14 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             password: 'password'
         }
 
-        await manager({} as any)('User').create(userDetails)
+        const user = await manager({} as any)('User').create(userDetails)
 
         const client = Supertest(app)
 
         const noRelationResource = 'Reaction'
 
         let response = await client
-            .get('/admin/api/resources/users/1/reactions')
+            .get(`/admin/api/resources/users/${user.id}/reactions`)
             .send(userDetails)
 
         expect(response.status).toBe(400)
@@ -404,50 +405,16 @@ import { setup, fakePostData, cleanup } from '../../helpers'
             databaseClient
         })
 
-        const userDetails = {
-            email: Faker.internet.exampleEmail(),
-            full_name: Faker.name.findName(),
-            password: 'password'
-        }
-
-        await await manager({} as any)('User').create(userDetails)
-
         const client = Supertest(app)
 
+        const id = databaseClient === 'mongodb' ? Mongoose.Types.ObjectId() : '123'
+
         const response = await client
-            .get(`/admin/api/resources/users/10`)
-            .send(userDetails)
+            .get(`/admin/api/resources/users/${id}`)
 
         expect(response.status).toBe(404)
         expect(response.body.message).toEqual(
-            'Could not find a resource with id 10'
-        )
-    })
-    test(`${databaseClient} - throws error when system cannot find resource (user)`, async () => {
-        const { app, manager } = await setup({
-            admin: {
-                permissions: ['create:users']
-            } as any,
-            databaseClient
-        })
-
-        const userDetails = {
-            email: Faker.internet.exampleEmail(),
-            full_name: Faker.name.findName(),
-            password: 'password'
-        }
-
-        const client = Supertest(app)
-
-        const wrongID = 5
-
-        const response = await client
-            .get(`/admin/api/resources/users/${wrongID}`)
-            .send(userDetails)
-
-        expect(response.status).toBe(404)
-        expect(response.body.message).toBe(
-            `Could not find a resource with id ${wrongID}`
+            `Could not find a resource with id ${id}`
         )
     })
 })

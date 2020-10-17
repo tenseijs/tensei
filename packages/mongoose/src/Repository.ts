@@ -52,7 +52,7 @@ export class Repository extends ResourceHelpers
         } catch (errors) {
             // TODO: Log these errors with this.logger
             console.error('*************', errors)
-            process.exit(1)
+            // process.exit(1)
         }
 
         return this.$db
@@ -550,7 +550,7 @@ export class Repository extends ResourceHelpers
             page: query.page,
             total: parseInt(total),
             perPage: query.perPage,
-            data: this.serializeResponse(results),
+            data: this.serializeResponse(results, query.fields?.includes('id')),
             pageCount: Math.ceil(total / query.perPage)
         }
     }
@@ -558,7 +558,7 @@ export class Repository extends ResourceHelpers
     async findAllData(query: FetchAllRequestQuery) {
         const [, dataResolver] = this.findAllResolvers(query)
 
-        return this.serializeResponse(await dataResolver())
+        return this.serializeResponse(await dataResolver(), query.fields?.includes('id'))
     }
 
     findAllResolvers(baseQuery: FetchAllRequestQuery) {
@@ -567,7 +567,11 @@ export class Repository extends ResourceHelpers
         const query = this.getDefaultQuery(baseQuery)
 
         const getQuery = () => {
-            let builder = Model.find(this.handleFilterQueries(query.filters))
+            let modelQuery: FilterQuery<any> = this.handleFilterQueries(query.filters)
+
+            modelQuery = this.handleSearchQuery(modelQuery, query.search)
+    
+            let builder = Model.find(modelQuery)
 
             if (query.fields) {
                 builder = builder.select(query.fields)
@@ -593,7 +597,8 @@ export class Repository extends ResourceHelpers
                 _id: {
                     $in: ids
                 }
-            }).select(fields)
+            }).select(fields),
+            fields?.includes('id')
         )
     }
 
@@ -608,7 +613,7 @@ export class Repository extends ResourceHelpers
             query
         )
 
-        return this.serializeResponse(await dataResolver())
+        return this.serializeResponse(await dataResolver(), query.fields?.includes('id'))
     }
 
     async findAllBelongingToManyCount(
@@ -638,18 +643,12 @@ export class Repository extends ResourceHelpers
         const getQuery = () => {
             let modelQuery: FilterQuery<any> = {}
 
-            if (query.search) {
-                modelQuery = this.populateSearchQueries(
-                    query.search,
-                    relatedResource,
-                    modelQuery
-                )
-            }
+            modelQuery = this.handleSearchQuery(modelQuery, query.search)
 
             return RelatedModel.find({
                 [resource.data.camelCaseNamePlural]: resourceId,
+                ...this.handleFilterQueries(query.filters),
                 ...modelQuery,
-                ...this.handleFilterQueries(query.filters)
             })
         }
 
@@ -661,6 +660,27 @@ export class Repository extends ResourceHelpers
                 .limit(query.perPage)
 
         return [countResolver, dataResolver]
+    }
+
+    public handleSearchQuery(modelQuery: FilterQuery<any>, search?: string, resource = this.getCurrentResource()) {
+        if (! search) {
+            return modelQuery
+        }
+
+        let searchQuery: any[] = []
+
+        resource.data.fields.filter(field => field.isSearchable)
+            .forEach(field => {
+                searchQuery.push({
+                    [field.databaseField]: new RegExp(`${search}`)
+                })
+            })
+
+        if (searchQuery.length > 0) {
+            modelQuery.$or = searchQuery
+        }
+
+        return modelQuery
     }
 
     public handleFilterQueries(filters: FetchAllRequestQuery['filters']) {
@@ -694,6 +714,12 @@ export class Repository extends ResourceHelpers
 
             if (filter.operator === 'equals') {
                 findQuery[filter.field] = filter.value
+            }
+
+            if (filter.operator === 'not_equals') {
+                findQuery[filter.field] = {
+                    $ne: filter.value
+                }
             }
 
             if (filter.operator === 'contains') {
@@ -823,7 +849,7 @@ export class Repository extends ResourceHelpers
             page: query.page,
             perPage: query.perPage,
             total: count as number,
-            data: this.serializeResponse(data),
+            data: this.serializeResponse(data, query.fields?.includes('id')),
             pageCount: Math.ceil((count as number) / (query.perPage || 10))
         }
     }
@@ -884,28 +910,6 @@ export class Repository extends ResourceHelpers
         return countResolver()
     }
 
-    populateSearchQueries(
-        search: string,
-        resource: ResourceContract,
-        modelQuery: FilterQuery<any>
-    ) {
-        const searchableFields = resource.data.fields.filter(
-            field => field.isSearchable
-        )
-
-        modelQuery.$or = modelQuery.$or || []
-
-        searchableFields.forEach(field => {
-            modelQuery.$or!.push({
-                [field.databaseField]: {
-                    $regex: new RegExp(search)
-                }
-            })
-        })
-
-        return modelQuery
-    }
-
     async findAllHasManyResolvers(
         relatedResource: ResourceContract,
         resourceId: string | number,
@@ -928,13 +932,7 @@ export class Repository extends ResourceHelpers
         const getQuery = () => {
             let modelQuery: FilterQuery<any> = {}
 
-            if (query.search) {
-                modelQuery = this.populateSearchQueries(
-                    query.search,
-                    relatedResource,
-                    modelQuery
-                )
-            }
+            modelQuery = this.handleSearchQuery(modelQuery, query.search, relatedResource)
 
             return RelatedModel.find({
                 _id: {
@@ -943,7 +941,7 @@ export class Repository extends ResourceHelpers
                     ]
                 },
                 ...modelQuery,
-                ...this.handleFilterQueries(query.filters)
+                ...this.handleFilterQueries(query.filters),
             })
         }
 
@@ -1160,19 +1158,27 @@ export class Repository extends ResourceHelpers
         return countResolver() as any
     }
 
-    private serializeResponse(response: any) {
+    private serializeResponse(response: any, includeId: boolean = true) {
         if (!response) return response
 
         if (Array.isArray(response)) {
-            return response.map(r => ({
-                ...(r.toObject ? r.toObject() : r),
-                id: r._id
-            }))
+            return response.map((r) => {
+                const { _id, ...result } = r.toObject ? r.toObject() : r
+
+                if (includeId) {
+                    result.id = _id
+                }
+
+                return result
+            })
+        }
+        
+        const { _id, ...result } = response.toObject ? response.toObject() : response
+
+        if (includeId) {
+            result.id = _id
         }
 
-        return {
-            ...(response.toObject ? response.toObject() : response),
-            id: response._id
-        }
+        return result
     }
 }

@@ -26,6 +26,21 @@ export class BelongsTo extends Integer {
         this.unsigned()
 
         this.hideOnIndex()
+
+        this.isSearchable = false
+    }
+
+    /**
+     *
+     * Make this field searchable. will also index
+     * this field in the database.
+     *
+     */
+    public searchable<T extends FieldContract>(this: T): T {
+        this.isSearchable = false
+        console.warn(`BelongsTo field cannot be made searchable.`)
+
+        return this
     }
 
     public afterConfigSet() {
