@@ -28,6 +28,13 @@ Object {
 }
 `;
 
+exports[`runs an action with fields that returns a push (sqlite3) 1`] = `
+Object {
+  "route": "/resources/posts/12",
+  "type": "push",
+}
+`;
+
 exports[`runs an action with fields that returns an array of validation errors (mongodb) 1`] = `
 Object {
   "errors": Array [
@@ -65,6 +72,18 @@ Object {
 `;
 
 exports[`runs an action with fields that returns an array of validation errors (sqlite) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "custom-field-name",
+      "message": "Custom validation message",
+    },
+  ],
+  "type": "validation-errors",
+}
+`;
+
+exports[`runs an action with fields that returns an array of validation errors (sqlite3) 1`] = `
 Object {
   "errors": Array [
     Object {
@@ -146,6 +165,29 @@ Object {
 `;
 
 exports[`validates an action with input fields (sqlite) 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "published_at",
+      "message": "The published_at is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "reason",
+      "message": "The reason is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "content",
+      "message": "The content is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
+exports[`validates an action with input fields (sqlite3) 1`] = `
 Object {
   "errors": Array [
     Object {

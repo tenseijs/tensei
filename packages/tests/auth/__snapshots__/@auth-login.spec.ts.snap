@@ -90,6 +90,36 @@ Object {
 }
 `;
 
+exports[`sqlite - returns a 422 if user does not exist in database 1`] = `
+Object {
+  "message": "Invalid credentials.",
+}
+`;
+
+exports[`sqlite - returns a 422 if user password is wrong 1`] = `
+Object {
+  "message": "Invalid credentials.",
+}
+`;
+
+exports[`sqlite - validates login data and returns error messages with a 422 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "field": "email",
+      "message": "The email is required.",
+      "validation": "required",
+    },
+    Object {
+      "field": "password",
+      "message": "The password is required.",
+      "validation": "required",
+    },
+  ],
+  "message": "Validation failed.",
+}
+`;
+
 exports[`sqlite3 - returns a 422 if user does not exist in database 1`] = `
 Object {
   "message": "Invalid credentials.",

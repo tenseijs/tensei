@@ -18,7 +18,7 @@ import nodemailer from 'nodemailer'
  * @class MemoryDriver
  * @constructor
  */
-class MemoryDriver {
+export default class MemoryDriver {
     private transporter: any = null
     /**
      * This method is called by mail manager automatically
@@ -60,5 +60,3 @@ class MemoryDriver {
         })
     }
 }
-
-module.exports = MemoryDriver

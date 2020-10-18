@@ -36,6 +36,18 @@ Object {
 }
 `;
 
+exports[`sqlite - a user can confirm enable 2fa on her account 1`] = `
+Object {
+  "message": "Two factor authentication has been enabled.",
+}
+`;
+
+exports[`sqlite - a user can disable 2fa on her account 1`] = `
+Object {
+  "message": "Two factor auth has been disabled.",
+}
+`;
+
 exports[`sqlite3 - a user can confirm enable 2fa on her account 1`] = `
 Object {
   "message": "Two factor authentication has been enabled.",

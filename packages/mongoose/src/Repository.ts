@@ -6,6 +6,7 @@ import Mongoose, {
     Mongoose as MongooseType,
     FilterQuery
 } from 'mongoose'
+import MongooseHidden from 'mongoose-hidden'
 import {
     DatabaseRepositoryInterface,
     ResourceHelpers,
@@ -38,8 +39,6 @@ export class Repository extends ResourceHelpers
         config.pushResource(this.roleResource())
         config.pushResource(this.passwordResetsResource())
         config.pushResource(this.permissionResource())
-
-        // Mongoose.set('debug', true)
 
         this.resources = config.resources
 
@@ -186,7 +185,12 @@ export class Repository extends ResourceHelpers
                 }
             })
 
-            const schema = new Mongoose.Schema(schemaDefinition)
+            const schema = new Mongoose.Schema(schemaDefinition, {
+                timestamps: resource.data.noTimeStamps ? false : {
+                    createdAt: 'created_at',
+                    updatedAt: 'updated_at'
+                }
+            })
 
             schema.statics.getTenseiResourceName = () => resource.data.name
 

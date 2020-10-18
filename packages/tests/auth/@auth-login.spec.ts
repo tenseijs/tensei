@@ -6,7 +6,8 @@ import {
     setup,
     createAdminUser,
     cleanup,
-    getTestDatabaseClients
+    getTestDatabaseClients,
+    createAdminUserMongoDB
 } from '../helpers'
 
 jest.mock('speakeasy')
@@ -51,7 +52,13 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(knex)
+        let user = null
+
+        if (databaseClient === 'mongodb') {
+            user = await createAdminUserMongoDB(knex)
+        } else {
+            user = await createAdminUser(knex)
+        }
 
         const response = await client.post('/auth/login').send({
             email: user.email,
@@ -76,7 +83,7 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
             password: 'password'
         }
 
-        await manager({} as any)('Customer').create(userData)
+        await manager()('Customer').create(userData)
 
         const response = await client.post('/auth/login').send({
             email: userData.email,
@@ -85,18 +92,12 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
 
         expect(response.status).toBe(200)
 
-        expect(response.body).toEqual({
-            token: expect.any(String),
-            user: {
-                email: userData.email,
-                created_at: expect.any(String),
-                updated_at: expect.any(String),
-                id: expect.any(Number),
-                name: userData.name,
-                email_verified_at: null,
-                two_factor_enabled: null
-            }
-        })
+        const user = await manager()('Customer').database().findOneByField('email', userData.email)
+
+        expect(response.body.token).toBeDefined()
+        expect(response.body.user.email).toBe(user.email)
+        expect(response.body.user.id).toBe(user.id.toString())
+        expect(response.body.user.created_at).toBe(user.created_at.toISOString())
     })
 })
 

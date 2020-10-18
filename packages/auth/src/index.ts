@@ -21,7 +21,8 @@ import {
     SupportedDatabases,
     Config,
     FieldContract,
-    hasMany
+    hasMany,
+    User
 } from '@tensei/common'
 
 import {
@@ -29,7 +30,8 @@ import {
     GrantConfig,
     AuthPluginConfig,
     SupportedSocialProviders,
-    defaultProviderScopes
+    defaultProviderScopes,
+    UserWithAuth
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
@@ -825,14 +827,11 @@ class Auth {
             }
         }
 
-        const user = await request
-            .manager(this.userResource(config.database))
-            .database()
-            .findOneById(
+        const user = await manager(this.userResource(config.database)).database().findOneById(
                 userWithPassword.id,
                 [],
                 this.config.rolesAndPermissions
-                    ? [
+                    ? config.database === 'mongodb' ? [] : [
                           `${this.roleResource(config.database).data.slug}.${
                               this.permissionResource(config.database).data.slug
                           }`
@@ -867,8 +866,18 @@ class Auth {
             token: this.generateJwt({
                 id: user.id
             }),
-            user
+            user: this.removeHiddenProperties(user)
         })
+    }
+
+    private removeHiddenProperties(user: UserWithAuth) {
+        delete user.password
+        // @ts-ignore
+        delete user.beans
+        delete user.two_factor_secret
+        delete user.email_verification_token
+
+        return user
     }
 
     public authMiddleware = async (
@@ -936,7 +945,7 @@ class Auth {
 
             const user = {
                 ...model,
-                two_factor_enabled: model.two_factor_enabled === '1'
+                two_factor_enabled: ['1', 'true'].includes(model.two_factor_enabled)
             }
 
             if (this.config.rolesAndPermissions) {

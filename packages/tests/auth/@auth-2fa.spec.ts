@@ -1,15 +1,9 @@
 import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
-import { auth } from '@tensei/auth'
 import { generateSecret, totp } from 'speakeasy'
 
-import {
-    setup,
-    createAuthUser,
-    cleanup,
-    getTestDatabaseClients
-} from '../helpers'
+import { setup, createAuthUser, cleanup, getTestDatabaseClients, createAdminUserMongoDB } from '../helpers'
 
 const generateSecretMock = (generateSecret as unknown) as jest.Mock<
     typeof generateSecret
@@ -19,7 +13,7 @@ const totpVerifyMock = (totp.verify as unknown) as jest.Mock<typeof totp.verify>
 
 jest.mock('speakeasy')
 
-getTestDatabaseClients().forEach((databaseClient: any) => {
+getTestDatabaseClients().forEach((databaseClient) => {
     test(`${databaseClient} - a user can enable 2fa on her account`, async () => {
         const sampleBase32 = Faker.lorem.word()
         const sampleOtpAuthUser = Faker.lorem.word()
@@ -38,7 +32,7 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
 
         const knex = getDatabaseClient()
 
-        const user = await createAuthUser(knex)
+        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(knex) : await createAuthUser(knex)
 
         const client = Supertest(app)
 
@@ -53,14 +47,12 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
         expect(response.status).toBe(200)
         expect(response.body.dataURL).toMatch('data:image/png;base64')
 
-        const Customer = await manager()('Customer').Model()
+        const Customer = await manager()('Customer')
 
-        let freshUser = await new Customer({ id: user.id }).fetch({
-            require: true
-        })
+        let freshUser = await Customer.findOneById(user.id)
 
-        expect(freshUser.get('two_factor_enabled')).toBe('0')
-        expect(freshUser.get('two_factor_secret')).toBe(sampleBase32)
+        expect(freshUser.two_factor_secret).toBe(sampleBase32)
+        expect(['0', 'false'].includes(freshUser.two_factor_enabled)).toBe(true)
     })
 
     test(`${databaseClient} - a user can confirm enable 2fa on her account`, async () => {
@@ -75,7 +67,10 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
 
         const knex = getDatabaseClient()
 
-        const user = await createAuthUser(knex, {
+        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(knex, 'customers', {
+            two_factor_secret: sampleBase32,
+            two_factor_enabled: false
+        }) : await createAuthUser(knex, {
             two_factor_secret: sampleBase32,
             two_factor_enabled: false
         })
@@ -96,14 +91,12 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
         expect(response.status).toBe(200)
         expect(response.body).toMatchSnapshot()
 
-        const Customer = await manager()('Customer').Model()
+        const Customer = await manager()('Customer')
 
-        let freshUser = await new Customer({ id: user.id }).fetch({
-            require: true
-        })
+        let freshUser = await Customer.findOneById(user.id)
 
-        expect(freshUser.get('two_factor_enabled')).toBe('1')
-        expect(freshUser.get('two_factor_secret')).toBe(sampleBase32)
+        expect(freshUser.two_factor_secret).toBe(sampleBase32)
+        expect(['1', 'true'].includes(freshUser.two_factor_enabled)).toBe(true)
     })
 
     test(`${databaseClient} - a user can disable 2fa on her account`, async () => {
@@ -118,7 +111,10 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
 
         const knex = getDatabaseClient()
 
-        const user = await createAuthUser(knex, {
+        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(knex, 'customers', {
+            two_factor_secret: sampleBase32,
+            two_factor_enabled: true
+        }) : await createAuthUser(knex, {
             two_factor_secret: sampleBase32,
             two_factor_enabled: true
         })
@@ -142,14 +138,12 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
         expect(response.status).toBe(200)
         expect(response.body).toMatchSnapshot()
 
-        const Customer = await manager()('Customer').Model()
+        const Customer = await manager()('Customer')
 
-        let freshUser = await new Customer({ id: user.id }).fetch({
-            require: true
-        })
+        let freshUser = await Customer.findOneById(user.id)
 
-        expect(freshUser.get('two_factor_secret')).toBe(null)
-        expect(freshUser.get('two_factor_enabled')).toBe('0')
+        expect(freshUser.two_factor_secret).toBe(null)
+        expect(['0', 'false'].includes(freshUser.two_factor_enabled)).toBe(true)
     })
 })
 

@@ -6,7 +6,8 @@ import {
     setup,
     createAuthUser,
     cleanup,
-    getTestDatabaseClients
+    getTestDatabaseClients,
+    createAdminUserMongoDB
 } from '../helpers'
 
 beforeEach(() => {
@@ -15,21 +16,29 @@ beforeEach(() => {
 
 jest.mock('speakeasy')
 
-getTestDatabaseClients().forEach((databaseClient: any) => {
+getTestDatabaseClients().forEach((databaseClient) => {
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, getDatabaseClient, manager } = await setup({
+        const { app, getDatabaseClient } = await setup({
             databaseClient
         })
 
-        const knexClient = getDatabaseClient()
+        const dbClient = getDatabaseClient()
 
         const client = Supertest(app)
 
         const email_verification_token = Faker.random.alphaNumeric(10)
 
-        const user = await createAuthUser(knexClient, {
-            email_verification_token
-        })
+        let user = null
+
+        if (databaseClient === 'mongodb') {
+            user = await createAdminUserMongoDB(dbClient, 'customers', {
+                email_verification_token
+            })
+        } else {
+            user = await createAuthUser(dbClient, {
+                email_verification_token
+            })
+        }
 
         const {
             body: { token: jwt }
@@ -51,15 +60,23 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
             databaseClient
         })
 
-        const knexClient = getDatabaseClient()
+        const dbClient = getDatabaseClient()
 
         const client = Supertest(app)
 
         const email_verification_token = Faker.random.alphaNumeric(10)
 
-        const user = await createAuthUser(knexClient, {
-            email_verification_token
-        })
+        let user = null
+
+        if (databaseClient === 'mongodb') {
+            user = await createAdminUserMongoDB(dbClient, 'customers', {
+                email_verification_token
+            })
+        } else {
+            user = await createAuthUser(dbClient, {
+                email_verification_token
+            })
+        }
 
         const {
             body: { token: jwt }

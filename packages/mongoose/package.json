@@ -13,7 +13,8 @@
         "connect-mongo": "^3.2.0",
         "connect-session-knex": "^1.7.3",
         "knex": "^0.21.2",
-        "mongoose": "^5.10.5"
+        "mongoose": "^5.10.5",
+        "mongoose-hidden": "^1.9.0"
     },
     "scripts": {
         "build": "tsc --p tsconfig.json",
