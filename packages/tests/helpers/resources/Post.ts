@@ -94,8 +94,7 @@ export default resource('Post')
             ])
             .rules('required')
             .searchable(),
-        belongsTo('User')
-            .rules('required'),
+        belongsTo('User').rules('required'),
         date('Published At')
             .notNullable()
             .rules('required', 'date')

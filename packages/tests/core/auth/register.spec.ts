@@ -1,14 +1,21 @@
-import Path from 'path'
-import Knex from 'knex'
 import Supertest from 'supertest'
-import isAfter from 'date-fns/isAfter'
 
-import { setup, createAdminUser, cleanup } from '../../helpers'
-;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+import {
+    setup,
+    createAdminUser,
+    cleanup,
+    getAllRecordsKnex,
+    getTestDatabaseClients
+} from '../../helpers'
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} -  validates registration data and returns error messages with a 422`, async () => {
-        const { app } = await setup({
-            databaseClient
-        })
+        const { app } = await setup(
+            {
+                databaseClient
+            },
+            true
+        )
 
         const client = Supertest(app)
 
@@ -19,15 +26,18 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 422 if there is already an administrator in the database`, async () => {
-        const { app, getDatabaseClient } = await setup({
-            databaseClient
-        })
+        const { app, getDatabaseClient } = await setup(
+            {
+                databaseClient
+            },
+            true
+        )
 
-        const knex = getDatabaseClient()
+        const dbClient = getDatabaseClient()
 
         const client = Supertest(app)
 
-        await createAdminUser(knex)
+        await createAdminUser(dbClient)
 
         const response = await client.post('/admin/api/register').send({
             email: 'hey@unknown-user.io',
@@ -39,9 +49,17 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - correctly creates an administrator user, logs in the user and returns a success message`, async () => {
-        const { app } = await setup({
-            databaseClient
-        })
+        const { app, getDatabaseClient } = await setup(
+            {
+                databaseClient,
+                clearTables: false
+            },
+            true
+        )
+
+        const dbClient = getDatabaseClient()
+
+        await dbClient('administrators').truncate()
 
         const client = Supertest(app)
 
@@ -57,17 +75,20 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
     })
 
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
-        const { app, getDatabaseClient } = await setup({
-            databaseClient
-        })
+        const { app, getDatabaseClient } = await setup(
+            {
+                databaseClient
+            },
+            true
+        )
 
-        const knex = getDatabaseClient()
+        const dbClient = getDatabaseClient()
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(knex)
+        const user = await createAdminUser(dbClient)
 
-        expect(await knex('sessions').select('*')).toHaveLength(0)
+        expect(await getAllRecordsKnex(dbClient, 'sessions')).toHaveLength(0)
 
         const response = await client.post('/admin/api/login').send({
             email: user.email,
@@ -79,44 +100,17 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
 
         expect(response.body).toMatchSnapshot()
 
-        const sessions = await knex('sessions').select('*')
+        let sessions: any[] = await getAllRecordsKnex(dbClient, 'sessions')
 
-        expect(sessions).toHaveLength(1)
-
-        const session = JSON.parse(sessions[0].sess)
-
-        expect(session.user).toBe(user.id)
-    })
-
-    test(`${databaseClient} - can login correctly with remember me`, async () => {
-        const { app, getDatabaseClient } = await setup({
-            databaseClient
-        })
-
-        const knex = getDatabaseClient()
-
-        const client = Supertest(app)
-
-        const user = await createAdminUser(knex)
-
-        const response = await client.post('/admin/api/login').send({
-            email: user.email,
-            password: user.password,
-            rememberMe: true
-        })
-
-        expect(response.status).toBe(200)
-        expect(response.header['set-cookie']).toHaveLength(1)
-
-        expect(response.body).toMatchSnapshot()
-
-        const sessions = await knex('sessions').select('*')
-
-        const session = JSON.parse(sessions[0].sess)
-
-        expect(
-            isAfter(new Date(session.cookie.expires), new Date())
-        ).toBeTruthy()
+        if (databaseClient === 'mongodb') {
+            expect(JSON.parse(sessions[0].session).user).toBe(
+                user.id.toString()
+            )
+        } else if (databaseClient === 'pg') {
+            expect(sessions[0].sess.user).toBe(user.id)
+        } else {
+            expect(JSON.parse(sessions[0].sess).user).toBe(user.id)
+        }
     })
 })
 

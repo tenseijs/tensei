@@ -324,7 +324,9 @@ export class Tensei implements TenseiContract {
     getSessionPackageConfig(Store: any) {
         let storeArguments: any = {}
 
-        if (['mysql', 'pg', 'sqlite3', 'sqlite'].includes(this.config.database)) {
+        if (
+            ['mysql', 'pg', 'sqlite3', 'sqlite'].includes(this.config.database)
+        ) {
             storeArguments = {
                 knex: this.config.databaseClient
             }

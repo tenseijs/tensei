@@ -4,7 +4,12 @@ import Supertest from 'supertest'
 import { auth } from '@tensei/auth'
 import { generateSecret, totp } from 'speakeasy'
 
-import { setup, createAuthUser, cleanup } from '../helpers'
+import {
+    setup,
+    createAuthUser,
+    cleanup,
+    getTestDatabaseClients
+} from '../helpers'
 
 const generateSecretMock = (generateSecret as unknown) as jest.Mock<
     typeof generateSecret
@@ -13,7 +18,8 @@ const generateSecretMock = (generateSecret as unknown) as jest.Mock<
 const totpVerifyMock = (totp.verify as unknown) as jest.Mock<typeof totp.verify>
 
 jest.mock('speakeasy')
-;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - a user can enable 2fa on her account`, async () => {
         const sampleBase32 = Faker.lorem.word()
         const sampleOtpAuthUser = Faker.lorem.word()

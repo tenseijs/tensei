@@ -2,12 +2,18 @@ import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 import Mongoose from 'mongoose'
 
-import { setup, cleanup, postBuilder } from '../../helpers'
+import {
+    setup,
+    cleanup,
+    postBuilder,
+    getTestDatabaseClients
+} from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
-;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - can delete resource by ID (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -29,7 +35,7 @@ beforeEach(() => {
                 manager({} as any)('Post').create({
                     ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
@@ -71,14 +77,15 @@ beforeEach(() => {
                 manager({} as any)('Post').create({
                     ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
+                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
                 })
             )
         )
 
         const client = Supertest(app)
 
-        const id = databaseClient === 'mongodb' ? Mongoose.Types.ObjectId() : '1234'
+        const id =
+            databaseClient === 'mongodb' ? Mongoose.Types.ObjectId() : '1234'
 
         const response = await client
             .delete(`/admin/api/resources/posts/${id}`)

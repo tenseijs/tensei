@@ -2,10 +2,16 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAdminUser, cleanup } from '../helpers'
+import {
+    setup,
+    createAdminUser,
+    cleanup,
+    getTestDatabaseClients
+} from '../helpers'
 
 jest.mock('speakeasy')
-;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - validates login data and returns error messages with a 422`, async () => {
         const { app } = await setup({
             databaseClient

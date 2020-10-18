@@ -558,7 +558,10 @@ export class Repository extends ResourceHelpers
     async findAllData(query: FetchAllRequestQuery) {
         const [, dataResolver] = this.findAllResolvers(query)
 
-        return this.serializeResponse(await dataResolver(), query.fields?.includes('id'))
+        return this.serializeResponse(
+            await dataResolver(),
+            query.fields?.includes('id')
+        )
     }
 
     findAllResolvers(baseQuery: FetchAllRequestQuery) {
@@ -567,10 +570,12 @@ export class Repository extends ResourceHelpers
         const query = this.getDefaultQuery(baseQuery)
 
         const getQuery = () => {
-            let modelQuery: FilterQuery<any> = this.handleFilterQueries(query.filters)
+            let modelQuery: FilterQuery<any> = this.handleFilterQueries(
+                query.filters
+            )
 
             modelQuery = this.handleSearchQuery(modelQuery, query.search)
-    
+
             let builder = Model.find(modelQuery)
 
             if (query.fields) {
@@ -613,7 +618,10 @@ export class Repository extends ResourceHelpers
             query
         )
 
-        return this.serializeResponse(await dataResolver(), query.fields?.includes('id'))
+        return this.serializeResponse(
+            await dataResolver(),
+            query.fields?.includes('id')
+        )
     }
 
     async findAllBelongingToManyCount(
@@ -648,7 +656,7 @@ export class Repository extends ResourceHelpers
             return RelatedModel.find({
                 [resource.data.camelCaseNamePlural]: resourceId,
                 ...this.handleFilterQueries(query.filters),
-                ...modelQuery,
+                ...modelQuery
             })
         }
 
@@ -662,14 +670,19 @@ export class Repository extends ResourceHelpers
         return [countResolver, dataResolver]
     }
 
-    public handleSearchQuery(modelQuery: FilterQuery<any>, search?: string, resource = this.getCurrentResource()) {
-        if (! search) {
+    public handleSearchQuery(
+        modelQuery: FilterQuery<any>,
+        search?: string,
+        resource = this.getCurrentResource()
+    ) {
+        if (!search) {
             return modelQuery
         }
 
         let searchQuery: any[] = []
 
-        resource.data.fields.filter(field => field.isSearchable)
+        resource.data.fields
+            .filter(field => field.isSearchable)
             .forEach(field => {
                 searchQuery.push({
                     [field.databaseField]: new RegExp(`${search}`)
@@ -820,10 +833,10 @@ export class Repository extends ResourceHelpers
 
         const administrator = await this.create({
             ...payload,
-            administratorRoles: [superAdmin._id]
+            administratorRoles: [superAdmin.id]
         })
 
-        return this.serializeResponse(administrator)
+        return administrator
     }
 
     async findAllBelongingToMany(
@@ -932,7 +945,11 @@ export class Repository extends ResourceHelpers
         const getQuery = () => {
             let modelQuery: FilterQuery<any> = {}
 
-            modelQuery = this.handleSearchQuery(modelQuery, query.search, relatedResource)
+            modelQuery = this.handleSearchQuery(
+                modelQuery,
+                query.search,
+                relatedResource
+            )
 
             return RelatedModel.find({
                 _id: {
@@ -941,7 +958,7 @@ export class Repository extends ResourceHelpers
                     ]
                 },
                 ...modelQuery,
-                ...this.handleFilterQueries(query.filters),
+                ...this.handleFilterQueries(query.filters)
             })
         }
 
@@ -1162,7 +1179,7 @@ export class Repository extends ResourceHelpers
         if (!response) return response
 
         if (Array.isArray(response)) {
-            return response.map((r) => {
+            return response.map(r => {
                 const { _id, ...result } = r.toObject ? r.toObject() : r
 
                 if (includeId) {
@@ -1172,8 +1189,10 @@ export class Repository extends ResourceHelpers
                 return result
             })
         }
-        
-        const { _id, ...result } = response.toObject ? response.toObject() : response
+
+        const { _id, ...result } = response.toObject
+            ? response.toObject()
+            : response
 
         if (includeId) {
             result.id = _id

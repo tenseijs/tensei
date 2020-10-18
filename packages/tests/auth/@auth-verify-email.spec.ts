@@ -2,14 +2,20 @@ import Knex from 'knex'
 import Faker from 'faker'
 import Supertest from 'supertest'
 
-import { setup, createAuthUser, cleanup } from '../helpers'
+import {
+    setup,
+    createAuthUser,
+    cleanup,
+    getTestDatabaseClients
+} from '../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
 
 jest.mock('speakeasy')
-;['mysql', 'sqlite3', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
         const { app, getDatabaseClient, manager } = await setup({
             databaseClient

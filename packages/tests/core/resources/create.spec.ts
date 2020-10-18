@@ -2,12 +2,18 @@ import Faker from 'faker'
 import Supertest from 'supertest'
 
 import { Post } from '../../helpers/resources'
-import { setup, fakePostData, cleanup, postBuilder } from '../../helpers'
+import {
+    setup,
+    fakePostData,
+    cleanup,
+    postBuilder,
+    getTestDatabaseClients
+} from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
-;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - calls before create hook during creation (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -55,7 +61,7 @@ beforeEach(() => {
 
         const post = {
             ...postBuilder(),
-            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
+            [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
         }
 
         const client = Supertest(app)
@@ -67,7 +73,6 @@ beforeEach(() => {
         expect(response.status).toBe(201)
 
         response = await client.post(`/admin/api/resources/posts`).send(post)
-
 
         expect(response.status).toBe(422)
         expect(response.body.message).toBe('Validation failed.')
@@ -96,7 +101,7 @@ beforeEach(() => {
         const post = {
             ...postBuilder(),
             description: null,
-            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
+            [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
         }
 
         const client = Supertest(app)
@@ -134,7 +139,7 @@ beforeEach(() => {
             ...fakePostData(),
             title: 'A new post',
             content: Faker.lorem.sentence(10000),
-            [databaseClient === 'mongodb' ? 'user': 'user_id']: user.id
+            [databaseClient === 'mongodb' ? 'user' : 'user_id']: user.id
         }
 
         const client = Supertest(app)

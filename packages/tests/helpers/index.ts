@@ -23,6 +23,7 @@ interface ConfigureSetup {
     authApiPath?: string
     databaseClient?: 'mysql' | 'sqlite3' | 'pg' | 'mongodb' | 'sqlite'
     dashboardPath?: string
+    clearTables?: boolean
     createAndLoginAdmin?: boolean
 }
 
@@ -54,7 +55,8 @@ export const setup = async (
         apiPath,
         databaseClient,
         dashboardPath,
-        authApiPath
+        authApiPath,
+        clearTables = true
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -167,7 +169,12 @@ export const setup = async (
         .resources([Post, Tag, User, Comment, Reaction])
         .register()
 
-    if ((['mysql', 'sqlite3', 'pg', 'sqlite'] as any).includes(databaseClient)) {
+    if (
+        (['mysql', 'sqlite3', 'pg', 'sqlite'] as any).includes(
+            databaseClient
+        ) &&
+        clearTables
+    ) {
         const knex: Knex = instance.getDatabaseClient()
         ;(await knex.schema.hasTable('sessions'))
             ? await knex('sessions').truncate()
@@ -184,14 +191,16 @@ export const setup = async (
             knex('password_resets').truncate(),
             knex('administrator_roles').truncate(),
             knex('administrator_permissions').truncate(),
-            knex('administrator_password_resets').truncate(),
+            knex('administrator_password_resets').truncate()
         ])
     }
 
-    if (databaseClient === 'mongodb') {
+    if (databaseClient === 'mongodb' && clearTables) {
         const connection: Mongoose.Connection = instance.getDatabaseClient()
 
-        await connection.dropDatabase()
+        if (connection) {
+            await connection.dropDatabase()
+        }
     }
 
     return instance
@@ -202,9 +211,11 @@ export const cleanup = async () => {
         Object.keys(cachedInstances).map(dbType => {
             const databaseClient = cachedInstances[dbType]?.getDatabaseClient()
 
-            return databaseClient.destroy
-                ? databaseClient.destroy()
-                : databaseClient.close()
+            return databaseClient
+                ? databaseClient.destroy
+                    ? databaseClient.destroy()
+                    : databaseClient.close()
+                : null
         })
     )
 }
@@ -213,12 +224,24 @@ export const createAuthUser = async (knex: Knex, extraArguments = {}) => {
     return createAdminUser(knex, 'customers', extraArguments)
 }
 
-export const getAllRecordsMongoDB = async (connection: Mongoose.Connection, collection: string) => {
-    return (connection.db.collection(collection).find()).toArray()
+export const getAllRecordsMongoDB = async (
+    connection: Mongoose.Connection,
+    collection: string
+) => {
+    return connection.db
+        .collection(collection)
+        .find()
+        .toArray()
 }
 
 export const getAllRecordsKnex = async (knex: Knex, table: string) => {
     return knex(table).select('*')
+}
+
+export const getTestDatabaseClients = () => {
+    return (
+        process.env.TEST_DATABASE_CLIENTS || 'mysql,pg,sqlite,mongodb'
+    ).split(',') as SupportedDatabases[]
 }
 
 export const createAdminUserMongoDB = async (
@@ -268,7 +291,11 @@ export const createAdminUser = async (
     })
 
     return {
-        ... (await knex(table).where('email', user.email).limit(1))[0],
+        ...(
+            await knex(table)
+                .where('email', user.email)
+                .limit(1)
+        )[0],
         ...user
     }
 }

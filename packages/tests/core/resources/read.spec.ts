@@ -2,8 +2,14 @@ import Faker, { lorem } from 'faker'
 import Supertest from 'supertest'
 import Mongoose from 'mongoose'
 
-import { setup, postBuilder, cleanup } from '../../helpers'
-;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+import {
+    setup,
+    postBuilder,
+    cleanup,
+    getTestDatabaseClients
+} from '../../helpers'
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - paginates resources appropriately (posts)`, async () => {
         const { app, manager } = await setup({
             admin: {
@@ -198,7 +204,9 @@ import { setup, postBuilder, cleanup } from '../../helpers'
 
         response.body.data.map(d => {
             expect(Object.keys(d)).toHaveLength(3)
-            expect(Object.keys(d).sort()).toEqual(['id', 'title', 'category'].sort())
+            expect(Object.keys(d).sort()).toEqual(
+                ['id', 'title', 'category'].sort()
+            )
         })
     })
 
@@ -261,7 +269,9 @@ import { setup, postBuilder, cleanup } from '../../helpers'
         expect(response.status).toBe(200)
         expect(response.body.total).toBe(2)
 
-        expect(response.body.data.map(post => post.title).sort()).toEqual(titles)
+        expect(response.body.data.map(post => post.title).sort()).toEqual(
+            titles
+        )
     })
 
     test(`${databaseClient} - find all related resources (posts) `, async () => {
@@ -293,7 +303,9 @@ import { setup, postBuilder, cleanup } from '../../helpers'
                 manager({} as any)('Post').create({
                     ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user1.id
+                    [databaseClient === 'mongodb'
+                        ? 'user'
+                        : 'user_id']: user1.id
                 })
             )
         )
@@ -303,7 +315,9 @@ import { setup, postBuilder, cleanup } from '../../helpers'
                 manager({} as any)('Post').create({
                     ...postBuilder(),
                     title: lorem.words(3).slice(0, 23),
-                    [databaseClient === 'mongodb' ? 'user' : 'user_id']: user2.id
+                    [databaseClient === 'mongodb'
+                        ? 'user'
+                        : 'user_id']: user2.id
                 })
             )
         )
@@ -319,8 +333,12 @@ import { setup, postBuilder, cleanup } from '../../helpers'
         expect(response.status).toBe(200)
         expect(response.body.total.toString()).toBe((3).toString())
 
-        response.body.data.forEach((post) => {
-            expect((post[databaseClient === 'mongodb' ? 'user' : 'user_id']).toString()).toBe(user1.id.toString())
+        response.body.data.forEach(post => {
+            expect(
+                post[
+                    databaseClient === 'mongodb' ? 'user' : 'user_id'
+                ].toString()
+            ).toBe(user1.id.toString())
         })
 
         // this is to test for the second user
@@ -332,8 +350,12 @@ import { setup, postBuilder, cleanup } from '../../helpers'
         expect(response.status).toBe(200)
         expect(response.body.total.toString()).toBe((4).toString())
 
-        response.body.data.forEach((post) => {
-            expect((post[databaseClient === 'mongodb' ? 'user' : 'user_id']).toString()).toBe(user2.id.toString())
+        response.body.data.forEach(post => {
+            expect(
+                post[
+                    databaseClient === 'mongodb' ? 'user' : 'user_id'
+                ].toString()
+            ).toBe(user2.id.toString())
         })
     })
 
@@ -407,10 +429,10 @@ import { setup, postBuilder, cleanup } from '../../helpers'
 
         const client = Supertest(app)
 
-        const id = databaseClient === 'mongodb' ? Mongoose.Types.ObjectId() : '123'
+        const id =
+            databaseClient === 'mongodb' ? Mongoose.Types.ObjectId() : '123'
 
-        const response = await client
-            .get(`/admin/api/resources/users/${id}`)
+        const response = await client.get(`/admin/api/resources/users/${id}`)
 
         expect(response.status).toBe(404)
         expect(response.body.message).toEqual(

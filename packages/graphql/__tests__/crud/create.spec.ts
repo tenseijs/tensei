@@ -4,11 +4,12 @@ import {
     postBuilder,
     userBuilder,
     tagsBuilder,
-    commentBuilder
+    commentBuilder,
+    getTestDatabaseClients
 } from '../helpers'
 
 import { TenseiContract } from '@tensei/core'
-;['mysql', 'pg', 'sqlite', 'mongodb'].forEach((databaseClient: any) => {
+getTestDatabaseClients().forEach(databaseClient => {
     test(`${databaseClient} - can creates a record in the database`, async () => {
         const { app } = await setup({
             databaseClient
@@ -117,11 +118,9 @@ import { TenseiContract } from '@tensei/core'
     })
 
     test(`${databaseClient} - can creates a record in the database with belongs to relationship`, async () => {
-        const { app, manager } = (await setup(
-            {
-                databaseClient
-            },
-        )) as TenseiContract
+        const { app, manager } = (await setup({
+            databaseClient
+        })) as TenseiContract
 
         const client = Supertest(app)
 

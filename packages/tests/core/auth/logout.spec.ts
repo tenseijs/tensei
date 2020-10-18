@@ -1,16 +1,28 @@
 import Supertest from 'supertest'
-import { setup, createAdminUser, cleanup } from '../../helpers'
-;['mysql', 'sqlite', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+import {
+    setup,
+    createAdminUser,
+    cleanup,
+    createAdminUserMongoDB,
+    getAllRecordsMongoDB,
+    getAllRecordsKnex,
+    getTestDatabaseClients
+} from '../../helpers'
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - can successfully logout when administrator is logged in`, async () => {
         const { app, getDatabaseClient } = await setup({
             databaseClient
         })
 
-        const knex = getDatabaseClient()
+        const dbClient = getDatabaseClient()
 
         const client = Supertest(app)
 
-        const user = await createAdminUser(knex)
+        const user =
+            databaseClient === 'mongodb'
+                ? await createAdminUserMongoDB(dbClient)
+                : await createAdminUser(dbClient)
 
         const cookie = (
             await client.post('/admin/api/login').send({
@@ -21,14 +33,30 @@ import { setup, createAdminUser, cleanup } from '../../helpers'
             .split('=')[1]
             .split(';')[0]
 
-        expect(await knex('sessions').select('*')).toHaveLength(1)
+        if (databaseClient === 'mongodb') {
+            expect(
+                await getAllRecordsMongoDB(dbClient, 'sessions')
+            ).toHaveLength(1)
+        } else {
+            expect(await getAllRecordsKnex(dbClient, 'sessions')).toHaveLength(
+                1
+            )
+        }
 
         const response = await client
             .post('/admin/api/logout')
             .set('Cookie', [`connect.sid=${cookie};`])
 
         expect(response.header['set-cookie']).toBeFalsy()
-        expect(await knex('sessions').select('*')).toHaveLength(0)
+        if (databaseClient === 'mongodb') {
+            expect(
+                await getAllRecordsMongoDB(dbClient, 'sessions')
+            ).toHaveLength(0)
+        } else {
+            expect(await getAllRecordsKnex(dbClient, 'sessions')).toHaveLength(
+                0
+            )
+        }
     })
 })
 

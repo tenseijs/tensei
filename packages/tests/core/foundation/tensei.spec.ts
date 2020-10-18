@@ -126,7 +126,7 @@ test('plugins can correctly customise the express application with new routes', 
         {
             plugins: [
                 plugin('Graphql').setup(async ({ app }) => {
-                    app.post('/graphql', (req, res) =>
+                    app.post('/test-custom-express-endpoint', (req, res) =>
                         res.status(212).json({
                             message: TEST_GRAPHQL_MESSAGE
                         })
@@ -139,7 +139,7 @@ test('plugins can correctly customise the express application with new routes', 
 
     const client = Supertest(app)
 
-    const response = await client.post(`/graphql`)
+    const response = await client.post(`/test-custom-express-endpoint`)
 
     expect(response.status).toBe(212)
     expect(response.body.message).toBe(TEST_GRAPHQL_MESSAGE)

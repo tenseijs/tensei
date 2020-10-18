@@ -2,12 +2,18 @@ import Faker from 'faker'
 import Supertest from 'supertest'
 
 import { User } from '../../helpers/resources'
-import { setup, cleanup, postBuilder } from '../../helpers'
+import {
+    setup,
+    cleanup,
+    postBuilder,
+    getTestDatabaseClients
+} from '../../helpers'
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
-;['sqlite3', 'mysql', 'pg', 'mongodb'].forEach((databaseClient: any) => {
+
+getTestDatabaseClients().forEach((databaseClient: any) => {
     test(`${databaseClient} - calls before update hook during resource update (users)`, async () => {
         const { app, manager } = await setup({
             admin: {
