@@ -57,7 +57,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
 
     public async authorize(
         authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'],
-        model?: any,
+        models?: any[],
         resource = this.getCurrentResource()
     ) {
         const authorizeFunctions = this.request?.originatedFromDashboard
@@ -65,7 +65,7 @@ export class Manager extends ResourceHelpers implements ManagerContract {
             : resource.authorizeCallbacks[authorizeFn]
 
         const authorizedResults = await Promise.all(
-            authorizeFunctions.map(fn => fn(this.request!, model))
+            authorizeFunctions.map(fn => fn(this.request!, models))
         )
 
         if (

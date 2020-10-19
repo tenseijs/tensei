@@ -2,312 +2,98 @@
 
 [[toc]]
 
-When Nova is accessed only by you or your development team, you may not need additional authorization before Nova handles incoming requests. However, if you provide access to Nova to your clients or large team of developers, you may wish to authorize certain requests. For example, perhaps only administrators may delete records. Thankfully, Nova takes a simple approach to authorization that leverages many of the Laravel features you are already familiar with.
+Actions performed, or data viewed on the dashboard is controlled by a roles and permissions system. Administrators must be authorized to view, update, delete, or create resources. You can add custom permissions and custom roles to fully control who has access to what sort of data and operations.
 
-## Policies
+## Dashboard authorization
 
-To limit which users may view, create, update, or delete resources, Nova leverages Laravel's [authorization policies](https://laravel.com/docs/authorization#creating-policies). Policies are simple PHP classes that organize authorization logic for a particular model or resource. For example, if your application is a blog, you may have a `Post` model and a corresponding `PostPolicy` within your application.
+Authorization on the dashboard is managed using roles and permissions. By default, the `Super Admin` role has **all** permissions and can perform all actions. The first administrator registered on the dashboard would have this role. For each resource in the application, the following permissions are automatically generated:
 
-When manipulating a resource within Nova, Nova will automatically attempt to find a corresponding policy for the model. Typically, these policies will be registered in your application's `AuthServiceProvider`. If Nova detects a policy has been registered for the model, it will automatically check that policy's relevant authorization methods before performing their respective actions, such as:
+- `create:{resource-slug}`
+- `fetch:{resource-slug}`
+- `show:{resource-slug}`
+- `update:{resource-slug}`
+- `delete:{resource-slug}`
+- `run:{resource-slug}:{action-slug}`
 
-- `viewAny`
-- `view`
-- `create`
-- `update`
-- `delete`
-- `restore`
-- `forceDelete`
+For a more concrete example, consider the following application setup:
 
-No additional configuration is required! So, for example, to determine which users are allowed to update a `Post` model, you simply need to define an `update` method on the model's corresponding policy class:
+```javascript
+const { tensei, resource, text, textarea, number, action, hasMany } = require('@tensei/core')
 
-```php
-<?php
-
-namespace App\Policies;
-
-use App\User;
-use App\Post;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class PostPolicy
-{
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can update the post.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Post  $post
-     * @return mixed
-     */
-    public function update(User $user, Post $post)
-    {
-        return $user->type == 'editor';
-    }
-}
+tensei()
+    .resources([
+        resource('Restaurant')
+            .fields([
+                text('Name'),
+                number('Base Price'),
+                textarea('Description'),
+            ])
+            .actions([
+                action('Archive Restaurant')
+                    .handle(async ({ request }) => {})
+                    .hideOnIndex()
+            ]),
+        resource('Category')
+            .fields([
+                text('Title'),
+                hasMany('Restaurant')
+            ])
+    ])
 ```
 
-:::warning Undefined Policy Methods
+In the above example application, we have two resources `Restaurant` and `Category`. The `Restaurant` resource has an action `Archive Restaurant`. For these resources, the following permissions would be automatically generated:
 
-If a policy exists but is missing a method for a particular action, the user will not be allowed to perform that action. So, if you have defined a policy, don't forget to define all of its relevant authorization methods.
+- `create:restaurant`
+- `fetch:restaurant`
+- `show:restaurant`
+- `update:restaurant`
+- `delete:restaurant`
+- `run:restaurant:archive-restaurant`
+- `create:category`
+- `fetch:category`
+- `show:category`
+- `update:category`
+- `delete:category`
+
+The `Create restaurant` button would only be visible on the dashboard if the logged in administrator user has the `create:restaurant` permission. Also, the `Archive restaurant` action would only be visible if the logged in administrator has the `run:restaurant:archive-restaurant` permisssion.
+
+On the dashboard, you can create additional roles, assign different permissions to this role, and in turn assign this role to administrator users.
+
+::: warning Something to keep in mind
+The roles and permissions system of the dashboard is completely separate from that offered by the [auth plugin package](../plugins/auth.md). The auth plugin would be used to authorize permissions of your customer facing application.
 :::
 
-### Hiding Entire Resources
+### Custom resource permissions
 
-If you would like to hide an entire Nova resource from a subset of your dashboard's users, you may define a `viewAny` method on the model's policy class. If no `viewAny` method is defined for a given policy, Nova will assume that the user can view the resource:
+If you want to add customer permissions to a resource other than the default, you can use the `permissions` method on a resource:
 
-```php
-<?php
-
-namespace App\Policies;
-
-use App\User;
-use App\Post;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class PostPolicy
-{
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any posts.
-     *
-     * @param  \App\User  $user
-     * @return mixed
-     */
-    public function viewAny(User $user)
-    {
-        return in_array('view-posts', $user->permissions);
-    }
-}
+```js
+resource('Restaurant')
+    .permissions(['close:restaurant:portal'])
 ```
 
-### Relationships
+These permissions would be saved to the database on startup. You can then attach these permissions to a role from the dashboard, and all dashboard users with this role would have that permission.
 
-We have already learned how to authorize the typical view, create, update, and delete actions, but what about relationship interactions? For example, if you are building a podcasting application, perhaps you would like to specify that only certain Nova users may add comments to podcasts. Again, Nova makes this simple by leveraging Laravel's policies.
+### Custom dashboard authorization checks
 
-When working with relationships, Nova uses a simple policy method naming convention. To illustrate this convention, lets assume your application has `Podcast` resources and `Comment` resources. If you would like to authorize which users can add comments to a podcast, you should define an `addComment` method on your podcast model's policy class:
+By default, before creating a resource, the dashboard backend checks if the logged in user has the `create:{resource-slug}` permission. If you want to perform an additional check before executing dashboard actions, you can use one of the following methods:
 
-```php
-<?php
+- `canShowOnDashboard(() => true/false)`
+- `canFetchOnDashboard() => true/false)`
+- `canCreateOnDashboard(() => true/false)`
+- `canUpdateOnDashboard(() => true/false)`
+- `canDeleteOnDashboard(() => true/false)`
+- `canRunActionOnDashboard(() => true/false)`
 
-namespace App\Policies;
-
-use App\User;
-use App\Podcast;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class PodcastPolicy
-{
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can add a comment to the podcast.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Podcast  $podcast
-     * @return mixed
-     */
-    public function addComment(User $user, Podcast $podcast)
-    {
-        return true;
-    }
-}
+```js
+resource('Restaurant')
+    .canUpdateOnDashboard(async (request, restaurants) => {
+        return restaurants.map(
+            restaurant => restaurant.user_id === request.user.id
+        ).length > 0
+    })
 ```
 
-As you can see, Nova uses a simple `add{Model}` policy method naming convention for authorizing relationship actions.
-
-#### Authorizing Attaching / Detaching
-
-For many-to-many relationships, Nova uses a similar naming convention. However, instead of `add{Model}`, you should use an `attach{Model}` / `detach{Model}` naming convention. For example, imagine a `Podcast` model has a many-to-many relationship with the `Tag` model. If you would like to authorize which users can attach "tags" to a podcast, you may add an `attachTag` method to your podcast policy. In addition, you will likely want to define the inverse `attachPodcast` on the tag policy:
-
-```php
-<?php
-
-namespace App\Policies;
-
-use App\Tag;
-use App\User;
-use App\Podcast;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class PodcastPolicy
-{
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can attach a tag to a podcast.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Podcast  $podcast
-     * @param  \App\Tag  $tag
-     * @return mixed
-     */
-    public function attachTag(User $user, Podcast $podcast, Tag $tag)
-    {
-        return true;
-    }
-
-    /**
-     * Determine whether the user can detach a tag from a podcast.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Podcast  $podcast
-     * @param  \App\Tag  $tag
-     * @return mixed
-     */
-    public function detachTag(User $user, Podcast $podcast, Tag $tag)
-    {
-        return true;
-    }
-}
-```
-
-In the previous examples, we are determining if a user is authorized to attach one model to another. If certain types of users are **never** allowed to attach a given type of model, you may define a `attachAny{Model}` method on your policy class. This will prevent the "Attach" button from displaying in the Nova UI entirely:
-
-```php
-<?php
-
-namespace App\Policies;
-
-use App\User;
-use App\Podcast;
-use Illuminate\Auth\Access\HandlesAuthorization;
-
-class PodcastPolicy
-{
-    use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can attach any tags to the podcast.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Podcast  $podcast
-     * @return mixed
-     */
-    public function attachAnyTag(User $user, Podcast $podcast)
-    {
-        return false;
-    }
-}
-```
-
-:::warning Many To Many Authorization
-
-When working with many-to-many relationships, make sure you define the proper authorization policy methods on each of the involved resource's policy classes.
+:::tip Multiple authorization checks
+You can add multiple authorization checks to a resource by calling the authorization method multiple times. For example, calling `canUpdateOnDashboard` multiple times would check all the callbacks you pass to it.
 :::
-
-### Disabling Authorization
-
-If one of your Nova resources' models has a corresponding policy, but you want to disable Nova authorization for that resource, you may override the `authorizable` method on the Nova resource:
-
-```php
-/**
- * Determine if the given resource is authorizable.
- *
- * @return bool
- */
-public static function authorizable()
-{
-    return false;
-}
-```
-
-## Fields
-
-Sometimes you may want to hide certain fields from a group of users. You may easily accomplish this by chaining the `canSee` method onto your field definition. The `canSee` method accepts a Closure which should return `true` or `false`. The Closure will receive the incoming HTTP request:
-
-```php
-use Laravel\Nova\Fields\ID;
-use Laravel\Nova\Fields\Text;
-
-/**
- * Get the fields displayed by the resource.
- *
- * @param  \Illuminate\Http\Request  $request
- * @return array
- */
-public function fields(Request $request)
-{
-    return [
-        ID::make()->sortable(),
-
-        Text::make('Name')
-                ->sortable()
-                ->canSee(function ($request) {
-                    return $request->user()->can('viewProfile', $this);
-                }),
-    ];
-}
-```
-
-In the example above, we are using Laravel's `Authorizable` trait's `can` method on our `User` model to determine if the authorized user is authorized for the `viewProfile` action. However, since proxying to authorization policy methods is a common use-case for `canSee`, you may use the `canSeeWhen` method to achieve the same behavior. The `canSeeWhen` method has the same method signature as the `Illuminate\Foundation\Auth\Access\Authorizable` trait's `can` method:
-
-```php
-Text::make('Name')
-        ->sortable()
-        ->canSeeWhen('viewProfile', $this),
-```
-
-:::tip Authorization & The "Can" Method
-
-To learn more about Laravel's authorization helpers and the `can` method, check out the full Laravel [authorization documentation](https://laravel.com/docs/authorization#via-the-user-model).
-:::
-
-## Index Filtering
-
-You may notice that returning `false` from a policy's `view` method does not stop a given resource from appearing in the resource index. To filter models from the resource index query, you may override the `indexQuery` method on your resource. This method is already stubbed in your `App\Nova\Resource` base class, you may simply copy and paste it into a specific resource and then modify the query:
-
-```php
-/**
- * Build an "index" query for the given resource.
- *
- * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
- * @param  \Illuminate\Database\Eloquent\Builder  $query
- * @return \Illuminate\Database\Eloquent\Builder
- */
-public static function indexQuery(NovaRequest $request, $query)
-{
-    return $query->where('user_id', $request->user()->id);
-}
-```
-
-## Relatable Filtering
-
-If you would like to filter the queries that are used to populate relationship model selection menus, you may override the `relatableQuery` method on your resource.
-
-For example, if your application has a `Comment` resource that belongs to a `Podcast` resource, Nova will allow you to select the parent `Podcast` when creating a `Comment`. To limit the podcasts that are available in that selection menu, you should override the `relatableQuery` method on your `Podcast` resource:
-
-```php
-/**
- * Build a "relatable" query for the given resource.
- *
- * This query determines which instances of the model may be attached to other resources.
- *
- * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
- * @param  \Illuminate\Database\Eloquent\Builder  $query
- * @return \Illuminate\Database\Eloquent\Builder
- */
-public static function relatableQuery(NovaRequest $request, $query)
-{
-    return $query->where('user_id', $request->user()->id);
-}
-```
-
-## Scout Filtering
-
-If your application is leveraging the power of Laravel Scout for [search](./../search/scout-integration.md), you may also customize the `Laravel\Scout\Builder` query instance before it is sent to your search provider. To accomplish this, override the `scoutQuery` method on your resource:
-
-```php
-/**
- * Build a Scout search query for the given resource.
- *
- * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
- * @param  \Laravel\Scout\Builder  $query
- * @return \Laravel\Scout\Builder
- */
-public static function scoutQuery(NovaRequest $request, $query)
-{
-    return $query->where('user_id', $request->user()->id);
-}
-```

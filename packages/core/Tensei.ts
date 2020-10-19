@@ -182,8 +182,8 @@ export class Tensei implements TenseiContract {
                     }
                 ]
             },
-            // TODO: Make request option in manager. That way manager can be used in CLI, tests, anywhere.
-            manager: this.manager({} as any)!
+            manager: this.manager(),
+            storageDriver: this.storageDriver as any
         }
     }
 
@@ -300,7 +300,7 @@ export class Tensei implements TenseiContract {
     }
 
     public manager = (
-        request: Express.Request
+        request: Express.Request|null = null
     ): ManagerContract['setResource'] | null => {
         if (!this.databaseBooted) {
             return null

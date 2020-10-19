@@ -71,7 +71,7 @@ declare module '@tensei/common/config' {
     }
     type AuthorizeFunction<ModelType = any> = (
         request: Request,
-        model?: ModelType
+        models?: ModelType[],
     ) => boolean | Promise<boolean>
     type HookFunction = (
         payload: DataPayload,

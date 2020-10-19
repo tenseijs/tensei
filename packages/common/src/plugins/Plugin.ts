@@ -3,11 +3,13 @@ import {
     PluginSetupConfig,
     PluginSetupFunction,
     SetupFunctions,
-    PluginContract
+    PluginContract,
+    Permission
 } from '@tensei/common'
 
 export class Plugin implements PluginContract {
     public data = {
+        permissions: [] as Permission[],
         setup: (config: PluginSetupConfig) => Promise.resolve(),
 
         beforeDatabaseSetup: (config: PluginSetupConfig) => Promise.resolve(),
@@ -31,6 +33,12 @@ export class Plugin implements PluginContract {
             ...this.data,
             [key]: value
         }
+    }
+
+    public permissions(permissions: Permission[]) {
+        this.data.permissions = permissions
+
+        return this
     }
 
     public setup(setupFunction: PluginSetupFunction) {

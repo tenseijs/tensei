@@ -10,9 +10,7 @@ module.exports = [
     children: prefix("resources", [
       "",
       "fields",
-      "date-fields",
       "file-fields",
-      "relationships",
       "validation",
       "authorization",
     ]),
@@ -43,17 +41,13 @@ module.exports = [
     children: prefix("metrics", ["defining-metrics", "registering-metrics"]),
   },
   {
-    title: "Customization",
+    title: "Plugins",
     collapsable: false,
-    children: prefix("customization", [
-      "localization",
-      "plugins",
-      "resource-plugins",
-      "cards",
-      "fields",
-      "frontend",
-      "filters",
-    ]),
+    children: prefix("plugins", [
+      "",
+      "auth",
+      "graphql"
+    ])
   },
 ];
 

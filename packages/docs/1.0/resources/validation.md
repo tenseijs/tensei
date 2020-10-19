@@ -74,7 +74,7 @@ tensei()
     ])
     .plugins([
         plugin('Custom Slug Validation')
-            .beforeDatabaseSetup(({ indicative }) => {
+            .setup(({ indicative }) => {
                 indicative.validator.extend('slug', {
                     async: false,
                     validate(data, field, args, config) {

@@ -32,7 +32,7 @@ declare module '@tensei/core' {
         apiPath(apiPath: string): this
         serverUrl(url: string): this
         clientUrl(url: string): this
-        manager: (request: Request) => ManagerContract['setResource'] | null
+        manager: (request: Request|null) => ManagerContract['setResource'] | null
         registerMiddleware(): void
         authMiddleware: (
             request: Express.Request,

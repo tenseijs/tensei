@@ -352,31 +352,6 @@ textarea('Description').htmlAttributes({
 })
 ```
 
-## Computed Fields
-
-In addition to displaying fields that are associated with columns in your database, Nova allows you to create "computed fields". Computed fields may be used to display computed values that are not associated with a database column. Since they are not associated with a database column, computed fields may not be `sortable`. These fields may be created by passing a callable (instead of a column name) as the second argument to the field's `make` method:
-
-```php
-Text::make('Name', function () {
-    return $this->first_name.' '.$this->last_name;
-})
-```
-
-:::tip Model Attribute Access
-
-As you may have noticed in the example above, you may use `$this` to access the resource's underlying model attributes and relationships.
-:::
-
-By default, Vue will escape the content of a computed field. If you need to render HTML content within the field, use the `asHtml` method:
-
-```php
-Text::make('Status', function () {
-    return view('partials.status', [
-        'is_passing' => $this->isPassing(),
-    ])->render();
-})->asHtml()
-```
-
 ## Customization
 
 ### Nullable Fields

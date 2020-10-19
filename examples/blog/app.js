@@ -102,7 +102,7 @@ module.exports = tensei()
         //     ])
         //     .plugin(),
         graphql().plugin(),
-        plugin('Custom Slug Validation').beforeDatabaseSetup(
+        plugin('Custom Slug Validation').setup(
             ({ indicative }) => {
                 indicative.validator.extend('slug', {
                     async: false,

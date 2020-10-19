@@ -1,7 +1,12 @@
 declare module '@tensei/common/plugins' {
     import { Application } from 'express'
-    import { Asset, EndpointMiddleware, Config } from '@tensei/common/config'
+    import {
+        StorageManager,
+        Storage,
+        StorageManagerConfig
+    } from '@slynova/flydrive'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
+    import { Asset, EndpointMiddleware, Config, Permission, SupportedStorageDrivers, StorageConstructor } from '@tensei/common/config'
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
 
@@ -20,7 +25,17 @@ declare module '@tensei/common/plugins' {
         resourcesMap: {
             [key: string]: ResourceContract
         }
-        manager: ManagerContract['setResource']
+        storageDriver<
+            StorageDriverImplementation extends Storage,
+            DriverConfig extends unknown
+        >(
+            driverName: SupportedStorageDrivers,
+            driverConfig: DriverConfig,
+            storageImplementation: StorageConstructor<
+                StorageDriverImplementation
+            >
+        ): void
+        manager: ManagerContract['setResource']|null
         pushResource: (resource: ResourceContract) => void
         pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void
@@ -31,6 +46,7 @@ declare module '@tensei/common/plugins' {
         name: string
         slug: string
         data: {
+            permissions: Permission[]
             setup: (config: PluginSetupConfig) => Promise<void>
             beforeDatabaseSetup: (config: PluginSetupConfig) => Promise<void>
             afterDatabaseSetup: (config: PluginSetupConfig) => Promise<void>

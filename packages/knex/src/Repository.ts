@@ -137,7 +137,7 @@ export class SqlRepository extends ResourceHelpers
 
             await this.bootBookshelfModels()
 
-            await this.setupRolesAndPermissions()
+            await this.setupRolesAndPermissions(config)
         } catch (errors) {
             // TODO: Log these errors with this.logger
             console.log('(********************', errors)
@@ -162,7 +162,7 @@ export class SqlRepository extends ResourceHelpers
         )
     }
 
-    private setupRolesAndPermissions = async () => {
+    private setupRolesAndPermissions = async (config: Config) => {
         const permissions: string[] = []
 
         this.resources.forEach(resource => {
