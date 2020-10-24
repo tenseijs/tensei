@@ -3,7 +3,13 @@ import Faker from 'faker'
 import Supertest from 'supertest'
 import { generateSecret, totp } from 'speakeasy'
 
-import { setup, createAuthUser, cleanup, getTestDatabaseClients, createAdminUserMongoDB } from '../helpers'
+import {
+    setup,
+    createAuthUser,
+    cleanup,
+    getTestDatabaseClients,
+    createAdminUserMongoDB
+} from '../helpers'
 
 const generateSecretMock = (generateSecret as unknown) as jest.Mock<
     typeof generateSecret
@@ -13,7 +19,7 @@ const totpVerifyMock = (totp.verify as unknown) as jest.Mock<typeof totp.verify>
 
 jest.mock('speakeasy')
 
-getTestDatabaseClients().forEach((databaseClient) => {
+getTestDatabaseClients().forEach(databaseClient => {
     test(`${databaseClient} - a user can enable 2fa on her account`, async () => {
         const sampleBase32 = Faker.lorem.word()
         const sampleOtpAuthUser = Faker.lorem.word()
@@ -32,7 +38,10 @@ getTestDatabaseClients().forEach((databaseClient) => {
 
         const knex = getDatabaseClient()
 
-        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(knex) : await createAuthUser(knex)
+        const user =
+            databaseClient === 'mongodb'
+                ? await createAdminUserMongoDB(knex)
+                : await createAuthUser(knex)
 
         const client = Supertest(app)
 
@@ -67,13 +76,16 @@ getTestDatabaseClients().forEach((databaseClient) => {
 
         const knex = getDatabaseClient()
 
-        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(knex, 'customers', {
-            two_factor_secret: sampleBase32,
-            two_factor_enabled: false
-        }) : await createAuthUser(knex, {
-            two_factor_secret: sampleBase32,
-            two_factor_enabled: false
-        })
+        const user =
+            databaseClient === 'mongodb'
+                ? await createAdminUserMongoDB(knex, 'customers', {
+                      two_factor_secret: sampleBase32,
+                      two_factor_enabled: false
+                  })
+                : await createAuthUser(knex, {
+                      two_factor_secret: sampleBase32,
+                      two_factor_enabled: false
+                  })
 
         const client = Supertest(app)
 
@@ -111,13 +123,16 @@ getTestDatabaseClients().forEach((databaseClient) => {
 
         const knex = getDatabaseClient()
 
-        const user = databaseClient === 'mongodb' ? await createAdminUserMongoDB(knex, 'customers', {
-            two_factor_secret: sampleBase32,
-            two_factor_enabled: true
-        }) : await createAuthUser(knex, {
-            two_factor_secret: sampleBase32,
-            two_factor_enabled: true
-        })
+        const user =
+            databaseClient === 'mongodb'
+                ? await createAdminUserMongoDB(knex, 'customers', {
+                      two_factor_secret: sampleBase32,
+                      two_factor_enabled: true
+                  })
+                : await createAuthUser(knex, {
+                      two_factor_secret: sampleBase32,
+                      two_factor_enabled: true
+                  })
 
         const client = Supertest(app)
 

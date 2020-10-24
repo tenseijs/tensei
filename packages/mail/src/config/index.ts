@@ -1,4 +1,9 @@
-export type SupportedDrivers = 'ethereal' | 'ses' | 'mailgun' | 'smtp' | 'memory'
+export type SupportedDrivers =
+    | 'ethereal'
+    | 'ses'
+    | 'mailgun'
+    | 'smtp'
+    | 'memory'
 
 export interface SmtpConfig {
     host: string

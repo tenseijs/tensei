@@ -6,7 +6,8 @@ import {
     FieldContract,
     SerializedField,
     Config,
-    ResourceContract
+    ResourceContract,
+    FieldProperty
 } from '@tensei/common'
 
 interface Constructor<M> {
@@ -44,6 +45,16 @@ export class Field implements FieldContract {
          */
         showOnCreation: true
     }
+
+    public property: FieldProperty = {
+        name: '',
+        type: 'string',
+        primary: false,
+        // nullable: true
+    }
+
+    public relatedProperty: FieldProperty = {}
+
     public tenseiConfig: Config | null = null
     public authorizeCallbacks: {
         authorizedToSee: AuthorizeFunction
@@ -163,7 +174,7 @@ export class Field implements FieldContract {
      */
     public isHidden: boolean = false
 
-    protected isRelationshipField: boolean = false
+    public isRelationshipField: boolean = false
 
     /**
      *
@@ -226,6 +237,8 @@ export class Field implements FieldContract {
      */
     public constructor(name: string, databaseField?: string) {
         this.name = name
+
+        this.property.name = databaseField || snakeCase(this.name)
 
         this.databaseField = databaseField || snakeCase(this.name)
 
@@ -406,20 +419,69 @@ export class Field implements FieldContract {
      * Make this field searchable. will also index
      * this field in the database.
      *
+     * This method optionally takes in the name of the index.
+     *
      */
-    public searchable<T extends FieldContract>(this: T): T {
-        this.isSearchable = true
+    public searchable<T extends FieldContract>(
+        this: T,
+        index: string | boolean = true
+    ): T {
+        this.property.index = index
+
+        return this
+    }
+
+    public onCreate<T extends FieldContract>(this: T, onCreate: () => void): T {
+        this.property.onCreate = onCreate
 
         return this
     }
 
     /**
      *
-     * Make this field sortable
+     * Make this field unique
      *
      */
     public unique<T extends FieldContract>(this: T) {
-        this.isUnique = true
+        this.property.unique = true
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field unsigned
+     *
+     */
+    public unsigned<T extends FieldContract>(this: T) {
+        this.property.unsigned = true
+
+        return this
+    }
+
+    /**
+     * Make this field a primary field
+     *
+     */
+    public primary<T extends FieldContract>(this: T) {
+        this.property.primary = true
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field signed
+     *
+     */
+    public signed<T extends FieldContract>(this: T) {
+        this.property.unsigned = false
+
+        return this
+    }
+
+    public notUnique<T extends FieldContract>(this: T): T {
+        this.property.unique = false
 
         return this
     }
@@ -430,7 +492,24 @@ export class Field implements FieldContract {
      *
      */
     public notNullable<T extends FieldContract>(this: T): T {
-        this.isNullable = false
+        this.property.nullable = false
+
+        return this
+    }
+
+    public virtual<T extends FieldContract>(this: T): T {
+        this.property.persist = false
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field nullable
+     *
+     */
+    public nullable<T extends FieldContract>(this: T): T {
+        this.property.nullable = true
 
         return this
     }
@@ -459,9 +538,23 @@ export class Field implements FieldContract {
      */
     public default<T extends FieldContract>(
         this: T,
-        value: string | number | boolean
+        value: string | number | boolean | null
     ): T {
         this.defaultValue = value
+        this.property.default = value
+
+        return this
+    }
+
+    /**
+     *
+     * Set the default value for this field.
+     * Will show up on create forms as
+     * default
+     *
+     */
+    public defaultRaw<T extends FieldContract>(this: T, value: string): T {
+        this.property.defaultRaw = value
 
         return this
     }

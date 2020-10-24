@@ -92,12 +92,16 @@ getTestDatabaseClients().forEach((databaseClient: any) => {
 
         expect(response.status).toBe(200)
 
-        const user = await manager()('Customer').database().findOneByField('email', userData.email)
+        const user = await manager()('Customer')
+            .database()
+            .findOneByField('email', userData.email)
 
         expect(response.body.token).toBeDefined()
         expect(response.body.user.email).toBe(user.email)
         expect(response.body.user.id).toBe(user.id.toString())
-        expect(response.body.user.created_at).toBe(user.created_at.toISOString())
+        expect(response.body.user.created_at).toBe(
+            user.created_at.toISOString()
+        )
     })
 })
 

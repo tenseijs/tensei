@@ -52,17 +52,6 @@ export class Integer extends Number {
 
     /**
      *
-     * Make this field sortable
-     *
-     */
-    public unsigned() {
-        this.isUnsigned = true
-
-        return this
-    }
-
-    /**
-     *
      * Add custom fields to the
      * serialize method
      */

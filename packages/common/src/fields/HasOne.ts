@@ -7,8 +7,6 @@ export class HasOne extends Integer {
      * will be mounted for this field.
      */
     public component = 'HasOneField'
-
-    protected isRelationshipField: boolean = true
 }
 
 export const hasOne = (name: string, databaseField?: string) =>

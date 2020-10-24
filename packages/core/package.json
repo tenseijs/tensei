@@ -26,6 +26,7 @@
         "copy:files": "cp index.mustache build/index.mustache"
     },
     "dependencies": {
+        "@mikro-orm/core": "^4.2.0",
         "@slynova/flydrive": "^1.0.3",
         "@tensei/common": "0.0.0",
         "@tensei/mail": "0.0.0",

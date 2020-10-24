@@ -14,7 +14,6 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
-    .database('mongodb')
     .serverUrl('http://localhost:5000')
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
@@ -67,31 +66,31 @@ module.exports = tensei()
         ]),
     ])
     .plugins([
-        auth()
-            .name('Customer')
-            .twoFactorAuth()
-            .verifyEmails()
-            .teams()
-            .apiPath('auth')
-            .rolesAndPermissions()
-            .social('github', {
-                key: process.env.GITHUB_KEY,
-                secret: process.env.GITHUB_SECRET,
-                scope: ['user', 'user:email'],
-            })
-            .social('gitlab', {
-                key: process.env.GITLAB_KEY,
-                secret: process.env.GITLAB_SECRET,
-            })
-            .social('google', {
-                key: process.env.GOOGLE_KEY,
-                secret: process.env.GOOGLE_SECRET,
-            })
-            .social('linkedin', {
-                key: process.env.LINKEDIN_KEY,
-                secret: process.env.LINKEDIN_SECRET,
-            })
-            .plugin(),
+        // auth()
+        //     .name('Customer')
+        //     .twoFactorAuth()
+        //     .verifyEmails()
+        //     .teams()
+        //     .apiPath('auth')
+        //     .rolesAndPermissions()
+        //     .social('github', {
+        //         key: process.env.GITHUB_KEY,
+        //         secret: process.env.GITHUB_SECRET,
+        //         scope: ['user', 'user:email'],
+        //     })
+        //     .social('gitlab', {
+        //         key: process.env.GITLAB_KEY,
+        //         secret: process.env.GITLAB_SECRET,
+        //     })
+        //     .social('google', {
+        //         key: process.env.GOOGLE_KEY,
+        //         secret: process.env.GOOGLE_SECRET,
+        //     })
+        //     .social('linkedin', {
+        //         key: process.env.LINKEDIN_KEY,
+        //         secret: process.env.LINKEDIN_SECRET,
+        //     })
+        //     .plugin(),
         trix(),
         // cashier()
         //     .customerResourceName('Customer')
@@ -102,30 +101,18 @@ module.exports = tensei()
         //     ])
         //     .plugin(),
         graphql().plugin(),
-        plugin('Custom Slug Validation').setup(
-            ({ indicative }) => {
-                indicative.validator.extend('slug', {
-                    async: false,
-                    validate(data, field, args, config) {
-                        return data.original[field].match(
-                            /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-                        )
-                    },
-                })
-            }
-        ),
+        plugin('Custom Slug Validation').setup(({ indicative }) => {
+            indicative.validator.extend('slug', {
+                async: false,
+                validate(data, field, args, config) {
+                    return data.original[field].match(
+                        /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+                    )
+                },
+            })
+        }),
     ])
-    .databaseConfig('mongodb://localhost/tensei-y', {
-        useUnifiedTopology: true,
-        useNewUrlParser: true,
+    .databaseConfig({
+        type: 'mysql',
+        dbName: 'mikrotensei',
     })
-// .databaseConfig({
-//     client: 'mysql',
-//     connection: {
-//         host: '127.0.0.1',
-//         user: 'root',
-//         pass: '',
-//         database: 'flmg',
-//     },
-//     debug: true,
-// })

@@ -1,6 +1,7 @@
 import Field from './Field'
+import { BooleanFieldContract } from '@tensei/core'
 
-export class BooleanField extends Field {
+export class BooleanField extends Field implements BooleanFieldContract {
     public databaseFieldType: string = 'boolean'
 
     public component = 'BooleanField'
@@ -21,6 +22,8 @@ export class BooleanField extends Field {
         super(name, databaseField)
 
         this.rules('boolean')
+
+        this.property.type = 'boolean'
     }
 
     public trueLabel(value: string) {

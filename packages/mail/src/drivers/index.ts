@@ -9,7 +9,7 @@ export default {
     smtp: Smtp,
     mailgun: Mailgun,
     ethereal: Ethereal,
-    memory: MemoryDriver,
+    memory: MemoryDriver
 } as {
     [key: string]: any
 }

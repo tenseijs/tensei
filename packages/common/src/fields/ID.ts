@@ -35,6 +35,10 @@ export class ID extends Field implements IDContract {
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField || 'id')
 
+        this.primary()
+
+        this.property.type = 'number'
+
         this.exceptOnForms()
     }
 

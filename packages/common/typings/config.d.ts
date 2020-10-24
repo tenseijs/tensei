@@ -1,8 +1,10 @@
 declare module '@tensei/common/config' {
+    import { Signale } from 'signale'
     import { Storage } from '@slynova/flydrive'
     import { sanitizer, validator } from 'indicative'
     import { ResourceContract } from '@tensei/common/resources'
     import { DashboardContract } from '@tensei/common/dashboards'
+    import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
     import {
         Request,
@@ -71,7 +73,7 @@ declare module '@tensei/common/config' {
     }
     type AuthorizeFunction<ModelType = any> = (
         request: Request,
-        models?: ModelType[],
+        models?: ModelType[]
     ) => boolean | Promise<boolean>
     type HookFunction = (
         payload: DataPayload,
@@ -85,7 +87,12 @@ declare module '@tensei/common/config' {
         name: string
         path: string
     }
-    type SupportedDatabases = 'mysql' | 'pg' | 'sqlite' | 'mongodb'
+    type SupportedDatabases =
+        | 'mongo'
+        | 'mysql'
+        | 'mariadb'
+        | 'postgresql'
+        | 'sqlite'
     type InBuiltEndpoints =
         | 'show'
         | 'index'
@@ -95,13 +102,12 @@ declare module '@tensei/common/config' {
         | 'runAction'
         | 'showRelation'
     type ExpressMiddleware = ErrorRequestHandler | RequestHandler
-    interface Env {
-        port: string | number
-        sessionSecret: string
-    }
     interface EndpointMiddleware {
         type: InBuiltEndpoints
         handler: ExpressMiddleware
+    }
+    type DatabaseConfiguration = ConnectionOptions & {
+        type: SupportedDatabases
     }
     export interface Config {
         databaseClient: any
@@ -112,7 +118,9 @@ declare module '@tensei/common/config' {
         resources: ResourceContract[]
         scripts: Asset[]
         styles: Asset[]
-        env: Env
+        orm: MikroORM | null
+        logger: Signale
+        databaseConfig: DatabaseConfiguration
         dashboardPath: string
         apiPath: string
         adminTable: string
@@ -122,7 +130,6 @@ declare module '@tensei/common/config' {
         dashboardsMap: {
             [key: string]: DashboardContract
         }
-        database: SupportedDatabases
         pushResource: PluginSetupConfig['pushResource']
 
         showController: Handler

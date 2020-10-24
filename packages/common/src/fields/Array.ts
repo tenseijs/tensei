@@ -7,8 +7,15 @@ export class ArrayField extends Field {
 
     public databaseFieldType = 'array'
 
+    constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
+
+        this.property.type = 'string[]'
+    }
+
     public of(arrayOf: ArrayTypes) {
         this.arrayOf = arrayOf
+        this.property.type = `${arrayOf}[]`
 
         return this
     }

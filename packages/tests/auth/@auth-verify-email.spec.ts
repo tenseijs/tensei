@@ -16,7 +16,7 @@ beforeEach(() => {
 
 jest.mock('speakeasy')
 
-getTestDatabaseClients().forEach((databaseClient) => {
+getTestDatabaseClients().forEach(databaseClient => {
     test(`${databaseClient} - returns a 200, and creates a new session when correct credentials are passed`, async () => {
         const { app, getDatabaseClient } = await setup({
             databaseClient

@@ -56,7 +56,7 @@ export const setup = async (
         databaseClient,
         dashboardPath,
         authApiPath,
-        clearTables = true,
+        clearTables = true
     }: ConfigureSetup = {},
     forceNewInstance = false
 ) => {
@@ -204,7 +204,7 @@ export const setup = async (
         if (connection) {
             await connection.dropDatabase()
 
-            // Waiting for all mongodb background processes to complete. This is really heavy on the time taken to run 
+            // Waiting for all mongodb background processes to complete. This is really heavy on the time taken to run
             // all mongodb tests, but there should be a better way.
             // await sleep(2000)
         }
@@ -278,7 +278,8 @@ export const createAdminUserMongoDB = async (
     }
 }
 
-export const sleep = (time: number) => new Promise((resolve) => setTimeout(() => resolve(), time))
+export const sleep = (time: number) =>
+    new Promise(resolve => setTimeout(() => resolve(), time))
 
 export const createAdminUser = async (
     knex: Knex,

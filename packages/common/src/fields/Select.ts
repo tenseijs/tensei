@@ -6,9 +6,12 @@ export interface Option {
 }
 
 export class Select extends Field {
-    public selectOptions: Array<Option> = []
+    public constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
 
-    public databaseFieldType: string = 'enu'
+        this.property.enum = true
+        this.property.items = []
+    }
 
     /**
      * Set the min value for this number field.
@@ -17,21 +20,9 @@ export class Select extends Field {
      *
      */
     public options(options: Array<Option>) {
-        this.selectOptions = options
+        this.property.items = options.map(option => option.value)
 
         return this
-    }
-
-    /**
-     *
-     * Add custom fields to the
-     * serialize method
-     */
-    public serialize() {
-        return {
-            ...super.serialize(),
-            selectOptions: this.selectOptions
-        }
     }
 }
 

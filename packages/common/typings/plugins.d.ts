@@ -6,7 +6,14 @@ declare module '@tensei/common/plugins' {
         StorageManagerConfig
     } from '@slynova/flydrive'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
-    import { Asset, EndpointMiddleware, Config, Permission, SupportedStorageDrivers, StorageConstructor } from '@tensei/common/config'
+    import {
+        Asset,
+        EndpointMiddleware,
+        Config,
+        Permission,
+        SupportedStorageDrivers,
+        StorageConstructor
+    } from '@tensei/common/config'
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
 
@@ -35,7 +42,7 @@ declare module '@tensei/common/plugins' {
                 StorageDriverImplementation
             >
         ): void
-        manager: ManagerContract['setResource']|null
+        manager: ManagerContract['setResource'] | null
         pushResource: (resource: ResourceContract) => void
         pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void

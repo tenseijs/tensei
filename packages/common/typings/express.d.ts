@@ -2,10 +2,12 @@ import { Request } from 'express'
 import { Mail } from '@tensei/mail'
 import { StorageManager } from '@slynova/flydrive'
 import {
+    User,
+    Asset,
+    Config,
     ManagerContract,
     ResourceContract,
-    DashboardContract,
-    Config
+    DashboardContract
 } from '@tensei/common'
 
 declare global {
@@ -23,6 +25,9 @@ declare global {
             }
             mailer: Mail
             config: Config
+            admin?: User
+            scripts: Asset[]
+            styles: Asset[]
             originatedFromDashboard: boolean | undefined
         }
     }

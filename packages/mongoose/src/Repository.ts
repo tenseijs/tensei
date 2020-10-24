@@ -186,10 +186,12 @@ export class Repository extends ResourceHelpers
             })
 
             const schema = new Mongoose.Schema(schemaDefinition, {
-                timestamps: resource.data.noTimeStamps ? false : {
-                    createdAt: 'created_at',
-                    updatedAt: 'updated_at'
-                }
+                timestamps: resource.data.noTimeStamps
+                    ? false
+                    : {
+                          createdAt: 'created_at',
+                          updatedAt: 'updated_at'
+                      }
             })
 
             schema.statics.getTenseiResourceName = () => resource.data.name

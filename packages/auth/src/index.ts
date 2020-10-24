@@ -827,15 +827,22 @@ class Auth {
             }
         }
 
-        const user = await manager(this.userResource(config.database)).database().findOneById(
+        const user = await manager(this.userResource(config.database))
+            .database()
+            .findOneById(
                 userWithPassword.id,
                 [],
                 this.config.rolesAndPermissions
-                    ? config.database === 'mongodb' ? [] : [
-                          `${this.roleResource(config.database).data.slug}.${
-                              this.permissionResource(config.database).data.slug
-                          }`
-                      ]
+                    ? config.database === 'mongodb'
+                        ? []
+                        : [
+                              `${
+                                  this.roleResource(config.database).data.slug
+                              }.${
+                                  this.permissionResource(config.database).data
+                                      .slug
+                              }`
+                          ]
                     : []
             )
 
@@ -945,7 +952,9 @@ class Auth {
 
             const user = {
                 ...model,
-                two_factor_enabled: ['1', 'true'].includes(model.two_factor_enabled)
+                two_factor_enabled: ['1', 'true'].includes(
+                    model.two_factor_enabled
+                )
             }
 
             if (this.config.rolesAndPermissions) {

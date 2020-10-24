@@ -1,6 +1,7 @@
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
+import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
@@ -36,12 +37,13 @@ import {
     SupportedStorageDrivers,
     DatabaseRepositoryInterface
 } from '@tensei/common'
+import Database from './database'
 import MetricController from './controllers/MetricController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { TenseiContract } from '@tensei/core'
+import { TenseiContract, DatabaseConfiguration } from '@tensei/core'
 
 export class Tensei implements TenseiContract {
     public app: Application = Express()
@@ -76,7 +78,6 @@ export class Tensei implements TenseiContract {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
-        database: 'sqlite',
         pushResource: (resource: ResourceContract) => {
             this.config.resources = [...this.config.resources, resource]
         },
@@ -88,7 +89,10 @@ export class Tensei implements TenseiContract {
         pushMiddleware: (middleware: EndpointMiddleware) => {
             this.config.middleware = [...this.config.middleware, middleware]
         },
-
+        orm: null,
+        databaseConfig: {
+            type: 'sqlite'
+        },
         showController: this.asyncHandler(FindResourceController.show),
         runActionController: this.asyncHandler(RunActionController.run),
         indexController: this.asyncHandler(IndexResourceController.index),
@@ -98,7 +102,6 @@ export class Tensei implements TenseiContract {
         showRelationController: this.asyncHandler(
             FindResourceController.showRelation
         ),
-
         scripts: [
             {
                 name: 'tensei.js',
@@ -111,10 +114,6 @@ export class Tensei implements TenseiContract {
                 path: Path.resolve(__dirname, 'client', 'index.css')
             }
         ],
-        env: {
-            port: process.env.PORT || 1377,
-            sessionSecret: process.env.SESSION_SECRET || 'test-session-secret'
-        },
         logger: new Signale(),
         indicative: {
             validator,
@@ -139,9 +138,10 @@ export class Tensei implements TenseiContract {
 
         this.setConfigOnResourceFields()
 
-        await this.callPluginHook('beforeDatabaseSetup')
+        // await this.callPluginHook('beforeDatabaseSetup')
         await this.registerDatabase()
-        await this.callPluginHook('afterDatabaseSetup')
+        return this
+        // await this.callPluginHook('afterDatabaseSetup')
 
         // Please do not change this order. Super important so bugs are not introduced.
         await this.callPluginHook('beforeMiddlewareSetup')
@@ -210,27 +210,18 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public database(database: SupportedDatabases) {
-        this.config.database = database
-
-        return this
-    }
-
-    public databaseConfig(...allArguments: any) {
-        // @ts-ignore
-        this.config.databaseConfig = allArguments
-
-        return this
-    }
-
-    public sessionSecret(secret: string) {
-        this.config.env.sessionSecret = secret
+    public databaseConfig(databaseConfig: DatabaseConfiguration) {
+        this.config.databaseConfig = databaseConfig
 
         return this
     }
 
     public getDatabaseClient = () => {
         return this.config.databaseClient
+    }
+
+    private async bootDatabase() {
+        this.config.orm = await new Database(this.config).init()
     }
 
     public async registerDatabase() {
@@ -240,27 +231,33 @@ export class Tensei implements TenseiContract {
 
         let Repository = null
 
+        await this.bootDatabase()
+
+        return this
+
         // if database === mysql | sqlite | pg, we'll use the @tensei/knex package, with either mysql, pg or sqlite3 package
         // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
-        if (['mysql', 'pg', 'sqlite'].includes(this.config.database)) {
+        if (
+            ['mysql', 'pg', 'sqlite'].includes(this.config.databaseConfig.type)
+        ) {
             try {
                 // import('@tensei/knex')
                 Repository = require('@tensei/knex').Repository
             } catch (error) {
                 this.config.logger.error(
-                    `To use the ${this.config.database} database, you need to install @tensei/knex and ${this.config.database} packages`
+                    `To use the ${this.config.databaseConfig.type} database, you need to install @tensei/knex and ${this.config.databaseConfig.type} packages`
                 )
 
                 process.exit(1)
             }
         }
 
-        if (['mongodb'].includes(this.config.database)) {
+        if (['mongodb'].includes(this.config.databaseConfig.type)) {
             try {
                 Repository = require('@tensei/mongoose').Repository
             } catch (error) {
                 this.config.logger.error(
-                    `To use the ${this.config.database} database, you need to install @tensei/mongoose.`
+                    `To use the ${this.config.databaseConfig.type} database, you need to install @tensei/mongoose.`
                 )
 
                 process.exit(1)
@@ -300,7 +297,7 @@ export class Tensei implements TenseiContract {
     }
 
     public manager = (
-        request: Express.Request|null = null
+        request: Express.Request | null = null
     ): ManagerContract['setResource'] | null => {
         if (!this.databaseBooted) {
             return null
@@ -314,7 +311,7 @@ export class Tensei implements TenseiContract {
     }
 
     public getSessionPackage() {
-        if (['mongodb'].includes(this.config.database)) {
+        if (['mongodb'].includes(this.config.databaseConfig.type)) {
             return 'connect-mongo'
         }
 
@@ -325,21 +322,23 @@ export class Tensei implements TenseiContract {
         let storeArguments: any = {}
 
         if (
-            ['mysql', 'pg', 'sqlite3', 'sqlite'].includes(this.config.database)
+            ['mysql', 'pg', 'sqlite3', 'sqlite'].includes(
+                this.config.databaseConfig.type
+            )
         ) {
             storeArguments = {
                 knex: this.config.databaseClient
             }
         }
 
-        if (['mongodb'].includes(this.config.database)) {
+        if (['mongodb'].includes(this.config.databaseConfig.type)) {
             storeArguments = {
                 mongooseConnection: require('mongoose').connection
             }
         }
 
         return {
-            secret: this.config.env.sessionSecret,
+            secret: process.env.SESSION_SECRET || 'tensei-session-secret',
             store: new Store(storeArguments),
             resave: false,
             saveUninitialized: false
@@ -648,7 +647,7 @@ export class Tensei implements TenseiContract {
                 next: Express.NextFunction
             ) => {
                 // Set the app config on express here. Should probably get its own function soon.
-                request.appConfig = this.config
+                request.config = this.config
                 request.scripts = this.config.scripts
                 request.styles = this.config.styles
 
@@ -707,7 +706,7 @@ export class Tensei implements TenseiContract {
         const resourcesMap: Config['resourcesMap'] = {}
 
         uniqueResources.forEach(resource => {
-            resourcesMap[resource.data.slug] = resource
+            resourcesMap[resource.data.pascalCaseName] = resource
         })
 
         this.config.resourcesMap = resourcesMap

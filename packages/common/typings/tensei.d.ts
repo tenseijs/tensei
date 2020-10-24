@@ -1,5 +1,6 @@
 declare module '@tensei/core' {
     import { SupportedDrivers } from '@tensei/mail'
+    import { ConnectionOptions } from '@mikro-orm/core'
     import { StorageManager, Storage } from '@slynova/flydrive'
     import Express, { Application, Request } from 'express'
     import {
@@ -12,7 +13,8 @@ declare module '@tensei/core' {
         DashboardContract,
         StorageConstructor,
         SupportedDatabases,
-        SupportedStorageDrivers
+        SupportedStorageDrivers,
+        DatabaseConfiguration
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -27,12 +29,14 @@ declare module '@tensei/core' {
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
-        sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
+        databaseConfig(databaseConfig: DatabaseConfiguration): this
         apiPath(apiPath: string): this
         serverUrl(url: string): this
         clientUrl(url: string): this
-        manager: (request: Request|null) => ManagerContract['setResource'] | null
+        manager: (
+            request: Request | null
+        ) => ManagerContract['setResource'] | null
         registerMiddleware(): void
         authMiddleware: (
             request: Express.Request,
@@ -57,7 +61,6 @@ declare module '@tensei/core' {
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this
-        database(database: SupportedDatabases): this
         mail(driverName: SupportedDrivers, mailConfig?: {}): this
         storageDriver<
             StorageDriverImplementation extends Storage,
@@ -84,11 +87,11 @@ declare module '@tensei/core' {
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
-        database(database: SupportedDatabases): this
         databaseUrl(databaseUrl: string): this
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this
+        databaseConfig(databaseConfig: DatabaseConfiguration): this
         manager: () => ManagerContract['setResource'] | null
         dashboards(dashboards: DashboardContract[]): this
         registerMiddleware(): void
