@@ -235,10 +235,7 @@ export const getAllRecordsMongoDB = async (
     connection: Mongoose.Connection,
     collection: string
 ) => {
-    return connection.db
-        .collection(collection)
-        .find()
-        .toArray()
+    return connection.db.collection(collection).find().toArray()
 }
 
 export const getAllRecordsKnex = async (knex: Knex, table: string) => {
@@ -301,11 +298,7 @@ export const createAdminUser = async (
     })
 
     return {
-        ...(
-            await knex(table)
-                .where('email', user.email)
-                .limit(1)
-        )[0],
+        ...(await knex(table).where('email', user.email).limit(1))[0],
         ...user
     }
 }

@@ -5,6 +5,7 @@ declare module '@tensei/common/plugins' {
         Storage,
         StorageManagerConfig
     } from '@slynova/flydrive'
+    import { EntityManager } from '@mikro-orm/core'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
     import {
         Asset,
@@ -42,7 +43,7 @@ declare module '@tensei/common/plugins' {
                 StorageDriverImplementation
             >
         ): void
-        manager: ManagerContract['setResource'] | null
+        manager: EntityManager | null
         pushResource: (resource: ResourceContract) => void
         pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void

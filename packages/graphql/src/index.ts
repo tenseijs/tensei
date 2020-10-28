@@ -9,9 +9,10 @@ import {
     ManagerContract,
     DataPayload,
     belongsTo,
-    PluginSetupConfig
+    PluginSetupConfig,
 } from '@tensei/common'
 import { buildSchema } from 'graphql'
+import { EntityManager, ReferenceType } from '@mikro-orm/core'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
 
 export interface GraphQlPluginConfig {
@@ -36,10 +37,6 @@ class Graphql {
         let FieldType = 'String'
         let FieldKey = field.databaseField
 
-        if (field.databaseFieldType === 'increments') {
-            return ``
-        }
-
         if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
             FieldType = 'Int'
         }
@@ -53,6 +50,10 @@ class Graphql {
             FieldKey = `${field.databaseField}`
         }
 
+        if (field.property.reference === ReferenceType.ONE_TO_MANY) {
+
+        }
+
         if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
@@ -62,7 +63,7 @@ class Graphql {
             FieldKey = `${relatedResource?.data.camelCaseNamePlural}`
         }
 
-        if (!field.serialize().isNullable && !isUpdate) {
+        if (! field.property.nullable && !isUpdate) {
             FieldType = `${FieldType}!`
         }
 
@@ -79,57 +80,43 @@ class Graphql {
         let FieldType = 'String'
         let FieldKey = field.databaseField
 
-        if (field.databaseFieldType === 'increments') {
-            FieldType = 'ID'
-
-            if (config.database === 'mongodb') {
-                FieldKey = 'id'
-            }
-        }
-
-        if (field.databaseFieldType === 'enu') {
+        if (field.property.enum) {
             FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
         }
 
-        if (field.databaseFieldType === 'boolean') {
+        if (field.property.type === 'boolean') {
             FieldType = 'Boolean'
         }
 
-        if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
+        if (['integer', 'bigInteger'].includes(field.property.type!)) {
             FieldType = 'Int'
         }
 
-        if (field.component === 'BelongsToField') {
+        console.log(field.property)
+
+        if (field.property.reference === ReferenceType.ONE_TO_MANY || field.property.reference === ReferenceType.MANY_TO_MANY) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
 
-            if (!relatedResource) {
-                throw new Error(`Resource ${field.name} does not exist.`)
-            }
-
-            FieldType = `${relatedResource.data.pascalCaseName}`
-            FieldKey = relatedResource.data.camelCaseName
-        }
-
-        if (field.serialize().isRelationshipField) {
-            const relatedResource = resources.find(
-                resource => resource.data.name === field.name
-            )
-
-            if (!relatedResource) {
-                throw new Error(`Resource ${field.name} does not exist.`)
-            }
-
-            if (
-                ['HasManyField', 'BelongsToManyField'].includes(field.component)
-            ) {
+            if (relatedResource) {
                 FieldType = `[${relatedResource.data.pascalCaseName}]`
                 FieldKey = `${
                     relatedResource.data.camelCaseNamePlural
                 }(page: Int = 1, per_page: Int = ${
                     relatedResource.data.perPageOptions[0] || 10
                 }, filters: [${relatedResource.data.pascalCaseName}Filter])`
+            }
+        }
+
+        if (field.property.reference === ReferenceType.MANY_TO_ONE) {
+            const relatedResource = resources.find(
+                resource => resource.data.name === field.name
+            )
+
+            if (relatedResource) {
+                FieldType = `${relatedResource.data.pascalCaseName}`
+                FieldKey = relatedResource.data.camelCaseName
             }
         }
 
@@ -192,6 +179,18 @@ class Graphql {
     ) {
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
+${resource.data.fields
+    .filter(field => field.property.enum)
+    .map(
+        field => `
+enum ${resource.data.pascalCaseName}${
+            field.pascalCaseName
+        }Enum {${field.serialize().selectOptions?.map(
+            option => `
+    ${option.value}`
+        )}
+}`
+    )}
 type ${resource.data.pascalCaseName} {${resource.data.fields
                 .filter(field => !field.isHidden)
                 .map(field =>
@@ -249,18 +248,6 @@ input ${resource.data.pascalCaseName}Filter {
   value: [String]
   operator: ${resource.data.pascalCaseName}FilterOperators
 }
-${resource.data.fields
-    .filter(field => field.databaseFieldType === 'enu')
-    .map(
-        field => `
-enum ${resource.data.pascalCaseName}${
-            field.pascalCaseName
-        }Enum {${field.serialize().selectOptions?.map(
-            option => `
-  ${option.value}`
-        )}
-}`
-    )}
 `
         })
 
@@ -330,226 +317,26 @@ type DeletePayload {
 
     private getResolvers(
         resources: ResourceContract[],
-        manager: ManagerContract['setResource'],
+        manager: EntityManager,
         config: PluginSetupConfig
     ) {
         let resolvers: any = {}
-
-        const getSingleResource = async (
-            resource: ResourceContract,
-            field: FieldContract,
-            row: any
-        ) => {
-            let relatedRowJson = await manager(resource)
-                .database()
-                .findOneById(row[field.databaseField])
-
-            const [result] = populateRowWithRelationShips(
-                [relatedRowJson],
-                resource
-            )
-
-            return result
-        }
-
-        const populateRowWithRelationShips = (
-            rows: any[],
-            resource: ResourceContract
-        ) => {
-            const belongsToFields = resource.data.fields.filter(
-                field => field.component === 'BelongsToField'
-            )
-            let belongsToDataLoaders: DataPayload = {}
-
-            belongsToFields.forEach(belongsToField => {
-                const relatedBelongsToResource = resources.find(
-                    r => r.data.name === belongsToField.name
-                )!
-
-                belongsToDataLoaders[
-                    `${resource.data.pascalCaseName}_${relatedBelongsToResource.data.pascalCaseName}_BelongsToField`
-                ] = new DataLoader(async (keys: readonly string[]) => {
-                    const keysWithoutDuplicates = Array.from(
-                        new Set(keys.map(key => key.toString()))
-                    )
-
-                    const rows = await manager(relatedBelongsToResource!)
-                        .database()
-                        .findAllByIds(keysWithoutDuplicates)
-
-                    return populateRowWithRelationShips(
-                        keys.map(
-                            key =>
-                                rows.find(row =>
-                                    [
-                                        row[this.getIdKey(config)].toString()
-                                    ].includes(key.toString())
-                                ) || null
-                        ),
-                        relatedBelongsToResource!
-                    )
-                })
-            })
-
-            const relationshipFields = resource.data.fields.filter(
-                f =>
-                    f.serialize().isRelationshipField ||
-                    f.component === 'BelongsToField'
-            )
-
-            return rows.map(row => {
-                relationshipFields.forEach(field => {
-                    if (field.component === 'BelongsToField') {
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.name
-                        )!
-
-                        const loader =
-                            belongsToDataLoaders[
-                                `${resource.data.pascalCaseName}_${relatedResource.data.pascalCaseName}_BelongsToField`
-                            ]
-
-                        const relatedId = row[field.databaseField]
-
-                        if (
-                            row &&
-                            relatedId &&
-                            typeof relatedId !== 'function'
-                        ) {
-                            row[relatedResource.data.camelCaseName] = () =>
-                                loader.load(relatedId)
-                        }
-
-                        return
-                    }
-
-                    if (
-                        ['BelongsToManyField', 'HasManyField'].includes(
-                            field.component
-                        )
-                    ) {
-                        const relatedResource = resources.find(
-                            resource => resource.data.name === field.name
-                        )!
-
-                        if (row) {
-                            row[relatedResource.data.camelCaseNamePlural] = (
-                                relatedArgs: any
-                            ) =>
-                                getMultipleResources(
-                                    resource,
-                                    relatedResource,
-                                    field,
-                                    row,
-                                    relatedArgs
-                                )
-                        }
-                    }
-                })
-
-                return row
-            })
-        }
-
-        const getMultipleResources = async (
-            resource: ResourceContract,
-            relatedResource: ResourceContract,
-            field: FieldContract,
-            row: any,
-            args: any
-        ) => {
-            let rows: any = []
-
-            if (field.component === 'BelongsToManyField') {
-                rows = await manager(resource)
-                    .database()
-                    .findAllBelongingToManyData(relatedResource, row.id, args)
-            } else {
-                rows = await manager(resource)
-                    .database()
-                    .findAllHasManyData(relatedResource, row.id, args)
-            }
-
-            return populateRowWithRelationShips(rows, relatedResource)
-        }
-
-        resources.forEach(resource => {
-            // handle fetch all resolvers
-            resolvers[resource.data.camelCaseNamePlural] = async (
-                args: any,
-                request: any,
-                ql: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
-
-                const data = await resourceManager.database().findAllData(args)
-
-                return populateRowWithRelationShips(data, resource)
-            }
-
-            // handle fetch one resolvers
-            resolvers[resource.data.camelCaseName] = async (args: any) => {
-                const resourceManager = manager(resource.data.name)
-
-                let data = await resourceManager
-                    .database()
-                    .findOneById(args.id || args._id)
-
-                const [result] = populateRowWithRelationShips([data], resource)
-
-                return result
-            }
-
-            resolvers[`create${resource.data.pascalCaseName}`] = async (
-                args: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
-
-                let data = await resourceManager.create(args.input)
-
-                const [result] = populateRowWithRelationShips([data], resource)
-
-                return result
-            }
-
-            resolvers[`update${resource.data.pascalCaseName}`] = async (
-                args: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
-
-                let data = await resourceManager.update(
-                    args.id || args._id,
-                    args.input
-                )
-
-                const [result] = populateRowWithRelationShips([data], resource)
-
-                return result
-            }
-
-            resolvers[`delete${resource.data.pascalCaseName}`] = async (
-                args: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
-
-                const success = await resourceManager.deleteById(
-                    args.id || args._id
-                )
-
-                return {
-                    success
-                }
-            }
-        })
 
         return resolvers
     }
 
     plugin() {
         return plugin('Graph QL').afterDatabaseSetup(async config => {
-            const { app, resources, manager, database } = config
+            const { app, resources, manager, schemas } = config
             const exposedResources = resources.filter(
                 resource => !resource.data.hideFromApi
+            )
+            console.log(
+                JSON.stringify(
+                    schemas,
+                    null,
+                    2
+                )
             )
             const schema = this.setupResourceGraphqlTypes(
                 exposedResources,
@@ -563,7 +350,7 @@ type DeletePayload {
                     graphiql: this.config.graphiql,
                     rootValue: this.getResolvers(
                         exposedResources,
-                        manager,
+                        manager!,
                         config
                     )
                 })

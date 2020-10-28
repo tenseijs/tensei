@@ -1,7 +1,8 @@
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
-import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
+import { responseEnhancer } from 'express-response-formatter'
+import { MikroORM, ConnectionOptions, RequestContext } from '@mikro-orm/core'
 import ExpressSession from 'express-session'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
@@ -70,6 +71,7 @@ export class Tensei implements TenseiContract {
     private databaseRepository: DatabaseRepositoryInterface | null = null
 
     public config: Config = {
+        schemas: [],
         databaseClient: null,
         serverUrl: '',
         clientUrl: '',
@@ -138,15 +140,15 @@ export class Tensei implements TenseiContract {
 
         this.setConfigOnResourceFields()
 
-        // await this.callPluginHook('beforeDatabaseSetup')
+        await this.callPluginHook('beforeDatabaseSetup')
         await this.registerDatabase()
-        return this
-        // await this.callPluginHook('afterDatabaseSetup')
+
+        await this.callPluginHook('afterDatabaseSetup')
 
         // Please do not change this order. Super important so bugs are not introduced.
         await this.callPluginHook('beforeMiddlewareSetup')
-        this.registerMiddleware()
         this.registerAssetsRoutes()
+        this.registerMiddleware()
         await this.callPluginHook('afterMiddlewareSetup')
 
         await this.callPluginHook('beforeCoreRoutesSetup')
@@ -182,7 +184,7 @@ export class Tensei implements TenseiContract {
                     }
                 ]
             },
-            manager: this.manager(),
+            manager: this.config.orm ? this.config.orm.em : null,
             storageDriver: this.storageDriver as any
         }
     }
@@ -221,7 +223,10 @@ export class Tensei implements TenseiContract {
     }
 
     private async bootDatabase() {
-        this.config.orm = await new Database(this.config).init()
+        const [orm, schemas] = await new Database(this.config).init()
+
+        this.config.orm = orm
+        this.config.schemas = schemas
     }
 
     public async registerDatabase() {
@@ -229,61 +234,7 @@ export class Tensei implements TenseiContract {
             return this
         }
 
-        let Repository = null
-
         await this.bootDatabase()
-
-        return this
-
-        // if database === mysql | sqlite | pg, we'll use the @tensei/knex package, with either mysql, pg or sqlite3 package
-        // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
-        if (
-            ['mysql', 'pg', 'sqlite'].includes(this.config.databaseConfig.type)
-        ) {
-            try {
-                // import('@tensei/knex')
-                Repository = require('@tensei/knex').Repository
-            } catch (error) {
-                this.config.logger.error(
-                    `To use the ${this.config.databaseConfig.type} database, you need to install @tensei/knex and ${this.config.databaseConfig.type} packages`
-                )
-
-                process.exit(1)
-            }
-        }
-
-        if (['mongodb'].includes(this.config.databaseConfig.type)) {
-            try {
-                Repository = require('@tensei/mongoose').Repository
-            } catch (error) {
-                this.config.logger.error(
-                    `To use the ${this.config.databaseConfig.type} database, you need to install @tensei/mongoose.`
-                )
-
-                process.exit(1)
-            }
-        }
-
-        const repository: DatabaseRepositoryInterface = new Repository()
-
-        const client = await repository.setup(this.config)
-
-        this.resources(repository.setResourceModels(this.config.resources))
-
-        this.config.databaseClient = client
-        this.databaseRepository = repository
-
-        this.app.use(
-            (
-                request: Express.Request,
-                response: Express.Response,
-                next: Express.NextFunction
-            ) => {
-                // request.db = repository
-
-                next()
-            }
-        )
 
         this.databaseBooted = true
 
@@ -294,20 +245,6 @@ export class Tensei implements TenseiContract {
         this.config.apiPath = apiPath
 
         return this
-    }
-
-    public manager = (
-        request: Express.Request | null = null
-    ): ManagerContract['setResource'] | null => {
-        if (!this.databaseBooted) {
-            return null
-        }
-
-        return new Manager(
-            request,
-            this.config.resources,
-            this.databaseRepository!
-        ).setResource
     }
 
     public getSessionPackage() {
@@ -348,6 +285,8 @@ export class Tensei implements TenseiContract {
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
+        this.app.use(responseEnhancer())
+
         const rootStorage = (this.storageConfig.disks?.local?.config as any)
             .root
         const publicPath = (this.storageConfig.disks?.local?.config as any)
@@ -365,7 +304,6 @@ export class Tensei implements TenseiContract {
             ) => {
                 request.dashboards = this.config.dashboardsMap
                 request.resources = this.config.resourcesMap
-                request.manager = this.manager(request)!
                 request.mailer = this.mailer
                 request.config = this.config
 
@@ -373,9 +311,14 @@ export class Tensei implements TenseiContract {
             }
         )
 
-        const Store = require(this.getSessionPackage())(ExpressSession)
+        this.app.use((request, response, next) =>
+            RequestContext.create(this.config.orm?.em!, next)
+        )
+        this.app.use((request, response, next) => {
+            request.manager = RequestContext.getEntityManager()!
 
-        this.app.use(ExpressSession(this.getSessionPackageConfig(Store)))
+            next()
+        })
 
         this.app.use(this.setAuthMiddleware)
     }
@@ -706,6 +649,7 @@ export class Tensei implements TenseiContract {
         const resourcesMap: Config['resourcesMap'] = {}
 
         uniqueResources.forEach(resource => {
+            resourcesMap[resource.data.slug] = resource
             resourcesMap[resource.data.pascalCaseName] = resource
         })
 
@@ -741,9 +685,7 @@ export class Tensei implements TenseiContract {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
+        this.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }

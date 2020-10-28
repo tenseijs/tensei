@@ -90,8 +90,8 @@ module.exports = resource('Post')
                 },
                 {
                     label: 'Mangojs',
-                    value: 'mangojs'
-                }
+                    value: 'mangojs',
+                },
             ])
             .rules('required')
             .searchable()
@@ -106,7 +106,7 @@ module.exports = resource('Post')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
-        belongsToMany('Tag'),
+        belongsToMany('Tag').owner(),
         hasMany('Comment'),
     ])
     .perPageOptions([25, 50, 100])

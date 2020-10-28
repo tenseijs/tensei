@@ -49,7 +49,7 @@ export class Field implements FieldContract {
     public property: FieldProperty = {
         name: '',
         type: 'string',
-        primary: false,
+        primary: false
         // nullable: true
     }
 
