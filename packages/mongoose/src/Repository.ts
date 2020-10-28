@@ -21,7 +21,8 @@ import {
 import { dateTime } from '@tensei/common'
 import { belongsToMany } from '@tensei/common'
 
-export class Repository extends ResourceHelpers
+export class Repository
+    extends ResourceHelpers
     implements DatabaseRepositoryInterface<any> {
     private $db: Mongoose.Connection | null = null
 
@@ -208,12 +209,8 @@ export class Repository extends ResourceHelpers
         return resource('Administrator Role')
             .hideFromNavigation()
             .fields([
-                text('Name')
-                    .rules('required')
-                    .unique(),
-                text('Slug')
-                    .rules('required')
-                    .unique(),
+                text('Name').rules('required').unique(),
+                text('Slug').rules('required').unique(),
                 hasMany('Administrator Permission')
             ])
     }
@@ -222,12 +219,8 @@ export class Repository extends ResourceHelpers
         return resource('Administrator Permission')
             .hideFromNavigation()
             .fields([
-                text('Name')
-                    .rules('required')
-                    .unique(),
-                text('Slug')
-                    .rules('required')
-                    .unique()
+                text('Name').rules('required').unique(),
+                text('Slug').rules('required').unique()
             ])
     }
 
@@ -235,13 +228,8 @@ export class Repository extends ResourceHelpers
         return resource('Administrator Password Reset')
             .hideFromNavigation()
             .fields([
-                text('Email')
-                    .searchable()
-                    .unique()
-                    .notNullable(),
-                text('Token')
-                    .unique()
-                    .notNullable(),
+                text('Email').searchable().unique().notNullable(),
+                text('Token').unique().notNullable(),
                 dateTime('Expires At')
             ])
     }
@@ -263,13 +251,8 @@ export class Repository extends ResourceHelpers
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email')
-                    .unique()
-                    .searchable()
-                    .rules('required', 'email'),
-                text('Password')
-                    .hidden()
-                    .rules('required', 'min:8'),
+                text('Email').unique().searchable().rules('required', 'email'),
+                text('Password').hidden().rules('required', 'min:8'),
                 belongsToMany('Administrator Role')
             ])
             .beforeCreate(payload => ({

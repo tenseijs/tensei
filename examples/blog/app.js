@@ -2,7 +2,7 @@ require('dotenv').config()
 const { auth } = require('@tensei/auth')
 const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
-const { cashier, plan } = require('@tensei/cashier')
+// const { cashier, plan } = require('@tensei/cashier')
 const { AmazonWebServicesS3Storage } = require('@slynova/flydrive-s3')
 const { tensei, dashboard, valueMetric, plugin } = require('@tensei/core')
 
@@ -115,4 +115,5 @@ module.exports = tensei()
     .databaseConfig({
         type: 'mysql',
         dbName: 'mikrotensei',
+        debug: true
     })

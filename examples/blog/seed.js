@@ -30,6 +30,7 @@ const postBuilder = build('Post', {
         category: fake((f) =>
             f.random.arrayElement(['angular', 'javascript', 'mysql', 'pg'])
         ),
+        slug: fake((f) => `${f.lorem.slug()}-${Date.now()}`),
         published_at: fake((f) => f.date.past()),
         scheduled_for: fake((f) => f.date.future()),
         // created_at: fake((f) => f.date.recent(f.random.number())),
@@ -46,9 +47,9 @@ const tagsBuilder = build('Tag', {
 
 const commentsBuilder = build('Comment', {
     fields: {
-        post_id: sequence(),
         title: fake((f) => f.lorem.sentence()),
-        body: fake((f) => f.lorem.paragraph(2)),
+        body: fake((f) => f.lorem.sentence()),
+        reply: fake((f) => f.lorem.sentence()),
         // created_at: fake((f) => f.date.recent(f.random.number())),
     },
 })
@@ -65,7 +66,7 @@ const posts = Array(1000)
     .fill(undefined)
     .map(() => postBuilder())
 
-const users = Array(1000)
+const users = Array(10)
     .fill(undefined)
     .map(() => userBuilder())
 
@@ -126,31 +127,70 @@ async function seedMongo(resources, connection) {
 
 require('./app')
     .register()
-    .then(async ({ getDatabaseClient, config }) => {
-        if (config.database === 'mongodb') {
-            seedMongo(config.resources, getDatabaseClient())
+    .then(
+        async ({
+            config: {
+                orm: { em },
+            },
+        }) => {
+            const userObjects = users.map((user) => em.create('User', user))
 
+            await em.persistAndFlush(userObjects)
+
+            const savedUsers = await em.find('User')
+
+            for (let index = 0; index < savedUsers.length; index++) {
+                const user = savedUsers[index]
+
+                const posts = Array(10)
+                    .fill(undefined)
+                    .map(() => em.create('Post', postBuilder()))
+                    .map((post) => {
+                        post.user = user
+
+                        return post
+                    })
+
+                await em.persistAndFlush(posts)
+            }
+
+            const savedPosts = await em.find('Post')
+
+            for (let index = 0; index < savedPosts.length; index++) {
+                const post = savedPosts[index]
+
+                const comments = Array(10)
+                    .fill(undefined)
+                    .map(() => em.create('Comment', commentsBuilder()))
+                    .map((comment) => {
+                        comment.post = post
+
+                        return comment
+                    })
+
+                await em.persistAndFlush(comments)
+            }
+
+            // console.log(savedUsers)
             return
+
+            await Promise.all([
+                knex('posts').truncate(),
+                knex('users').truncate(),
+                knex('tags').truncate(),
+                knex('comments').truncate(),
+                knex('administrators').truncate(),
+            ])
+
+            await Promise.all([
+                knex('posts').insert(posts),
+                knex('users').insert(users),
+                knex('tags').insert(tags),
+                knex('comments').insert(comments),
+                knex('administrators').insert(administrators),
+                knex('posts_tags').insert(posts_tags),
+            ])
+
+            await knex.destroy()
         }
-
-        const knex = getDatabaseClient()
-
-        await Promise.all([
-            knex('posts').truncate(),
-            knex('users').truncate(),
-            knex('tags').truncate(),
-            knex('comments').truncate(),
-            knex('administrators').truncate(),
-        ])
-
-        await Promise.all([
-            knex('posts').insert(posts),
-            knex('users').insert(users),
-            knex('tags').insert(tags),
-            knex('comments').insert(comments),
-            knex('administrators').insert(administrators),
-            knex('posts_tags').insert(posts_tags),
-        ])
-
-        await knex.destroy()
-    })
+    )

@@ -5,13 +5,15 @@ import {
     ResourceData,
     HookFunction,
     FieldContract,
+    FilterContract,
     ResourceContract,
     AuthorizeFunction,
     ValidationMessages,
-    SerializedResource
+    SerializedResource,
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'
+// import { FilterContract } from '@tensei/filters'
 import { snakeCase, paramCase, camelCase, pascalCase } from 'change-case'
 
 interface ResourceDataWithFields extends ResourceData {
@@ -81,12 +83,18 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         this.data.camelCaseName = camelCase(name)
         this.data.pascalCaseName = pascalCase(name)
         this.data.slug = Pluralize(paramCase(name))
-        this.data.camelCaseNamePlural = Pluralize(camelCase(name))
         this.data.table = tableName || Pluralize(snakeCase(name))
+        this.data.camelCaseNamePlural = Pluralize(camelCase(name))
     }
 
     public Model = (): any => {
         return null
+    }
+
+    public filters(filters: FilterContract[]) {
+        this.data.filters = filters
+
+        return this
     }
 
     public data: ResourceDataWithFields = {
@@ -96,6 +104,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         name: '',
         slug: '',
         label: '',
+        filters: [],
         hideFromApi: false,
         permissions: [],
         group: 'Resources',

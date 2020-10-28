@@ -21,14 +21,14 @@ class Database {
 
     async init() {
         if (this.initialized) {
-            return this.orm!
+            return [this.orm!, this.schemas]
         }
 
         this.orm = await MikroORM.init(this.getMikroORMOptions())
 
         await new Migrator(this.orm!, this.schemas).init()
 
-        return this.orm!
+        return [this.orm!, this.schemas]
     }
 
     getMikroORMOptions() {
@@ -44,7 +44,8 @@ class Database {
                 name: resource.data.pascalCaseName,
                 extends: 'BaseEntity',
                 tableName: resource.data.table,
-                collection: resource.data.table
+                collection: resource.data.table,
+                hooks: {}
             }
 
             let entityProperties: any = {}
@@ -58,6 +59,32 @@ class Database {
                     entityProperties[field.databaseField] = field.property
                 }
             })
+
+            // resource.data.filters.forEach(filter => {
+            //     entityProperties.filters = {
+            //         ...entityProperties.filters,
+            //         [filter.config.shortName]: {
+            //             name: filter.config.shortName,
+            //             cond: filter.config.cond,
+            //             args: filter.config.args,
+            //             default: filter.config.default
+            //         }
+            //     }
+            // })
+
+            // onInit = "onInit",
+            // beforeCreate = "beforeCreate",
+            // afterCreate = "afterCreate",
+            // beforeUpdate = "beforeUpdate",
+            // afterUpdate = "afterUpdate",
+            // beforeDelete = "beforeDelete",
+            // afterDelete = "afterDelete",
+            // beforeFlush = "beforeFlush",
+            // onFlush = "onFlush",
+            // afterFlush = "afterFlush"
+            entityMeta.hooks.onInit = (...all: any) => {
+                console.log('@@@@@@@@@ INIT', all)
+            }
 
             entityMeta.properties = entityProperties
 
@@ -96,7 +123,11 @@ class Database {
 
                 if (!relatedField.relatedProperty.owner) {
                     field.relatedProperty.owner = true
-                    field.relatedProperty.mappedBy = relatedField.databaseField
+                    field.relatedProperty.inversedBy =
+                        relatedField.databaseField
+
+                    relatedField.relatedProperty.owner = false
+                    relatedField.relatedProperty.mappedBy = field.databaseField
                 }
             }
         }
@@ -125,8 +156,8 @@ class Database {
                 }
 
                 if (!relatedField.relatedProperty.owner) {
-                    field.relatedProperty.owner = true
-                    field.relatedProperty.mappedBy = relatedField.databaseField
+                    field.relatedProperty.inversedBy =
+                        relatedField.databaseField
                 }
             }
         }

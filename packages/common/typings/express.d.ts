@@ -1,5 +1,6 @@
 import { Request } from 'express'
 import { Mail } from '@tensei/mail'
+import { MikroORM, EntityManager } from '@mikro-orm/core'
 import { StorageManager } from '@slynova/flydrive'
 import {
     User,
@@ -13,10 +14,6 @@ import {
 declare global {
     namespace Express {
         export interface Request {
-            manager: (
-                resourceSlugOrResource: string | ResourceContract,
-                request?: Request
-            ) => ManagerContract
             resources: {
                 [key: string]: ResourceContract
             }
@@ -26,6 +23,8 @@ declare global {
             mailer: Mail
             config: Config
             admin?: User
+            orm: MikroORM
+            manager: EntityManager
             scripts: Asset[]
             styles: Asset[]
             originatedFromDashboard: boolean | undefined

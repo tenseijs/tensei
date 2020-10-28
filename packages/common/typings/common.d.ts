@@ -4,5 +4,6 @@ declare module '@tensei/common' {
     export * from '@tensei/common/actions'
     export * from '@tensei/common/resources'
     export * from '@tensei/common/plugins'
+    export * from '@tensei/common/filters'
     export * from '@tensei/common/dashboards'
 }

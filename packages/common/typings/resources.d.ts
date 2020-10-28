@@ -1,5 +1,7 @@
+
 declare module '@tensei/common/resources' {
     import { Request } from 'express'
+    import { FilterContract } from '@tensei/common/filters'
     import { SerializedField, FieldContract } from '@tensei/common/fields'
     import { SerializedAction, ActionContract } from '@tensei/common/actions'
     import {
@@ -25,11 +27,12 @@ declare module '@tensei/common/resources' {
         camelCaseName: string
         displayField: string
         noTimeStamps: boolean
+        pascalCaseName: string
         perPageOptions: number[]
         permissions: Permission[]
+        filters: FilterContract[]
         camelCaseNamePlural: string
         displayInNavigation: boolean
-        pascalCaseName: string
         validationMessages: ValidationMessages
     }
     interface ResourceDataWithFields extends ResourceData {
@@ -66,6 +69,7 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         hideFromApi(): this
+        filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this
@@ -122,6 +126,7 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         hideFromApi(): this
+        filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this

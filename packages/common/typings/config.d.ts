@@ -111,6 +111,7 @@ declare module '@tensei/common/config' {
     }
     export interface Config {
         databaseClient: any
+        schemas: any
         serverUrl: string
         clientUrl: string
         plugins: PluginContract[]
