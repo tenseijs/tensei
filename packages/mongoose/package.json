@@ -1,11 +1,11 @@
 {
     "name": "@tensei/mongoose",
-    "version": "0.0.0",
+    "version": "0.0.1-alpha.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./core.d.ts",
     "dependencies": {
-        "@tensei/common": "0.0.0",
+        "@tensei/common": "^0.0.1-alpha.0",
         "@types/mongoose": "^5.7.36",
         "bookshelf": "^1.2.0",
         "bookshelf-eloquent": "^0.1.15",
@@ -19,6 +19,5 @@
         "build": "tsc --p tsconfig.json",
         "dev": "tsc --watch --p tsconfig.json",
         "prettier": "prettier --write './**/*.{js,json,ts,css}'"
-    },
-    "devDependencies": {}
+    }
 }

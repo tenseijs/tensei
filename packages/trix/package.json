@@ -1,6 +1,6 @@
 {
     "name": "@tensei/trix",
-    "version": "0.0.0",
+    "version": "0.0.1-alpha.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -18,7 +18,7 @@
         "typescript": "^3.9.7"
     },
     "dependencies": {
-        "trix": "^1.2.4",
-        "@tensei/common": "0.0.0"
+        "@tensei/common": "^0.0.1-alpha.0",
+        "trix": "^1.2.4"
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@tensei/core",
-    "version": "0.0.0",
+    "version": "0.0.1-alpha.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./Tensei.d.ts",
@@ -27,8 +27,8 @@
     },
     "dependencies": {
         "@slynova/flydrive": "^1.0.3",
-        "@tensei/common": "0.0.0",
-        "@tensei/mail": "0.0.0",
+        "@tensei/common": "^0.0.1-alpha.0",
+        "@tensei/mail": "^0.0.1-alpha.0",
         "@types/signale": "^1.4.1",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",

@@ -1,21 +1,20 @@
 {
     "name": "@tensei/knex",
-    "version": "0.0.0",
+    "version": "0.0.1-alpha.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./core.d.ts",
     "dependencies": {
+        "@tensei/common": "^0.0.1-alpha.0",
         "bookshelf": "^1.2.0",
         "bookshelf-eloquent": "^0.1.15",
         "change-case": "^4.1.1",
         "connect-session-knex": "^1.7.3",
-        "knex": "^0.21.2",
-        "@tensei/common": "0.0.0"
+        "knex": "^0.21.2"
     },
     "scripts": {
         "build": "tsc --p tsconfig.json",
         "dev": "tsc --watch --p tsconfig.json",
         "prettier": "prettier --write './**/*.{js,json,ts,css}'"
-    },
-    "devDependencies": {}
+    }
 }

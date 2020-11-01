@@ -1,6 +1,6 @@
 {
     "name": "@tensei/cashier",
-    "version": "0.0.0",
+    "version": "0.0.1-alpha.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -24,8 +24,8 @@
         "access": "public"
     },
     "dependencies": {
+        "@tensei/common": "^0.0.1-alpha.0",
         "dayjs": "^1.8.34",
-        "randomstring": "^1.1.5",
-        "@tensei/common": "0.0.0"
+        "randomstring": "^1.1.5"
     }
 }
