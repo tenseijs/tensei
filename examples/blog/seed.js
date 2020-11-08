@@ -171,6 +171,16 @@ require('./app')
                 await em.persistAndFlush(comments)
             }
 
+            const tags = Array(10)
+                .fill(undefined)
+                .map(() => em.create('Tag', tagsBuilder()))
+                .map((tag) => {
+                    tag.posts = savedPosts
+
+                    return tag
+                })
+            await em.persistAndFlush(tags)
+
             // console.log(savedUsers)
             return
 

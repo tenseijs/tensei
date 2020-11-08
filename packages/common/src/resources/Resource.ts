@@ -9,7 +9,7 @@ import {
     ResourceContract,
     AuthorizeFunction,
     ValidationMessages,
-    SerializedResource,
+    SerializedResource
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'

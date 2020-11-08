@@ -1,6 +1,10 @@
 import { camelCase } from 'change-case'
 import { FilterQuery, Dictionary } from '@mikro-orm/core'
-import { FilterCondition, FilterConfig, FilterContract } from '@tensei/common/filters'
+import {
+    FilterCondition,
+    FilterConfig,
+    FilterContract
+} from '@tensei/common/filters'
 
 export class Filter<T = any> implements FilterContract {
     public config: FilterConfig<T> = {
@@ -42,8 +46,5 @@ export class Filter<T = any> implements FilterContract {
 }
 
 export function filter<T = any>(name: string, shortName?: string) {
-    return new Filter<T>(
-        name,
-        shortName
-    )
+    return new Filter<T>(name, shortName)
 }

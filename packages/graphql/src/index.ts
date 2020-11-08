@@ -9,7 +9,7 @@ import {
     ManagerContract,
     DataPayload,
     belongsTo,
-    PluginSetupConfig,
+    PluginSetupConfig
 } from '@tensei/common'
 import { buildSchema } from 'graphql'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
@@ -51,7 +51,6 @@ class Graphql {
         }
 
         if (field.property.reference === ReferenceType.ONE_TO_MANY) {
-
         }
 
         if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
@@ -63,7 +62,7 @@ class Graphql {
             FieldKey = `${relatedResource?.data.camelCaseNamePlural}`
         }
 
-        if (! field.property.nullable && !isUpdate) {
+        if (!field.property.nullable && !isUpdate) {
             FieldType = `${FieldType}!`
         }
 
@@ -92,9 +91,14 @@ class Graphql {
             FieldType = 'Int'
         }
 
-        console.log(field.property)
+        if (field.property.primary) {
+            FieldType = 'ID'
+        }
 
-        if (field.property.reference === ReferenceType.ONE_TO_MANY || field.property.reference === ReferenceType.MANY_TO_MANY) {
+        if (
+            field.relatedProperty.reference === ReferenceType.ONE_TO_MANY ||
+            field.relatedProperty.reference === ReferenceType.MANY_TO_MANY
+        ) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
@@ -103,13 +107,17 @@ class Graphql {
                 FieldType = `[${relatedResource.data.pascalCaseName}]`
                 FieldKey = `${
                     relatedResource.data.camelCaseNamePlural
-                }(page: Int = 1, per_page: Int = ${
+                }(page: Int = 1, perPage: Int = ${
                     relatedResource.data.perPageOptions[0] || 10
-                }, filters: [${relatedResource.data.pascalCaseName}Filter])`
+                })`
             }
         }
 
-        if (field.property.reference === ReferenceType.MANY_TO_ONE) {
+        if (field.property.type === 'Date') {
+            FieldType = 'String'
+        }
+
+        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
@@ -136,11 +144,9 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.camelCaseNamePlural}(page: Int = 1, per_page: Int = ${
+  ${resource.data.camelCaseNamePlural}(page: Int = 1, perPage: Int = ${
             resource.data.perPageOptions[0] || 10
-        }, filters: [${resource.data.pascalCaseName}Filter]): [${
-            resource.data.pascalCaseName
-        }]`
+        }): [${resource.data.pascalCaseName}]`
     }
 
     private defineFetchSingleQueryForResource(
@@ -183,13 +189,13 @@ ${resource.data.fields
     .filter(field => field.property.enum)
     .map(
         field => `
-enum ${resource.data.pascalCaseName}${
+        enum ${resource.data.pascalCaseName}${
             field.pascalCaseName
-        }Enum {${field.serialize().selectOptions?.map(
+        }Enum {${field.property.items?.map(
             option => `
-    ${option.value}`
+            ${option}`
         )}
-}`
+        }`
     )}
 type ${resource.data.pascalCaseName} {${resource.data.fields
                 .filter(field => !field.isHidden)
@@ -280,7 +286,6 @@ type DeletePayload {
     success: Boolean!
 }
 `
-
         return buildSchema(this.schemaString)
     }
 
@@ -322,6 +327,295 @@ type DeletePayload {
     ) {
         let resolvers: any = {}
 
+        const populateRowWithRelationShips = (
+            rows: any[],
+            resource: ResourceContract,
+            ctx: any,
+            ql: any
+        ) => {
+            const relationshipFields = resource.data.fields.filter(
+                f => f.relatedProperty.reference
+            )
+
+            // console.log(rows)
+
+            return rows.map(row => {
+                relationshipFields.forEach(field => {
+                    if (
+                        field.relatedProperty.reference ===
+                        ReferenceType.MANY_TO_ONE
+                    ) {
+                        const RelatedResource = resources.find(
+                            resource => resource.data.name === field.name
+                        )!
+
+                        const ManyToOneDataLoader = new DataLoader(
+                            async (keys: readonly any[]) => {
+                                return []
+                            }
+                        )
+
+                        row[field.databaseField] = async () => {
+                            const data = await manager.populate(
+                                rows.map(row =>
+                                    manager.create(
+                                        resource.data.pascalCaseName,
+                                        row as never
+                                    )
+                                ),
+                                [field.databaseField]
+                            )
+
+                            const serializedData = JSON.parse(
+                                JSON.stringify(data)
+                            ).find(
+                                (serializedRow: any) =>
+                                    row.id === serializedRow.id
+                            )
+
+                            return (populateRowWithRelationShips(
+                                [serializedData[field.databaseField]],
+                                RelatedResource,
+                                {},
+                                {}
+                            ) as any[])[0]
+                        }
+                    }
+                })
+
+                return row
+            })
+        }
+
+        const populateFromFieldNodes = async (
+            resource: ResourceContract,
+            fieldNode: any,
+            data: any[]
+        ) => {
+            const relationshipFields = resource.data.fields.filter(
+                f => f.relatedProperty.reference
+            )
+
+            const relatedManyToOneFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.MANY_TO_ONE
+            )
+            const relatedManyToManyFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.MANY_TO_MANY
+            )
+            const relatedOneToManyFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.ONE_TO_MANY
+            )
+            const relatedOneToOneFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+            )
+
+            const relatedManyToOneDatabaseFieldNames = relatedManyToOneFields.map(
+                field => field.databaseField
+            )
+            const relatedManyToManyDatabaseFieldNames = relatedManyToManyFields.map(
+                field => field.databaseField
+            )
+            const relatedOneToManyDatabaseFieldNames = relatedOneToManyFields.map(
+                field => field.databaseField
+            )
+            const relatedOneToOneDatabaseFieldNames = relatedOneToOneFields.map(
+                field => field.databaseField
+            )
+
+            if (fieldNode.selectionSet) {
+                const manyToOneSelections = fieldNode.selectionSet.selections.filter(
+                    (selection: any) =>
+                        relatedManyToOneDatabaseFieldNames.includes(
+                            selection.name.value
+                        )
+                )
+                const manyToManySelections = fieldNode.selectionSet.selections.filter(
+                    (selection: any) =>
+                        relatedManyToManyDatabaseFieldNames.includes(
+                            selection.name.value
+                        )
+                )
+                const oneToManySelections = fieldNode.selectionSet.selections.filter(
+                    (selection: any) =>
+                        relatedOneToManyDatabaseFieldNames.includes(
+                            selection.name.value
+                        )
+                )
+
+                await Promise.all([
+                    Promise.all(
+                        manyToOneSelections.map((selection: any) =>
+                            manager.populate(data, selection.name.value)
+                        )
+                    ),
+                    Promise.all(
+                        manyToManySelections.map((selection: any) =>
+                            manager.populate(data, selection.name.value)
+                        )
+                    ),
+                    Promise.all(
+                        oneToManySelections.map((selection: any) =>
+                            manager.populate(data, selection.name.value)
+                        )
+                    )
+                ])
+
+                for (const manyToOneSelection of manyToOneSelections) {
+                    if (manyToOneSelection.selectionSet) {
+                        const field = relatedManyToOneFields.find(
+                            f =>
+                                f.databaseField ===
+                                manyToOneSelection.name.value
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromFieldNodes(
+                            relatedResource,
+                            manyToOneSelection,
+                            data.map(d => d[field.databaseField])
+                        )
+                    }
+                }
+
+                for (const manyToManySelection of manyToManySelections) {
+                    if (manyToManySelection.selectionSet) {
+                        const field = relatedManyToManyFields.find(
+                            f =>
+                                f.databaseField ===
+                                manyToManySelection.name.value
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromFieldNodes(
+                            relatedResource,
+                            manyToManySelection,
+                            data
+                                .map(d => d[field.databaseField])
+                                .reduce((acc, d) => [...acc, ...d], [])
+                        )
+                    }
+                }
+
+                for (const oneToManySelection of oneToManySelections) {
+                    if (oneToManySelection.selectionSet) {
+                        const field = relatedOneToManyFields.find(
+                            f =>
+                                f.databaseField ===
+                                oneToManySelection.name.value
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromFieldNodes(
+                            relatedResource,
+                            oneToManySelection,
+                            data
+                                .map(d => d[field.databaseField])
+                                .reduce((acc, d) => [...acc, ...d], [])
+                        )
+                    }
+                }
+            }
+
+            return data
+        }
+
+        resources.forEach(resource => {
+            // handle fetch all resolvers
+            resolvers[resource.data.camelCaseNamePlural] = async (
+                args: any,
+                ctx: any,
+                ql: any
+            ) => {
+                const data: any[] = await manager.find(
+                    resource.data.name,
+                    {},
+                    {
+                        limit: args.perPage,
+                        offset: (args.page - 1) * args.perPage //TODO: Make sure this cannot crash.
+                    }
+                )
+
+                await populateFromFieldNodes(resource, ql.fieldNodes[0], data)
+
+                return data
+            }
+
+            // handle fetch one resolvers
+            resolvers[resource.data.camelCaseName] = async (
+                args: any,
+                ctx: any,
+                ql: any
+            ) => {
+                const data: any = await manager.findOne(
+                    resource.data.pascalCaseName,
+                    {
+                        id: args.id
+                    }
+                )
+
+                await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
+
+                return data
+            }
+
+            resolvers[`create${resource.data.pascalCaseName}`] = async (
+                args: any
+            ) => {
+                // const resourceManager = manager(resource.data.name)
+
+                // let data = await resourceManager.create(args.input)
+
+                const [result] = populateRowWithRelationShips([], resource)
+
+                return result
+            }
+
+            resolvers[`update${resource.data.pascalCaseName}`] = async (
+                args: any
+            ) => {
+                // const resourceManager = manager(resource.data.name)
+
+                // let data = await resourceManager.update(
+                //     args.id || args._id,
+                //     args.input
+                // )
+
+                const [result] = populateRowWithRelationShips([], resource)
+
+                return result
+            }
+
+            resolvers[`delete${resource.data.pascalCaseName}`] = async (
+                args: any
+            ) => {
+                // const resourceManager = manager(resource.data.name)
+
+                // const success = await resourceManager.deleteById(
+                //     args.id || args._id
+                // )
+
+                return {
+                    success: false
+                }
+            }
+        })
+
         return resolvers
     }
 
@@ -331,37 +625,33 @@ type DeletePayload {
             const exposedResources = resources.filter(
                 resource => !resource.data.hideFromApi
             )
-            console.log(
-                JSON.stringify(
-                    schemas,
-                    null,
-                    2
-                )
-            )
+
             const schema = this.setupResourceGraphqlTypes(
                 exposedResources,
                 config
             )
 
-            app.post(
-                this.config.graphqlPath,
-                graphqlHTTP({
-                    schema,
-                    graphiql: this.config.graphiql,
-                    rootValue: this.getResolvers(
-                        exposedResources,
-                        manager!,
-                        config
-                    )
+            app.use(
+                // this.config.graphqlPath,
+                graphqlHTTP((req, res, params) => {
+                    return {
+                        schema,
+                        graphiql: this.config.graphiql,
+                        rootValue: this.getResolvers(
+                            exposedResources,
+                            manager!,
+                            config
+                        )
+                    }
                 })
             )
 
-            app.get(
-                this.config.graphqlPath,
-                GraphqlPlayground({
-                    endpoint: this.config.graphqlPath
-                })
-            )
+            // app.get(
+            //     this.config.graphqlPath,
+            //     GraphqlPlayground({
+            //         endpoint: this.config.graphqlPath
+            //     })
+            // )
 
             return {}
         })

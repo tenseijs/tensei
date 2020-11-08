@@ -2,15 +2,16 @@ import { FindOptions } from '@mikro-orm/core'
 import { ResourceContract } from '@tensei/common'
 
 class BaseController {
-    public getPageMetaFromFindOptions(total: number,findOptions: FindOptions<any>) {
-        return  {
+    public getPageMetaFromFindOptions(
+        total: number,
+        findOptions: FindOptions<any>
+    ) {
+        return {
             total,
             page:
                 findOptions.offset ||
                 (findOptions.offset === 0 && findOptions.limit)
-                    ? Math.ceil(
-                          (findOptions.offset + 1) / findOptions.limit!
-                      )
+                    ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
                     : null,
             perPage: findOptions.limit ? findOptions.limit : null,
             pageCount: Math.ceil(total / findOptions.limit!)
@@ -40,7 +41,9 @@ class BaseController {
         }
 
         if (query.sort) {
-            const sorters = query.sort.split(',').map((sorter: string) => sorter.split(':')) as string[]
+            const sorters = query.sort
+                .split(',')
+                .map((sorter: string) => sorter.split(':')) as string[]
 
             sorters.forEach(([field, direction]) => {
                 findOptions.orderBy = {

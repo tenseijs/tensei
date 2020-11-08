@@ -616,7 +616,7 @@ export class Field implements FieldContract {
      * in query results.
      */
     public hidden<T extends FieldContract>(this: T): T {
-        this.isHidden = true
+        this.property.hidden = true
 
         return this
     }

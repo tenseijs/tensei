@@ -1,4 +1,3 @@
-
 declare module '@tensei/common/resources' {
     import { Request } from 'express'
     import { FilterContract } from '@tensei/common/filters'
