@@ -14,7 +14,7 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
-    .serverUrl('http://localhost:5000')
+    .serverUrl('http://localhost:5500')
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
     .storageDriver(

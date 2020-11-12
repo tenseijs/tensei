@@ -37,7 +37,11 @@ class Graphql {
         let FieldType = 'String'
         let FieldKey = field.databaseField
 
-        if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
+        if (field.property.enum) {
+            FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
+        }
+
+        if (['integer', 'bigInteger'].includes(field.property.type!)) {
             FieldType = 'Int'
         }
 
@@ -45,25 +49,25 @@ class Graphql {
             FieldType = 'Boolean'
         }
 
-        if (field.component === 'BelongsToField') {
-            FieldType = 'ID'
-            FieldKey = `${field.databaseField}`
-        }
-
-        if (field.property.reference === ReferenceType.ONE_TO_MANY) {
-        }
-
-        if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
-            const relatedResource = resources.find(
-                resource => resource.data.name === field.name
-            )
-
-            FieldType = `[ID]`
-            FieldKey = `${relatedResource?.data.camelCaseNamePlural}`
+        if (field.property.type === 'boolean') {
+            FieldType = 'Boolean'
         }
 
         if (!field.property.nullable && !isUpdate) {
             FieldType = `${FieldType}!`
+        }
+
+        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+            FieldType = `ID`
+            FieldKey = field.databaseField
+        }
+
+        if (
+            field.relatedProperty.reference === ReferenceType.ONE_TO_MANY ||
+            field.relatedProperty.reference === ReferenceType.MANY_TO_MANY
+        ) {
+            FieldType = `[ID]`
+            FieldKey = field.databaseField
         }
 
         return `
@@ -210,7 +214,7 @@ type ${resource.data.pascalCaseName} {${resource.data.fields
 }
 input create${
                 resource.data.pascalCaseName
-            }Input {${resource.data.fields.map(field =>
+            }Input {${resource.data.fields.filter(field => ! field.property.primary).map(field =>
                 this.getGraphqlFieldDefinitionForCreateInput(
                     field,
                     resource,
@@ -282,9 +286,6 @@ ${resources.map(resource => {
     return `${this.defineDeleteMutationForResource(resource, config)}`
 })}
 }
-type DeletePayload {
-    success: Boolean!
-}
 `
         return buildSchema(this.schemaString)
     }
@@ -313,7 +314,7 @@ type DeletePayload {
     ) {
         return `delete${resource.data.pascalCaseName}(${this.getIdKey(
             config
-        )}: ID!): DeletePayload!`
+        )}: ID!): ${resource.data.pascalCaseName}`
     }
 
     private getIdKey(config: PluginSetupConfig) {
@@ -326,66 +327,6 @@ type DeletePayload {
         config: PluginSetupConfig
     ) {
         let resolvers: any = {}
-
-        const populateRowWithRelationShips = (
-            rows: any[],
-            resource: ResourceContract,
-            ctx: any,
-            ql: any
-        ) => {
-            const relationshipFields = resource.data.fields.filter(
-                f => f.relatedProperty.reference
-            )
-
-            // console.log(rows)
-
-            return rows.map(row => {
-                relationshipFields.forEach(field => {
-                    if (
-                        field.relatedProperty.reference ===
-                        ReferenceType.MANY_TO_ONE
-                    ) {
-                        const RelatedResource = resources.find(
-                            resource => resource.data.name === field.name
-                        )!
-
-                        const ManyToOneDataLoader = new DataLoader(
-                            async (keys: readonly any[]) => {
-                                return []
-                            }
-                        )
-
-                        row[field.databaseField] = async () => {
-                            const data = await manager.populate(
-                                rows.map(row =>
-                                    manager.create(
-                                        resource.data.pascalCaseName,
-                                        row as never
-                                    )
-                                ),
-                                [field.databaseField]
-                            )
-
-                            const serializedData = JSON.parse(
-                                JSON.stringify(data)
-                            ).find(
-                                (serializedRow: any) =>
-                                    row.id === serializedRow.id
-                            )
-
-                            return (populateRowWithRelationShips(
-                                [serializedData[field.databaseField]],
-                                RelatedResource,
-                                {},
-                                {}
-                            ) as any[])[0]
-                        }
-                    }
-                })
-
-                return row
-            })
-        }
 
         const populateFromFieldNodes = async (
             resource: ResourceContract,
@@ -562,7 +503,7 @@ type DeletePayload {
                 ctx: any,
                 ql: any
             ) => {
-                const data: any = await manager.findOne(
+                const data: any = await manager.findOneOrFail(
                     resource.data.pascalCaseName,
                     {
                         id: args.id
@@ -575,44 +516,49 @@ type DeletePayload {
             }
 
             resolvers[`create${resource.data.pascalCaseName}`] = async (
-                args: any
+                args: any,
+                ctx: any,
+                ql: any
             ) => {
-                // const resourceManager = manager(resource.data.name)
+                const data = manager.create(resource.data.pascalCaseName, args.input)
 
-                // let data = await resourceManager.create(args.input)
+                await manager.persistAndFlush(data)
+                await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
 
-                const [result] = populateRowWithRelationShips([], resource)
-
-                return result
+                return data
             }
 
             resolvers[`update${resource.data.pascalCaseName}`] = async (
-                args: any
+                args: any,
+                ctx: any,
+                ql: any
             ) => {
-                // const resourceManager = manager(resource.data.name)
+                const data: any = await manager.getRepository<any>(resource.data.pascalCaseName).findOneOrFail({
+                    id: args.id
+                })
+                
+                manager.assign(data, args.input)
+                
+                console.log(data)
+                await manager.persistAndFlush(data)
+                await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
 
-                // let data = await resourceManager.update(
-                //     args.id || args._id,
-                //     args.input
-                // )
-
-                const [result] = populateRowWithRelationShips([], resource)
-
-                return result
+                return data
             }
 
             resolvers[`delete${resource.data.pascalCaseName}`] = async (
-                args: any
+                args: any,
+                ctx: any,
+                ql: any
             ) => {
-                // const resourceManager = manager(resource.data.name)
+                const data: any = await manager.getRepository<any>(resource.data.pascalCaseName).findOneOrFail({
+                    id: args.id
+                })
 
-                // const success = await resourceManager.deleteById(
-                //     args.id || args._id
-                // )
+                await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
+                await manager.removeAndFlush(data)
 
-                return {
-                    success: false
-                }
+                return data
             }
         })
 
@@ -631,27 +577,28 @@ type DeletePayload {
                 config
             )
 
-            app.use(
-                // this.config.graphqlPath,
-                graphqlHTTP((req, res, params) => {
-                    return {
-                        schema,
-                        graphiql: this.config.graphiql,
-                        rootValue: this.getResolvers(
-                            exposedResources,
-                            manager!,
-                            config
-                        )
-                    }
-                })
+            const graphQLHandler = graphqlHTTP((req, res, params) => {
+                return {
+                    schema,
+                    pretty: true,
+                    graphiql: this.config.graphiql,
+                    rootValue: this.getResolvers(
+                        exposedResources,
+                        manager!,
+                        config
+                    )
+                }
+            })
+
+            app.post(
+                this.config.graphqlPath,
+                graphQLHandler
             )
 
-            // app.get(
-            //     this.config.graphqlPath,
-            //     GraphqlPlayground({
-            //         endpoint: this.config.graphqlPath
-            //     })
-            // )
+            app.get(
+                this.config.graphqlPath,
+                graphQLHandler
+            )
 
             return {}
         })
