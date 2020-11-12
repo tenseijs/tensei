@@ -8,6 +8,12 @@ export class NumberField extends Text {
      */
     public component: string = `${this.constructor.name}`
 
+    constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
+
+        this.property.type = 'integer'
+    }
+
     /**
      * Set the min value for this number field.
      * Will be the min on the number in

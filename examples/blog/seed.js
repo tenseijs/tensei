@@ -127,61 +127,59 @@ async function seedMongo(resources, connection) {
 
 require('./app')
     .register()
-    .then(
-        async (tensei) => {
-            const {
-                config: {
-                    orm: { em },
-                },
-            } = tensei
-            const userObjects = users.map((user) => em.create('User', user))
+    .then(async (tensei) => {
+        const {
+            config: {
+                orm: { em },
+            },
+        } = tensei
+        const userObjects = users.map((user) => em.create('User', user))
 
-            await em.persistAndFlush(userObjects)
+        await em.persistAndFlush(userObjects)
 
-            const savedUsers = await em.find('User')
+        const savedUsers = await em.find('User')
 
-            for (let index = 0; index < savedUsers.length; index++) {
-                const user = savedUsers[index]
+        for (let index = 0; index < savedUsers.length; index++) {
+            const user = savedUsers[index]
 
-                const posts = Array(10)
-                    .fill(undefined)
-                    .map(() => em.create('Post', postBuilder()))
-                    .map((post) => {
-                        post.user = user
-
-                        return post
-                    })
-
-                await em.persistAndFlush(posts)
-            }
-
-            const savedPosts = await em.find('Post')
-
-            for (let index = 0; index < savedPosts.length; index++) {
-                const post = savedPosts[index]
-
-                const comments = Array(10)
-                    .fill(undefined)
-                    .map(() => em.create('Comment', commentsBuilder()))
-                    .map((comment) => {
-                        comment.post = post
-
-                        return comment
-                    })
-
-                await em.persistAndFlush(comments)
-            }
-
-            const tags = Array(10)
+            const posts = Array(10)
                 .fill(undefined)
-                .map(() => em.create('Tag', tagsBuilder()))
-                .map((tag) => {
-                    tag.posts = savedPosts
+                .map(() => em.create('Post', postBuilder()))
+                .map((post) => {
+                    post.user = user
 
-                    return tag
+                    return post
                 })
-            await em.persistAndFlush(tags)
 
-            await tensei.config.orm.close(true)
+            await em.persistAndFlush(posts)
         }
-    )
+
+        const savedPosts = await em.find('Post')
+
+        for (let index = 0; index < savedPosts.length; index++) {
+            const post = savedPosts[index]
+
+            const comments = Array(10)
+                .fill(undefined)
+                .map(() => em.create('Comment', commentsBuilder()))
+                .map((comment) => {
+                    comment.post = post
+
+                    return comment
+                })
+
+            await em.persistAndFlush(comments)
+        }
+
+        const tags = Array(10)
+            .fill(undefined)
+            .map(() => em.create('Tag', tagsBuilder()))
+            .map((tag) => {
+                tag.posts = savedPosts
+
+                return tag
+            })
+        await em.persistAndFlush(tags)
+
+        await tensei.config.orm.close(true)
+    })

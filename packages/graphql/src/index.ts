@@ -9,7 +9,9 @@ import {
     ManagerContract,
     DataPayload,
     belongsTo,
-    PluginSetupConfig
+    PluginSetupConfig,
+    FilterOperators,
+    filter
 } from '@tensei/common'
 import { buildSchema } from 'graphql'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
@@ -18,6 +20,58 @@ import GraphqlPlayground from 'graphql-playground-middleware-express'
 export interface GraphQlPluginConfig {
     graphiql: boolean
     graphqlPath: string
+}
+
+const filterOperators: FilterOperators[] = [
+    '_eq',
+    '_ne',
+    '_in',
+    '_nin',
+    '_gt',
+    '_gte',
+    '_lt',
+    '_lte',
+    '_like',
+    '_re',
+    '_ilike',
+    '_overlap',
+    '_contains',
+    '_contained'
+]
+
+const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
+
+const allOperators = filterOperators.concat(topLevelOperators)
+
+const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
+    let whereArgumentString = JSON.stringify(whereArgument)
+
+    allOperators.forEach(operator => {
+        whereArgumentString = whereArgumentString.replace(
+            `"${operator}"`,
+            `"$${operator.split('_')[1]}"`
+        )
+    })
+
+    return JSON.parse(whereArgumentString)
+}
+
+const getFindOptionsFromArgs = (args: any) => {
+    let findOptions: any = {}
+
+    if (!args) {
+        return {}
+    }
+
+    if (args.limit) {
+        findOptions.limit = args.limit
+    }
+
+    if (args.offset) {
+        findOptions.limit = args.offset
+    }
+
+    return findOptions
 }
 
 class Graphql {
@@ -109,11 +163,7 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `[${relatedResource.data.snakeCaseName}]`
-                FieldKey = `${
-                    relatedResource.data.camelCaseNamePlural
-                }(page: Int = 1, perPage: Int = ${
-                    relatedResource.data.perPageOptions[0] || 10
-                })`
+                FieldKey = `${relatedResource.data.camelCaseNamePlural}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
             }
         }
 
@@ -148,9 +198,7 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.camelCaseNamePlural}(page: Int = 1, perPage: Int = ${
-            resource.data.perPageOptions[0] || 10
-        }): [${resource.data.snakeCaseName}]`
+  ${resource.data.camelCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]`
     }
 
     private defineFetchSingleQueryForResource(
@@ -161,6 +209,59 @@ class Graphql {
   ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${
             resource.data.snakeCaseName
         }`
+    }
+
+    getWhereQueryFieldType(field: FieldContract, config: PluginSetupConfig) {
+        if (field.property.type === 'boolean') {
+            // return 'boolean_where_query'
+        }
+
+        if (
+            [
+                ReferenceType.MANY_TO_MANY,
+                ReferenceType.ONE_TO_MANY,
+                ReferenceType.MANY_TO_ONE
+            ].includes(field.relatedProperty.reference!)
+        ) {
+            const relatedResource = config.resources.find(
+                resource =>
+                    resource.data.pascalCaseName === field.relatedProperty.type
+            )
+
+            return `${relatedResource?.data.snakeCaseName}_where_query`
+        }
+
+        if (field.property.primary) {
+            return `id_where_query`
+        }
+
+        if (field.property.type === 'integer') {
+            return 'integer_where_query'
+        }
+
+        return 'string_where_query'
+    }
+
+    getWhereQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `
+input ${resource.data.snakeCaseName}_where_query {
+${topLevelOperators.map(
+    operator =>
+        `${operator}: ${
+            operator === '_not'
+                ? `${resource.data.snakeCaseName}_where_query`
+                : `[${resource.data.snakeCaseName}_where_query]`
+        }`
+)}
+${resource.data.fields.map(
+    field =>
+        `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
+)}
+}
+`
     }
 
     getFieldsTypeDefinition(resource: ResourceContract) {
@@ -211,18 +312,25 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
                         config
                     )
                 )}
-   ${resource.data.fields.filter(field => [ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(field.relatedProperty.reference!))
-        .map(field => `${field.databaseField}__count(id: Int): Int`)}
+   ${resource.data.fields
+       .filter(field =>
+           [ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(
+               field.relatedProperty.reference!
+           )
+       )
+       .map(field => `${field.databaseField}__count(id: Int): Int`)}
 }
 input create_${
                 resource.data.snakeCaseName
-            }_input {${resource.data.fields.filter(field => ! field.property.primary).map(field =>
-                this.getGraphqlFieldDefinitionForCreateInput(
-                    field,
-                    resource,
-                    resources
-                )
-            )}
+            }_input {${resource.data.fields
+                .filter(field => !field.property.primary)
+                .map(field =>
+                    this.getGraphqlFieldDefinitionForCreateInput(
+                        field,
+                        resource,
+                        resources
+                    )
+                )}
 }
 
 input update_${
@@ -241,25 +349,8 @@ enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
                 resource
             )}
 }
-enum ${resource.data.snakeCaseName}_filter_operators {
-  equals
-  contains
-  not_equals
-  is_null
-  not_null
-  gt
-  gte
-  lt
-  lte
-  matches
-  in
-  not_in
-}
-input ${resource.data.snakeCaseName}_filter {
-  field: ${resource.data.snakeCaseName}_fields_enum
-  value: [String]
-  operator: ${resource.data.snakeCaseName}_filter_operators
-}
+
+${this.getWhereQueryForResource(resource, config)}
 `
         })
 
@@ -287,6 +378,35 @@ ${resources.map(resource => {
 ${resources.map(resource => {
     return `${this.defineDeleteMutationForResource(resource, config)}`
 })}
+}
+input string_where_query {
+    ${filterOperators.map(operator => {
+        if (['_in', '_nin'].includes(operator)) {
+            return `${operator}: [String!]`
+        }
+
+        return `${operator}: String`
+    })}
+}
+
+input integer_where_query {
+    ${filterOperators.map(operator => {
+        if (['_in', '_nin'].includes(operator)) {
+            return `${operator}: [Int!]`
+        }
+
+        return `${operator}: Int`
+    })}
+}
+
+input id_where_query {
+    ${filterOperators.map(operator => {
+        if (['_in', '_nin'].includes(operator)) {
+            return `${operator}: [ID!]`
+        }
+
+        return `${operator}: ID`
+    })}
 }
 `
         return buildSchema(this.schemaString)
@@ -381,12 +501,13 @@ ${resources.map(resource => {
                 field => field.databaseField
             )
 
-            
             if (fieldNode.selectionSet) {
                 const countSelections = fieldNode.selectionSet.selections.filter(
                     (selection: any) => selection.name.value.match(/__count/)
                 )
-                const countSelectionNames: string[] = countSelections.map((selection: any) => selection.name.value.split('__')[0])
+                const countSelectionNames: string[] = countSelections.map(
+                    (selection: any) => selection.name.value.split('__')[0]
+                )
 
                 const manyToOneSelections = fieldNode.selectionSet.selections.filter(
                     (selection: any) =>
@@ -416,19 +537,31 @@ ${resources.map(resource => {
                     Promise.all(
                         manyToManySelections.map((selection: any) =>
                             (async () => {
-                                const field = relatedManyToManyFields.find(_ => _.databaseField === selection.name.value)
+                                const field = relatedManyToManyFields.find(
+                                    _ =>
+                                        _.databaseField === selection.name.value
+                                )
 
-                                await Promise.all(data.map(async item => {
-                                    const relatedData: any = await manager.find(field?.relatedProperty.type!, {
-                                        [resource.data.snakeCaseNamePlural]: {
-                                            id: {
-                                                $in: [item.id]
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const relatedData: any = await manager.find(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                }
+                                                // ...parseWhereArgumentsToWhereQuery(selection.arguments.find((argument: any) => argument.name.value === 'where') || {})
                                             }
-                                        }
-                                    })
+                                        )
 
-                                    item[field?.databaseField!] = relatedData
-                                }))
+                                        item[
+                                            field?.databaseField!
+                                        ] = relatedData
+                                    })
+                                )
                             })()
                         )
                     ),
@@ -439,33 +572,67 @@ ${resources.map(resource => {
                     ),
                     Promise.all(
                         countSelectionNames.map(async selection => {
-                            
-                            if (relatedManyToManyDatabaseFieldNames.includes(selection)) {
-                                const field = relatedManyToManyFields.find(_ => _.databaseField === selection)
-                                
-                                await Promise.all(data.map(async item => {
-                                    const count = await manager.count(field?.relatedProperty.type!, {
-                                        [resource.data.snakeCaseNamePlural]: {
-                                            id: {
-                                                $in: [item.id]
-                                            }
-                                        }
-                                    })
+                            if (
+                                relatedManyToManyDatabaseFieldNames.includes(
+                                    selection
+                                )
+                            ) {
+                                const field = relatedManyToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
 
-                                    item[`${field?.databaseField}__count`] = count
-                                }))
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const count = await manager.count(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                }
+                                            }
+                                        )
+
+                                        item[
+                                            `${field?.databaseField}__count`
+                                        ] = count
+                                    })
+                                )
                             }
 
-                            if (relatedOneToManyDatabaseFieldNames.includes(selection)) {
-                                const field = relatedOneToManyFields.find(_ => _.databaseField === selection)
+                            if (
+                                relatedOneToManyDatabaseFieldNames.includes(
+                                    selection
+                                )
+                            ) {
+                                const field = relatedOneToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
 
-                                await Promise.all(data.map(async item => {
-                                    const count = await manager.count(field?.relatedProperty.type!, {
-                                        [resource.data.snakeCaseName]: item.id
-                                    })
+                                const uniqueKeys = Array.from(
+                                    new Set(data.map(_ => _.id))
+                                )
 
-                                    item[`${field?.databaseField}__count`] = count
-                                }))
+                                const counts: any[] = await Promise.all(
+                                    uniqueKeys.map(async key =>
+                                        manager.count(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseName]: key
+                                            }
+                                        )
+                                    )
+                                )
+
+                                data.forEach(item => {
+                                    const index = uniqueKeys.indexOf(item.id)
+
+                                    item[`${field?.databaseField}__count`] =
+                                        counts[index]
+                                })
                             }
                         })
                     )
@@ -547,12 +714,9 @@ ${resources.map(resource => {
                 ql: any
             ) => {
                 const data: any[] = await manager.find(
-                    resource.data.name,
-                    {},
-                    {
-                        limit: args.perPage,
-                        offset: (args.page - 1) * args.perPage //TODO: Make sure this cannot crash.
-                    }
+                    resource.data.pascalCaseName,
+                    parseWhereArgumentsToWhereQuery(args.where),
+                    getFindOptionsFromArgs(args)
                 )
 
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], data)
@@ -573,14 +737,6 @@ ${resources.map(resource => {
                     }
                 )
 
-                // console.log('++++++++++++', await manager.findAndCount(resource.data.pascalCaseName, {
-                //     tags: {
-                //         $in: [3038]
-                //     }
-                // }, {
-                //     limit: 2
-                // }))
-
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
 
                 return data
@@ -591,7 +747,10 @@ ${resources.map(resource => {
                 ctx: any,
                 ql: any
             ) => {
-                const data = manager.create(resource.data.pascalCaseName, args.object)
+                const data = manager.create(
+                    resource.data.pascalCaseName,
+                    args.object
+                )
 
                 await manager.persistAndFlush(data)
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
@@ -604,7 +763,9 @@ ${resources.map(resource => {
                 ctx: any,
                 ql: any
             ) => {
-                const data: any[] = args.objects.map((object: any) => manager.create(resource.data.pascalCaseName, object))
+                const data: any[] = args.objects.map((object: any) =>
+                    manager.create(resource.data.pascalCaseName, object)
+                )
 
                 await manager.persistAndFlush(data)
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], data)
@@ -617,9 +778,11 @@ ${resources.map(resource => {
                 ctx: any,
                 ql: any
             ) => {
-                const data: any = await manager.getRepository<any>(resource.data.pascalCaseName).findOneOrFail({
-                    id: args.id
-                })
+                const data: any = await manager
+                    .getRepository<any>(resource.data.pascalCaseName)
+                    .findOneOrFail({
+                        id: args.id
+                    })
 
                 manager.assign(data, args.object)
 
@@ -634,9 +797,11 @@ ${resources.map(resource => {
                 ctx: any,
                 ql: any
             ) => {
-                const data: any = await manager.getRepository<any>(resource.data.pascalCaseName).findOneOrFail({
-                    id: args.id
-                })
+                const data: any = await manager
+                    .getRepository<any>(resource.data.pascalCaseName)
+                    .findOneOrFail({
+                        id: args.id
+                    })
 
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
                 await manager.removeAndFlush(data)
@@ -673,15 +838,9 @@ ${resources.map(resource => {
                 }
             })
 
-            app.post(
-                this.config.graphqlPath,
-                graphQLHandler
-            )
+            app.post(this.config.graphqlPath, graphQLHandler)
 
-            app.get(
-                this.config.graphqlPath,
-                graphQLHandler
-            )
+            app.get(this.config.graphqlPath, graphQLHandler)
 
             return {}
         })

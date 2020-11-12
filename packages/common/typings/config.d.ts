@@ -18,22 +18,28 @@ declare module '@tensei/common/config' {
         true = 'true',
         false = 'false'
     }
+    type FilterOperators =
+        | '_and'
+        | '_or'
+        | '_eq'
+        | '_ne'
+        | '_in'
+        | '_nin'
+        | '_not'
+        | '_gt'
+        | '_gte'
+        | '_lt'
+        | '_lte'
+        | '_like'
+        | '_re'
+        | '_ilike'
+        | '_overlap'
+        | '_contains'
+        | '_contained'
     interface Filter {
         field: string
         value: string
-        operator:
-            | 'equals'
-            | 'contains'
-            | 'not_equals'
-            | 'is_null'
-            | 'not_null'
-            | 'gt'
-            | 'gte'
-            | 'lt'
-            | 'lte'
-            | 'matches'
-            | 'in'
-            | 'not_in'
+        operator: FilterOperators
     }
     interface FetchAllRequestQuery {
         perPage?: number
