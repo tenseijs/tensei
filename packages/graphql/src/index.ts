@@ -38,7 +38,7 @@ class Graphql {
         let FieldKey = field.databaseField
 
         if (field.property.enum) {
-            FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
+            FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
         }
 
         if (['integer', 'bigInteger'].includes(field.property.type!)) {
@@ -84,7 +84,7 @@ class Graphql {
         let FieldKey = field.databaseField
 
         if (field.property.enum) {
-            FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
+            FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
         }
 
         if (field.property.type === 'boolean') {
@@ -108,7 +108,7 @@ class Graphql {
             )
 
             if (relatedResource) {
-                FieldType = `[${relatedResource.data.pascalCaseName}]`
+                FieldType = `[${relatedResource.data.snakeCaseName}]`
                 FieldKey = `${
                     relatedResource.data.camelCaseNamePlural
                 }(page: Int = 1, perPage: Int = ${
@@ -127,8 +127,8 @@ class Graphql {
             )
 
             if (relatedResource) {
-                FieldType = `${relatedResource.data.pascalCaseName}`
-                FieldKey = relatedResource.data.camelCaseName
+                FieldType = `${relatedResource.data.snakeCaseName}`
+                FieldKey = relatedResource.data.snakeCaseName
             }
         }
 
@@ -150,7 +150,7 @@ class Graphql {
         return `
   ${resource.data.camelCaseNamePlural}(page: Int = 1, perPage: Int = ${
             resource.data.perPageOptions[0] || 10
-        }): [${resource.data.pascalCaseName}]`
+        }): [${resource.data.snakeCaseName}]`
     }
 
     private defineFetchSingleQueryForResource(
@@ -159,7 +159,7 @@ class Graphql {
     ) {
         return `
   ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${
-            resource.data.pascalCaseName
+            resource.data.snakeCaseName
         }`
     }
 
@@ -193,15 +193,15 @@ ${resource.data.fields
     .filter(field => field.property.enum)
     .map(
         field => `
-        enum ${resource.data.pascalCaseName}${
-            field.pascalCaseName
-        }Enum {${field.property.items?.map(
+        enum ${resource.data.snakeCaseName}_${
+            field.snakeCaseName
+        }_enum {${field.property.items?.map(
             option => `
             ${option}`
         )}
         }`
     )}
-type ${resource.data.pascalCaseName} {${resource.data.fields
+type ${resource.data.snakeCaseName} {${resource.data.fields
                 .filter(field => !field.isHidden)
                 .map(field =>
                     this.getGraphqlFieldDefinition(
@@ -211,10 +211,12 @@ type ${resource.data.pascalCaseName} {${resource.data.fields
                         config
                     )
                 )}
+   ${resource.data.fields.filter(field => [ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(field.relatedProperty.reference!))
+        .map(field => `${field.databaseField}__count(id: Int): Int`)}
 }
-input create${
-                resource.data.pascalCaseName
-            }Input {${resource.data.fields.filter(field => ! field.property.primary).map(field =>
+input create_${
+                resource.data.snakeCaseName
+            }_input {${resource.data.fields.filter(field => ! field.property.primary).map(field =>
                 this.getGraphqlFieldDefinitionForCreateInput(
                     field,
                     resource,
@@ -223,9 +225,9 @@ input create${
             )}
 }
 
-input update${
-                resource.data.pascalCaseName
-            }Input {${resource.data.fields.map(field =>
+input update_${
+                resource.data.snakeCaseName
+            }_input {${resource.data.fields.map(field =>
                 this.getGraphqlFieldDefinitionForCreateInput(
                     field,
                     resource,
@@ -235,11 +237,11 @@ input update${
             )}
 }
 
-enum ${resource.data.pascalCaseName}FieldsEnum {${this.getFieldsTypeDefinition(
+enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
                 resource
             )}
 }
-enum ${resource.data.pascalCaseName}FilterOperators {
+enum ${resource.data.snakeCaseName}_filter_operators {
   equals
   contains
   not_equals
@@ -253,10 +255,10 @@ enum ${resource.data.pascalCaseName}FilterOperators {
   in
   not_in
 }
-input ${resource.data.pascalCaseName}Filter {
-  field: ${resource.data.pascalCaseName}FieldsEnum
+input ${resource.data.snakeCaseName}_filter {
+  field: ${resource.data.snakeCaseName}_fields_enum
   value: [String]
-  operator: ${resource.data.pascalCaseName}FilterOperators
+  operator: ${resource.data.snakeCaseName}_filter_operators
 }
 `
         })
@@ -294,27 +296,36 @@ ${resources.map(resource => {
         resource: ResourceContract,
         config: PluginSetupConfig
     ) {
-        return `create${resource.data.pascalCaseName}(input: create${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!`
+        return `
+        insert_${resource.data.snakeCaseName}(object: create_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
+        insert_${resource.data.snakeCaseNamePlural}(objects: [create_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
+    `
     }
 
     private defineUpdateMutationForResource(
         resource: ResourceContract,
         config: PluginSetupConfig
     ) {
-        return `update${resource.data.pascalCaseName}(${this.getIdKey(
+        return `update_${resource.data.snakeCaseName}(${this.getIdKey(
             config
-        )}: ID!, input: update${resource.data.pascalCaseName}Input!): ${
-            resource.data.pascalCaseName
-        }!`
+        )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${
+            resource.data.snakeCaseName
+        }!
+        update_${resource.data.snakeCaseNamePlural}(${this.getIdKey(
+            config
+        )}: ID!, objects: update_${resource.data.snakeCaseName}_input!): [${
+            resource.data.snakeCaseName
+        }]!
+        `
     }
 
     private defineDeleteMutationForResource(
         resource: ResourceContract,
         config: PluginSetupConfig
     ) {
-        return `delete${resource.data.pascalCaseName}(${this.getIdKey(
+        return `delete_${resource.data.snakeCaseName}(${this.getIdKey(
             config
-        )}: ID!): ${resource.data.pascalCaseName}`
+        )}: ID!): ${resource.data.snakeCaseName}`
     }
 
     private getIdKey(config: PluginSetupConfig) {
@@ -370,7 +381,13 @@ ${resources.map(resource => {
                 field => field.databaseField
             )
 
+            
             if (fieldNode.selectionSet) {
+                const countSelections = fieldNode.selectionSet.selections.filter(
+                    (selection: any) => selection.name.value.match(/__count/)
+                )
+                const countSelectionNames: string[] = countSelections.map((selection: any) => selection.name.value.split('__')[0])
+
                 const manyToOneSelections = fieldNode.selectionSet.selections.filter(
                     (selection: any) =>
                         relatedManyToOneDatabaseFieldNames.includes(
@@ -398,13 +415,59 @@ ${resources.map(resource => {
                     ),
                     Promise.all(
                         manyToManySelections.map((selection: any) =>
-                            manager.populate(data, selection.name.value)
+                            (async () => {
+                                const field = relatedManyToManyFields.find(_ => _.databaseField === selection.name.value)
+
+                                await Promise.all(data.map(async item => {
+                                    const relatedData: any = await manager.find(field?.relatedProperty.type!, {
+                                        [resource.data.snakeCaseNamePlural]: {
+                                            id: {
+                                                $in: [item.id]
+                                            }
+                                        }
+                                    })
+
+                                    item[field?.databaseField!] = relatedData
+                                }))
+                            })()
                         )
                     ),
                     Promise.all(
                         oneToManySelections.map((selection: any) =>
                             manager.populate(data, selection.name.value)
                         )
+                    ),
+                    Promise.all(
+                        countSelectionNames.map(async selection => {
+                            
+                            if (relatedManyToManyDatabaseFieldNames.includes(selection)) {
+                                const field = relatedManyToManyFields.find(_ => _.databaseField === selection)
+                                
+                                await Promise.all(data.map(async item => {
+                                    const count = await manager.count(field?.relatedProperty.type!, {
+                                        [resource.data.snakeCaseNamePlural]: {
+                                            id: {
+                                                $in: [item.id]
+                                            }
+                                        }
+                                    })
+
+                                    item[`${field?.databaseField}__count`] = count
+                                }))
+                            }
+
+                            if (relatedOneToManyDatabaseFieldNames.includes(selection)) {
+                                const field = relatedOneToManyFields.find(_ => _.databaseField === selection)
+
+                                await Promise.all(data.map(async item => {
+                                    const count = await manager.count(field?.relatedProperty.type!, {
+                                        [resource.data.snakeCaseName]: item.id
+                                    })
+
+                                    item[`${field?.databaseField}__count`] = count
+                                }))
+                            }
+                        })
                     )
                 ])
 
@@ -478,7 +541,7 @@ ${resources.map(resource => {
 
         resources.forEach(resource => {
             // handle fetch all resolvers
-            resolvers[resource.data.camelCaseNamePlural] = async (
+            resolvers[resource.data.snakeCaseNamePlural] = async (
                 args: any,
                 ctx: any,
                 ql: any
@@ -498,7 +561,7 @@ ${resources.map(resource => {
             }
 
             // handle fetch one resolvers
-            resolvers[resource.data.camelCaseName] = async (
+            resolvers[resource.data.snakeCaseName] = async (
                 args: any,
                 ctx: any,
                 ql: any
@@ -510,17 +573,25 @@ ${resources.map(resource => {
                     }
                 )
 
+                // console.log('++++++++++++', await manager.findAndCount(resource.data.pascalCaseName, {
+                //     tags: {
+                //         $in: [3038]
+                //     }
+                // }, {
+                //     limit: 2
+                // }))
+
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
 
                 return data
             }
 
-            resolvers[`create${resource.data.pascalCaseName}`] = async (
+            resolvers[`insert_${resource.data.snakeCaseName}`] = async (
                 args: any,
                 ctx: any,
                 ql: any
             ) => {
-                const data = manager.create(resource.data.pascalCaseName, args.input)
+                const data = manager.create(resource.data.pascalCaseName, args.object)
 
                 await manager.persistAndFlush(data)
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
@@ -528,7 +599,20 @@ ${resources.map(resource => {
                 return data
             }
 
-            resolvers[`update${resource.data.pascalCaseName}`] = async (
+            resolvers[`insert_${resource.data.snakeCaseNamePlural}`] = async (
+                args: any,
+                ctx: any,
+                ql: any
+            ) => {
+                const data: any[] = args.objects.map((object: any) => manager.create(resource.data.pascalCaseName, object))
+
+                await manager.persistAndFlush(data)
+                await populateFromFieldNodes(resource, ql.fieldNodes[0], data)
+
+                return data
+            }
+
+            resolvers[`update_${resource.data.snakeCaseName}`] = async (
                 args: any,
                 ctx: any,
                 ql: any
@@ -536,17 +620,16 @@ ${resources.map(resource => {
                 const data: any = await manager.getRepository<any>(resource.data.pascalCaseName).findOneOrFail({
                     id: args.id
                 })
-                
-                manager.assign(data, args.input)
-                
-                console.log(data)
+
+                manager.assign(data, args.object)
+
                 await manager.persistAndFlush(data)
                 await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
 
                 return data
             }
 
-            resolvers[`delete${resource.data.pascalCaseName}`] = async (
+            resolvers[`delete_${resource.data.snakeCaseName}`] = async (
                 args: any,
                 ctx: any,
                 ql: any
@@ -567,7 +650,7 @@ ${resources.map(resource => {
 
     plugin() {
         return plugin('Graph QL').afterDatabaseSetup(async config => {
-            const { app, resources, manager, schemas } = config
+            const { app, resources, manager } = config
             const exposedResources = resources.filter(
                 resource => !resource.data.hideFromApi
             )
@@ -584,7 +667,7 @@ ${resources.map(resource => {
                     graphiql: this.config.graphiql,
                     rootValue: this.getResolvers(
                         exposedResources,
-                        manager!,
+                        manager!.fork(),
                         config
                     )
                 }

@@ -126,6 +126,8 @@ declare module '@tensei/common/fields' {
         camelCaseName: string
         camelCaseNamePlural: string
         pascalCaseName: string
+        snakeCaseName: string
+        snakeCaseNamePlural: string
     }
     interface FieldContract<FieldDocument = any> {
         showHideField: {
@@ -256,6 +258,9 @@ declare module '@tensei/common/fields' {
         pascalCaseName: string
 
         camelCaseNamePlural: string
+
+        snakeCaseName: string
+        snakeCaseNamePlural: string
 
         capsDatabasefieldName: string
         /**

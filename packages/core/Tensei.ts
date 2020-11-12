@@ -184,7 +184,7 @@ export class Tensei implements TenseiContract {
                     }
                 ]
             },
-            manager: this.config.orm ? this.config.orm.em : null,
+            manager: this.config.orm ? this.config.orm.em.fork() : null,
             storageDriver: this.storageDriver as any
         }
     }

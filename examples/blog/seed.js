@@ -128,11 +128,12 @@ async function seedMongo(resources, connection) {
 require('./app')
     .register()
     .then(
-        async ({
-            config: {
-                orm: { em },
-            },
-        }) => {
+        async (tensei) => {
+            const {
+                config: {
+                    orm: { em },
+                },
+            } = tensei
             const userObjects = users.map((user) => em.create('User', user))
 
             await em.persistAndFlush(userObjects)
@@ -181,26 +182,6 @@ require('./app')
                 })
             await em.persistAndFlush(tags)
 
-            // console.log(savedUsers)
-            return
-
-            await Promise.all([
-                knex('posts').truncate(),
-                knex('users').truncate(),
-                knex('tags').truncate(),
-                knex('comments').truncate(),
-                knex('administrators').truncate(),
-            ])
-
-            await Promise.all([
-                knex('posts').insert(posts),
-                knex('users').insert(users),
-                knex('tags').insert(tags),
-                knex('comments').insert(comments),
-                knex('administrators').insert(administrators),
-                knex('posts_tags').insert(posts_tags),
-            ])
-
-            await knex.destroy()
+            await tensei.config.orm.close(true)
         }
     )

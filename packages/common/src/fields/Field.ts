@@ -197,6 +197,8 @@ export class Field implements FieldContract {
     public camelCaseNamePlural: string
 
     public pascalCaseName: string
+    public snakeCaseName: string
+    public snakeCaseNamePlural: string
 
     public capsDatabasefieldName: string
 
@@ -244,6 +246,8 @@ export class Field implements FieldContract {
 
         this.camelCaseName = camelCase(name)
         this.pascalCaseName = pascalCase(name)
+        this.snakeCaseName = snakeCase(name)
+        this.snakeCaseNamePlural = snakeCase(name)
         this.camelCaseNamePlural = Pluralize(this.camelCaseName)
         this.capsDatabasefieldName = this.databaseField.toUpperCase()
     }
@@ -676,6 +680,8 @@ export class Field implements FieldContract {
             isRelationshipField: this.isRelationshipField,
             camelCaseNamePlural: this.camelCaseNamePlural,
             pascalCaseName: this.pascalCaseName,
+            snakeCaseName: this.snakeCaseName,
+            snakeCaseNamePlural: this.snakeCaseNamePlural,
             capsDatabasefieldName: this.capsDatabasefieldName
         }
     }

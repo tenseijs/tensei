@@ -80,11 +80,13 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     constructor(name: string, tableName?: string) {
         this.data.name = name
         this.data.label = Pluralize(name)
+        this.data.snakeCaseName = snakeCase(name)
         this.data.camelCaseName = camelCase(name)
         this.data.pascalCaseName = pascalCase(name)
         this.data.slug = Pluralize(paramCase(name))
         this.data.table = tableName || Pluralize(snakeCase(name))
         this.data.camelCaseNamePlural = Pluralize(camelCase(name))
+        this.data.snakeCaseNamePlural = Pluralize(snakeCase(name))
     }
 
     public Model = (): any => {
@@ -113,6 +115,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         valueField: 'id',
         noTimeStamps: false,
         camelCaseName: '',
+        snakeCaseName: '',
+        snakeCaseNamePlural: '',
         camelCaseNamePlural: '',
         pascalCaseName: '',
         validationMessages: {
