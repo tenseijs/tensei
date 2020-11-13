@@ -5,7 +5,7 @@ import {
     FieldContract,
     ResourceContract,
     PluginSetupConfig,
-    FilterOperators,
+    FilterOperators
 } from '@tensei/common'
 import { buildSchema } from 'graphql'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
@@ -57,7 +57,9 @@ const getParsedInfo = (ql: any) => {
         keepRoot: false
     }) as any
 
-    return parsedInfo.fieldsByTypeName[Object.keys(parsedInfo.fieldsByTypeName)[0]]
+    return parsedInfo.fieldsByTypeName[
+        Object.keys(parsedInfo.fieldsByTypeName)[0]
+    ]
 }
 
 const parseWhereArgumentsFromSelectionToWhereQuery = (selection: any) => {
@@ -459,9 +461,11 @@ input id_where_query {
         )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${
             resource.data.snakeCaseName
         }!
-        update_${resource.data.snakeCaseNamePlural}(where: ${resource.data.snakeCaseName}_where_query!, object: update_${resource.data.snakeCaseName}_input!): [${
+        update_${resource.data.snakeCaseNamePlural}(where: ${
             resource.data.snakeCaseName
-        }]!
+        }_where_query!, object: update_${
+            resource.data.snakeCaseName
+        }_input!): [${resource.data.snakeCaseName}]!
         `
     }
 
@@ -472,7 +476,9 @@ input id_where_query {
         return `delete_${resource.data.snakeCaseName}(${this.getIdKey(
             config
         )}: ID!): ${resource.data.snakeCaseName}
-        delete_${resource.data.snakeCaseNamePlural}(where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]
+        delete_${resource.data.snakeCaseNamePlural}(where: ${
+            resource.data.snakeCaseName
+        }_where_query): [${resource.data.snakeCaseName}]
         `
     }
 
@@ -492,7 +498,7 @@ input id_where_query {
             fieldNode: any,
             data: any[]
         ) => {
-            if (! data.length) return
+            if (!data.length) return
 
             const relationshipFields = resource.data.fields.filter(
                 f => f.relatedProperty.reference
@@ -555,26 +561,28 @@ input id_where_query {
                     relatedOneToManyDatabaseFieldNames.includes(selection)
                 )
 
-
                 await Promise.all([
                     Promise.all(
                         manyToOneSelections.map((selection: string) =>
                             manager.populate(data, selection)
                         )
-                        ),
-                        Promise.all(
-                            manyToManySelections.map((selection: string) =>
+                    ),
+                    Promise.all(
+                        manyToManySelections.map((selection: string) =>
                             (async () => {
                                 const field = relatedManyToManyFields.find(
                                     _ => _.databaseField === selection
-                                    )
+                                )
 
-                                if (! fieldNode[selection].args.where && ! fieldNode[selection].args.limit && ! fieldNode[selection].args.offset) {
+                                if (
+                                    !fieldNode[selection].args.where &&
+                                    !fieldNode[selection].args.limit &&
+                                    !fieldNode[selection].args.offset
+                                ) {
                                     await manager.populate(data, selection)
 
                                     return
                                 }
-                                    
 
                                 await Promise.all(
                                     data.map(async item => {
@@ -592,7 +600,9 @@ input id_where_query {
                                                         .where
                                                 )
                                             },
-                                            getFindOptionsFromArgs(fieldNode[selection].args)
+                                            getFindOptionsFromArgs(
+                                                fieldNode[selection].args
+                                            )
                                         )
 
                                         item[
@@ -606,8 +616,11 @@ input id_where_query {
                     Promise.all(
                         oneToManySelections.map((selection: string) =>
                             (async () => {
-
-                                if (! fieldNode[selection].args.where && ! fieldNode[selection].args.limit && ! fieldNode[selection].args.offset) {
+                                if (
+                                    !fieldNode[selection].args.where &&
+                                    !fieldNode[selection].args.limit &&
+                                    !fieldNode[selection].args.offset
+                                ) {
                                     await manager.populate(data, selection)
 
                                     return
@@ -629,7 +642,9 @@ input id_where_query {
                                                         .where
                                                 )
                                             },
-                                            getFindOptionsFromArgs(fieldNode[selection].args)
+                                            getFindOptionsFromArgs(
+                                                fieldNode[selection].args
+                                            )
                                         )
 
                                         item[
@@ -663,8 +678,9 @@ input id_where_query {
                                                     }
                                                 },
                                                 ...parseWhereArgumentsToWhereQuery(
-                                                    fieldNode[`${selection}__count`].args
-                                                        .where
+                                                    fieldNode[
+                                                        `${selection}__count`
+                                                    ].args.where
                                                 )
                                             }
                                         )
@@ -697,8 +713,9 @@ input id_where_query {
                                                 [resource.data
                                                     .snakeCaseName]: key,
                                                 ...parseWhereArgumentsToWhereQuery(
-                                                    fieldNode[`${selection}__count`].args
-                                                        .where
+                                                    fieldNode[
+                                                        `${selection}__count`
+                                                    ].args.where
                                                 )
                                             }
                                         )
@@ -837,11 +854,9 @@ input id_where_query {
                     }
                 )
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    [data]
-                )
+                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
+                    data
+                ])
 
                 return data
             }
@@ -858,11 +873,9 @@ input id_where_query {
 
                 await manager.persistAndFlush(data)
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    [data]
-                )
+                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
+                    data
+                ])
 
                 return data
             }
@@ -902,11 +915,9 @@ input id_where_query {
 
                 await manager.persistAndFlush(data)
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    [data]
-                )
+                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
+                    data
+                ])
 
                 return data
             }
@@ -916,7 +927,10 @@ input id_where_query {
                 ctx: any,
                 ql: any
             ) => {
-                const data = await manager.find(resource.data.pascalCaseName, parseWhereArgumentsToWhereQuery(args.where))
+                const data = await manager.find(
+                    resource.data.pascalCaseName,
+                    parseWhereArgumentsToWhereQuery(args.where)
+                )
 
                 data.forEach(d => {
                     manager.assign(d, args.object)
@@ -924,11 +938,9 @@ input id_where_query {
 
                 await manager.persistAndFlush(data)
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    [data]
-                )
+                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
+                    data
+                ])
 
                 return data
             }
@@ -944,11 +956,9 @@ input id_where_query {
                         id: args.id
                     })
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    [data]
-                )
+                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
+                    data
+                ])
                 await manager.removeAndFlush(data)
 
                 return data
@@ -959,8 +969,10 @@ input id_where_query {
                 ctx: any,
                 ql: any
             ) => {
-
-                const data = await manager.find(resource.data.pascalCaseName, parseWhereArgumentsToWhereQuery(args.where))
+                const data = await manager.find(
+                    resource.data.pascalCaseName,
+                    parseWhereArgumentsToWhereQuery(args.where)
+                )
 
                 await populateFromResolvedNodes(
                     resource,

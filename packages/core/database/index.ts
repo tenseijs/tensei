@@ -1,16 +1,21 @@
-import { Config } from '@tensei/common'
-import {
-    MikroORM,
-    EntitySchema,
-    ReferenceType,
-    EntityMetadata
-} from '@mikro-orm/core'
-
-import { FieldContract } from '@tensei/common'
-import { ResourceContract } from '@tensei/common'
-import BaseEntitySchema, { BaseEntity } from './BaseEntity'
+import { MikroORM, EntitySchema, ReferenceType } from '@mikro-orm/core'
+import { FieldContract, ResourceContract, Config } from '@tensei/common'
 
 import Migrator from './Migrator'
+import BaseEntity from './BaseEntity'
+
+const hookNames: (keyof ResourceContract['hooks'])[] = [
+    'onInit',
+    'beforeCreate',
+    'afterCreate',
+    'beforeUpdate',
+    'afterUpdate',
+    'beforeDelete',
+    'afterDelete',
+    'beforeFlush',
+    'onFlush',
+    'afterFlush'
+]
 
 class Database {
     public orm: MikroORM | null = null
@@ -33,7 +38,7 @@ class Database {
 
     getMikroORMOptions() {
         return {
-            entities: [BaseEntity, ...this.generateEntitySchemas()],
+            entities: this.generateEntitySchemas(),
             ...this.config.databaseConfig
         }
     }
@@ -42,7 +47,7 @@ class Database {
         this.schemas = this.config.resources.map(resource => {
             let entityMeta: any = {
                 name: resource.data.pascalCaseName,
-                extends: 'BaseEntity',
+                // extends: 'BaseEntity',
                 tableName: resource.data.table,
                 collection: resource.data.table,
                 hooks: {}
@@ -60,38 +65,39 @@ class Database {
                 }
             })
 
-            // resource.data.filters.forEach(filter => {
-            //     entityProperties.filters = {
-            //         ...entityProperties.filters,
-            //         [filter.config.shortName]: {
-            //             name: filter.config.shortName,
-            //             cond: filter.config.cond,
-            //             args: filter.config.args,
-            //             default: filter.config.default
-            //         }
-            //     }
-            // })
+            entityMeta.hooks.onInit = entityMeta.hooks.onInit = ['onInit']
 
-            // onInit = "onInit",
-            // beforeCreate = "beforeCreate",
-            // afterCreate = "afterCreate",
-            // beforeUpdate = "beforeUpdate",
-            // afterUpdate = "afterUpdate",
-            // beforeDelete = "beforeDelete",
-            // afterDelete = "afterDelete",
-            // beforeFlush = "beforeFlush",
-            // onFlush = "onFlush",
-            // afterFlush = "afterFlush"
-            entityMeta.hooks.onInit = (...all: any) => {
-                console.log('@@@@@@@@@ INIT', all)
-            }
+            hookNames.forEach(hookName => {
+                entityMeta.hooks[hookName] = [hookName]
+            })
 
             entityMeta.properties = entityProperties
+
+            entityMeta.class = this.generateEntityClass(resource)
 
             return entityMeta
         })
 
         return this.schemas.map((schema: any) => new EntitySchema(schema))
+    }
+
+    private generateEntityClass(resource: ResourceContract) {
+        const entityClass = function() {}
+
+        Object.defineProperty(entityClass, 'name', {
+            value: resource.data.pascalCaseName,
+            writable: false
+        })
+
+        hookNames.forEach(hookName => {
+            entityClass.prototype[hookName] = (eventPayload: any) =>
+                Promise.all(
+                    (resource.hooks[hookName] as any).map((fn: any) =>
+                        fn(eventPayload)
+                    )
+                )
+        })
+        return entityClass
     }
 
     private updateFieldRelationshipRelatedProperty(

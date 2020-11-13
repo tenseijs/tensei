@@ -74,19 +74,19 @@ export class Field implements FieldContract {
         afterCreate: FieldHookFunction
         afterUpdate: FieldHookFunction
     } = {
-        beforeCreate: (payload, request) => {
+        beforeCreate: payload => {
             return payload
         },
 
-        beforeUpdate: (payload, request) => {
+        beforeUpdate: payload => {
             return payload
         },
 
-        afterCreate: (payload, request) => {
+        afterCreate: payload => {
             return payload
         },
 
-        afterUpdate: (payload, request) => {
+        afterUpdate: payload => {
             return payload
         }
     }
@@ -661,26 +661,26 @@ export class Field implements FieldContract {
 
             name: this.name,
             hidden: this.isHidden,
+            isUnique: this.isUnique,
             component: this.component,
             description: this.helpText,
             isNullable: this.isNullable,
             isSortable: this.isSortable,
-            isUnique: this.isUnique,
-            isSearchable: this.isSearchable,
             attributes: this.attributes,
             rules: this.validationRules,
             inputName: this.databaseField,
+            isSearchable: this.isSearchable,
             defaultValue: this.defaultValue,
-            camelCaseName: camelCase(this.name),
-            updateRules: this.updateValidationRules,
-            creationRules: this.creationValidationRules,
             fieldName: this.constructor.name,
-            databaseField: this.databaseField,
-            databaseFieldType: this.databaseFieldType,
-            isRelationshipField: this.isRelationshipField,
-            camelCaseNamePlural: this.camelCaseNamePlural,
-            pascalCaseName: this.pascalCaseName,
             snakeCaseName: this.snakeCaseName,
+            databaseField: this.databaseField,
+            camelCaseName: camelCase(this.name),
+            pascalCaseName: this.pascalCaseName,
+            updateRules: this.updateValidationRules,
+            databaseFieldType: this.databaseFieldType,
+            creationRules: this.creationValidationRules,
+            camelCaseNamePlural: this.camelCaseNamePlural,
+            isRelationshipField: this.isRelationshipField,
             snakeCaseNamePlural: this.snakeCaseNamePlural,
             capsDatabasefieldName: this.capsDatabasefieldName
         }

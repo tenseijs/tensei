@@ -66,31 +66,31 @@ module.exports = tensei()
         ]),
     ])
     .plugins([
-        // auth()
-        //     .name('Customer')
-        //     .twoFactorAuth()
-        //     .verifyEmails()
-        //     .teams()
-        //     .apiPath('auth')
-        //     .rolesAndPermissions()
-        //     .social('github', {
-        //         key: process.env.GITHUB_KEY,
-        //         secret: process.env.GITHUB_SECRET,
-        //         scope: ['user', 'user:email'],
-        //     })
-        //     .social('gitlab', {
-        //         key: process.env.GITLAB_KEY,
-        //         secret: process.env.GITLAB_SECRET,
-        //     })
-        //     .social('google', {
-        //         key: process.env.GOOGLE_KEY,
-        //         secret: process.env.GOOGLE_SECRET,
-        //     })
-        //     .social('linkedin', {
-        //         key: process.env.LINKEDIN_KEY,
-        //         secret: process.env.LINKEDIN_SECRET,
-        //     })
-        //     .plugin(),
+        auth()
+            .name('Customer')
+            .twoFactorAuth()
+            .verifyEmails()
+            .teams()
+            .apiPath('auth')
+            .rolesAndPermissions()
+            .social('github', {
+                key: process.env.GITHUB_KEY,
+                secret: process.env.GITHUB_SECRET,
+                scope: ['user', 'user:email'],
+            })
+            .social('gitlab', {
+                key: process.env.GITLAB_KEY,
+                secret: process.env.GITLAB_SECRET,
+            })
+            .social('google', {
+                key: process.env.GOOGLE_KEY,
+                secret: process.env.GOOGLE_SECRET,
+            })
+            .social('linkedin', {
+                key: process.env.LINKEDIN_KEY,
+                secret: process.env.LINKEDIN_SECRET,
+            })
+            .plugin(),
         trix(),
         // cashier()
         //     .customerResourceName('Customer')

@@ -5,8 +5,10 @@ declare module '@tensei/common/resources' {
     import { SerializedAction, ActionContract } from '@tensei/common/actions'
     import {
         HookFunction,
+        HookFunctionPromised,
         Permission,
         AuthorizeFunction,
+        FlushHookFunction,
         DatabaseRepositoryInterface,
         User,
         ResourceHelpers
@@ -63,10 +65,16 @@ declare module '@tensei/common/resources' {
             authorizedToRunAction: AuthorizeFunction[]
         }
         hooks: {
-            beforeCreate: HookFunction
-            beforeUpdate: HookFunction
-            afterCreate: HookFunction
-            afterUpdate: HookFunction
+            onInit: HookFunction[]
+            beforeCreate: HookFunctionPromised[]
+            afterCreate: HookFunctionPromised[]
+            beforeUpdate: HookFunctionPromised[]
+            afterUpdate: HookFunctionPromised[]
+            beforeDelete: HookFunctionPromised[]
+            afterDelete: HookFunctionPromised[]
+            beforeFlush: FlushHookFunction[]
+            onFlush: FlushHookFunction[]
+            afterFlush: FlushHookFunction[]
         }
         data: ResourceDataWithFields
         hideFromApi(): this
@@ -97,9 +105,12 @@ declare module '@tensei/common/resources' {
         label(label: string): this
         serialize(): SerializedResource
         beforeCreate(hook: HookFunction): this
-        beforeUpdate(hook: HookFunction): this
         afterCreate(hook: HookFunction): this
+        beforeUpdate(hook: HookFunction): this
         afterUpdate(hook: HookFunction): this
+        beforeDelete(hook: HookFunction): this
+        afterDelete(hook: HookFunction): this
+        onInit(hook: HookFunction): this
     }
 
     export class Resource implements ResourceContract {

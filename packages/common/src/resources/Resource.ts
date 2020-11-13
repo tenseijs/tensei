@@ -55,26 +55,21 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public hooks: {
-        beforeCreate: HookFunction
-        beforeUpdate: HookFunction
-        afterCreate: HookFunction
-        afterUpdate: HookFunction
+        onInit: HookFunction[]
+        beforeCreate: HookFunction[]
+        afterCreate: HookFunction[]
+        beforeUpdate: HookFunction[]
+        afterUpdate: HookFunction[]
+        beforeDelete: HookFunction[]
+        afterDelete: HookFunction[]
     } = {
-        beforeCreate: (payload, request) => {
-            return payload
-        },
-
-        beforeUpdate: (payload, request) => {
-            return payload
-        },
-
-        afterCreate: (payload, request) => {
-            return payload
-        },
-
-        afterUpdate: (payload, request) => {
-            return payload
-        }
+        onInit: [],
+        beforeCreate: [],
+        afterCreate: [],
+        beforeUpdate: [],
+        afterUpdate: [],
+        beforeDelete: [],
+        afterDelete: []
     }
 
     constructor(name: string, tableName?: string) {
@@ -301,7 +296,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public beforeCreate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeCreate: hook
+            beforeCreate: [...this.hooks.beforeCreate, hook]
         }
 
         return this
@@ -310,16 +305,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public beforeUpdate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            beforeUpdate: hook
-        }
-
-        return this
-    }
-
-    public afterCreate(hook: HookFunction) {
-        this.hooks = {
-            ...this.hooks,
-            afterCreate: hook
+            beforeUpdate: [...this.hooks.beforeUpdate, hook]
         }
 
         return this
@@ -328,7 +314,43 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     public afterUpdate(hook: HookFunction) {
         this.hooks = {
             ...this.hooks,
-            afterUpdate: hook
+            afterUpdate: [...this.hooks.afterUpdate, hook]
+        }
+
+        return this
+    }
+
+    public beforeDelete(hook: HookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            beforeDelete: [...this.hooks.beforeDelete, hook]
+        }
+
+        return this
+    }
+
+    public afterDelete(hook: HookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            afterDelete: [...this.hooks.afterDelete, hook]
+        }
+
+        return this
+    }
+
+    public afterCreate(hook: HookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            afterCreate: [...this.hooks.afterCreate, hook]
+        }
+
+        return this
+    }
+
+    public onInit(hook: HookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            onInit: [...this.hooks.onInit, hook]
         }
 
         return this

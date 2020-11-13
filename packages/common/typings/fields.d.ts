@@ -349,10 +349,16 @@ declare module '@tensei/common/fields' {
         unique<T extends FieldContract>(this: T): T
         /**
          *
-         * Make this field nullable
+         * Make this field not nullable
          *
          */
         notNullable<T extends FieldContract>(this: T): T
+        /**
+         *
+         * Make this field nullable
+         *
+         */
+        nullable<T extends FieldContract>(this: T): T
         /**
          *
          * Define the description. This would be a help text

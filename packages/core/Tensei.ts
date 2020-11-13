@@ -80,14 +80,12 @@ export class Tensei implements TenseiContract {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
-        pushResource: (resource: ResourceContract) => {
-            this.config.resources = [...this.config.resources, resource]
-        },
+        pushResource: (resource: ResourceContract) =>
+            this.resources([...this.config.resources, resource]),
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
         middleware: [],
-
         pushMiddleware: (middleware: EndpointMiddleware) => {
             this.config.middleware = [...this.config.middleware, middleware]
         },

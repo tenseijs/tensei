@@ -2,6 +2,7 @@ declare module '@tensei/common/config' {
     import { Signale } from 'signale'
     import { Storage } from '@slynova/flydrive'
     import { sanitizer, validator } from 'indicative'
+    import { EventArgs, FlushEventArgs } from '@mikro-orm/core'
     import { ResourceContract } from '@tensei/common/resources'
     import { DashboardContract } from '@tensei/common/dashboards'
     import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
@@ -81,10 +82,15 @@ declare module '@tensei/common/config' {
         request: Request,
         models?: ModelType[]
     ) => boolean | Promise<boolean>
-    type HookFunction = (
-        payload: DataPayload,
-        request: Request | null
-    ) => DataPayload
+    type HookFunction<EntityType = DataPayload> = (
+        payload: EventArgs<EntityType>
+    ) => void
+    type FlushHookFunction<EntityType = DataPayload> = (
+        payload: FlushEventArgs
+    ) => Promise<void>
+    type HookFunctionPromised<EntityType = DataPayload> = (
+        payload: EventArgs<EntityType>
+    ) => Promise<void>
     type FieldHookFunction<FieldValueType = any> = (
         payload: DataPayload,
         request: Request

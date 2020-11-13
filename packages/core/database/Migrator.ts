@@ -7,6 +7,7 @@ class Migrator {
         if (this.orm.config.get('type') === 'mongo') {
             return
         }
+
         const schemaGenerator = this.orm.getSchemaGenerator()
 
         await schemaGenerator.ensureDatabase()
