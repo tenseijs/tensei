@@ -459,9 +459,7 @@ input id_where_query {
         )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${
             resource.data.snakeCaseName
         }!
-        update_${resource.data.snakeCaseNamePlural}(${this.getIdKey(
-            config
-        )}: ID!, objects: update_${resource.data.snakeCaseName}_input!): [${
+        update_${resource.data.snakeCaseNamePlural}(where: ${resource.data.snakeCaseName}_where_query!, object: update_${resource.data.snakeCaseName}_input!): [${
             resource.data.snakeCaseName
         }]!
         `
@@ -473,7 +471,9 @@ input id_where_query {
     ) {
         return `delete_${resource.data.snakeCaseName}(${this.getIdKey(
             config
-        )}: ID!): ${resource.data.snakeCaseName}`
+        )}: ID!): ${resource.data.snakeCaseName}
+        delete_${resource.data.snakeCaseNamePlural}(where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]
+        `
     }
 
     private getIdKey(config: PluginSetupConfig) {
@@ -492,6 +492,8 @@ input id_where_query {
             fieldNode: any,
             data: any[]
         ) => {
+            if (! data.length) return
+
             const relationshipFields = resource.data.fields.filter(
                 f => f.relatedProperty.reference
             )
@@ -553,7 +555,7 @@ input id_where_query {
                     relatedOneToManyDatabaseFieldNames.includes(selection)
                 )
 
-                
+
                 await Promise.all([
                     Promise.all(
                         manyToOneSelections.map((selection: string) =>
@@ -909,6 +911,28 @@ input id_where_query {
                 return data
             }
 
+            resolvers[`update_${resource.data.snakeCaseNamePlural}`] = async (
+                args: any,
+                ctx: any,
+                ql: any
+            ) => {
+                const data = await manager.find(resource.data.pascalCaseName, parseWhereArgumentsToWhereQuery(args.where))
+
+                data.forEach(d => {
+                    manager.assign(d, args.object)
+                })
+
+                await manager.persistAndFlush(data)
+
+                await populateFromResolvedNodes(
+                    resource,
+                    getParsedInfo(ql),
+                    [data]
+                )
+
+                return data
+            }
+
             resolvers[`delete_${resource.data.snakeCaseName}`] = async (
                 args: any,
                 ctx: any,
@@ -925,6 +949,25 @@ input id_where_query {
                     getParsedInfo(ql),
                     [data]
                 )
+                await manager.removeAndFlush(data)
+
+                return data
+            }
+
+            resolvers[`delete_${resource.data.snakeCaseNamePlural}`] = async (
+                args: any,
+                ctx: any,
+                ql: any
+            ) => {
+
+                const data = await manager.find(resource.data.pascalCaseName, parseWhereArgumentsToWhereQuery(args.where))
+
+                await populateFromResolvedNodes(
+                    resource,
+                    getParsedInfo(ql),
+                    data
+                )
+
                 await manager.removeAndFlush(data)
 
                 return data
