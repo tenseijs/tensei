@@ -22,8 +22,7 @@ import {
     DatabaseRepositoryInterface
 } from '@tensei/common'
 
-export class SqlRepository
-    extends ResourceHelpers
+export class SqlRepository extends ResourceHelpers
     implements DatabaseRepositoryInterface<any> {
     private $db: Knex | null = null
 
@@ -49,8 +48,12 @@ export class SqlRepository
         return resource('Administrator Role')
             .hideFromNavigation()
             .fields([
-                text('Name').rules('required').unique(),
-                text('Slug').rules('required').unique(),
+                text('Name')
+                    .rules('required')
+                    .unique(),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
 
                 belongsToMany('Administrator'),
                 belongsToMany('Administrator Permission')
@@ -63,7 +66,9 @@ export class SqlRepository
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Slug').rules('required').unique(),
+                text('Slug')
+                    .rules('required')
+                    .unique(),
                 belongsToMany('Administrator Role')
             ])
             .hideFromApi()
@@ -73,8 +78,13 @@ export class SqlRepository
         return resource('Administrator Password Reset')
             .hideFromNavigation()
             .fields([
-                text('Email').searchable().unique().notNullable(),
-                text('Token').unique().notNullable(),
+                text('Email')
+                    .searchable()
+                    .unique()
+                    .notNullable(),
+                text('Token')
+                    .unique()
+                    .notNullable(),
                 dateTime('Expires At')
             ])
             .hideFromApi()
@@ -87,8 +97,13 @@ export class SqlRepository
             .hideFromNavigation()
             .fields([
                 text('Name'),
-                text('Email').unique().searchable().rules('required', 'email'),
-                text('Password').hidden().rules('required', 'min:8'),
+                text('Email')
+                    .unique()
+                    .searchable()
+                    .rules('required', 'email'),
+                text('Password')
+                    .hidden()
+                    .rules('required', 'min:8'),
                 belongsToMany('Administrator Role')
             ])
             .beforeCreate(payload => ({
@@ -203,7 +218,9 @@ export class SqlRepository
         }
 
         let superAdminRole = (
-            await RoleModel.query().where('slug', 'super-admin').limit(1)
+            await RoleModel.query()
+                .where('slug', 'super-admin')
+                .limit(1)
         )[0]
 
         if (!superAdminRole) {
@@ -213,7 +230,9 @@ export class SqlRepository
             })
 
             superAdminRole = (
-                await RoleModel.query().where('slug', 'super-admin').limit(1)
+                await RoleModel.query()
+                    .where('slug', 'super-admin')
+                    .limit(1)
             )[0]
         }
 
@@ -258,19 +277,19 @@ export class SqlRepository
                 if (field.component === 'BelongsToField') {
                     model[
                         relatedResource.data.name.toLowerCase()
-                    ] = function () {
+                    ] = function() {
                         return this.belongsTo(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'HasManyField') {
-                    model[relatedResource.data.slug] = function () {
+                    model[relatedResource.data.slug] = function() {
                         return this.hasMany(relatedResource.data.name)
                     }
                 }
 
                 if (field.component === 'BelongsToManyField') {
-                    model[relatedResource.data.slug] = function () {
+                    model[relatedResource.data.slug] = function() {
                         return this.belongsToMany(relatedResource.data.name)
                     }
                 }
@@ -793,7 +812,7 @@ export class SqlRepository
                         return Promise.resolve()
                     }
 
-                    return (async function () {
+                    return (async function() {
                         await RelatedModel.query()
                             .where(relatedBelongsToField.databaseField, id)
                             .update({
@@ -906,7 +925,7 @@ export class SqlRepository
                             })
                     }
 
-                    return async function () {}
+                    return async function() {}
                 })
             )
         ])

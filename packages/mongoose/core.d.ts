@@ -28,8 +28,7 @@ declare module '@tensei/common' {
         databaseConfig: [string, Mongoose.ConnectionOptions]
     }
 
-    export abstract class Repository
-        extends ResourceHelpers
+    export abstract class Repository extends ResourceHelpers
         implements DatabaseRepositoryInterface {
         static databases: string[]
         abstract setup: (config: Config) => Promise<any>

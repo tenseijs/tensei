@@ -685,7 +685,9 @@ export class Tensei implements TenseiContract {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail().connection(driverName).config(mailConfig)
+        this.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }

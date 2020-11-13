@@ -1,5 +1,6 @@
 import { graphqlHTTP } from 'express-graphql'
-import DataLoader from 'dataloader'
+import parseAst from 'graphql-parse-fields'
+import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
     plugin,
     Resource,
@@ -16,6 +17,7 @@ import {
 import { buildSchema } from 'graphql'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
 import GraphqlPlayground from 'graphql-playground-middleware-express'
+import { getArgumentValues } from 'graphql/execution/values'
 
 export interface GraphQlPluginConfig {
     graphiql: boolean
@@ -44,6 +46,9 @@ const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
 const allOperators = filterOperators.concat(topLevelOperators)
 
 const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
+    if (!whereArgument) {
+        return {}
+    }
     let whereArgumentString = JSON.stringify(whereArgument)
 
     allOperators.forEach(operator => {
@@ -54,6 +59,27 @@ const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
     })
 
     return JSON.parse(whereArgumentString)
+}
+
+const parseWhereArgumentsFromSelectionToWhereQuery = (selection: any) => {
+    const whereArgumentSelection = selection.arguments.find(
+        (argument: any) => argument.name.value === 'where'
+    )
+
+    if (!whereArgumentSelection) return {}
+
+    console.log(
+        whereArgumentSelection,
+        JSON.stringify(whereArgumentSelection, null, 2)
+    )
+
+    let whereQuery: any = {}
+
+    const populateFieldToWhereQuery = (field: any, previousField: any) => {}
+
+    whereArgumentSelection.fields.forEach((field: any) => {})
+
+    return whereQuery
 }
 
 const getFindOptionsFromArgs = (args: any) => {
@@ -318,7 +344,10 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
                field.relatedProperty.reference!
            )
        )
-       .map(field => `${field.databaseField}__count(id: Int): Int`)}
+       .map(
+           field =>
+               `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
+       )}
 }
 input create_${
                 resource.data.snakeCaseName
@@ -459,6 +488,304 @@ input id_where_query {
     ) {
         let resolvers: any = {}
 
+        const populateFromResolvedNodes = async (
+            resource: ResourceContract,
+            fieldNode: any,
+            data: any[]
+        ) => {
+            const relationshipFields = resource.data.fields.filter(
+                f => f.relatedProperty.reference
+            )
+
+            const relatedManyToOneFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.MANY_TO_ONE
+            )
+            const relatedManyToManyFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.MANY_TO_MANY
+            )
+            const relatedOneToManyFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.ONE_TO_MANY
+            )
+            const relatedOneToOneFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+            )
+
+            const relatedManyToOneDatabaseFieldNames = relatedManyToOneFields.map(
+                field => field.databaseField
+            )
+            const relatedManyToManyDatabaseFieldNames = relatedManyToManyFields.map(
+                field => field.databaseField
+            )
+            const relatedOneToManyDatabaseFieldNames = relatedOneToManyFields.map(
+                field => field.databaseField
+            )
+            const relatedOneToOneDatabaseFieldNames = relatedOneToOneFields.map(
+                field => field.databaseField
+            )
+
+            if (Object.keys(fieldNode).length > 0) {
+                const countSelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) => selection.match(/__count/))
+                const countSelectionNames: string[] = countSelections.map(
+                    (selection: string) => selection.split('__')[0]
+                )
+
+                const manyToOneSelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) =>
+                    relatedManyToOneDatabaseFieldNames.includes(selection)
+                )
+                const manyToManySelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) =>
+                    relatedManyToManyDatabaseFieldNames.includes(selection)
+                )
+                const oneToManySelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) =>
+                    relatedOneToManyDatabaseFieldNames.includes(selection)
+                )
+
+                await Promise.all([
+                    Promise.all(
+                        manyToOneSelections.map((selection: string) =>
+                            manager.populate(data, selection)
+                        )
+                    ),
+                    Promise.all(
+                        manyToManySelections.map((selection: string) =>
+                            (async () => {
+                                const field = relatedManyToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const relatedData: any = await manager.find(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                },
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[selection].args
+                                                        .where
+                                                )
+                                            }
+                                        )
+
+                                        item[
+                                            field?.databaseField!
+                                        ] = relatedData
+                                    })
+                                )
+                            })()
+                        )
+                    ),
+                    Promise.all(
+                        oneToManySelections.map((selection: string) =>
+                            (async () => {
+                                await manager.populate(data, selection)
+
+                                const field = relatedOneToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const relatedData: any = await manager.find(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data.snakeCaseName]:
+                                                    item.id,
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[selection].args
+                                                        .where
+                                                )
+                                            }
+                                        )
+
+                                        item[
+                                            field?.databaseField!
+                                        ] = relatedData
+                                    })
+                                )
+                            })()
+                        )
+                    ),
+                    Promise.all(
+                        countSelectionNames.map(async selection => {
+                            if (
+                                relatedManyToManyDatabaseFieldNames.includes(
+                                    selection
+                                )
+                            ) {
+                                const field = relatedManyToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const count = await manager.count(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                },
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[selection].args
+                                                        .where
+                                                )
+                                            }
+                                        )
+
+                                        item[
+                                            `${field?.databaseField}__count`
+                                        ] = count
+                                    })
+                                )
+                            }
+
+                            if (
+                                relatedOneToManyDatabaseFieldNames.includes(
+                                    selection
+                                )
+                            ) {
+                                const field = relatedOneToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                const uniqueKeys = Array.from(
+                                    new Set(data.map(_ => _.id))
+                                )
+
+                                const counts: any[] = await Promise.all(
+                                    uniqueKeys.map(async key =>
+                                        manager.count(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseName]: key,
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[selection].args
+                                                        .where
+                                                )
+                                            }
+                                        )
+                                    )
+                                )
+
+                                data.forEach(item => {
+                                    const index = uniqueKeys.indexOf(item.id)
+
+                                    item[`${field?.databaseField}__count`] =
+                                        counts[index]
+                                })
+                            }
+                        })
+                    )
+                ])
+
+                for (const manyToOneSelection of manyToOneSelections) {
+                    const fieldTypes =
+                        fieldNode[manyToOneSelection].fieldsByTypeName
+
+                    if (Object.keys(fieldTypes).length > 0) {
+                        const field = relatedManyToOneFields.find(
+                            f => f.databaseField === manyToOneSelection
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromResolvedNodes(
+                            relatedResource,
+                            fieldTypes[
+                                Object.keys(
+                                    fieldNode[manyToOneSelection]
+                                        .fieldsByTypeName
+                                )[0]
+                            ],
+                            data.map(d => d[field.databaseField])
+                        )
+                    }
+                }
+
+                for (const manyToManySelection of manyToManySelections) {
+                    const fieldTypes =
+                        fieldNode[manyToManySelection].fieldsByTypeName
+
+                    if (Object.keys(fieldTypes).length > 0) {
+                        const field = relatedManyToManyFields.find(
+                            f => f.databaseField === manyToManySelection
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromResolvedNodes(
+                            relatedResource,
+                            fieldTypes[
+                                Object.keys(
+                                    fieldNode[manyToManySelection]
+                                        .fieldsByTypeName
+                                )[0]
+                            ],
+                            data
+                                .map(d => d[field.databaseField])
+                                .reduce((acc, d) => [...acc, ...d], [])
+                        )
+                    }
+                }
+
+                for (const oneToManySelection of oneToManySelections) {
+                    const fieldTypes =
+                        fieldNode[oneToManySelection].fieldsByTypeName
+
+                    if (Object.keys(fieldTypes).length > 0) {
+                        const field = relatedOneToManyFields.find(
+                            f => f.databaseField === oneToManySelection
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromResolvedNodes(
+                            relatedResource,
+                            fieldTypes[
+                                Object.keys(
+                                    fieldNode[oneToManySelection]
+                                        .fieldsByTypeName
+                                )[0]
+                            ],
+                            data
+                                .map(d => d[field.databaseField])
+                                .reduce((acc, d) => [...acc, ...d], [])
+                        )
+                    }
+                }
+            }
+
+            return data
+        }
+
         const populateFromFieldNodes = async (
             resource: ResourceContract,
             fieldNode: any,
@@ -541,6 +868,8 @@ input id_where_query {
                                     _ =>
                                         _.databaseField === selection.name.value
                                 )
+
+                                // console.log('+++++++++++')
 
                                 await Promise.all(
                                     data.map(async item => {
@@ -737,7 +1066,16 @@ input id_where_query {
                     }
                 )
 
-                await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
+                const parsedInfo = parseResolveInfo(ql, {
+                    keepRoot: false
+                }) as any
+
+                // await populateFromFieldNodes(resource, ql.fieldNodes[0], [data])
+                await populateFromResolvedNodes(
+                    resource,
+                    parsedInfo.fieldsByTypeName[parsedInfo.name],
+                    [data]
+                )
 
                 return data
             }
