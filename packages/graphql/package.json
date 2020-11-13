@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "@tensei/common": "0.0.0",
+        "apollo-server-express": "^2.19.0",
         "dataloader": "^2.0.0",
         "graphql": "^15.3.0",
         "graphql-parse-fields": "^1.2.0",

@@ -1,4 +1,5 @@
 import { graphqlHTTP } from 'express-graphql'
+import { ApolloServer, gql } from 'apollo-server-express'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
     plugin,
@@ -7,12 +8,18 @@ import {
     PluginSetupConfig,
     FilterOperators
 } from '@tensei/common'
-import { buildSchema } from 'graphql'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
 
 export interface GraphQlPluginConfig {
     graphiql: boolean
     graphqlPath: string
+}
+
+export interface GraphQLPluginExtension {
+    typeDefs: string
+    queries: string
+    mutations: string
+    resolvers: any
 }
 
 const filterOperators: FilterOperators[] = [
@@ -190,7 +197,7 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `[${relatedResource.data.snakeCaseName}]`
-                FieldKey = `${relatedResource.data.camelCaseNamePlural}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
+                FieldKey = `${relatedResource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
             }
         }
 
@@ -225,7 +232,7 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.camelCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]`
+  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]`
     }
 
     private defineFetchSingleQueryForResource(
@@ -233,7 +240,7 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${
+  ${resource.data.snakeCaseName}(${this.getIdKey(config)}: ID!): ${
             resource.data.snakeCaseName
         }`
     }
@@ -439,7 +446,8 @@ input id_where_query {
     })}
 }
 `
-        return buildSchema(this.schemaString)
+
+        return gql(this.schemaString)
     }
 
     private defineCreateMutationForResource(
@@ -491,7 +499,10 @@ input id_where_query {
         manager: EntityManager,
         config: PluginSetupConfig
     ) {
-        let resolvers: any = {}
+        let resolvers: any = {
+            Query: {},
+            Mutation: {}
+        }
 
         const populateFromResolvedNodes = async (
             resource: ResourceContract,
@@ -820,8 +831,8 @@ input id_where_query {
         }
 
         resources.forEach(resource => {
-            // handle fetch all resolvers
-            resolvers[resource.data.snakeCaseNamePlural] = async (
+            resolvers.Query[resource.data.snakeCaseNamePlural] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -841,8 +852,8 @@ input id_where_query {
                 return data
             }
 
-            // handle fetch one resolvers
-            resolvers[resource.data.snakeCaseName] = async (
+            resolvers.Query[resource.data.snakeCaseName] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -861,7 +872,8 @@ input id_where_query {
                 return data
             }
 
-            resolvers[`insert_${resource.data.snakeCaseName}`] = async (
+            resolvers.Mutation[`insert_${resource.data.snakeCaseName}`] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -880,7 +892,8 @@ input id_where_query {
                 return data
             }
 
-            resolvers[`insert_${resource.data.snakeCaseNamePlural}`] = async (
+            resolvers.Mutation[`insert_${resource.data.snakeCaseNamePlural}`] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -900,7 +913,8 @@ input id_where_query {
                 return data
             }
 
-            resolvers[`update_${resource.data.snakeCaseName}`] = async (
+            resolvers.Mutation[`update_${resource.data.snakeCaseName}`] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -922,7 +936,8 @@ input id_where_query {
                 return data
             }
 
-            resolvers[`update_${resource.data.snakeCaseNamePlural}`] = async (
+            resolvers.Mutation[`update_${resource.data.snakeCaseNamePlural}`] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -945,7 +960,8 @@ input id_where_query {
                 return data
             }
 
-            resolvers[`delete_${resource.data.snakeCaseName}`] = async (
+            resolvers.Mutation[`delete_${resource.data.snakeCaseName}`] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -964,7 +980,8 @@ input id_where_query {
                 return data
             }
 
-            resolvers[`delete_${resource.data.snakeCaseNamePlural}`] = async (
+            resolvers.Mutation[`delete_${resource.data.snakeCaseNamePlural}`] = async (
+                _: any,
                 args: any,
                 ctx: any,
                 ql: any
@@ -989,6 +1006,8 @@ input id_where_query {
         return resolvers
     }
 
+    extensions() {}
+
     plugin() {
         return plugin('Graph QL').afterDatabaseSetup(async config => {
             const { app, resources, manager } = config
@@ -996,27 +1015,19 @@ input id_where_query {
                 resource => !resource.data.hideFromApi
             )
 
-            const schema = this.setupResourceGraphqlTypes(
+            const typeDefs = this.setupResourceGraphqlTypes(
                 exposedResources,
                 config
             )
 
-            const graphQLHandler = graphqlHTTP((req, res, params) => {
-                return {
-                    schema,
-                    pretty: true,
-                    graphiql: this.config.graphiql,
-                    rootValue: this.getResolvers(
-                        exposedResources,
-                        manager!.fork(),
-                        config
-                    )
-                }
+            const graphQlServer = new ApolloServer({
+                typeDefs,
+                resolvers: this.getResolvers(exposedResources, manager!.fork(), config)
             })
 
-            app.post(this.config.graphqlPath, graphQLHandler)
-
-            app.get(this.config.graphqlPath, graphQLHandler)
+            graphQlServer.applyMiddleware({
+                app
+            })
 
             return {}
         })
