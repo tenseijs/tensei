@@ -37,9 +37,14 @@ class Database {
     }
 
     getMikroORMOptions() {
+        const { entities, ...rest } = this.config.databaseConfig
+
         return {
-            entities: this.generateEntitySchemas(),
-            ...this.config.databaseConfig
+            entities: [
+                ...this.generateEntitySchemas(),
+                ...(entities || []).map(_ => new EntitySchema(_))
+            ],
+            ...rest
         }
     }
 

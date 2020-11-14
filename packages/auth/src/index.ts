@@ -22,7 +22,8 @@ import {
     Config,
     FieldContract,
     hasMany,
-    User
+    ResourceContract,
+    boolean
 } from '@tensei/common'
 
 import {
@@ -35,7 +36,16 @@ import {
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
-import { SetupMongodb, SetupSql } from './setup-sql'
+import { setup } from './setup'
+
+type ResourceShortNames =
+    | 'user'
+    | 'team'
+    | 'role'
+    | 'oauthIdentity'
+    | 'permission'
+    | 'teamInvite'
+    | 'passwordReset'
 
 class Auth {
     private config: AuthPluginConfig = {
@@ -43,7 +53,7 @@ class Auth {
         nameResource: 'User',
         roleResource: 'Role',
         permissionResource: 'Permission',
-        passwordResetsResource: 'Password Reset',
+        passwordResetResource: 'Password Reset',
         fields: [],
         apiPath: 'auth',
         jwt: {
@@ -56,25 +66,28 @@ class Auth {
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
-        providers: {}
+        providers: {},
+        resources: {}
     }
 
-    public beforeCreateUser(hook: HookFunction) {
-        this.config.beforeCreateUser = hook
+    private resources: {
+        [key: string]: ResourceContract
+    } = {}
 
-        return this
+    public constructor() {
+        this.refreshResources()
     }
 
-    public afterCreateUser(hook: HookFunction) {
-        this.config.afterCreateUser = hook
+    private refreshResources() {
+        this.resources.user = this.userResource()
+        this.resources.team = this.teamResource()
+        this.resources.role = this.roleResource()
+        this.resources.oauthIdentity = this.oauthResource()
+        this.resources.permission = this.permissionResource()
+        this.resources.teamInvite = this.teamInviteResource()
+        this.resources.passwordReset = this.passwordResetResource()
 
-        return this
-    }
-
-    public beforeUpdateUser(hook: HookFunction) {
-        this.config.beforeUpdateUser = hook
-
-        return this
+        this.config.resources = this.resources
     }
 
     public afterUpdateUser(hook: HookFunction) {
@@ -175,7 +188,7 @@ class Auth {
         if (Object.keys(this.config.providers).length === 0) {
             passwordField = passwordField.notNullable()
         } else {
-            socialFields = [hasMany(this.oauthResource().data.name)]
+            socialFields = [hasMany(this.resources.oauthIdentity.data.name)]
         }
 
         const userResource = resource(this.config.nameResource)
@@ -200,11 +213,12 @@ class Auth {
                     : []),
                 ...(this.config.twoFactorAuth
                     ? [
-                          text('Two Factor Enabled')
+                          boolean('Two Factor Enabled')
                               .hideOnCreate()
                               .hideOnUpdate()
                               .hideOnIndex()
-                              .hideOnDetail(),
+                              .hideOnDetail()
+                              .nullable(),
                           text('Two Factor Secret')
                               .hidden()
                               .hideOnIndex()
@@ -231,7 +245,7 @@ class Auth {
                       ]
                     : [])
             ])
-            .beforeCreate(({ entity, em }) => {
+            .beforeCreate(async ({ entity, em, changeSet }) => {
                 const payload: DataPayload = {
                     password: entity.password
                         ? Bcrypt.hashSync(entity.password)
@@ -245,14 +259,12 @@ class Auth {
 
                 em.assign(entity, payload)
             })
-            .beforeUpdate(({ entity, em }) => {
-                let payload: DataPayload = {}
-
-                if (entity.password) {
-                    payload.password = Bcrypt.hashSync(payload.password)
+            .beforeUpdate(({ entity, em, changeSet }) => {
+                if (changeSet?.payload.password) {
+                    em.assign(entity, {
+                        password: Bcrypt.hashSync(changeSet.payload.password)
+                    })
                 }
-
-                em.assign(entity, payload)
             })
             .group('Users & Permissions')
 
@@ -275,7 +287,7 @@ class Auth {
             text('Email'),
             text('Role'),
             text('Token').unique().rules('required'),
-            belongsTo(this.teamResource().data.name),
+            belongsTo(this.resources.team.data.name),
             belongsTo(this.config.nameResource)
         ])
     }
@@ -316,8 +328,8 @@ class Auth {
             .group('Users & Permissions')
     }
 
-    private passwordResetsResource() {
-        return resource(this.config.passwordResetsResource)
+    private passwordResetResource() {
+        return resource(this.config.passwordResetResource)
             .hideFromNavigation()
             .fields([
                 text('Email').searchable().unique().notNullable(),
@@ -331,7 +343,7 @@ class Auth {
         return resource('Oauth Identity')
             .hideFromNavigation()
             .fields([
-                belongsTo(this.config.nameResource),
+                belongsTo(this.config.nameResource).nullable(),
                 textarea('Access Token')
                     .hidden()
                     .hideOnUpdate()
@@ -347,26 +359,35 @@ class Auth {
     }
 
     public plugin() {
-        return (
-            plugin('Auth')
-                .beforeDatabaseSetup(({ pushResource, pushMiddleware }) => {
-                    pushResource(this.userResource())
-                    pushResource(this.passwordResetsResource())
+        return plugin('Auth')
+            .beforeDatabaseSetup(
+                ({ pushResource, pushMiddleware, databaseConfig }) => {
+                    this.refreshResources()
+
+                    if (Object.keys(this.config.providers).length > 0) {
+                        databaseConfig.entities = [
+                            ...(databaseConfig.entities || []),
+                            require('express-session-mikro-orm').generateSessionEntity()
+                        ]
+                    }
+
+                    pushResource(this.resources.user)
+                    pushResource(this.resources.passwordReset)
 
                     if (this.config.rolesAndPermissions) {
-                        pushResource(this.roleResource())
+                        pushResource(this.resources.role)
 
-                        pushResource(this.permissionResource())
+                        pushResource(this.resources.permission)
                     }
 
                     if (this.config.teams) {
-                        pushResource(this.teamResource())
+                        pushResource(this.resources.team)
 
-                        pushResource(this.teamInviteResource())
+                        pushResource(this.resources.teamInvite)
                     }
 
                     if (Object.keys(this.config.providers).length > 0) {
-                        pushResource(this.oauthResource())
+                        pushResource(this.resources.oauthIdentity)
                     }
 
                     ;([
@@ -390,216 +411,163 @@ class Auth {
                     })
 
                     return Promise.resolve()
-                })
+                }
+            )
 
-                // TODO: If we support more databases, add a setup method for each database.
-                .afterDatabaseSetup(async config => {
-                    const { resources } = config
+            .afterDatabaseSetup(async config => {
+                const { resources } = config
 
-                    if (this.config.rolesAndPermissions) {
-                        // TODO: HANDLE SETUP
-                    }
+                if (this.config.rolesAndPermissions) {
+                    await setup(config, this.config)
+                }
 
-                    if (this.config.rolesAndPermissions) {
-                        resources.forEach(resource => {
-                            resource.canCreate(
+                if (this.config.rolesAndPermissions) {
+                    resources.forEach(resource => {
+                        resource.canCreate(
+                            ({ user }) =>
+                                user?.permissions?.includes(
+                                    `create:${resource.data.slug}`
+                                ) || false
+                        )
+                        resource.canFetch(
+                            ({ user }) =>
+                                user?.permissions?.includes(
+                                    `fetch:${resource.data.slug}`
+                                ) || false
+                        )
+                        resource.canShow(
+                            ({ user }) =>
+                                user?.permissions?.includes(
+                                    `show:${resource.data.slug}`
+                                ) || false
+                        )
+                        resource.canUpdate(
+                            ({ user }) =>
+                                user?.permissions?.includes(
+                                    `update:${resource.data.slug}`
+                                ) || false
+                        )
+                        resource.canDelete(
+                            ({ user }) =>
+                                user?.permissions?.includes(
+                                    `delete:${resource.data.slug}`
+                                ) || false
+                        )
+
+                        resource.data.actions.forEach(action => {
+                            resource.canRunAction(
                                 ({ user }) =>
-                                    user?.permissions.includes(
-                                        `create:${resource.data.slug}`
+                                    user?.permissions?.includes(
+                                        `run:${resource.data.slug}:${action.data.slug}`
                                     ) || false
                             )
-                            resource.canFetch(
-                                ({ user }) =>
-                                    user?.permissions.includes(
-                                        `fetch:${resource.data.slug}`
-                                    ) || false
-                            )
-                            resource.canShow(
-                                ({ user }) =>
-                                    user?.permissions.includes(
-                                        `show:${resource.data.slug}`
-                                    ) || false
-                            )
-                            resource.canUpdate(
-                                ({ user }) =>
-                                    user?.permissions.includes(
-                                        `update:${resource.data.slug}`
-                                    ) || false
-                            )
-                            resource.canDelete(
-                                ({ user }) =>
-                                    user?.permissions.includes(
-                                        `delete:${resource.data.slug}`
-                                    ) || false
-                            )
-
-                            resource.data.actions.forEach(action => {
-                                resource.canRunAction(
-                                    ({ user }) =>
-                                        user?.permissions.includes(
-                                            `run:${resource.data.slug}:${action.data.slug}`
-                                        ) || false
-                                )
-                            })
-
-                            if (
-                                resource.data.name ===
-                                this.userResource().data.name
-                            ) {
-                                resource.canUpdate(({ user }) => {
-                                    if (
-                                        ['authenticated', 'public'].includes('')
-                                    ) {
-                                    }
-                                    return false
-                                })
-                            }
                         })
-                    }
-                })
+                    })
+                }
+            })
 
-                .beforeCoreRoutesSetup(async config => {
-                    const { app, serverUrl, clientUrl } = config
+            .beforeCoreRoutesSetup(async config => {
+                const { app, serverUrl, clientUrl } = config
 
-                    app.post(this.getApiPath('login'), AsyncHandler(this.login))
+                app.post(this.getApiPath('login'), AsyncHandler(this.login))
+                app.post(
+                    this.getApiPath('register'),
+                    AsyncHandler(this.register)
+                )
+                app.post(
+                    this.getApiPath('reset-password'),
+                    AsyncHandler(this.resetPassword)
+                )
+                app.post(
+                    this.getApiPath('forgot-password'),
+                    AsyncHandler(this.forgotPassword)
+                )
+
+                if (this.config.twoFactorAuth) {
                     app.post(
-                        this.getApiPath('register'),
-                        AsyncHandler(this.register)
+                        this.getApiPath('two-factor/enable'),
+                        this.setAuthMiddleware,
+                        this.authMiddleware,
+                        AsyncHandler(this.enableTwoFactorAuth)
                     )
+
                     app.post(
-                        this.getApiPath('reset-password'),
-                        AsyncHandler(this.resetPassword)
+                        this.getApiPath('two-factor/disable'),
+                        this.setAuthMiddleware,
+                        this.authMiddleware,
+                        AsyncHandler(this.disableTwoFactorAuth)
                     )
+
                     app.post(
-                        this.getApiPath('forgot-password'),
-                        AsyncHandler(this.forgotPassword)
+                        this.getApiPath('two-factor/confirm'),
+                        this.setAuthMiddleware,
+                        this.authMiddleware,
+                        AsyncHandler(this.confirmEnableTwoFactorAuth)
+                    )
+                }
+
+                if (this.config.verifyEmails) {
+                    app.post(
+                        this.getApiPath('emails/confirm'),
+                        this.setAuthMiddleware,
+                        this.authMiddleware,
+                        AsyncHandler(this.confirmEmail)
+                    )
+                }
+
+                if (Object.keys(this.config.providers).length > 0) {
+                    const grant = require('grant')
+                    const ExpressSession = require('express-session')
+
+                    const Store = require('express-session-mikro-orm').StoreFactory(
+                        ExpressSession
                     )
 
-                    if (this.config.twoFactorAuth) {
-                        app.post(
-                            this.getApiPath('two-factor/enable'),
-                            this.setAuthMiddleware,
-                            this.authMiddleware,
-                            AsyncHandler(this.enableTwoFactorAuth)
-                        )
-
-                        app.post(
-                            this.getApiPath('two-factor/disable'),
-                            this.setAuthMiddleware,
-                            this.authMiddleware,
-                            AsyncHandler(this.disableTwoFactorAuth)
-                        )
-
-                        app.post(
-                            this.getApiPath('two-factor/confirm'),
-                            this.setAuthMiddleware,
-                            this.authMiddleware,
-                            AsyncHandler(this.confirmEnableTwoFactorAuth)
-                        )
-                    }
-
-                    if (this.config.verifyEmails) {
-                        app.post(
-                            this.getApiPath('emails/confirm'),
-                            this.setAuthMiddleware,
-                            this.authMiddleware,
-                            AsyncHandler(this.confirmEmail)
-                        )
-                    }
-
-                    if (Object.keys(this.config.providers).length > 0) {
-                        // TODO: Create connect-mikro-orm package for express session
-                        return
-                        const grant = require('grant')
-                        const ExpressSession = require('express-session')
-
-                        app.use(
-                            ExpressSession(
-                                this.getSessionPackageConfig(
-                                    config,
-                                    require(this.getSessionPackage(
-                                        config.orm?.config.get(
-                                            'type'
-                                        ) as SupportedDatabases
-                                    ))(ExpressSession)
-                                )
-                            )
-                        )
-
-                        Object.keys(this.config.providers).forEach(provider => {
-                            const providerConfig = this.config.providers[
-                                provider
-                            ]
-                            const clientCallback =
-                                providerConfig.clientCallback || ''
-
-                            this.config.providers[provider] = {
-                                ...providerConfig,
-                                redirect_uri: `${serverUrl}/connect/${provider}/callback`,
-                                clientCallback: clientCallback.startsWith(
-                                    'http'
-                                )
-                                    ? clientCallback
-                                    : `${clientUrl}${
-                                          clientCallback.startsWith('/')
-                                              ? '/'
-                                              : ''
-                                      }${clientCallback}`
-                            }
+                    app.use(
+                        ExpressSession({
+                            store: new Store({
+                                orm: config.orm
+                            }),
+                            resave: false,
+                            saveUninitialized: false,
+                            secret: process.env.GRANT_SESSION_SECRET || 'grant'
                         })
+                    )
 
-                        app.use(grant.express()(this.config.providers))
+                    Object.keys(this.config.providers).forEach(provider => {
+                        const providerConfig = this.config.providers[provider]
+                        const clientCallback =
+                            providerConfig.clientCallback || ''
 
-                        app.get(
-                            `/${this.config.apiPath}/:provider/callback`,
-                            SocialAuthCallbackController.connect(
-                                config,
-                                this.config
-                            )
+                        this.config.providers[provider] = {
+                            ...providerConfig,
+                            redirect_uri: `${serverUrl}/connect/${provider}/callback`,
+                            clientCallback: clientCallback.startsWith('http')
+                                ? clientCallback
+                                : `${clientUrl}${
+                                      clientCallback.startsWith('/') ? '/' : ''
+                                  }${clientCallback}`
+                        }
+                    })
+
+                    app.use(grant.express()(this.config.providers))
+
+                    app.get(
+                        `/${this.config.apiPath}/:provider/callback`,
+                        SocialAuthCallbackController.connect(
+                            config,
+                            this.config
                         )
+                    )
 
-                        app.post(
-                            `/${this.config.apiPath}/social/:action`,
-                            AsyncHandler(this.socialAuth)
-                        )
-                    }
+                    app.post(
+                        `/${this.config.apiPath}/social/:action`,
+                        AsyncHandler(this.socialAuth)
+                    )
+                }
 
-                    return {}
-                })
-        )
-    }
-
-    private getSessionPackage(database: SupportedDatabases) {
-        if (['mongo'].includes(database)) {
-            return 'connect-mongo'
-        }
-
-        return 'connect-session-knex'
-    }
-
-    private getSessionPackageConfig(config: Config, Store: any) {
-        let storeArguments: any = {}
-
-        if (
-            ['mysql', 'pg', 'sqlite3'].includes(config.orm?.config.get('type')!)
-        ) {
-            storeArguments = {
-                knex: config.databaseClient
-            }
-        }
-
-        if (['mongo'].includes(config.orm!.config.get('type')!)) {
-            storeArguments = {
-                mongooseConnection: require('mongoose').connection
-            }
-        }
-
-        return {
-            secret: process.env.GRANT_SESSION_SECRET || 'grant',
-            store: new Store(storeArguments),
-            resave: false,
-            saveUninitialized: false
-        }
+                return {}
+            })
     }
 
     private getApiPath(path: string) {
@@ -607,22 +575,30 @@ class Auth {
     }
 
     private register = async (
-        { manager, mailer, body, config }: Request,
+        { manager, mailer, body }: Request,
         response: Response
     ) => {
         let createUserPayload = body
 
-        const UserResource = this.userResource()
+        const authenticatorRole: any = await manager.findOneOrFail(
+            this.resources.role.data.pascalCaseName,
+            {
+                slug: 'authenticated'
+            }
+        )
+
+        const UserResource = this.resources.user
 
         const user: any = manager.create(UserResource.data.pascalCaseName, {
             ...createUserPayload,
-            email_verified_at: new Date(),
-            email_verification_token: 'xyx'
+            roles: [authenticatorRole.id]
         })
 
         await manager.persistAndFlush(user)
 
-        await manager.populate([user], ['roles.permissions'])
+        if (this.config.rolesAndPermissions) {
+            await manager.populate([user], ['roles.permissions'])
+        }
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
             mailer.to(user.email).sendRaw(`
@@ -639,19 +615,20 @@ class Auth {
     }
 
     private confirmEmail = async (
-        { manager, body, user, config }: Request,
+        { manager, body, user }: Request,
         response: Response
     ) => {
         if (user?.email_verification_token === body.email_verification_token) {
-            await manager(this.userResource())
-                .database()
-                .updateOneByField('id', user?.id, {
-                    email_verification_token: null,
-                    email_verified_at: Dayjs().format('YYYY-MM-DD HH:mm:ss')
-                })
+            manager.assign(user!, {
+                email_verification_token: null,
+                email_verified_at: Dayjs().format('YYYY-MM-DD HH:mm:ss')
+            })
+
+            await manager.persistAndFlush(user!)
 
             return response.status(200).json({
-                message: `Email has been verified.`
+                message: `Email has been verified.`,
+                user
             })
         }
 
@@ -661,7 +638,7 @@ class Auth {
     }
 
     private socialAuth = async (request: Request, response: Response) => {
-        const { params, body, manager, config } = request
+        const { params, body, manager } = request
 
         const { action } = params
 
@@ -681,9 +658,12 @@ class Auth {
             ]
         }
 
-        let oauthIdentity = await manager('Oauth Identity')
-            .database()
-            .findOneByField('temporal_token', body.access_token)
+        let oauthIdentity: any = await manager.findOne(
+            this.resources.oauthIdentity.data.pascalCaseName,
+            {
+                temporal_token: body.access_token
+            }
+        )
 
         if (!oauthIdentity) {
             throw [
@@ -699,9 +679,12 @@ class Auth {
             payload: JSON.parse(oauthIdentity.payload)
         }
 
-        let user = await manager(this.config.nameResource)
-            .database()
-            .findOneByField('email', oauthIdentity.payload.email)
+        let user: any = await manager.findOne(
+            this.resources.user.data.pascalCaseName,
+            {
+                email: oauthIdentity.payload.email
+            }
+        )
 
         if (!user && action === 'login') {
             throw [
@@ -716,9 +699,7 @@ class Auth {
             throw [
                 {
                     field: 'email',
-                    message: `A ${this.userResource(
-                        config.database
-                    ).data.name.toLowerCase()} already exists with email ${
+                    message: `A ${this.resources.user.data.name.toLowerCase()} already exists with email ${
                         oauthIdentity.email
                     }.`
                 }
@@ -737,30 +718,22 @@ class Auth {
                 createPayload.email_verification_token = null
             }
 
-            createPayload = (await this.config.beforeCreateUser)
-                ? this.config.beforeCreateUser!(createPayload, request)
-                : createPayload
-
-            user = await manager(this.config.nameResource)
-                .database()
-                .create(createPayload)
+            user = manager.create(
+                this.resources.user.data.pascalCaseName,
+                createPayload
+            )
         }
 
-        const belongsToField = this.oauthResource().data.fields.find(
+        const belongsToField = this.resources.oauthIdentity.data.fields.find(
             field => field.name === this.config.nameResource
         )!
 
-        await manager('Oauth Identity')
-            .database()
-            .update(
-                oauthIdentity.id,
-                {
-                    temporal_token: null,
-                    [belongsToField?.databaseField]: user.id
-                },
-                {},
-                true
-            )
+        manager.assign(oauthIdentity, {
+            temporal_token: null,
+            [belongsToField?.databaseField]: user.id
+        })
+
+        await manager.persistAndFlush(oauthIdentity)
 
         return response.json({
             token: this.generateJwt({
@@ -771,44 +744,34 @@ class Auth {
     }
 
     private login = async (request: Request, response: Response) => {
-        const { manager, config } = request
+        const { manager } = request
         const { email, password, token } = await this.validate(request.body)
 
-        const userWithPassword = await manager(
-            this.userResource()
-        ).findOneByField('email', email)
+        const user: any = await manager.findOne(
+            this.resources.user.data.pascalCaseName,
+            {
+                email
+            },
+            {
+                populate: ['roles.permissions']
+            }
+        )
 
-        if (!userWithPassword) {
+        if (!user) {
             throw {
                 message: 'Invalid credentials.',
                 status: 401
             }
         }
 
-        if (!Bcrypt.compareSync(password, userWithPassword.password)) {
+        if (!Bcrypt.compareSync(password, user.password)) {
             throw {
                 message: 'Invalid credentials.',
                 status: 401
             }
         }
 
-        const user = await manager(this.userResource())
-            .database()
-            .findOneById(
-                userWithPassword.id,
-                [],
-                this.config.rolesAndPermissions
-                    ? config.database === 'mongodb'
-                        ? []
-                        : [
-                              `${this.roleResource().data.slug}.${
-                                  this.permissionResource().data.slug
-                              }`
-                          ]
-                    : []
-            )
-
-        if (user.two_factor_enabled === '1') {
+        if (user.two_factor_enabled) {
             const Speakeasy = require('speakeasy')
 
             if (!token) {
@@ -835,18 +798,8 @@ class Auth {
             token: this.generateJwt({
                 id: user.id
             }),
-            user: this.removeHiddenProperties(user)
+            user: user.toJSON()
         })
-    }
-
-    private removeHiddenProperties(user: UserWithAuth) {
-        delete user.password
-        // @ts-ignore
-        delete user.beans
-        delete user.two_factor_secret
-        delete user.email_verification_token
-
-        return user
     }
 
     public authMiddleware = async (
@@ -882,7 +835,7 @@ class Auth {
         response: Response,
         next: NextFunction
     ) => {
-        const { headers, manager, config } = request
+        const { headers, manager } = request
         const [, token] = (headers['authorization'] || '').split('Bearer ')
 
         if (!token) {
@@ -894,39 +847,17 @@ class Auth {
                 id: number
             }
 
-            const model = await manager(this.userResource())
-                .database()
-                .findOneById(
-                    id,
-                    [],
-                    this.config.rolesAndPermissions
-                        ? [
-                              `${this.roleResource().data.slug}.${
-                                  this.permissionResource().data.slug
-                              }`
-                          ]
-                        : [],
-                    true
-                )
-
-            const user = {
-                ...model,
-                two_factor_enabled: ['1', 'true'].includes(
-                    model.two_factor_enabled
-                )
-            }
-
-            if (this.config.rolesAndPermissions) {
-                user.permissions = user[this.roleResource().data.slug].reduce(
-                    (acc: [], role: any) => [
-                        ...acc,
-                        ...(
-                            role[this.permissionResource().data.slug] || []
-                        ).map((permission: any) => permission.slug)
-                    ],
-                    []
-                )
-            }
+            const user: any = await manager.findOne(
+                this.resources.user.data.pascalCaseName,
+                {
+                    id
+                },
+                {
+                    populate: this.config.rolesAndPermissions
+                        ? ['roles.permissions']
+                        : []
+                }
+            )
 
             request.user = user
         } catch (errors) {
@@ -937,10 +868,10 @@ class Auth {
     }
 
     private disableTwoFactorAuth = async (
-        request: Request,
+        { manager, body, user }: Request,
         response: Response
     ) => {
-        if (!request.user?.two_factor_enabled) {
+        if (!user?.two_factor_enabled) {
             return response.status(400).json({
                 message: `You do not have two factor authentication enabled.`
             })
@@ -950,8 +881,8 @@ class Auth {
 
         const verified = Speakeasy.totp.verify({
             encoding: 'base32',
-            token: request.body.token,
-            secret: request.user?.two_factor_secret
+            token: body.token,
+            secret: user?.two_factor_secret
         })
 
         if (!verified) {
@@ -960,31 +891,30 @@ class Auth {
             })
         }
 
-        await request.manager(this.userResource()).update(
-            request.user!.id,
-            {
-                two_factor_secret: null,
-                two_factor_enabled: false
-            },
-            true
-        )
+        manager.assign(user, {
+            two_factor_secret: null,
+            two_factor_enabled: false
+        })
+
+        await manager.persistAndFlush(user)
 
         return response.json({
-            message: `Two factor auth has been disabled.`
+            message: `Two factor auth has been disabled.`,
+            user: user.toJSON()
         })
     }
 
     private confirmEnableTwoFactorAuth = async (
-        request: Request,
+        { user, body, manager }: Request,
         response: Response
     ) => {
         const Speakeasy = require('speakeasy')
 
-        await validateAll(request.body, {
+        await validateAll(body, {
             token: 'required|number'
         })
 
-        if (!request.user?.two_factor_secret) {
+        if (!user?.two_factor_secret) {
             return response.status(400).json({
                 message: `You must enable two factor authentication first.`
             })
@@ -992,8 +922,8 @@ class Auth {
 
         const verified = Speakeasy.totp.verify({
             encoding: 'base32',
-            token: request.body.token,
-            secret: request.user?.two_factor_secret
+            token: body.token,
+            secret: user?.two_factor_secret
         })
 
         if (!verified) {
@@ -1002,21 +932,20 @@ class Auth {
             })
         }
 
-        await request.manager(this.userResource()).update(
-            request.user!.id,
-            {
-                two_factor_enabled: true
-            },
-            true
-        )
+        manager.assign(user!, {
+            two_factor_enabled: true
+        })
+
+        await manager.persistAndFlush(user!)
 
         return response.json({
-            message: `Two factor authentication has been enabled.`
+            message: `Two factor authentication has been enabled.`,
+            user: user?.toJSON()
         })
     }
 
     private enableTwoFactorAuth = async (
-        request: Request,
+        { user, manager }: Request,
         response: Response
     ) => {
         const Qr = require('qrcode')
@@ -1024,14 +953,12 @@ class Auth {
 
         const { base32, otpauth_url } = Speakeasy.generateSecret()
 
-        await request.manager(this.userResource()).update(
-            request.user!.id,
-            {
-                two_factor_secret: base32,
-                two_factor_enabled: false
-            },
-            true
-        )
+        manager.assign(user!, {
+            two_factor_secret: base32,
+            two_factor_enabled: null
+        })
+
+        await manager.persistAndFlush(user!)
 
         Qr.toDataURL(otpauth_url, (error: null | Error, dataURL: string) => {
             if (error) {
@@ -1042,24 +969,30 @@ class Auth {
             }
 
             return response.json({
-                dataURL
+                dataURL,
+                user: user?.toJSON()
             })
         })
     }
 
     protected forgotPassword = async (request: Request, response: Response) => {
-        const { body, mailer, manager, config } = request
+        const { body, mailer, manager } = request
         const { email } = await validateAll(body, {
             email: 'required|email'
         })
 
-        const existingUser = await manager(this.userResource()).findOneByField(
-            'email',
-            email
+        const existingUser: any = await manager.findOne(
+            this.resources.user.data.pascalCaseName,
+            {
+                email
+            }
         )
-        const existingPasswordReset = await manager(
-            this.passwordResetsResource()
-        ).findOneByField('email', email)
+        const existingPasswordReset = await manager.findOne(
+            this.resources.passwordReset.data.pascalCaseName,
+            {
+                email
+            }
+        )
 
         if (!existingUser) {
             return response.status(422).json([
@@ -1076,20 +1009,26 @@ class Auth {
 
         if (existingPasswordReset) {
             // make sure it has not expired
-            await manager(this.passwordResetsResource()).updateOneByField(
-                'email',
-                email,
-                {
-                    token,
-                    expires_at: expiresAt
-                }
-            )
-        } else {
-            await manager(this.passwordResetsResource()).database().create({
-                email,
-                token
+            manager.assign(existingPasswordReset, {
+                token,
+                expires_at: expiresAt
             })
+
+            manager.persist(existingPasswordReset)
+        } else {
+            manager.persist(
+                manager.create(
+                    this.resources.passwordReset.data.pascalCaseName,
+                    {
+                        email,
+                        token,
+                        expires_at: expiresAt
+                    }
+                )
+            )
         }
+
+        await manager.flush()
 
         mailer
             .to(email, existingUser.name)
@@ -1101,16 +1040,19 @@ class Auth {
     }
 
     protected resetPassword = async (request: Request, response: Response) => {
-        const { body, manager, config } = request
+        const { body, manager } = request
 
         const { token, password } = await validateAll(body, {
             token: 'required|string',
             password: 'required|string|min:8'
         })
 
-        let existingPasswordReset = await manager(
-            this.passwordResetsResource()
-        ).findOneByField('token', token)
+        let existingPasswordReset: any = await manager.findOne(
+            this.resources.passwordReset.data.pascalCaseName,
+            {
+                token
+            }
+        )
 
         if (!existingPasswordReset) {
             return response.status(422).json([
@@ -1130,34 +1072,29 @@ class Auth {
             ])
         }
 
-        let user = await manager(this.userResource()).findOneByField(
-            'email',
-            existingPasswordReset.email
+        let user: any = await manager.findOne(
+            this.resources.user.data.pascalCaseName,
+            {
+                email: existingPasswordReset.email
+            }
         )
 
         if (!user) {
-            await manager(this.passwordResetsResource())
-                .database()
-                .deleteById(existingPasswordReset.id)
+            manager.removeAndFlush(existingPasswordReset)
 
             return response.status(500).json({
                 message: 'User does not exist anymore.'
             })
         }
 
-        // TODO: Rename update to updateOneByField
-        await manager(this.userResource()).update(
-            user.id,
-            {
-                password
-            },
-            true
-        )
+        manager.assign(user, {
+            password
+        })
 
-        // TODO: Rename deleteById this to deleteOneById
-        await manager(this.passwordResetsResource())
-            .database()
-            .deleteById(existingPasswordReset.id)
+        manager.persist(user)
+        manager.remove(existingPasswordReset)
+
+        await manager.flush()
 
         // TODO: Send an email to the user notifying them
         // that their password was reset.

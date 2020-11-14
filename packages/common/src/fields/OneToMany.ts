@@ -1,6 +1,6 @@
 import Pluralize from 'pluralize'
 import { ReferenceType } from '@mikro-orm/core'
-import { pascalCase, camelCase } from 'change-case'
+import { pascalCase, snakeCase } from 'change-case'
 import RelationshipField from './RelationshipField'
 
 // This would be hasMany in other relationship language.
@@ -9,7 +9,7 @@ export class OneToMany extends RelationshipField {
 
     public constructor(
         name: string,
-        databaseField = Pluralize(camelCase(name))
+        databaseField = Pluralize(snakeCase(name))
     ) {
         super(name, databaseField)
 

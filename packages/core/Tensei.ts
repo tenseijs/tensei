@@ -1,13 +1,12 @@
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
-import { responseEnhancer } from 'express-response-formatter'
-import { MikroORM, ConnectionOptions, RequestContext } from '@mikro-orm/core'
-import ExpressSession from 'express-session'
+import { RequestContext } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
-import ClientController from './controllers/ClientController'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
+import { responseEnhancer } from 'express-response-formatter'
+import ClientController from './controllers/ClientController'
 import {
     StorageManager,
     Storage,
@@ -44,7 +43,11 @@ import FindResourceController from './controllers/resources/FindResourceControll
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { TenseiContract, DatabaseConfiguration } from '@tensei/core'
+import {
+    TenseiContract,
+    DatabaseConfiguration,
+    GraphQLPluginExtension
+} from '@tensei/core'
 
 export class Tensei implements TenseiContract {
     public app: Application = Express()
@@ -91,7 +94,8 @@ export class Tensei implements TenseiContract {
         },
         orm: null,
         databaseConfig: {
-            type: 'sqlite'
+            type: 'sqlite',
+            entities: []
         },
         showController: this.asyncHandler(FindResourceController.show),
         runActionController: this.asyncHandler(RunActionController.run),
@@ -118,7 +122,8 @@ export class Tensei implements TenseiContract {
         indicative: {
             validator,
             sanitizer
-        }
+        },
+        graphQlExtensions: []
     }
 
     public setConfigOnResourceFields() {
@@ -183,7 +188,13 @@ export class Tensei implements TenseiContract {
                 ]
             },
             manager: this.config.orm ? this.config.orm.em.fork() : null,
-            storageDriver: this.storageDriver as any
+            storageDriver: this.storageDriver as any,
+            extendGraphql: (extensions: GraphQLPluginExtension[]) => {
+                this.config.graphQlExtensions = [
+                    ...this.config.graphQlExtensions,
+                    ...extensions
+                ]
+            }
         }
     }
 
@@ -358,21 +369,6 @@ export class Tensei implements TenseiContract {
         response: Express.Response,
         next: Express.NextFunction
     ) => {
-        if (!request.session?.user) {
-            return next()
-        }
-
-        let admin = await request
-            .manager('Administrator')
-            .database()
-            .getAdministratorById(request.session?.user!)
-
-        if (!admin) {
-            return next()
-        }
-
-        request.admin = admin
-
         next()
     }
 

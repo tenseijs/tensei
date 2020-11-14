@@ -1,26 +1,18 @@
-import { graphqlHTTP } from 'express-graphql'
-import { ApolloServer, gql } from 'apollo-server-express'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
+import {
+    ApolloServer,
+    gql,
+    Config as ApolloConfig
+} from 'apollo-server-express'
 import {
     plugin,
     FieldContract,
     ResourceContract,
     PluginSetupConfig,
-    FilterOperators
+    FilterOperators,
+    GraphQLPluginExtension
 } from '@tensei/common'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
-
-export interface GraphQlPluginConfig {
-    graphiql: boolean
-    graphqlPath: string
-}
-
-export interface GraphQLPluginExtension {
-    typeDefs: string
-    queries: string
-    mutations: string
-    resolvers: any
-}
 
 const filterOperators: FilterOperators[] = [
     '_eq',
@@ -69,27 +61,6 @@ const getParsedInfo = (ql: any) => {
     ]
 }
 
-const parseWhereArgumentsFromSelectionToWhereQuery = (selection: any) => {
-    const whereArgumentSelection = selection.arguments.find(
-        (argument: any) => argument.name.value === 'where'
-    )
-
-    if (!whereArgumentSelection) return {}
-
-    console.log(
-        whereArgumentSelection,
-        JSON.stringify(whereArgumentSelection, null, 2)
-    )
-
-    let whereQuery: any = {}
-
-    const populateFieldToWhereQuery = (field: any, previousField: any) => {}
-
-    whereArgumentSelection.fields.forEach((field: any) => {})
-
-    return whereQuery
-}
-
 const getFindOptionsFromArgs = (args: any) => {
     let findOptions: any = {}
 
@@ -108,11 +79,12 @@ const getFindOptionsFromArgs = (args: any) => {
     return findOptions
 }
 
+type OmittedApolloConfig = Omit<ApolloConfig, 'typeDefs' | 'resolvers'>
+
 class Graphql {
-    private config: GraphQlPluginConfig = {
-        graphiql: true,
-        graphqlPath: '/graphql'
-    }
+    private pluginExtensions: GraphQLPluginExtension[] = []
+
+    private appolloConfig: OmittedApolloConfig = {}
 
     schemaString: string = ''
 
@@ -447,7 +419,7 @@ input id_where_query {
 }
 `
 
-        return gql(this.schemaString)
+        return this.schemaString
     }
 
     private defineCreateMutationForResource(
@@ -872,12 +844,9 @@ input id_where_query {
                 return data
             }
 
-            resolvers.Mutation[`insert_${resource.data.snakeCaseName}`] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
+            resolvers.Mutation[
+                `insert_${resource.data.snakeCaseName}`
+            ] = async (_: any, args: any, ctx: any, ql: any) => {
                 const data = manager.create(
                     resource.data.pascalCaseName,
                     args.object
@@ -892,12 +861,9 @@ input id_where_query {
                 return data
             }
 
-            resolvers.Mutation[`insert_${resource.data.snakeCaseNamePlural}`] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
+            resolvers.Mutation[
+                `insert_${resource.data.snakeCaseNamePlural}`
+            ] = async (_: any, args: any, ctx: any, ql: any) => {
                 const data: any[] = args.objects.map((object: any) =>
                     manager.create(resource.data.pascalCaseName, object)
                 )
@@ -913,12 +879,9 @@ input id_where_query {
                 return data
             }
 
-            resolvers.Mutation[`update_${resource.data.snakeCaseName}`] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
+            resolvers.Mutation[
+                `update_${resource.data.snakeCaseName}`
+            ] = async (_: any, args: any, ctx: any, ql: any) => {
                 const data: any = await manager
                     .getRepository<any>(resource.data.pascalCaseName)
                     .findOneOrFail({
@@ -936,12 +899,9 @@ input id_where_query {
                 return data
             }
 
-            resolvers.Mutation[`update_${resource.data.snakeCaseNamePlural}`] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
+            resolvers.Mutation[
+                `update_${resource.data.snakeCaseNamePlural}`
+            ] = async (_: any, args: any, ctx: any, ql: any) => {
                 const data = await manager.find(
                     resource.data.pascalCaseName,
                     parseWhereArgumentsToWhereQuery(args.where)
@@ -960,12 +920,9 @@ input id_where_query {
                 return data
             }
 
-            resolvers.Mutation[`delete_${resource.data.snakeCaseName}`] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
+            resolvers.Mutation[
+                `delete_${resource.data.snakeCaseName}`
+            ] = async (_: any, args: any, ctx: any, ql: any) => {
                 const data: any = await manager
                     .getRepository<any>(resource.data.pascalCaseName)
                     .findOneOrFail({
@@ -980,12 +937,9 @@ input id_where_query {
                 return data
             }
 
-            resolvers.Mutation[`delete_${resource.data.snakeCaseNamePlural}`] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
+            resolvers.Mutation[
+                `delete_${resource.data.snakeCaseNamePlural}`
+            ] = async (_: any, args: any, ctx: any, ql: any) => {
                 const data = await manager.find(
                     resource.data.pascalCaseName,
                     parseWhereArgumentsToWhereQuery(args.where)
@@ -1006,23 +960,51 @@ input id_where_query {
         return resolvers
     }
 
-    extensions() {}
+    extensions(extensions: GraphQLPluginExtension[]) {
+        this.pluginExtensions = extensions
+
+        return this
+    }
+
+    configureApollo(config: OmittedApolloConfig) {
+        this.appolloConfig = config
+
+        return this
+    }
 
     plugin() {
         return plugin('Graph QL').afterDatabaseSetup(async config => {
-            const { app, resources, manager } = config
+            const { app, resources, manager, graphQlExtensions } = config
             const exposedResources = resources.filter(
                 resource => !resource.data.hideFromApi
             )
 
-            const typeDefs = this.setupResourceGraphqlTypes(
-                exposedResources,
-                config
+            this.pluginExtensions = this.pluginExtensions.concat(
+                graphQlExtensions
             )
 
+            this.setupResourceGraphqlTypes(exposedResources, config)
+
             const graphQlServer = new ApolloServer({
-                typeDefs,
-                resolvers: this.getResolvers(exposedResources, manager!.fork(), config)
+                typeDefs: [
+                    gql(this.schemaString),
+                    ...this.pluginExtensions.map(extension =>
+                        typeof extension.typeDefs === 'string'
+                            ? gql(extension.typeDefs)
+                            : extension.typeDefs
+                    )
+                ],
+                resolvers: [
+                    this.getResolvers(
+                        exposedResources,
+                        manager!.fork(),
+                        config
+                    ),
+                    ...this.pluginExtensions.map(
+                        extension => extension.resolvers
+                    )
+                ],
+                ...this.appolloConfig
             })
 
             graphQlServer.applyMiddleware({

@@ -14,7 +14,7 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
-    .serverUrl('http://localhost:5500')
+    .serverUrl('http://localhost:5000')
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
     .storageDriver(
@@ -100,7 +100,7 @@ module.exports = tensei()
         //         plan('Premium Sub').yearly().price(99),
         //     ])
         //     .plugin(),
-        graphql().plugin(),
+        graphql().extensions([]).plugin(),
         plugin('Custom Slug Validation').setup(({ indicative }) => {
             indicative.validator.extend('slug', {
                 async: false,

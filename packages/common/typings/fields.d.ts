@@ -175,6 +175,7 @@ declare module '@tensei/common/fields' {
         databaseFieldType: string
         afterConfigSet(): void
         isRelationshipField: boolean
+        onUpdate(hook: any): this
         beforeCreate(hook: FieldHookFunction): this
         beforeUpdate(hook: FieldHookFunction): this
         afterCreate(hook: FieldHookFunction): this

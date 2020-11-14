@@ -13,7 +13,8 @@ declare module '@tensei/common/plugins' {
         Config,
         Permission,
         SupportedStorageDrivers,
-        StorageConstructor
+        StorageConstructor,
+        GraphQLPluginExtension
     } from '@tensei/common/config'
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
@@ -48,6 +49,7 @@ declare module '@tensei/common/plugins' {
         pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void
         script: (name: Asset['name'], path: Asset['path']) => void
+        extendGraphql: (extensions: GraphQLPluginExtension[]) => void
     }
 
     export abstract class PluginContract {

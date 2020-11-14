@@ -1,4 +1,9 @@
-import { FieldContract, User, HookFunction } from '@tensei/common'
+import {
+    FieldContract,
+    User,
+    HookFunction,
+    ResourceContract
+} from '@tensei/common'
 
 export interface GrantConfig {
     key: string
@@ -24,7 +29,7 @@ export interface AuthPluginConfig {
     roleResource: string
     permissionResource: string
     rolesAndPermissions: boolean
-    passwordResetsResource: string
+    passwordResetResource: string
     apiPath: string
     jwt: {
         expiresIn: string
@@ -44,6 +49,9 @@ export interface AuthPluginConfig {
     beforeOAuthIdentityCreated?: HookFunction
     providers: {
         [key: string]: GrantConfig
+    }
+    resources: {
+        [key: string]: ResourceContract
     }
 }
 

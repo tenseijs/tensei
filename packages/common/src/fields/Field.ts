@@ -68,17 +68,24 @@ export class Field implements FieldContract {
         authorizedToDelete: request => true
     }
 
+    public onFieldUpdate: any = null
+
     public hooks: {
         beforeCreate: FieldHookFunction
         beforeUpdate: FieldHookFunction
         afterCreate: FieldHookFunction
         afterUpdate: FieldHookFunction
+        onUpdate: FieldHookFunction
     } = {
         beforeCreate: payload => {
             return payload
         },
 
         beforeUpdate: payload => {
+            return payload
+        },
+
+        onUpdate: payload => {
             return payload
         },
 
@@ -92,6 +99,12 @@ export class Field implements FieldContract {
     }
 
     public afterConfigSet() {}
+
+    public onUpdate(onUpdate: any) {
+        this.onFieldUpdate = onUpdate
+
+        return this
+    }
 
     public beforeCreate(hook: FieldHookFunction) {
         this.hooks = {

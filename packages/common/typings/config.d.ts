@@ -1,5 +1,6 @@
 declare module '@tensei/common/config' {
     import { Signale } from 'signale'
+    import { DocumentNode } from 'graphql'
     import { Storage } from '@slynova/flydrive'
     import { sanitizer, validator } from 'indicative'
     import { EventArgs, FlushEventArgs } from '@mikro-orm/core'
@@ -14,6 +15,11 @@ declare module '@tensei/common/config' {
         ErrorRequestHandler,
         RequestHandler
     } from 'express'
+
+    interface GraphQLPluginExtension {
+        typeDefs: string | DocumentNode
+        resolvers: IResolvers
+    }
 
     enum noPagination {
         true = 'true',
@@ -121,6 +127,9 @@ declare module '@tensei/common/config' {
     type DatabaseConfiguration = ConnectionOptions & {
         type: SupportedDatabases
     }
+    type AdditionalEntities = {
+        entities?: any[]
+    }
     export interface Config {
         databaseClient: any
         schemas: any
@@ -133,7 +142,7 @@ declare module '@tensei/common/config' {
         styles: Asset[]
         orm: MikroORM | null
         logger: Signale
-        databaseConfig: DatabaseConfiguration
+        databaseConfig: DatabaseConfiguration & AdditionalEntities
         dashboardPath: string
         apiPath: string
         adminTable: string
@@ -160,6 +169,8 @@ declare module '@tensei/common/config' {
 
         middleware: EndpointMiddleware[]
         pushMiddleware: (middleware: EndpointMiddleware) => void
+
+        graphQlExtensions: GraphQLPluginExtension[]
     }
     type Permission =
         | {
