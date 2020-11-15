@@ -12,6 +12,7 @@ export class NumberField extends Text {
         super(name, databaseField)
 
         this.property.type = 'integer'
+        this.property.columnTypes = ['int4']
     }
 
     /**

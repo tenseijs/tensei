@@ -81,7 +81,7 @@ const getPermissionsToInsert = async (
     const permissions: Permission[] = []
 
     resources.forEach(resource => {
-        ;['create', 'fetch', 'show', 'update', 'delete'].forEach(operation => {
+        ;['insert', 'fetch', 'show', 'update', 'delete'].forEach(operation => {
             permissions.push(`${operation}:${resource.data.slug}`)
         })
 

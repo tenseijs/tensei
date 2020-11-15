@@ -1,4 +1,5 @@
 declare module '@tensei/core' {
+    import { DocumentNode } from 'graphql'
     import { SupportedDrivers } from '@tensei/mail'
     import { ConnectionOptions } from '@mikro-orm/core'
     import { StorageManager, Storage } from '@slynova/flydrive'
@@ -14,7 +15,9 @@ declare module '@tensei/core' {
         StorageConstructor,
         SupportedDatabases,
         SupportedStorageDrivers,
-        DatabaseConfiguration
+        DatabaseConfiguration,
+        RouteContract,
+        GraphQlQueryContract
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -23,9 +26,12 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
-        config: Config
+        ctx: TensieContext
         storage: StorageManager
         register(): Promise<this>
+        routes(routes: RouteContract[]): this
+        graphQlTypeDefs(typeDefs: (string | DocumentNode)[]): this
+        graphQlQueries(queries: GraphQlQueryContract[]): this
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
@@ -78,7 +84,9 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
-        config: Config
+        ctx: TensieContext
+        routes(routes: RouteContract[]): this
+        graphQlQueries(queries: GraphQlQueryContract[]): this
         storage: StorageManager
         register(): Promise<this>
         getPluginArguments(): PluginSetupConfig

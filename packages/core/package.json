@@ -26,7 +26,7 @@
         "copy:files": "cp index.mustache build/index.mustache"
     },
     "dependencies": {
-        "@mikro-orm/core": "^4.2.0",
+        "@mikro-orm/core": "^4.3.0",
         "@slynova/flydrive": "^1.0.3",
         "@tensei/common": "0.0.0",
         "@tensei/mail": "0.0.0",
@@ -42,6 +42,7 @@
         "express-async-handler": "^1.1.4",
         "express-response-formatter": "^2.0.2",
         "express-session": "^1.17.1",
+        "graphql-middleware": "^4.0.2",
         "indicative": "^7.4.4",
         "knex": "^0.21.2",
         "mustache": "^4.0.1",

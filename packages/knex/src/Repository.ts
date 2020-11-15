@@ -166,7 +166,7 @@ export class SqlRepository extends ResourceHelpers
         const permissions: string[] = []
 
         this.resources.forEach(resource => {
-            ;['create', 'fetch', 'show', 'update', 'delete'].forEach(
+            ;['insert', 'fetch', 'show', 'update', 'delete'].forEach(
                 operation => {
                     permissions.push(`${operation}:${resource.data.slug}`)
                 }

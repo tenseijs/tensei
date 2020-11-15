@@ -1,8 +1,11 @@
+import { applyMiddleware } from 'graphql-middleware'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
     ApolloServer,
     gql,
-    Config as ApolloConfig
+    Config as ApolloConfig,
+    makeExecutableSchema,
+    IResolvers
 } from 'apollo-server-express'
 import {
     plugin,
@@ -10,7 +13,11 @@ import {
     ResourceContract,
     PluginSetupConfig,
     FilterOperators,
-    GraphQLPluginExtension
+    GraphQLPluginExtension,
+    Resolvers,
+    graphQlQuery,
+    GraphQlMiddleware,
+    GraphQlQueryContract
 } from '@tensei/common'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
 
@@ -87,6 +94,8 @@ class Graphql {
     private appolloConfig: OmittedApolloConfig = {}
 
     schemaString: string = ''
+
+    private resolvers: GraphQlQueryContract[] = []
 
     private getGraphqlFieldDefinitionForCreateInput = (
         field: FieldContract,
@@ -274,20 +283,13 @@ ${resource.data.fields.map(
         return resource.data.fields
             .filter(
                 field =>
-                    !field.isHidden && !field.serialize().isRelationshipField
+                    !field.property.hidden &&
+                    !field.serialize().isRelationshipField
             )
             .map(field => {
                 return `
   ${field.databaseField}`
             })
-    }
-
-    private getRelatedFieldsCountDefinition(
-        field: FieldContract,
-        resource: ResourceContract,
-        resources: ResourceContract[]
-    ) {
-        return ``
     }
 
     private setupResourceGraphqlTypes(
@@ -297,7 +299,7 @@ ${resource.data.fields.map(
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
 ${resource.data.fields
-    .filter(field => field.property.enum)
+    .filter(field => field.property.enum && !field.property.hidden)
     .map(
         field => `
         enum ${resource.data.snakeCaseName}_${
@@ -309,7 +311,7 @@ ${resource.data.fields
         }`
     )}
 type ${resource.data.snakeCaseName} {${resource.data.fields
-                .filter(field => !field.isHidden)
+                .filter(field => !field.property.hidden)
                 .map(field =>
                     this.getGraphqlFieldDefinition(
                         field,
@@ -332,7 +334,9 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
 input create_${
                 resource.data.snakeCaseName
             }_input {${resource.data.fields
-                .filter(field => !field.property.primary)
+                .filter(
+                    field => !field.property.primary && !field.property.hidden
+                )
                 .map(field =>
                     this.getGraphqlFieldDefinitionForCreateInput(
                         field,
@@ -344,14 +348,18 @@ input create_${
 
 input update_${
                 resource.data.snakeCaseName
-            }_input {${resource.data.fields.map(field =>
-                this.getGraphqlFieldDefinitionForCreateInput(
-                    field,
-                    resource,
-                    resources,
-                    true
+            }_input {${resource.data.fields
+                .filter(
+                    field => !field.property.primary && !field.property.hidden
                 )
-            )}
+                .map(field =>
+                    this.getGraphqlFieldDefinitionForCreateInput(
+                        field,
+                        resource,
+                        resources,
+                        true
+                    )
+                )}
 }
 
 enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
@@ -466,17 +474,11 @@ input id_where_query {
         return 'id'
     }
 
-    private getResolvers(
-        resources: ResourceContract[],
-        manager: EntityManager,
-        config: PluginSetupConfig
-    ) {
-        let resolvers: any = {
-            Query: {},
-            Mutation: {}
-        }
+    private getResolvers(resources: ResourceContract[]) {
+        const resolversList: GraphQlQueryContract[] = []
 
         const populateFromResolvedNodes = async (
+            manager: EntityManager,
             resource: ResourceContract,
             fieldNode: any,
             data: any[]
@@ -730,6 +732,7 @@ input id_where_query {
                         )!
 
                         await populateFromResolvedNodes(
+                            manager,
                             relatedResource,
                             fieldTypes[
                                 Object.keys(
@@ -756,6 +759,7 @@ input id_where_query {
                         )!
 
                         await populateFromResolvedNodes(
+                            manager,
                             relatedResource,
                             fieldTypes[
                                 Object.keys(
@@ -784,6 +788,7 @@ input id_where_query {
                         )!
 
                         await populateFromResolvedNodes(
+                            manager,
                             relatedResource,
                             fieldTypes[
                                 Object.keys(
@@ -803,161 +808,215 @@ input id_where_query {
         }
 
         resources.forEach(resource => {
-            resolvers.Query[resource.data.snakeCaseNamePlural] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
-                const data: any[] = await manager.find(
-                    resource.data.pascalCaseName,
-                    parseWhereArgumentsToWhereQuery(args.where),
-                    getFindOptionsFromArgs(args)
-                )
+            resolversList.push(
+                graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
+                    .path(resource.data.snakeCaseNamePlural)
+                    .query()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any[] = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where),
+                            getFindOptionsFromArgs(args)
+                        )
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    data
-                )
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
 
-                return data
-            }
-
-            resolvers.Query[resource.data.snakeCaseName] = async (
-                _: any,
-                args: any,
-                ctx: any,
-                ql: any
-            ) => {
-                const data: any = await manager.findOneOrFail(
-                    resource.data.pascalCaseName,
-                    {
-                        id: args.id
-                    }
-                )
-
-                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
-                    data
-                ])
-
-                return data
-            }
-
-            resolvers.Mutation[
-                `insert_${resource.data.snakeCaseName}`
-            ] = async (_: any, args: any, ctx: any, ql: any) => {
-                const data = manager.create(
-                    resource.data.pascalCaseName,
-                    args.object
-                )
-
-                await manager.persistAndFlush(data)
-
-                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
-                    data
-                ])
-
-                return data
-            }
-
-            resolvers.Mutation[
-                `insert_${resource.data.snakeCaseNamePlural}`
-            ] = async (_: any, args: any, ctx: any, ql: any) => {
-                const data: any[] = args.objects.map((object: any) =>
-                    manager.create(resource.data.pascalCaseName, object)
-                )
-
-                await manager.persistAndFlush(data)
-
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    data
-                )
-
-                return data
-            }
-
-            resolvers.Mutation[
-                `update_${resource.data.snakeCaseName}`
-            ] = async (_: any, args: any, ctx: any, ql: any) => {
-                const data: any = await manager
-                    .getRepository<any>(resource.data.pascalCaseName)
-                    .findOneOrFail({
-                        id: args.id
+                        return data
                     })
+            )
 
-                manager.assign(data, args.object)
+            resolversList.push(
+                graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
+                    .path(resource.data.snakeCaseName)
+                    .query()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager.findOneOrFail(
+                            resource.data.pascalCaseName,
+                            {
+                                id: args.id
+                            }
+                        )
 
-                await manager.persistAndFlush(data)
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
 
-                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
-                    data
-                ])
-
-                return data
-            }
-
-            resolvers.Mutation[
-                `update_${resource.data.snakeCaseNamePlural}`
-            ] = async (_: any, args: any, ctx: any, ql: any) => {
-                const data = await manager.find(
-                    resource.data.pascalCaseName,
-                    parseWhereArgumentsToWhereQuery(args.where)
-                )
-
-                data.forEach(d => {
-                    manager.assign(d, args.object)
-                })
-
-                await manager.persistAndFlush(data)
-
-                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
-                    data
-                ])
-
-                return data
-            }
-
-            resolvers.Mutation[
-                `delete_${resource.data.snakeCaseName}`
-            ] = async (_: any, args: any, ctx: any, ql: any) => {
-                const data: any = await manager
-                    .getRepository<any>(resource.data.pascalCaseName)
-                    .findOneOrFail({
-                        id: args.id
+                        return data
                     })
+            )
 
-                await populateFromResolvedNodes(resource, getParsedInfo(ql), [
-                    data
-                ])
-                await manager.removeAndFlush(data)
+            resolversList.push(
+                graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
+                    .path(`insert_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = ctx.manager.create(
+                            resource.data.pascalCaseName,
+                            args.object
+                        )
 
-                return data
-            }
+                        await ctx.manager.persistAndFlush(data)
 
-            resolvers.Mutation[
-                `delete_${resource.data.snakeCaseNamePlural}`
-            ] = async (_: any, args: any, ctx: any, ql: any) => {
-                const data = await manager.find(
-                    resource.data.pascalCaseName,
-                    parseWhereArgumentsToWhereQuery(args.where)
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(
+                    `Insert multiple ${resource.data.snakeCaseNamePlural}`
                 )
+                    .path(`insert_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any[] = args.objects.map((object: any) =>
+                            ctx.manager.create(
+                                resource.data.pascalCaseName,
+                                object
+                            )
+                        )
 
-                await populateFromResolvedNodes(
-                    resource,
-                    getParsedInfo(ql),
-                    data
+                        await ctx.manager.persistAndFlush(data)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
+                    .path(`update_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager
+                            .getRepository<any>(resource.data.pascalCaseName)
+                            .findOneOrFail({
+                                id: args.id
+                            })
+
+                        ctx.manager.assign(data, args.object)
+
+                        await ctx.manager.persistAndFlush(data)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(
+                    `Update multiple ${resource.data.snakeCaseNamePlural}`
                 )
+                    .path(`update_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where)
+                        )
 
-                await manager.removeAndFlush(data)
+                        data.forEach(d => {
+                            ctx.manager.assign(d, args.object)
+                        })
 
-                return data
-            }
+                        await ctx.manager.persistAndFlush(data)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
+                    .path(`delete_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager
+                            .getRepository<any>(resource.data.pascalCaseName)
+                            .findOneOrFail({
+                                id: args.id
+                            })
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        await ctx.manager.removeAndFlush(data)
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(
+                    `Delete multiple ${resource.data.snakeCaseNamePlural}`
+                )
+                    .path(`delete_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where)
+                        )
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
+
+                        await ctx.manager.removeAndFlush(data)
+
+                        return data
+                    })
+            )
         })
 
-        return resolvers
+        return resolversList
     }
 
     extensions(extensions: GraphQLPluginExtension[]) {
@@ -972,47 +1031,172 @@ input id_where_query {
         return this
     }
 
-    plugin() {
-        return plugin('Graph QL').afterDatabaseSetup(async config => {
-            const { app, resources, manager, graphQlExtensions } = config
-            const exposedResources = resources.filter(
-                resource => !resource.data.hideFromApi
-            )
+    getResolversFromGraphqlQueries(queries: GraphQlQueryContract[]) {
+        const resolvers: any = {
+            Query: {},
+            Mutation: {}
+        }
 
-            this.pluginExtensions = this.pluginExtensions.concat(
-                graphQlExtensions
-            )
+        queries.forEach(query => {
+            if (query.config.type === 'MUTATION') {
+                resolvers.Mutation[query.config.path] = query.config.handler
+            }
 
-            this.setupResourceGraphqlTypes(exposedResources, config)
-
-            const graphQlServer = new ApolloServer({
-                typeDefs: [
-                    gql(this.schemaString),
-                    ...this.pluginExtensions.map(extension =>
-                        typeof extension.typeDefs === 'string'
-                            ? gql(extension.typeDefs)
-                            : extension.typeDefs
-                    )
-                ],
-                resolvers: [
-                    this.getResolvers(
-                        exposedResources,
-                        manager!.fork(),
-                        config
-                    ),
-                    ...this.pluginExtensions.map(
-                        extension => extension.resolvers
-                    )
-                ],
-                ...this.appolloConfig
-            })
-
-            graphQlServer.applyMiddleware({
-                app
-            })
-
-            return {}
+            if (query.config.type === 'QUERY') {
+                resolvers.Query[query.config.path] = query.config.handler
+            }
         })
+
+        return resolvers
+    }
+
+    plugin() {
+        return plugin('Graph QL')
+            .afterDatabaseSetup(async config => {
+                const {
+                    resources,
+                    graphQlExtensions,
+                    graphQlMiddleware,
+                    extendGraphQlQueries
+                } = config
+                const exposedResources = resources.filter(
+                    resource => !resource.data.hideFromApi
+                )
+
+                this.pluginExtensions = this.pluginExtensions.concat(
+                    graphQlExtensions
+                )
+
+                this.setupResourceGraphqlTypes(exposedResources, config)
+
+                extendGraphQlQueries(this.getResolvers(exposedResources))
+
+                graphQlMiddleware.unshift(graphQlQueries => {
+                    const middlewareHandlers: Resolvers = {
+                        Query: {},
+                        Mutation: {}
+                    }
+
+                    const mapArgsToBody: GraphQlMiddleware = async (
+                        resolve,
+                        parent,
+                        args,
+                        context,
+                        info
+                    ) => {
+                        context.body = args
+
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
+
+                        return result
+                    }
+
+                    graphQlQueries.forEach(query => {
+                        if (query.config.type === 'QUERY') {
+                            ;(middlewareHandlers.Query as any)[
+                                query.config.path
+                            ] = mapArgsToBody
+                        }
+
+                        if (query.config.type === 'MUTATION') {
+                            ;(middlewareHandlers.Mutation as any)[
+                                query.config.path
+                            ] = mapArgsToBody
+                        }
+                    })
+
+                    return middlewareHandlers
+                })
+
+                graphQlMiddleware.unshift(graphQlQueries => {
+                    const middlewareHandlers: Resolvers = {
+                        Query: {},
+                        Mutation: {}
+                    }
+
+                    const setEntityManagerContext: GraphQlMiddleware = async (
+                        resolve,
+                        parent,
+                        args,
+                        context,
+                        info,
+                    ) => {
+                        context.manager = context.manager.fork()
+
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
+
+                        return result
+                    }
+
+                    graphQlQueries.forEach(query => {
+                        if (query.config.type === 'QUERY') {
+                            ;(middlewareHandlers.Query as any)[
+                                query.config.path
+                            ] = setEntityManagerContext
+                        }
+
+                        if (query.config.type === 'MUTATION') {
+                            ;(middlewareHandlers.Mutation as any)[
+                                query.config.path
+                            ] = setEntityManagerContext
+                        }
+                    })
+
+                    return middlewareHandlers
+                })
+            })
+            .setup(async config => {
+                const {
+                    graphQlMiddleware,
+                    graphQlTypeDefs,
+                    graphQlQueries,
+                    manager,
+                    app
+                } = config
+                const typeDefs = [gql(this.schemaString), ...graphQlTypeDefs]
+
+                const resolvers = this.getResolversFromGraphqlQueries(
+                    graphQlQueries
+                )
+
+                const schema = makeExecutableSchema({
+                    typeDefs,
+                    resolvers
+                })
+
+                const graphQlServer = new ApolloServer({
+                    schema: applyMiddleware(
+                        schema,
+                        ...graphQlMiddleware.map(middlewareGenerator =>
+                            middlewareGenerator(
+                                graphQlQueries,
+                                typeDefs,
+                                schema
+                            )
+                        )
+                    ),
+                    ...this.appolloConfig,
+                    context: ctx => ({
+                        ...ctx,
+                        ...config,
+                        manager: manager!.fork()
+                    })
+                })
+
+                graphQlServer.applyMiddleware({
+                    app
+                })
+            })
     }
 }
 

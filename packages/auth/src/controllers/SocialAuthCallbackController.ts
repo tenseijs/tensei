@@ -3,9 +3,9 @@ import Uniqid from 'uniqid'
 import Purest from 'purest'
 import Request from 'request'
 import Random from 'randomstring'
-import { Config } from '@tensei/common'
 import { RequestHandler } from 'express'
 import purestConfig from '@purest/providers'
+import { TensieContext, PluginSetupConfig } from '@tensei/common'
 import AsyncHandler from 'express-async-handler'
 import { AuthPluginConfig, SupportedSocialProviders } from 'config'
 
@@ -13,7 +13,7 @@ const purest = Purest({ request: Request })
 
 class SocialAuthCallbackController {
     public connect = (
-        config: Config,
+        config: PluginSetupConfig,
         authConfig: AuthPluginConfig
     ): RequestHandler =>
         AsyncHandler(async (request, response) => {

@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { ResourceHelpers } from '../helpers'
 import { DataPayload } from '@tensei/core'
 import { EntityManager } from '@mikro-orm/core'
@@ -168,17 +169,16 @@ export class Util extends ResourceHelpers {
     }
 
     public async authorize(
-        ctx: any,
+        request: Request,
         resource = this.getCurrentResource(),
-        authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks'],
-        models?: any[]
+        authorizeFn: keyof ResourceContract['dashboardAuthorizeCallbacks']
     ) {
-        const authorizeFunctions = this.request?.originatedFromDashboard
+        const authorizeFunctions = request.originatedFromDashboard
             ? resource.dashboardAuthorizeCallbacks[authorizeFn]
             : resource.authorizeCallbacks[authorizeFn]
 
         const authorizedResults = await Promise.all(
-            authorizeFunctions.map(fn => fn(this.request!, models))
+            authorizeFunctions.map(fn => fn(request))
         )
 
         if (

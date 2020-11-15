@@ -1,7 +1,7 @@
 import {
-    FieldContract,
     User,
     HookFunction,
+    FieldContract,
     ResourceContract
 } from '@tensei/common'
 
@@ -56,6 +56,7 @@ export interface AuthPluginConfig {
 }
 
 export interface UserWithAuth extends User {
+    public: boolean
     two_factor_secret?: string
     two_factor_enabled?: boolean
 

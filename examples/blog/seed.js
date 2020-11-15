@@ -129,10 +129,11 @@ require('./app')
     .register()
     .then(async (tensei) => {
         const {
-            config: {
+            ctx: {
                 orm: { em },
             },
         } = tensei
+
         const userObjects = users.map((user) => em.create('User', user))
 
         await em.persistAndFlush(userObjects)
@@ -181,5 +182,5 @@ require('./app')
             })
         await em.persistAndFlush(tags)
 
-        await tensei.config.orm.close(true)
+        await tensei.ctx.orm.close(true)
     })

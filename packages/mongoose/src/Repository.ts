@@ -286,7 +286,7 @@ export class Repository extends ResourceHelpers
         const permissions: string[] = []
 
         this.resources.forEach(resource => {
-            ;['create', 'read', 'update', 'delete'].forEach(operation => {
+            ;['insert', 'read', 'update', 'delete'].forEach(operation => {
                 permissions.push(`${operation}:${resource.data.slug}`)
             })
 

@@ -3,6 +3,7 @@ import Uniqid from 'uniqid'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import Randomstring from 'randomstring'
+import { EntityManager } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { validateAll } from 'indicative/validator'
 import { Request, Response, NextFunction } from 'express'
@@ -18,12 +19,15 @@ import {
     HookFunction,
     DataPayload,
     InBuiltEndpoints,
-    SupportedDatabases,
-    Config,
     FieldContract,
     hasMany,
     ResourceContract,
-    boolean
+    boolean,
+    TensieContext,
+    Resolvers,
+    MiddlewareGenerator,
+    GraphQlMiddleware,
+    GraphQLPluginContext
 } from '@tensei/common'
 
 import {
@@ -31,12 +35,16 @@ import {
     GrantConfig,
     AuthPluginConfig,
     SupportedSocialProviders,
-    defaultProviderScopes,
-    UserWithAuth
+    defaultProviderScopes
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
 import { setup } from './setup'
+import { UserRole } from '@tensei/common'
+import { Permission } from '@tensei/common'
+import { graphQlQuery } from '@tensei/common'
+import { ApiContext } from '@tensei/common'
+import { GraphQlQueryContract } from '@tensei/common'
 
 type ResourceShortNames =
     | 'user'
@@ -361,7 +369,16 @@ class Auth {
     public plugin() {
         return plugin('Auth')
             .beforeDatabaseSetup(
-                ({ pushResource, pushMiddleware, databaseConfig }) => {
+                ({
+                    gql,
+                    pushResource,
+                    pushMiddleware,
+                    databaseConfig,
+                    graphQlQueries,
+                    extendGraphQlTypeDefs,
+                    extendGraphQlQueries,
+                    extendGraphQlMiddleware
+                }) => {
                     this.refreshResources()
 
                     if (Object.keys(this.config.providers).length > 0) {
@@ -370,6 +387,61 @@ class Auth {
                             require('express-session-mikro-orm').generateSessionEntity()
                         ]
                     }
+
+                    extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
+                    extendGraphQlQueries(this.extendGraphQlQueries())
+
+                    extendGraphQlMiddleware([
+                        graphQlQueries => {
+                            const resolverAuthorizers: Resolvers = {
+                                Query: {},
+                                Mutation: {}
+                            }
+
+                            const getAuthorizer = (
+                                query: GraphQlQueryContract
+                            ): GraphQlMiddleware => {
+                                return async (
+                                    resolve,
+                                    parent,
+                                    args,
+                                    context,
+                                    info
+                                ) => {
+                                    await this.getAuthUserFromContext(context)
+                                    await this.setAuthUserForPublicRoutes(
+                                        context
+                                    )
+                                    await this.authorizeResolver(context, query)
+
+                                    const result = await resolve(
+                                        parent,
+                                        args,
+                                        context,
+                                        info
+                                    )
+
+                                    return result
+                                }
+                            }
+
+                            graphQlQueries.forEach(query => {
+                                if (query.config.type === 'QUERY') {
+                                    ;(resolverAuthorizers.Query as any)[
+                                        query.config.path
+                                    ] = getAuthorizer(query)
+                                }
+
+                                if (query.config.type === 'MUTATION') {
+                                    ;(resolverAuthorizers.Mutation as any)[
+                                        query.config.path
+                                    ] = getAuthorizer(query)
+                                }
+                            })
+
+                            return resolverAuthorizers
+                        }
+                    ])
 
                     pushResource(this.resources.user)
                     pushResource(this.resources.passwordReset)
@@ -469,18 +541,78 @@ class Auth {
             .beforeCoreRoutesSetup(async config => {
                 const { app, serverUrl, clientUrl } = config
 
-                app.post(this.getApiPath('login'), AsyncHandler(this.login))
+                app.post(
+                    this.getApiPath('login'),
+                    AsyncHandler(async (request, response) => {
+                        try {
+                            const result = await this.login({
+                                manager: request.manager,
+                                body: request.body
+                            } as any)
+
+                            return response.json(result)
+                        } catch (error) {
+                            return response.status(error.status || 400).json({
+                                message: error.message
+                            })
+                        }
+                    })
+                )
                 app.post(
                     this.getApiPath('register'),
-                    AsyncHandler(this.register)
+                    AsyncHandler(async (request, response) => {
+                        try {
+                            const result = await this.register({
+                                manager: request.manager,
+                                mailer: request.mailer,
+                                body: request.body
+                            } as any)
+
+                            return response.status(201).json(result)
+                        } catch (error) {
+                            return response.status(error.status || 400).json({
+                                message: error.message
+                            })
+                        }
+                    })
                 )
                 app.post(
                     this.getApiPath('reset-password'),
-                    AsyncHandler(this.resetPassword)
+                    AsyncHandler(async (request, response) => {
+                        try {
+                            const result = await this.forgotPassword({
+                                manager: request.manager,
+                                mailer: request.mailer,
+                                body: request.body
+                            } as TensieContext)
+
+                            return response.json(result)
+                        } catch (error) {
+                            return response.status(error.status || 400).json({
+                                message: error.message,
+                                errors: error.errors || []
+                            })
+                        }
+                    })
                 )
                 app.post(
                     this.getApiPath('forgot-password'),
-                    AsyncHandler(this.forgotPassword)
+                    AsyncHandler(async (request, response) => {
+                        try {
+                            const result = await this.forgotPassword({
+                                manager: request.manager,
+                                mailer: request.mailer,
+                                body: request.body
+                            } as TensieContext)
+
+                            return response.json(result)
+                        } catch (error) {
+                            return response.status(error.status || 400).json({
+                                message: error.message,
+                                errors: error.errors || []
+                            })
+                        }
+                    })
                 )
 
                 if (this.config.twoFactorAuth) {
@@ -568,17 +700,173 @@ class Auth {
 
                 return {}
             })
+            .afterCoreRoutesSetup(async ({ graphQlQueries }) => {
+                graphQlQueries.forEach(query => {
+                    if (query.config.resource) {
+                        const { path } = query.config
+                        const {
+                            snakeCaseNamePlural: plural,
+                            snakeCaseName: singular,
+                            slug
+                        } = query.config.resource.data
+
+                        if (
+                            [`insert_${plural}`, `insert_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(({ user }) =>
+                                user.permissions!.includes(`insert:${slug}`)
+                            )
+                        }
+
+                        if (
+                            [`delete_${plural}`, `delete_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(({ user }) => user.permissions!.includes(`delete:${slug}`))
+                        }
+
+                        if (
+                            [`update_${plural}`, `update_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(({ user }) =>
+                                user.permissions!.includes(`update:${slug}`)
+                            )
+                        }
+
+                        if (path === plural) {
+                            return query.authorize(({ user }) => user.permissions!.includes(`fetch:${slug}`))
+                        }
+
+                        if (path === singular) {
+                            return query.authorize(({ user }) =>
+                                user.permissions!.includes(`show:${slug}`)
+                            )
+                        }
+                    }
+                })
+            })
+    }
+
+    private extendGraphQlQueries() {
+        const name = this.resources.user.data.snakeCaseName
+        // enable_two_factor_auth() {},
+        // disable_two_factor_auth() {},
+        // confirm_enable_two_factor_auth() {},
+        // confirm_email() {},
+        // resend_verification_email() {}
+        return [
+            graphQlQuery(`Login ${name}`)
+                .path(`login_${name}`)
+                .mutation()
+                .handle(async (_, args, ctx, info) => {
+                    return this.login(ctx)
+                }),
+            graphQlQuery(`Register ${name}`)
+                .path(`register_${name}`)
+                .mutation()
+                .handle(async (_, args, ctx, info) => {
+                    return this.register(ctx)
+                }),
+            graphQlQuery(`Request password reset`)
+                .path('request_password_reset')
+                .mutation()
+                .handle(async (_, args, ctx, info) => {
+                    const { success } = await this.forgotPassword(ctx)
+
+                    return success
+                }),
+            graphQlQuery(`Reset password`)
+                .path('reset_password')
+                .mutation()
+                .handle(async (_, args, ctx, info) => {
+                    const { success } = await this.resetPassword(ctx)
+
+                    return success
+                })
+        ]
+    }
+
+    private extendGraphQLTypeDefs(gql: any) {
+        const snakeCaseName = this.resources.user.data.snakeCaseName
+
+        return gql`
+        type register_${snakeCaseName}_response {
+            token: String!
+            user: customer!
+        }
+
+        type login_${snakeCaseName}_response {
+            token: String!
+            user: customer!
+        }
+
+        input login_${snakeCaseName}_input {
+            email: String!
+            password: String!
+        }
+
+        input request_password_reset_input {
+            email: String!
+        }
+
+        input reset_password_input {
+            email: String!
+            """ The reset password token sent to ${snakeCaseName}'s email """
+            token: String!
+            password: String!
+        }
+
+        type enable_two_factor_auth_response {
+            """ The data url for the qr code. Display this in an <img /> tag to be scanned on the authenticator app """
+            dataURL: String!
+        }
+
+        input confirm_enable_two_factor_auth_input {
+            """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
+            token: Int!
+        }
+
+        input disable_two_factor_auth_input {
+            """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
+            token: Int!
+        }
+
+        input confirm_email_input {
+            """ The email verification token sent to the ${snakeCaseName}'s email """
+            email_verification_token: String!
+        }
+
+        extend input create_${snakeCaseName}_input {
+            password: String!
+        }
+
+        extend type Mutation {
+            login_${snakeCaseName}(object: login_${snakeCaseName}_input!): login_${snakeCaseName}_response!
+            register_${snakeCaseName}(object: create_${snakeCaseName}_input!): register_${snakeCaseName}_response!
+            request_password_reset(object: request_password_reset_input!): Boolean!
+            reset_password(object: reset_password_input!): Boolean!
+            enable_two_factor_auth: enable_two_factor_auth_response!
+            disable_two_factor_auth(object: disable_two_factor_auth_input!): customer!
+            confirm_enable_two_factor_auth(object: confirm_enable_two_factor_auth_input!): customer!
+            confirm_email(object: confirm_email_input!): customer!
+            resend_verification_email: Boolean!
+        }
+    `
     }
 
     private getApiPath(path: string) {
         return `/${this.config.apiPath}/${path}`
     }
 
-    private register = async (
-        { manager, mailer, body }: Request,
-        response: Response
-    ) => {
-        let createUserPayload = body
+    private register = async ({ manager, mailer, body }: ApiContext) => {
+        let createUserPayload = await this.validate(
+            body.object ? body.object : body
+        )
 
         const authenticatorRole: any = await manager.findOneOrFail(
             this.resources.role.data.pascalCaseName,
@@ -606,12 +894,12 @@ class Auth {
                 `)
         }
 
-        return response.status(201).json({
+        return {
             token: this.generateJwt({
                 id: user.id
             }),
             user
-        })
+        }
     }
 
     private confirmEmail = async (
@@ -743,9 +1031,10 @@ class Auth {
         })
     }
 
-    private login = async (request: Request, response: Response) => {
-        const { manager } = request
-        const { email, password, token } = await this.validate(request.body)
+    private login = async ({ manager, body }: ApiContext) => {
+        const { email, password, token } = await this.validate(
+            body.object ? body.object : body
+        )
 
         const user: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,
@@ -775,10 +1064,10 @@ class Auth {
             const Speakeasy = require('speakeasy')
 
             if (!token) {
-                return response.status(400).json({
+                throw {
                     message: 'The two factor authentication token is required.',
-                    requiresTwoFactorToken: true
-                })
+                    status: 400
+                }
             }
 
             const verified = Speakeasy.totp.verify({
@@ -788,18 +1077,19 @@ class Auth {
             })
 
             if (!verified) {
-                return response.status(400).json({
+                throw {
+                    status: 400,
                     message: `Invalid two factor authentication token.`
-                })
+                }
             }
         }
 
-        return response.json({
+        return {
             token: this.generateJwt({
                 id: user.id
             }),
             user: user.toJSON()
-        })
+        }
     }
 
     public authMiddleware = async (
@@ -830,6 +1120,80 @@ class Auth {
         next()
     }
 
+    public authorizeResolver = async (
+        ctx: GraphQLPluginContext,
+        query: GraphQlQueryContract
+    ) => {
+        const authorized = await Promise.all(
+            query.config.authorize.map(fn => fn(ctx))
+        )
+
+        if (
+            authorized.filter(result => result).length !==
+            query.config.authorize.length
+        ) {
+            throw new Error('Unauthorized.')
+        }
+    }
+
+    public setAuthUserForPublicRoutes = async (ctx: GraphQLPluginContext) => {
+        const { manager, user } = ctx
+
+        if (!this.config.rolesAndPermissions) {
+            return
+        }
+
+        const publicRole: any = await manager.findOne(
+            this.resources.role.data.pascalCaseName,
+            {
+                slug: 'public'
+            },
+            {
+                populate: ['permissions'],
+                refresh: true
+            }
+        )
+
+        if (!user) {
+            ctx.user = {
+                public: true,
+                roles: [publicRole as UserRole],
+                permissions: publicRole.permissions
+                    .toJSON()
+                    .map((permission: any) => permission.slug)
+            }
+        }
+    }
+
+    public getAuthUserFromContext = async (ctx: GraphQLPluginContext) => {
+        const { req, manager } = ctx
+
+        const { headers } = req
+        const [, token] = (headers['authorization'] || '').split('Bearer ')
+
+        if (!token) return
+
+        try {
+            const { id } = Jwt.verify(token, this.config.jwt.secretKey) as {
+                id: number
+            }
+
+            const user: any = await manager.findOne(
+                this.resources.user.data.pascalCaseName,
+                {
+                    id
+                },
+                {
+                    populate: this.config.rolesAndPermissions
+                        ? ['roles.permissions']
+                        : []
+                }
+            )
+
+            ctx.user = user
+        } catch (error) {}
+    }
+
     public setAuthMiddleware = async (
         request: Request,
         response: Response,
@@ -849,9 +1213,7 @@ class Auth {
 
             const user: any = await manager.findOne(
                 this.resources.user.data.pascalCaseName,
-                {
-                    id
-                },
+                { id },
                 {
                     populate: this.config.rolesAndPermissions
                         ? ['roles.permissions']
@@ -975,9 +1337,12 @@ class Auth {
         })
     }
 
-    protected forgotPassword = async (request: Request, response: Response) => {
-        const { body, mailer, manager } = request
-        const { email } = await validateAll(body, {
+    protected forgotPassword = async ({
+        body,
+        mailer,
+        manager
+    }: TensieContext) => {
+        const { email } = await validateAll(body.object ? body.object : body, {
             email: 'required|email'
         })
 
@@ -995,12 +1360,16 @@ class Auth {
         )
 
         if (!existingUser) {
-            return response.status(422).json([
-                {
-                    field: 'email',
-                    message: 'Invalid email address.'
-                }
-            ])
+            throw {
+                status: 422,
+                message: 'Validation failed.',
+                errors: [
+                    {
+                        field: 'email',
+                        message: 'Invalid email address.'
+                    }
+                ]
+            }
         }
 
         const token = this.generateRandomToken()
@@ -1034,18 +1403,19 @@ class Auth {
             .to(email, existingUser.name)
             .sendRaw(`Some raw message to send with the token ${token}`)
 
-        return response.json({
-            message: `Please check your email for steps to reset your password.`
-        })
+        return {
+            success: true
+        }
     }
 
-    protected resetPassword = async (request: Request, response: Response) => {
-        const { body, manager } = request
-
-        const { token, password } = await validateAll(body, {
-            token: 'required|string',
-            password: 'required|string|min:8'
-        })
+    protected resetPassword = async ({ body, manager }: ApiContext) => {
+        const { token, password } = await validateAll(
+            body.object ? body.object : body,
+            {
+                token: 'required|string',
+                password: 'required|string|min:8'
+            }
+        )
 
         let existingPasswordReset: any = await manager.findOne(
             this.resources.passwordReset.data.pascalCaseName,
@@ -1055,21 +1425,27 @@ class Auth {
         )
 
         if (!existingPasswordReset) {
-            return response.status(422).json([
-                {
-                    field: 'token',
-                    message: 'Invalid reset token.'
-                }
-            ])
+            throw {
+                status: 422,
+                errors: [
+                    {
+                        field: 'token',
+                        message: 'Invalid reset token.'
+                    }
+                ]
+            }
         }
 
         if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
-            return response.status(422).json([
-                {
-                    field: 'token',
-                    message: 'Invalid reset token.'
-                }
-            ])
+            throw {
+                status: 422,
+                errors: [
+                    {
+                        field: 'token',
+                        message: 'Invalid reset token.'
+                    }
+                ]
+            }
         }
 
         let user: any = await manager.findOne(
@@ -1082,9 +1458,9 @@ class Auth {
         if (!user) {
             manager.removeAndFlush(existingPasswordReset)
 
-            return response.status(500).json({
-                message: 'User does not exist anymore.'
-            })
+            return {
+                success: false
+            }
         }
 
         manager.assign(user, {
@@ -1099,9 +1475,9 @@ class Auth {
         // TODO: Send an email to the user notifying them
         // that their password was reset.
 
-        response.json({
-            message: `Password reset successful.`
-        })
+        return {
+            success: true
+        }
     }
 
     protected validate = async (data: AuthData, registration = false) => {

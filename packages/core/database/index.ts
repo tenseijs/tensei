@@ -70,6 +70,28 @@ class Database {
                 }
             })
 
+            if (!resource.data.noTimeStamps) {
+                entityProperties.created_at = {
+                    reference: ReferenceType.SCALAR,
+                    length: 3,
+                    defaultRaw: 'current_timestamp(3)',
+                    name: 'created_at',
+                    type: 'Date',
+                    fieldNames: ['created_at'],
+                    columnTypes: ['timestamp(3)']
+                }
+
+                entityProperties.updated_at = {
+                    reference: ReferenceType.SCALAR,
+                    length: 3,
+                    defaultRaw: 'current_timestamp(3)',
+                    name: 'updated_at',
+                    type: 'Date',
+                    fieldNames: ['updated_at'],
+                    columnTypes: ['timestamp(3)']
+                }
+            }
+
             entityMeta.hooks.onInit = entityMeta.hooks.onInit = ['onInit']
 
             hookNames.forEach(hookName => {

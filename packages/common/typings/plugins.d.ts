@@ -5,6 +5,7 @@ declare module '@tensei/common/plugins' {
         Storage,
         StorageManagerConfig
     } from '@slynova/flydrive'
+    import { DocumentNode } from 'graphql'
     import { EntityManager } from '@mikro-orm/core'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
     import {
@@ -14,7 +15,9 @@ declare module '@tensei/common/plugins' {
         Permission,
         SupportedStorageDrivers,
         StorageConstructor,
-        GraphQLPluginExtension
+        GraphQLPluginExtension,
+        RouteContract,
+        GraphQlQueryContract
     } from '@tensei/common/config'
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
@@ -45,11 +48,14 @@ declare module '@tensei/common/plugins' {
             >
         ): void
         manager: EntityManager | null
+        gql: (types: string | TemplateStringsArray) => DocumentNode
         pushResource: (resource: ResourceContract) => void
         pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void
         script: (name: Asset['name'], path: Asset['path']) => void
-        extendGraphql: (extensions: GraphQLPluginExtension[]) => void
+        extendGraphQlQueries: (queries: GraphQlQueryContract[]) => any
+        extendGraphQlTypeDefs: (typeDefs: (string | DocumentNode)[]) => any
+        extendRoutes: (queries: RouteContract[]) => any
     }
 
     export abstract class PluginContract {
