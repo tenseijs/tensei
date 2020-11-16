@@ -172,33 +172,56 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public async register() {
-        if (this.registeredApplication) {
-            return this
+    public async start(fn?: (ctx: Config) => any) {
+        if (! this.registeredApplication) {
+            this.setConfigOnResourceFields()
+
+            await this.callPluginHook('beforeDatabaseSetup')
+            await this.registerDatabase()
+    
+            await this.callPluginHook('afterDatabaseSetup')
+    
+            // Please do not change this order. Super important so bugs are not introduced.
+            await this.callPluginHook('beforeMiddlewareSetup')
+            this.registerAssetsRoutes()
+            this.registerMiddleware()
+            await this.callPluginHook('afterMiddlewareSetup')
+    
+            await this.callPluginHook('beforeCoreRoutesSetup')
+            this.registerCoreRoutes()
+            await this.callPluginHook('afterCoreRoutesSetup')
+    
+            await this.callPluginHook('setup')    
         }
-
-        this.setConfigOnResourceFields()
-
-        await this.callPluginHook('beforeDatabaseSetup')
-        await this.registerDatabase()
-
-        await this.callPluginHook('afterDatabaseSetup')
-
-        // Please do not change this order. Super important so bugs are not introduced.
-        await this.callPluginHook('beforeMiddlewareSetup')
-        this.registerAssetsRoutes()
-        this.registerMiddleware()
-        await this.callPluginHook('afterMiddlewareSetup')
-
-        await this.callPluginHook('beforeCoreRoutesSetup')
-        this.registerCoreRoutes()
-        await this.callPluginHook('afterCoreRoutesSetup')
-
-        await this.callPluginHook('setup')
 
         this.registeredApplication = true
 
+        if (fn) {
+            const callback = fn(this.ctx)
+
+            if (callback instanceof Promise) {
+                fn(this.ctx)
+                    .then(() => {
+                        this.listen()
+                    })
+            } else {
+                this.listen()
+            }
+
+            return this
+        }
+
+        this.listen()
+
         return this
+    }
+
+    private listen() {
+        const port = process.env.PORT || 4500
+
+        this.app.listen(port, () => {
+            this.ctx.logger.success(`🚀 Access your server on ${this.ctx.serverUrl || `http://127.0.0.1:${port}`}`)
+        })
     }
 
     public getPluginArguments() {
@@ -360,21 +383,13 @@ export class Tensei implements TenseiContract {
             ) => {
                 request.dashboards = this.ctx.dashboardsMap
                 request.resources = this.ctx.resourcesMap
+                request.manager = this.ctx.orm!.em.fork()
                 request.mailer = this.ctx.mailer
                 request.config = this.ctx
 
                 next()
             }
         )
-
-        this.app.use((_, __, next) =>
-            RequestContext.create(this.ctx.orm!.em as any, next)
-        )
-        this.app.use((request, response, next) => {
-            // request.manager = RequestContext.getEntityManager()!
-
-            next()
-        })
 
         this.app.use(this.setAuthMiddleware)
     }
@@ -523,7 +538,7 @@ export class Tensei implements TenseiContract {
             this.asyncHandler(ClientController.index)
         )
 
-        this.generateClientFacingApiRoutes()
+        // this.generateClientFacingApiRoutes()
 
         this.app.use(
             (
@@ -532,6 +547,7 @@ export class Tensei implements TenseiContract {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
+                this.ctx.logger.error(error)
                 if (Array.isArray(error)) {
                     return response.status(422).json({
                         message: 'Validation failed.',
@@ -550,8 +566,6 @@ export class Tensei implements TenseiContract {
                         message: error.message || 'Internal server error.'
                     })
                 }
-
-                console.error(error)
 
                 response.status(500).json({
                     message: 'Internal server error.',

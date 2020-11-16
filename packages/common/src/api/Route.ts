@@ -5,12 +5,14 @@ import {
     RouteContract,
     ResourceContract
 } from '@tensei/common'
+import { RequestHandler } from 'express'
 
 export class Route implements RouteContract {
     public config: RouteConfig = {
         path: '',
         name: '',
         type: 'GET',
+        middleware: [],
         snakeCaseName: '',
         paramCaseName: '',
         authorize: [],
@@ -71,6 +73,12 @@ export class Route implements RouteContract {
 
     resource(resource: ResourceContract) {
         this.config.resource = resource
+
+        return this
+    }
+
+    middleware(middleware: RequestHandler[]) {
+        this.config.middleware = [...this.config.middleware, ...middleware]
 
         return this
     }

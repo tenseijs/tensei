@@ -1124,7 +1124,7 @@ input id_where_query {
                         parent,
                         args,
                         context,
-                        info,
+                        info
                     ) => {
                         context.manager = context.manager.fork()
 

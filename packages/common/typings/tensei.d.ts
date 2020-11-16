@@ -17,7 +17,8 @@ declare module '@tensei/core' {
         SupportedStorageDrivers,
         DatabaseConfiguration,
         RouteContract,
-        GraphQlQueryContract
+        GraphQlQueryContract,
+        TensieContext
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -28,7 +29,7 @@ declare module '@tensei/core' {
         }
         ctx: TensieContext
         storage: StorageManager
-        register(): Promise<this>
+        start(fn?: (ctx: Config) => any): Promise<this>
         routes(routes: RouteContract[]): this
         graphQlTypeDefs(typeDefs: (string | DocumentNode)[]): this
         graphQlQueries(queries: GraphQlQueryContract[]): this
@@ -88,7 +89,7 @@ declare module '@tensei/core' {
         routes(routes: RouteContract[]): this
         graphQlQueries(queries: GraphQlQueryContract[]): this
         storage: StorageManager
-        register(): Promise<this>
+        start(): Promise<this>
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this

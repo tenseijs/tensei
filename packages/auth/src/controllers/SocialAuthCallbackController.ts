@@ -12,12 +12,11 @@ import { AuthPluginConfig, SupportedSocialProviders } from 'config'
 const purest = Purest({ request: Request })
 
 class SocialAuthCallbackController {
-    public connect = (
-        config: PluginSetupConfig,
-        authConfig: AuthPluginConfig
-    ): RequestHandler =>
+    public connect = (authConfig: AuthPluginConfig): RequestHandler =>
         AsyncHandler(async (request, response) => {
             const { query, params, manager } = request
+
+            console.log('*******', manager)
 
             const provider = params.provider as SupportedSocialProviders
             const access_token =

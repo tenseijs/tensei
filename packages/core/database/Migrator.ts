@@ -12,9 +12,7 @@ class Migrator {
 
         await schemaGenerator.ensureDatabase()
 
-        // console.log(await schemaGenerator.getUpdateSchemaSQL())
-
-        // await schemaGenerator.updateSchema(true, true, false, false)
+        await schemaGenerator.updateSchema(true, true, false, false)
     }
 }
 

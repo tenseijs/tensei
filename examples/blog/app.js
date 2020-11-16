@@ -1,5 +1,6 @@
 require('dotenv').config()
 const { auth } = require('@tensei/auth')
+const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
 // const { cashier, plan } = require('@tensei/cashier')
@@ -14,7 +15,6 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
-    .serverUrl('http://localhost:5000')
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
     .storageDriver(
@@ -100,7 +100,8 @@ module.exports = tensei()
         //         plan('Premium Sub').yearly().price(99),
         //     ])
         //     .plugin(),
-        graphql().extensions([]).plugin(),
+        graphql().plugin(),
+        rest().plugin(),
         plugin('Custom Slug Validation').setup(({ indicative }) => {
             indicative.validator.extend('slug', {
                 async: false,

@@ -9,7 +9,9 @@ import {
     ResourceContract,
     AuthorizeFunction,
     ValidationMessages,
-    SerializedResource
+    SerializedResource,
+    HookFunctionPromised,
+    FlushHookFunction
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'
@@ -56,12 +58,15 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public hooks: {
         onInit: HookFunction[]
-        beforeCreate: HookFunction[]
-        afterCreate: HookFunction[]
-        beforeUpdate: HookFunction[]
-        afterUpdate: HookFunction[]
-        beforeDelete: HookFunction[]
-        afterDelete: HookFunction[]
+        beforeCreate: HookFunctionPromised[]
+        afterCreate: HookFunctionPromised[]
+        beforeUpdate: HookFunctionPromised[]
+        afterUpdate: HookFunctionPromised[]
+        beforeDelete: HookFunctionPromised[]
+        afterDelete: HookFunctionPromised[]
+        beforeFlush: FlushHookFunction[]
+        onFlush: FlushHookFunction[]
+        afterFlush: FlushHookFunction[]
     } = {
         onInit: [],
         beforeCreate: [],
@@ -69,7 +74,10 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         beforeUpdate: [],
         afterUpdate: [],
         beforeDelete: [],
-        afterDelete: []
+        afterDelete: [],
+        beforeFlush: [],
+        onFlush: [],
+        afterFlush: []
     }
 
     constructor(name: string, tableName?: string) {
@@ -79,6 +87,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         this.data.camelCaseName = camelCase(name)
         this.data.pascalCaseName = pascalCase(name)
         this.data.slug = Pluralize(paramCase(name))
+        this.data.slugSingular = paramCase(name)
+        this.data.slugPlural = Pluralize(paramCase(name))
         this.data.table = tableName || Pluralize(snakeCase(name))
         this.data.camelCaseNamePlural = Pluralize(camelCase(name))
         this.data.snakeCaseNamePlural = Pluralize(snakeCase(name))
@@ -114,6 +124,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         snakeCaseNamePlural: '',
         camelCaseNamePlural: '',
         pascalCaseName: '',
+        slugPlural: '',
+        slugSingular: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
             email: 'The {{ field }} must be a valid email address.'
@@ -293,7 +305,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         }
     }
 
-    public beforeCreate(hook: HookFunction) {
+    public beforeCreate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
             beforeCreate: [...this.hooks.beforeCreate, hook]
@@ -302,7 +314,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public beforeUpdate(hook: HookFunction) {
+    public beforeUpdate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
             beforeUpdate: [...this.hooks.beforeUpdate, hook]
@@ -311,7 +323,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public afterUpdate(hook: HookFunction) {
+    public afterUpdate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
             afterUpdate: [...this.hooks.afterUpdate, hook]
@@ -320,7 +332,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public beforeDelete(hook: HookFunction) {
+    public beforeDelete(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
             beforeDelete: [...this.hooks.beforeDelete, hook]
@@ -329,7 +341,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public afterDelete(hook: HookFunction) {
+    public afterDelete(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
             afterDelete: [...this.hooks.afterDelete, hook]
@@ -338,7 +350,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public afterCreate(hook: HookFunction) {
+    public afterCreate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
             afterCreate: [...this.hooks.afterCreate, hook]

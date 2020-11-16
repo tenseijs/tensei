@@ -11,6 +11,5 @@
         "forceConsistentCasingInFileNames": true,
         "types": ["@types/jest"]
     },
-    "exclude": ["__tests__", "build"],
-    "include": ["src", "core.d.ts"]
+    "exclude": ["__tests__", "build"]
 }

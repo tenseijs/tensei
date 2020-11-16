@@ -31,6 +31,8 @@ declare module '@tensei/common/resources' {
         snakeCaseNamePlural: string
         noTimeStamps: boolean
         pascalCaseName: string
+        slugSingular: string
+        slugPlural: string
         perPageOptions: number[]
         permissions: Permission[]
         filters: FilterContract[]
@@ -104,12 +106,12 @@ declare module '@tensei/common/resources' {
         slug(slug: string): this
         label(label: string): this
         serialize(): SerializedResource
-        beforeCreate(hook: HookFunction): this
-        afterCreate(hook: HookFunction): this
-        beforeUpdate(hook: HookFunction): this
-        afterUpdate(hook: HookFunction): this
-        beforeDelete(hook: HookFunction): this
-        afterDelete(hook: HookFunction): this
+        beforeCreate(hook: HookFunctionPromised): this
+        afterCreate(hook: HookFunctionPromised): this
+        beforeUpdate(hook: HookFunctionPromised): this
+        afterUpdate(hook: HookFunctionPromised): this
+        beforeDelete(hook: HookFunctionPromised): this
+        afterDelete(hook: HookFunctionPromised): this
         onInit(hook: HookFunction): this
     }
 

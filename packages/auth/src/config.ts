@@ -4,6 +4,8 @@ import {
     FieldContract,
     ResourceContract
 } from '@tensei/common'
+import { AnyEntity } from '@mikro-orm/core'
+import { UserRole } from '@tensei/common'
 
 export interface GrantConfig {
     key: string
@@ -55,7 +57,14 @@ export interface AuthPluginConfig {
     }
 }
 
-export interface UserWithAuth extends User {
+export interface UserEntity extends AnyEntity {
+    id: number
+    name: string
+    email: string
+    password?: string
+    roles: UserRole[]
+    permissions: string[]
+
     public: boolean
     two_factor_secret?: string
     two_factor_enabled?: boolean

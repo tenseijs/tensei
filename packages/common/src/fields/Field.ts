@@ -510,6 +510,7 @@ export class Field implements FieldContract {
      */
     public notNullable<T extends FieldContract>(this: T): T {
         this.property.nullable = false
+        this.relatedProperty.nullable = false
 
         return this
     }
@@ -527,6 +528,7 @@ export class Field implements FieldContract {
      */
     public nullable<T extends FieldContract>(this: T): T {
         this.property.nullable = true
+        this.relatedProperty.nullable = true
 
         return this
     }

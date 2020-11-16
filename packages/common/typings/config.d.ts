@@ -33,6 +33,8 @@ declare module '@tensei/common/config' {
         patch(): this
         delete(): this
         resource(resource: ResourceContract): this
+        middleware(middleware: RequestHandler[]): this
+        resource(resource: ResourceContract): this
         authorize(authorize: AuthorizeFunction): this
         handle(handler: RouteConfig['handler']): this
     }
@@ -54,8 +56,9 @@ declare module '@tensei/common/config' {
         snakeCaseName: string
         paramCaseName: string
         resource?: ResourceContract
+        middleware: RequestHandler[]
         authorize: AuthorizeFunction[]
-        handler: (ctx: ApiContext) => Promise<void>
+        handler: (request: Request, response: Response) => Promise<any>
     }
 
     interface GraphQlQueryConfig<
