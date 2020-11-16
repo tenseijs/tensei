@@ -1,45 +1,66 @@
+import { AnyEntity, EntityName, FilterQuery } from '@mikro-orm/core'
 import Express from 'express'
+import BaseController from './Controller'
 
-class FindResourceController {
+class FindResourceController extends BaseController {
     public show = async (
-        request: Express.Request,
-        response: Express.Response
+        { params, manager, resources, query }: Express.Request,
+        { formatter: { badRequest, ok, notFound } }: Express.Response
     ) => {
-        const { manager } = request
+        const resource = resources[params.resource]
+        try {
+            const findOptions = this.parseQueryToFindOptions(query, resource)
 
-        const resourceManager = manager(request.params.resource)
+            const model = await manager.findOne(
+                resource.data.pascalCaseName as EntityName<AnyEntity<any>>,
+                params.resourceId as FilterQuery<AnyEntity<any>>,
+                findOptions
+            )
 
-        await resourceManager.authorize('authorizedToShow')
+            if (!model) {
+                return notFound(
+                    `could not find ${resource.data.pascalCaseName} with ID ${params.resourceId}`
+                )
+            }
 
-        const model = await resourceManager.findOneById(
-            request.params.resourceId
-        )
-
-        if (!model) {
-            return response.status(404).json({
-                message: `Resource with id ${request.params.resourceId} was not found.`
+            return ok(model)
+        } catch (error) {
+            return badRequest({
+                message: 'The request was not understood.'
             })
         }
-
-        return response.json(model)
     }
 
     public showRelation = async (
-        request: Express.Request,
-        response: Express.Response
+        { params, manager, resources, query }: Express.Request,
+        { formatter: { badRequest, ok, notFound } }: Express.Response
     ) => {
-        const { manager } = request
+        const resource = resources[params.resource]
+        const whereOptions = this.parseQueryToWhereOptions(query)
 
-        const resourceManager = manager(request.params.resource)
-
-        await resourceManager.authorize('authorizedToShow')
-
-        return response.json(
-            await resourceManager.findAllRelatedResource(
-                request.params.resourceId,
-                request.params.relatedResource
+        try {
+            const model = await manager.findOne(
+                resource.data.pascalCaseName as EntityName<AnyEntity<any>>,
+                params.resourceId as FilterQuery<AnyEntity<any>>
             )
-        )
+
+            await manager.populate(
+                model,
+                [params.relatedResource],
+                whereOptions
+            )
+
+            return ok(model?.[params.relatedResource])
+        } catch (error) {
+            if (error?.name === 'ValidationError') {
+                return notFound(
+                    `The ${resource.data.pascalCaseName} model does not have a '${params.relatedResource}' property`
+                )
+            }
+            return badRequest({
+                message: 'The request was not understood.'
+            })
+        }
     }
 }
 

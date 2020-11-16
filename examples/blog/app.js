@@ -115,5 +115,7 @@ module.exports = tensei()
     .databaseConfig({
         type: 'mysql',
         dbName: 'mikrotensei',
-        // debug: true
+        user: 'root',
+        password: 'password',
+        debug: true,
     })

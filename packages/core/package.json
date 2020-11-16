@@ -49,6 +49,7 @@
         "numeral": "^2.0.6",
         "observable-slim": "^0.1.5",
         "pluralize": "^8.0.0",
+        "qs": "^6.9.4",
         "readline-sync": "^1.4.10",
         "signale": "^1.4.0",
         "sqlite3": "^5.0.0",

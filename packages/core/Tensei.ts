@@ -534,7 +534,7 @@ export class Tensei implements TenseiContract {
         )
 
         this.app.get(
-            this.getApiPath(':resource/:resourceId'),
+            this.getApiPath(':resource/:resourceId/:relatedResource'),
             ...this.getMiddlewareForEndpoint('showRelation'),
             this.config.showRelationController
         )

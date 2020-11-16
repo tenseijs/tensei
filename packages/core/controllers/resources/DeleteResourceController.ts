@@ -1,19 +1,26 @@
+import { AnyEntity, EntityName, FilterQuery } from '@mikro-orm/core'
 import Express from 'express'
 
 class DeleteResourceController {
     public destroy = async (
-        request: Express.Request,
-        response: Express.Response
+        { body, params, manager, resources }: Express.Request,
+        { formatter: { badRequest, noContent } }: Express.Response
     ) => {
-        const { manager } = request
+        const resourceName = resources[params.resource].data.pascalCaseName
+        const modelRepository = manager.getRepository(resourceName as EntityName<AnyEntity<any>>)
 
-        const resourceManager = manager(request.params.resource)
+        try {
+            const model = await modelRepository.findOneOrFail(params.resourceId as FilterQuery<AnyEntity<any>>)
 
-        await resourceManager.authorize('authorizedToDelete')
+            await modelRepository.removeAndFlush(model)
 
-        await resourceManager.deleteById(request.params.resourceId)
-
-        return response.status(204).json({})
+            return noContent({})
+        } catch (error) {
+            console.log(error)
+            return badRequest({
+                message: 'The request was not understood.'
+            })
+        }
     }
 }
 

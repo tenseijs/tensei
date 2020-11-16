@@ -1,16 +1,17 @@
-import { FindOptions } from '@mikro-orm/core'
+import { FilterQuery, FindOptions } from '@mikro-orm/core'
 import { ResourceContract } from '@tensei/common'
+import qs from 'qs'
 
 class BaseController {
-    public getPageMetaFromFindOptions(total: number,findOptions: FindOptions<any>) {
-        return  {
+    public getPageMetaFromFindOptions(total: number, findOptions: FindOptions<any>) {
+        return {
             total,
             page:
                 findOptions.offset ||
-                (findOptions.offset === 0 && findOptions.limit)
+                    (findOptions.offset === 0 && findOptions.limit)
                     ? Math.ceil(
-                          (findOptions.offset + 1) / findOptions.limit!
-                      )
+                        (findOptions.offset + 1) / findOptions.limit!
+                    )
                     : null,
             perPage: findOptions.limit ? findOptions.limit : null,
             pageCount: Math.ceil(total / findOptions.limit!)
@@ -36,7 +37,7 @@ class BaseController {
         }
 
         if (query.filters) {
-            findOptions.filters = query.filters.split(',')
+            findOptions.filters = query.filters
         }
 
         if (query.sort) {
@@ -49,8 +50,39 @@ class BaseController {
                 }
             })
         }
-
         return findOptions
+    }
+
+    public parseQueryToWhereOptions(query: any) {
+        let whereOptions: FilterQuery<any> = {}
+
+        if (query.where) {
+            const strigifiedQuery = qs.stringify(query.where, { encode: false })
+            const parsedQuery = qs.parse(strigifiedQuery, {
+                decoder(value) {
+                    if (/^(\d+|\d*\.\d+)$/.test(value)) {
+                        return parseFloat(value);
+                    }
+
+                    value = value.replace(/where/, '')
+
+                    let keywords: any = {
+                        true: true,
+                        false: false,
+                        null: null,
+                        undefined: undefined,
+                    };
+                    if (value in keywords) {
+                        return keywords[value];
+                    }
+
+                    return value;
+                }
+            });
+            whereOptions = parsedQuery
+        }
+
+        return whereOptions
     }
 }
 

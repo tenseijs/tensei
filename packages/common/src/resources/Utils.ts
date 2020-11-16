@@ -10,13 +10,17 @@ import {
 } from '@tensei/common'
 import { ResourceHelpers } from '../helpers'
 
-export class Manager extends ResourceHelpers {
+export class Utils extends ResourceHelpers {
     constructor(
         private request: Request | null,
         resources: ResourceContract[],
-        public repository: DatabaseRepositoryInterface
+        public repository: DatabaseRepositoryInterface,
     ) {
         super(resources)
+    }
+
+    public database = (resource = this.getCurrentResource()) => {
+        return this.request?.manager.getRepository(resource.data.pascalCaseName)
     }
 
     // @ts-ignore
@@ -120,104 +124,6 @@ export class Manager extends ResourceHelpers {
                     'required|string|in:' + supportedOperators.join(',')
             }
         )
-    }
-
-    public async findAll(query = undefined) {
-        const resource = this.getCurrentResource()
-
-        const {
-            perPage,
-            page,
-            fields,
-            search,
-            filters,
-            noPagination,
-            withRelationships
-        } = await this.validateRequestQuery(query || this.request?.query || {})
-
-        return this.database().findAll({
-            perPage: perPage || resource.data.perPageOptions[0] || 10,
-            page: page || 1,
-            fields,
-            search,
-            filters,
-            noPagination,
-            withRelationships
-        })
-    }
-
-    public async findAllRelatedResource(
-        resourceId: string | number,
-        relatedResourceSlugOrResource: string | ResourceContract
-    ) {
-        const resource = this.getCurrentResource()
-        const relatedResource = this.findResource(relatedResourceSlugOrResource)
-
-        const relationField = resource.data.fields.find(
-            field => field.name === relatedResource.data.name
-        )
-
-        if (!relationField) {
-            throw {
-                status: 400,
-                message: `Related field not found between ${resource.data.name} and ${relatedResource.data.name}.`
-            }
-        }
-
-        const {
-            perPage = 10,
-            page = 1,
-            filters,
-            ...rest
-        } = await this.validateRequestQuery(
-            this.request?.query || {},
-            relatedResource
-        )
-
-        if (relationField.component === 'BelongsToManyField') {
-            return this.database().findAllBelongingToMany(
-                relatedResource,
-                resourceId,
-                {
-                    ...rest,
-                    perPage,
-                    page,
-                    filters
-                }
-            )
-        }
-
-        if (relationField.component === 'HasManyField') {
-            return this.database().findAllHasMany(relatedResource, resourceId, {
-                ...rest,
-                perPage,
-                page,
-                filters
-            })
-        }
-
-        return {}
-    }
-
-    public async findOneById(id: number | string, withRelated?: string[]) {
-        const { fields, withRelationships } = await this.validateRequestQuery(
-            this.request?.query || {}
-        )
-
-        const model = await this.database().findOneById(
-            id,
-            fields,
-            withRelated ? withRelated : withRelationships
-        )
-
-        if (!model) {
-            throw {
-                message: `Could not find a resource with id ${id}`,
-                status: 404
-            }
-        }
-
-        return model
     }
 
     getValidationRules = (
@@ -338,54 +244,6 @@ export class Manager extends ResourceHelpers {
         }
     }
 
-    validateUniqueFields = async (
-        payload: DataPayload,
-        creationRules = true,
-        modelId?: string | number,
-        resource = this.getCurrentResource()
-    ) => {
-        const uniqueFields = resource
-            .serialize()
-            .fields.filter(
-                field => field.isUnique && !field.isRelationshipField
-            )
-
-        for (let index = 0; index < uniqueFields.length; index++) {
-            const field = uniqueFields[index]
-
-            let exists: null | {} = null
-
-            if (!payload[field.inputName]) {
-                return
-            }
-
-            if (creationRules) {
-                exists = await this.database().findOneByField(
-                    field.databaseField,
-                    payload[field.inputName],
-                    ['id']
-                )
-            } else {
-                exists = await this.database().findOneByFieldExcludingOne(
-                    field.databaseField,
-                    payload[field.inputName],
-                    modelId!,
-                    ['id']
-                )
-            }
-
-            if (exists) {
-                throw [
-                    {
-                        message: `A ${resource.data.name.toLowerCase()} already exists with ${field.inputName
-                            } ${payload[field.inputName]}.`,
-                        field: field.inputName
-                    }
-                ]
-            }
-        }
-    }
-
     validateRelationshipFields = async (
         payload: DataPayload,
         resource = this.getCurrentResource()
@@ -424,11 +282,9 @@ export class Manager extends ResourceHelpers {
                 payload[field.inputName] &&
                 payload[field.inputName].length > 0
             ) {
-                const allRelatedRows = await this.database(
-                    relatedResource
-                ).findAllByIds(payload[field.inputName], ['id'])
+                const allRelatedRows = await this.database()?.findAll({ filters: { id: payload[field.inputName] }, populate: [relatedResource] as any })
 
-                if (allRelatedRows.length !== payload[field.inputName].length) {
+                if (allRelatedRows?.length !== payload[field.inputName].length) {
                     throw [
                         {
                             message: `Invalid values were provided for the related resource. Make sure all values provided exist in the database table ${relatedResource.data.table}`,
@@ -445,10 +301,7 @@ export class Manager extends ResourceHelpers {
                 payload[field.inputName]
             ) {
                 if (
-                    !(await this.database().findOneById(
-                        payload[field.inputName],
-                        ['id']
-                    ))
+                    !(await this.database()?.findOne(payload[field.inputName]))
                 ) {
                     throw []
                 }
@@ -456,78 +309,43 @@ export class Manager extends ResourceHelpers {
         }
     }
 
-    runAction = async (
-        actionSlug: string,
-        data: DataPayload = this.request?.body || {}
-    ): Promise<ActionResponse> => {
-        const resource = this.getCurrentResource()
+    validateUniqueFields = async (
+        payload: DataPayload,
+        creationRules = true,
+        modelId?: string | number,
+        resource = this.getCurrentResource()
+    ) => {
+        const uniqueFields = resource
+            .serialize()
+            .fields.filter(
+                field => field.isUnique && !field.isRelationshipField
+            )
 
-        const action = resource.data.actions.find(
-            action => action.data.slug === actionSlug
-        )
+        for (let index = 0; index < uniqueFields.length; index++) {
+            const field = uniqueFields[index]
 
-        if (!action) {
-            throw {
-                message: `Action ${actionSlug} is not defined on ${resource.data.slug} resource.`,
-                status: 404
+            let exists: null | {} = null
+
+            if (!payload[field.inputName]) {
+                return
+            }
+
+            if (creationRules) {
+                exists = await this.database()?.findOne({ [field.databaseField]: payload[field.inputName] }) as any
+            } else {
+                exists = await this.database()?.findOne({ [field.databaseField]: { $eq: payload[field.inputName], id: { $ne: modelId! } } }) as any
+            }
+
+            if (exists) {
+                throw [
+                    {
+                        message: `A ${resource.data.name.toLowerCase()} already exists with ${field.inputName
+                            } ${payload[field.inputName]}.`,
+                        field: field.inputName
+                    }
+                ]
             }
         }
-
-        const models = await this.database().findAllByIds(data.models || [])
-
-        const actionResource = createResourceFn(action.name).fields(
-            action.data.fields
-        )
-
-        const { parsedPayload: payload } = await this.validate(
-            data.form || {},
-            undefined,
-            undefined,
-            actionResource
-        )
-
-        return action.data.handler({
-            request: this.request,
-            models,
-            payload,
-            html: (html, status = 200) => ({
-                html,
-                type: 'html',
-                status
-            }),
-            errors: (errors, status = 200) => ({
-                type: 'validation-errors',
-                errors,
-                status
-            }),
-            notification: (notification, status = 200) => ({
-                ...notification,
-                type: 'notification',
-                status
-            }),
-            push: (route, status = 200) => ({
-                type: 'push',
-                status,
-                route
-            })
-        })
     }
 
-    findAllCount = async (baseQuery?: FetchAllRequestQuery) => {
-        return this.database().findAllCount(baseQuery)
-    }
-
-    findOneByField = async (databaseField: string, value: any) => {
-        const resource = this.getCurrentResource()
-
-        const field = this.getFieldFromResource(resource, databaseField)
-
-        if (!field) {
-            throw new Error(
-                `Field ${databaseField} could not be found on resource.`
-            )
-        }
-
-        return this.database().findOneByField(field.databaseField, value)
-    }
 }

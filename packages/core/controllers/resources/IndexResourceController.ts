@@ -11,11 +11,12 @@ class IndexResourceController extends BaseController {
         const resource = resources[params.resource]
 
         const findOptions = this.parseQueryToFindOptions(query, resource)
+        const whereOptions = this.parseQueryToWhereOptions(query)
 
         try {
             const [data, total] = await manager.findAndCount(
                 resource.data.pascalCaseName,
-                {},
+                whereOptions,
                 findOptions
             )
 

@@ -1,19 +1,26 @@
+import { AnyEntity, EntityName } from '@mikro-orm/core'
 import Express from 'express'
 
 class CreateResourceController {
     public store = async (
         request: Express.Request,
-        response: Express.Response
+        { formatter: { badRequest, ok } }: Express.Response
     ) => {
-        const { manager } = request
+        const { manager, resources, params } = request
 
-        const resourceManager = manager(request.params.resource)
+        const resource = resources[params.resource]
+        try {
+            const model = manager.create(resource.data.pascalCaseName as EntityName<AnyEntity<any>>, request.body)
 
-        await resourceManager.authorize('authorizedToCreate')
+            await manager.persistAndFlush(model)
 
-        const model = await resourceManager.create(request.body)
-
-        return response.status(201).json(model)
+            return ok(model)
+        } catch (error) {
+            console.log(error)
+            return badRequest({
+                message: 'The request was not understood.'
+            })
+        }
     }
 }
 

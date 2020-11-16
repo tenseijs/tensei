@@ -1,17 +1,32 @@
+import { AnyEntity, EntityName, FilterQuery } from '@mikro-orm/core'
 import Express from 'express'
 
 class UpdateResourceController {
     public update = async (
-        { method, body, params, manager }: Express.Request,
-        response: Express.Response
+        { body, params, manager, resources }: Express.Request,
+        { formatter: { badRequest, ok, notFound } }: Express.Response
     ) => {
-        const updated = await manager(params.resource).update(
-            params.resourceId,
-            body,
-            method === 'PATCH'
-        )
 
-        return response.json(updated)
+        const resourceName = resources[params.resource].data.pascalCaseName
+
+        try {
+            const model = manager.findOne(resourceName as EntityName<AnyEntity<any>>, params.resourceId as FilterQuery<AnyEntity<any>>)
+
+            if (!model) {
+                return notFound(`Could not find resourceName with ID of ${params.resourceId}`)
+            }
+
+            manager.assign(resourceName as EntityName<AnyEntity<any>>, body)
+
+            await manager.persistAndFlush(model)
+
+            return ok(model)
+        } catch (error) {
+            console.log(error)
+            return badRequest({
+                message: 'The request was not understood.'
+            })
+        }
     }
 }
 
