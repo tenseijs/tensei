@@ -5,7 +5,7 @@ import {
     ApolloServer,
     gql,
     Config as ApolloConfig,
-    makeExecutableSchema,
+    makeExecutableSchema
 } from 'apollo-server-express'
 import {
     plugin,

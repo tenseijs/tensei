@@ -68,7 +68,10 @@ class Database {
                     entityProperties[field.databaseField] =
                         field.relatedProperty
                 } else {
-                    if (field.databaseField === 'id' && databaseType === 'mongo') {
+                    if (
+                        field.databaseField === 'id' &&
+                        databaseType === 'mongo'
+                    ) {
                         entityProperties._id = {
                             // ...field.property,
                             type: 'ObjectId',

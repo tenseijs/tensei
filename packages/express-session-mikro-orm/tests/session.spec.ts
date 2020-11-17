@@ -77,7 +77,8 @@ it('The SessionStore.get() gets a session by id', done => {
                             })
                         })
                     })
-            ).catch(console.error)
+            )
+            .catch(console.error)
     })
 })
 
@@ -126,7 +127,8 @@ it('The SessionStore.getAll() gets all sessions in database', done => {
                         })
                     })
                     .catch(console.log)
-            ).catch(console.error)
+            )
+            .catch(console.error)
     })
 })
 
@@ -181,7 +183,8 @@ it('The SessionStore.set() updates existing session', done => {
                         )
                     })
                     .catch(console.log)
-            ).catch(console.error)
+            )
+            .catch(console.error)
     })
 })
 
@@ -217,7 +220,8 @@ it('The SessionStore.set() creates new session if session with sid does not exis
                         done()
                     })
                 })
-            }).catch(console.error)
+            })
+            .catch(console.error)
     })
 })
 
@@ -258,7 +262,8 @@ it('The SessionStore.destroy() destroys existing session', done => {
                         })
                     })
                     .catch(console.log)
-            ).catch(console.error)
+            )
+            .catch(console.error)
     })
 })
 
@@ -284,36 +289,39 @@ it('The SessionStore.touch() updates expires field when session is touched', don
 
                         const expiresDate = new Date()
 
-                        store.touch(
-                            3,
-                            {
-                                cookie: {
-                                    expires: expiresDate
-                                }
-                            },
-                            (error: any, value: any) => {
-                                expect(error).to.be.null
-                                expect(value).to.be.null
+                        store
+                            .touch(
+                                3,
+                                {
+                                    cookie: {
+                                        expires: expiresDate
+                                    }
+                                },
+                                (error: any, value: any) => {
+                                    expect(error).to.be.null
+                                    expect(value).to.be.null
 
-                                orm.em
-                                    .findOne('Session', {
-                                        session_id: 3
-                                    })
-                                    .then((foundSession: any) => {
-                                        expect(
-                                            foundSession.expires.toDateString()
-                                        ).to.eq(expiresDate.toDateString())
-
-                                        orm.close().then(() => {
-                                            done()
+                                    orm.em
+                                        .findOne('Session', {
+                                            session_id: 3
                                         })
-                                    })
-                                    .catch(console.log)
-                            }
-                        ).catch(console.error)
+                                        .then((foundSession: any) => {
+                                            expect(
+                                                foundSession.expires.toDateString()
+                                            ).to.eq(expiresDate.toDateString())
+
+                                            orm.close().then(() => {
+                                                done()
+                                            })
+                                        })
+                                        .catch(console.log)
+                                }
+                            )
+                            .catch(console.error)
                     })
                     .catch(console.log)
-            ).catch(console.error)
+            )
+            .catch(console.error)
     })
 })
 
@@ -360,7 +368,8 @@ it('The SessionStore.clearExpiredSessions() deletes all expired sessions', done 
                         })
                     })
                     .catch(console.log)
-            ).catch(console.error)
+            )
+            .catch(console.error)
     })
 })
 

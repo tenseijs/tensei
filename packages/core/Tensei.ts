@@ -200,7 +200,7 @@ export class Tensei implements TenseiContract {
     }
 
     public async start(fn?: (ctx: Config) => any) {
-        if (! this.registeredApplication) {
+        if (!this.registeredApplication) {
             await this.register()
         }
 
@@ -210,10 +210,9 @@ export class Tensei implements TenseiContract {
             const callback = fn(this.ctx)
 
             if (callback instanceof Promise) {
-                fn(this.ctx)
-                    .then(() => {
-                        this.listen()
-                    })
+                fn(this.ctx).then(() => {
+                    this.listen()
+                })
             } else {
                 this.listen()
             }
@@ -230,7 +229,10 @@ export class Tensei implements TenseiContract {
         const port = process.env.PORT || 4500
 
         this.app.listen(port, () => {
-            this.ctx.logger.success(`🚀 Access your server on ${this.ctx.serverUrl || `http://127.0.0.1:${port}`}`)
+            this.ctx.logger.success(
+                `🚀 Access your server on ${this.ctx.serverUrl ||
+                    `http://127.0.0.1:${port}`}`
+            )
         })
     }
 

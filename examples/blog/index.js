@@ -1,5 +1,3 @@
 const tensei = require('./app')
 
-tensei
-  .start()
-  .catch(console.error)
+tensei.start().catch(console.error)
