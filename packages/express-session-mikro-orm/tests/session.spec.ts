@@ -1,7 +1,7 @@
 import Path from 'path'
 import Fs from 'fs'
 import { assert, expect } from 'chai'
-import { MikroORM } from '@mikro-orm/core'
+import { MikroORM, EntitySchema } from '@mikro-orm/core'
 import expressSession from 'express-session'
 import MikroOrmSession, { generateSessionEntity } from '../src/index'
 
@@ -11,7 +11,7 @@ const getOrmInstance = () =>
     MikroORM.init({
         type: 'sqlite',
         dbName: 'express-session-mikro-orm.sqlite',
-        entities: [generateSessionEntity() as any]
+        entities: [new EntitySchema(generateSessionEntity() as any)]
     })
 
 const sampleSession =
@@ -77,7 +77,7 @@ it('The SessionStore.get() gets a session by id', done => {
                             })
                         })
                     })
-            )
+            ).catch(console.error)
     })
 })
 
@@ -126,7 +126,7 @@ it('The SessionStore.getAll() gets all sessions in database', done => {
                         })
                     })
                     .catch(console.log)
-            )
+            ).catch(console.error)
     })
 })
 
@@ -181,7 +181,7 @@ it('The SessionStore.set() updates existing session', done => {
                         )
                     })
                     .catch(console.log)
-            )
+            ).catch(console.error)
     })
 })
 
@@ -217,7 +217,7 @@ it('The SessionStore.set() creates new session if session with sid does not exis
                         done()
                     })
                 })
-            })
+            }).catch(console.error)
     })
 })
 
@@ -258,7 +258,7 @@ it('The SessionStore.destroy() destroys existing session', done => {
                         })
                     })
                     .catch(console.log)
-            )
+            ).catch(console.error)
     })
 })
 
@@ -310,10 +310,10 @@ it('The SessionStore.touch() updates expires field when session is touched', don
                                     })
                                     .catch(console.log)
                             }
-                        )
+                        ).catch(console.error)
                     })
                     .catch(console.log)
-            )
+            ).catch(console.error)
     })
 })
 
@@ -360,7 +360,7 @@ it('The SessionStore.clearExpiredSessions() deletes all expired sessions', done 
                         })
                     })
                     .catch(console.log)
-            )
+            ).catch(console.error)
     })
 })
 

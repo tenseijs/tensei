@@ -172,26 +172,36 @@ export class Tensei implements TenseiContract {
         return this
     }
 
+    public async register() {
+        if (this.registeredApplication) {
+            return this
+        }
+
+        this.setConfigOnResourceFields()
+
+        await this.callPluginHook('beforeDatabaseSetup')
+        await this.registerDatabase()
+
+        await this.callPluginHook('afterDatabaseSetup')
+
+        // Please do not change this order. Super important so bugs are not introduced.
+        await this.callPluginHook('beforeMiddlewareSetup')
+        this.registerAssetsRoutes()
+        this.registerMiddleware()
+        await this.callPluginHook('afterMiddlewareSetup')
+
+        await this.callPluginHook('beforeCoreRoutesSetup')
+        this.registerCoreRoutes()
+        await this.callPluginHook('afterCoreRoutesSetup')
+
+        await this.callPluginHook('setup')
+
+        return this
+    }
+
     public async start(fn?: (ctx: Config) => any) {
         if (! this.registeredApplication) {
-            this.setConfigOnResourceFields()
-
-            await this.callPluginHook('beforeDatabaseSetup')
-            await this.registerDatabase()
-    
-            await this.callPluginHook('afterDatabaseSetup')
-    
-            // Please do not change this order. Super important so bugs are not introduced.
-            await this.callPluginHook('beforeMiddlewareSetup')
-            this.registerAssetsRoutes()
-            this.registerMiddleware()
-            await this.callPluginHook('afterMiddlewareSetup')
-    
-            await this.callPluginHook('beforeCoreRoutesSetup')
-            this.registerCoreRoutes()
-            await this.callPluginHook('afterCoreRoutesSetup')
-    
-            await this.callPluginHook('setup')    
+            await this.register()
         }
 
         this.registeredApplication = true
