@@ -114,7 +114,7 @@ module.exports = tensei()
         }),
     ])
     .databaseConfig({
-        type: 'mysql',
+        type: 'mongo',
         dbName: 'mikrotensei',
         debug: true,
     })

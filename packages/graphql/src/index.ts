@@ -1,3 +1,4 @@
+import { ObjectId } from '@mikro-orm/mongodb'
 import { applyMiddleware } from 'graphql-middleware'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
@@ -5,7 +6,6 @@ import {
     gql,
     Config as ApolloConfig,
     makeExecutableSchema,
-    IResolvers
 } from 'apollo-server-express'
 import {
     plugin,
@@ -896,6 +896,8 @@ input id_where_query {
 
                         await ctx.manager.persistAndFlush(data)
 
+                        await ctx.manager.persistAndFlush(data)
+
                         await populateFromResolvedNodes(
                             ctx.manager,
                             resource,
@@ -915,9 +917,7 @@ input id_where_query {
                     .handle(async (_, args, ctx, info) => {
                         const data: any = await ctx.manager
                             .getRepository<any>(resource.data.pascalCaseName)
-                            .findOneOrFail({
-                                id: args.id
-                            })
+                            .findOneOrFail(args.id)
 
                         ctx.manager.assign(data, args.object)
 
@@ -972,9 +972,7 @@ input id_where_query {
                     .handle(async (_, args, ctx, info) => {
                         const data: any = await ctx.manager
                             .getRepository<any>(resource.data.pascalCaseName)
-                            .findOneOrFail({
-                                id: args.id
-                            })
+                            .findOneOrFail(args.id)
 
                         await populateFromResolvedNodes(
                             ctx.manager,
@@ -1051,7 +1049,7 @@ input id_where_query {
     }
 
     plugin() {
-        return plugin('Graph QL')
+        return plugin('GraphQl')
             .afterDatabaseSetup(async config => {
                 const {
                     resources,

@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8.0
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: testdb
@@ -32,7 +32,7 @@ jobs:
       fail-fast: true
       max-parallel: 6
       matrix:
-        node-version: [12.x, 13.x, 14.x]
+        node-version: [12.x]
 
     steps:
       - name: Checkout code
@@ -47,5 +47,4 @@ jobs:
         run: yarn build
       - name: Run package tests
         run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
-      - name: Run graphql tests
-        run: cd /home/runner/work/tensei/tensei/packages/graphql && yarn test
+

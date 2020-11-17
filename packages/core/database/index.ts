@@ -49,6 +49,8 @@ class Database {
     }
 
     generateEntitySchemas() {
+        const databaseType = this.config.databaseConfig.type
+
         this.schemas = this.config.resources.map(resource => {
             let entityMeta: any = {
                 name: resource.data.pascalCaseName,
@@ -66,7 +68,21 @@ class Database {
                     entityProperties[field.databaseField] =
                         field.relatedProperty
                 } else {
-                    entityProperties[field.databaseField] = field.property
+                    if (field.databaseField === 'id' && databaseType === 'mongo') {
+                        entityProperties._id = {
+                            // ...field.property,
+                            type: 'ObjectId',
+                            primary: true
+                        }
+
+                        entityProperties.id = {
+                            // ...field.property,
+                            type: 'string',
+                            serializedPrimaryKey: true
+                        }
+                    } else {
+                        entityProperties[field.databaseField] = field.property
+                    }
                 }
             })
 
