@@ -3,13 +3,6 @@ import Number from './Number'
 export class Integer extends Number {
     protected isUnsigned: boolean = false
 
-    /**
-     *
-     * This would match the knex method name
-     * on the create builder.
-     */
-    public databaseFieldType: string = 'integer'
-
     public component: string = `${this.constructor.name}Field`
 
     public isForeign: boolean = false
@@ -46,17 +39,6 @@ export class Integer extends Number {
 
     public foreign() {
         this.isForeign = true
-
-        return this
-    }
-
-    /**
-     *
-     * Make this field sortable
-     *
-     */
-    public unsigned() {
-        this.isUnsigned = true
 
         return this
     }

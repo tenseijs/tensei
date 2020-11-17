@@ -1,19 +1,31 @@
 import Express from 'express'
+import BaseController from './Controller'
 
-class IndexResourceController {
+class IndexResourceController extends BaseController {
     public index = async (
         request: Express.Request,
-        response: Express.Response
+        { formatter: { badRequest, ok } }: Express.Response
     ) => {
-        const { manager } = request
+        const { manager, params, resources, query } = request
 
-        const resourceManager = manager(request.params.resource)
+        const resource = resources[params.resource]
 
-        await resourceManager.authorize('authorizedToFetch')
+        const findOptions = this.parseQueryToFindOptions(query, resource)
 
-        const results = await resourceManager.findAll()
+        try {
+            const [data, total] = await manager.findAndCount(
+                resource.data.pascalCaseName,
+                {},
+                findOptions
+            )
 
-        return response.json(results)
+            return ok(data, this.getPageMetaFromFindOptions(total, findOptions))
+        } catch (error) {
+            console.log(error)
+            return badRequest({
+                message: 'The request was not understood.'
+            })
+        }
     }
 }
 

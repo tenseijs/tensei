@@ -3,21 +3,20 @@ import Uniqid from 'uniqid'
 import Purest from 'purest'
 import Request from 'request'
 import Random from 'randomstring'
-import { Config, DataPayload } from '@tensei/common'
-import { RequestHandler, request } from 'express'
+import { RequestHandler } from 'express'
 import purestConfig from '@purest/providers'
+import { TensieContext, PluginSetupConfig } from '@tensei/common'
 import AsyncHandler from 'express-async-handler'
 import { AuthPluginConfig, SupportedSocialProviders } from 'config'
 
 const purest = Purest({ request: Request })
 
 class SocialAuthCallbackController {
-    public connect = (
-        config: Config,
-        authConfig: AuthPluginConfig
-    ): RequestHandler =>
+    public connect = (authConfig: AuthPluginConfig): RequestHandler =>
         AsyncHandler(async (request, response) => {
             const { query, params, manager } = request
+
+            console.log('*******', manager)
 
             const provider = params.provider as SupportedSocialProviders
             const access_token =
@@ -46,59 +45,49 @@ class SocialAuthCallbackController {
 
                 if (error) return redirect(error)
 
-                const payload = authConfig.beforeOAuthIdentityCreated
-                    ? authConfig.beforeOAuthIdentityCreated(
-                          providerData,
-                          request
-                      )
-                    : {
-                          email: providerData.email,
-                          name: providerData.name
-                      }
+                const payload = {
+                    email: providerData.email,
+                    name: providerData.name
+                }
 
                 let temporal_token = this.getTemporalToken()
 
-                const db = manager('Oauth Identity')
-                const existingOauthIdentity = await db.database().findAll({
-                    filters: [
-                        {
-                            field: 'provider',
-                            value: provider,
-                            operator: 'equals'
-                        },
-                        {
-                            field: 'provider_user_id',
-                            value: providerData.provider_user_id,
-                            operator: 'equals'
-                        }
-                    ],
-                    fields: ['temporal_token', 'id'],
-                    perPage: 1
-                })
-
-                if (existingOauthIdentity.data.length > 0) {
-                    await db.database().update(
-                        existingOauthIdentity.data[0].id,
-                        {
-                            temporal_token,
-                            access_token
-                        },
-                        {},
-                        true
-                    )
-                } else {
-                    await db.database().create({
-                        provider,
-                        access_token,
-                        temporal_token,
-                        email: payload.email,
-                        payload: JSON.stringify(payload),
+                const db: any = manager.getRepository(
+                    authConfig.resources.oauthIdentity.data.pascalCaseName
+                )
+                const existingOauthIdentity = await db.findOne(
+                    {
+                        provider: provider,
                         provider_user_id: providerData.provider_user_id
+                    },
+                    {
+                        fields: ['temporal_token', 'id']
+                    }
+                )
+
+                if (existingOauthIdentity) {
+                    manager.assign(existingOauthIdentity, {
+                        temporal_token,
+                        access_token
                     })
+
+                    await manager.persistAndFlush(existingOauthIdentity)
+                } else {
+                    await manager.persistAndFlush(
+                        db.create({
+                            provider,
+                            access_token,
+                            temporal_token,
+                            email: payload.email,
+                            payload: JSON.stringify(payload),
+                            provider_user_id: providerData.provider_user_id
+                        })
+                    )
                 }
 
                 return redirect(null, temporal_token)
             } catch (error) {
+                console.log(error)
                 return redirect(
                     `Something went wrong saving the oauth identity.`
                 )

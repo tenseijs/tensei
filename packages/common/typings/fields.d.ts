@@ -4,9 +4,88 @@ declare module '@tensei/common/fields' {
         AuthorizeFunction,
         Config
     } from '@tensei/common/config'
+    import {
+        ReferenceType,
+        Cascade,
+        LoadStrategy,
+        QueryOrder,
+        Constructor as ORMConstructor,
+        EntityProperty,
+        Dictionary
+    } from '@mikro-orm/core'
 
     interface Constructor<M> {
         new (...args: any[]): M
+    }
+
+    interface FieldProperty {
+        name?: string
+        entity?: () => any
+        type?: string
+        columnTypes?: string[]
+        primary?: boolean
+        serializedPrimaryKey?: boolean
+        lazy?: boolean
+        array?: boolean
+        length?: any
+        reference?: ReferenceType
+        wrappedReference?: boolean
+        fieldNames?: string[]
+        fieldNameRaw?: string
+        default?: string | number | boolean | null
+        defaultRaw?: string
+        formula?: (alias: string) => string
+        prefix?: string | boolean
+        embedded?: [string, string]
+        embeddable?: ORMConstructor<T>
+        embeddedProps?: Dictionary<EntityProperty>
+        object?: boolean
+        index?: boolean | string
+        unique?: boolean | string
+        nullable?: boolean
+        inherited?: boolean
+        unsigned?: boolean
+        mapToPk?: boolean
+        persist?: boolean
+        hidden?: boolean
+        enum?: boolean
+        items?: (number | string)[]
+        version?: boolean
+        eager?: boolean
+        setter?: boolean
+        getter?: boolean
+        getterName?: any
+        cascade?: Cascade[]
+        orphanRemoval?: boolean
+        mappedBy?: string
+        inversedBy?: string
+        onCreate?: (entity: any) => any
+        onUpdate?: (entity: any) => any
+        onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string
+        onUpdateIntegrity?:
+            | 'cascade'
+            | 'no action'
+            | 'set null'
+            | 'set default'
+            | string
+        strategy?: LoadStrategy
+        owner?: boolean
+        inversedBy?: string
+        mappedBy?: string
+        orderBy?: {
+            [field: string]: QueryOrder
+        }
+        fixedOrder?: boolean
+        fixedOrderColumn?: string
+        pivotTable?: string
+        joinColumns?: string[]
+        inverseJoinColumns?: string[]
+        referencedColumnNames?: string[]
+        referencedTableName?: string
+        serializer?: (value: any) => any
+        serializedName?: string
+        comment?: string
+        userDefined?: boolean
     }
 
     interface SerializedField {
@@ -47,8 +126,10 @@ declare module '@tensei/common/fields' {
         camelCaseName: string
         camelCaseNamePlural: string
         pascalCaseName: string
+        snakeCaseName: string
+        snakeCaseNamePlural: string
     }
-    interface FieldContract {
+    interface FieldContract<FieldDocument = any> {
         showHideField: {
             /**
              *
@@ -83,6 +164,8 @@ declare module '@tensei/common/fields' {
             authorizedToUpdate: AuthorizeFunction
             authorizedToDelete: AuthorizeFunction
         }
+        property: FieldProperty
+        relatedProperty: FieldProperty
         hooks: {
             beforeCreate: FieldHookFunction
             beforeUpdate: FieldHookFunction
@@ -91,6 +174,8 @@ declare module '@tensei/common/fields' {
         }
         databaseFieldType: string
         afterConfigSet(): void
+        isRelationshipField: boolean
+        onUpdate(hook: any): this
         beforeCreate(hook: FieldHookFunction): this
         beforeUpdate(hook: FieldHookFunction): this
         afterCreate(hook: FieldHookFunction): this
@@ -167,13 +252,16 @@ declare module '@tensei/common/fields' {
          * field
          *
          */
-        defaultValue: string | number | boolean
+        defaultValue: string | number | boolean | string[] | number[] | null
 
         camelCaseName: string
 
         pascalCaseName: string
 
         camelCaseNamePlural: string
+
+        snakeCaseName: string
+        snakeCaseNamePlural: string
 
         capsDatabasefieldName: string
         /**
@@ -262,10 +350,16 @@ declare module '@tensei/common/fields' {
         unique<T extends FieldContract>(this: T): T
         /**
          *
-         * Make this field nullable
+         * Make this field not nullable
          *
          */
         notNullable<T extends FieldContract>(this: T): T
+        /**
+         *
+         * Make this field nullable
+         *
+         */
+        nullable<T extends FieldContract>(this: T): T
         /**
          *
          * Define the description. This would be a help text
@@ -417,6 +511,17 @@ declare module '@tensei/common/fields' {
     interface TimestampContract extends DateFieldContract {}
     interface JsonContract extends DateFieldContract {}
     interface LinkContract extends TextContract {}
+    interface RelationshipField extends FieldContract {
+        cascades(cascades: Cascade[]): this
+        owner(): this
+    }
+    const oneToOne: (name: string, databaseField?: string) => RelationshipField
+    const oneToMany: (name: string, databaseField?: string) => RelationshipField
+    const manyToOne: (name: string, databaseField?: string) => RelationshipField
+    const manyToMany: (
+        name: string,
+        databaseField?: string
+    ) => RelationshipField
     interface ArrayContract extends FieldContract {
         of(arrayOf: 'string' | 'number'): this
     }
@@ -428,24 +533,19 @@ declare module '@tensei/common/fields' {
         name: string,
         databaseField?: string | undefined
     ) => BooleanFieldContract
-    interface BelongsToContract extends IntegerContract {}
     interface DateTimeContract extends DateFieldContract {}
     interface BigIntegerContract extends IntegerContract {}
     const bigInteger: (
         name: string,
         databaseField?: string | undefined
     ) => BigIntegerContract
-    interface BelongsToManyContract extends IntegerContract {
-        notNullable<T extends FieldContract>(this: T): T
-    }
-    interface HasManyContract extends FieldContract {}
     interface IDContract extends FieldContract {}
     const id: (name: string, databaseField?: string | undefined) => IDContract
-    const belongsToMany: (name: string) => BelongsToManyContract
+    const belongsToMany: (name: string) => RelationshipField
     const hasMany: (
         name: string,
         databaseField?: string | undefined
-    ) => HasManyContract
+    ) => RelationshipField
     const dateTime: (
         name: string,
         databaseField?: string | undefined
@@ -453,7 +553,7 @@ declare module '@tensei/common/fields' {
     const belongsTo: (
         name: string,
         databaseField?: string | undefined
-    ) => BelongsToContract
+    ) => RelationshipField
     const json: (
         name: string,
         databaseField?: string | undefined
@@ -554,9 +654,8 @@ declare module '@tensei/common/fields' {
          * from all query results.
          */
         isHidden: boolean
-        protected isRelationshipField: boolean
         /**
-         *
+         *shi
          * This is a short name for the frontend component that
          * will be mounted for this field.
          */

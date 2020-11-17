@@ -10,7 +10,6 @@
         "@types/graphql": "^14.5.0",
         "@types/jest": "^25.2.3",
         "@types/supertest": "^2.0.9",
-        "express-graphql": "^0.11.0",
         "jest": "^26.0.1",
         "prettier": "^2.0.5",
         "supertest": "^4.0.2",
@@ -24,8 +23,9 @@
     },
     "dependencies": {
         "@tensei/common": "0.0.0",
+        "apollo-server-express": "^2.19.0",
         "dataloader": "^2.0.0",
-        "graphql": "^15.3.0",
+        "graphql-parse-resolve-info": "^4.9.0",
         "graphql-playground-middleware-express": "^1.7.18"
     },
     "config": {

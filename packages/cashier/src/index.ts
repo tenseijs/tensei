@@ -30,7 +30,7 @@ class Cashier {
         return this
     }
 
-    private subscriptionsResource(database: Config['database']) {
+    private subscriptionsResource() {
         return resource('Subscription')
             .hideFromNavigation()
             .fields([
@@ -69,8 +69,8 @@ class Cashier {
 
     public plugin() {
         return plugin('Cashier')
-            .beforeDatabaseSetup(({ pushResource, database }) => {
-                pushResource(this.subscriptionsResource(database))
+            .beforeDatabaseSetup(({ pushResource }) => {
+                pushResource(this.subscriptionsResource())
 
                 return Promise.resolve()
             })

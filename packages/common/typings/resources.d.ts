@@ -1,11 +1,14 @@
 declare module '@tensei/common/resources' {
     import { Request } from 'express'
+    import { FilterContract } from '@tensei/common/filters'
     import { SerializedField, FieldContract } from '@tensei/common/fields'
     import { SerializedAction, ActionContract } from '@tensei/common/actions'
     import {
         HookFunction,
+        HookFunctionPromised,
         Permission,
         AuthorizeFunction,
+        FlushHookFunction,
         DatabaseRepositoryInterface,
         User,
         ResourceHelpers
@@ -24,12 +27,17 @@ declare module '@tensei/common/resources' {
         hideFromApi: boolean
         camelCaseName: string
         displayField: string
+        snakeCaseName: string
+        snakeCaseNamePlural: string
         noTimeStamps: boolean
+        pascalCaseName: string
+        slugSingular: string
+        slugPlural: string
         perPageOptions: number[]
         permissions: Permission[]
+        filters: FilterContract[]
         camelCaseNamePlural: string
         displayInNavigation: boolean
-        pascalCaseName: string
         validationMessages: ValidationMessages
     }
     interface ResourceDataWithFields extends ResourceData {
@@ -59,13 +67,20 @@ declare module '@tensei/common/resources' {
             authorizedToRunAction: AuthorizeFunction[]
         }
         hooks: {
-            beforeCreate: HookFunction
-            beforeUpdate: HookFunction
-            afterCreate: HookFunction
-            afterUpdate: HookFunction
+            onInit: HookFunction[]
+            beforeCreate: HookFunctionPromised[]
+            afterCreate: HookFunctionPromised[]
+            beforeUpdate: HookFunctionPromised[]
+            afterUpdate: HookFunctionPromised[]
+            beforeDelete: HookFunctionPromised[]
+            afterDelete: HookFunctionPromised[]
+            beforeFlush: FlushHookFunction[]
+            onFlush: FlushHookFunction[]
+            afterFlush: FlushHookFunction[]
         }
         data: ResourceDataWithFields
         hideFromApi(): this
+        filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this
@@ -91,10 +106,13 @@ declare module '@tensei/common/resources' {
         slug(slug: string): this
         label(label: string): this
         serialize(): SerializedResource
-        beforeCreate(hook: HookFunction): this
-        beforeUpdate(hook: HookFunction): this
-        afterCreate(hook: HookFunction): this
-        afterUpdate(hook: HookFunction): this
+        beforeCreate(hook: HookFunctionPromised): this
+        afterCreate(hook: HookFunctionPromised): this
+        beforeUpdate(hook: HookFunctionPromised): this
+        afterUpdate(hook: HookFunctionPromised): this
+        beforeDelete(hook: HookFunctionPromised): this
+        afterDelete(hook: HookFunctionPromised): this
+        onInit(hook: HookFunction): this
     }
 
     export class Resource implements ResourceContract {
@@ -122,6 +140,7 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         hideFromApi(): this
+        filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this

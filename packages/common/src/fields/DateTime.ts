@@ -8,6 +8,12 @@ export class DateTime extends DateField {
      */
     public databaseFieldType: string = 'datetime'
 
+    public constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
+
+        this.property.type = 'date'
+    }
+
     /**
      *
      * This is a short name for the frontend component that

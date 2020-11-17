@@ -1,31 +1,101 @@
-import { graphqlHTTP } from 'express-graphql'
-import DataLoader from 'dataloader'
+import { ObjectId } from '@mikro-orm/mongodb'
+import { applyMiddleware } from 'graphql-middleware'
+import { parseResolveInfo } from 'graphql-parse-resolve-info'
+import {
+    ApolloServer,
+    gql,
+    Config as ApolloConfig,
+    makeExecutableSchema
+} from 'apollo-server-express'
 import {
     plugin,
-    Resource,
     FieldContract,
-    Field,
     ResourceContract,
-    ManagerContract,
-    DataPayload,
-    belongsTo,
-    PluginSetupConfig
+    PluginSetupConfig,
+    FilterOperators,
+    GraphQLPluginExtension,
+    Resolvers,
+    graphQlQuery,
+    GraphQlMiddleware,
+    GraphQlQueryContract
 } from '@tensei/common'
-import { buildSchema } from 'graphql'
-import GraphqlPlayground from 'graphql-playground-middleware-express'
+import { EntityManager, ReferenceType } from '@mikro-orm/core'
 
-export interface GraphQlPluginConfig {
-    graphiql: boolean
-    graphqlPath: string
+const filterOperators: FilterOperators[] = [
+    '_eq',
+    '_ne',
+    '_in',
+    '_nin',
+    '_gt',
+    '_gte',
+    '_lt',
+    '_lte',
+    '_like',
+    '_re',
+    '_ilike',
+    '_overlap',
+    '_contains',
+    '_contained'
+]
+
+const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
+
+const allOperators = filterOperators.concat(topLevelOperators)
+
+const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
+    if (!whereArgument) {
+        return {}
+    }
+    let whereArgumentString = JSON.stringify(whereArgument)
+
+    allOperators.forEach(operator => {
+        whereArgumentString = whereArgumentString.replace(
+            `"${operator}"`,
+            `"$${operator.split('_')[1]}"`
+        )
+    })
+
+    return JSON.parse(whereArgumentString)
 }
 
-class Graphql {
-    private config: GraphQlPluginConfig = {
-        graphiql: true,
-        graphqlPath: '/graphql'
+const getParsedInfo = (ql: any) => {
+    const parsedInfo = parseResolveInfo(ql, {
+        keepRoot: false
+    }) as any
+
+    return parsedInfo.fieldsByTypeName[
+        Object.keys(parsedInfo.fieldsByTypeName)[0]
+    ]
+}
+
+const getFindOptionsFromArgs = (args: any) => {
+    let findOptions: any = {}
+
+    if (!args) {
+        return {}
     }
 
+    if (args.limit) {
+        findOptions.limit = args.limit
+    }
+
+    if (args.offset) {
+        findOptions.limit = args.offset
+    }
+
+    return findOptions
+}
+
+type OmittedApolloConfig = Omit<ApolloConfig, 'typeDefs' | 'resolvers'>
+
+class Graphql {
+    private pluginExtensions: GraphQLPluginExtension[] = []
+
+    private appolloConfig: OmittedApolloConfig = {}
+
     schemaString: string = ''
+
+    private resolvers: GraphQlQueryContract[] = []
 
     private getGraphqlFieldDefinitionForCreateInput = (
         field: FieldContract,
@@ -36,11 +106,11 @@ class Graphql {
         let FieldType = 'String'
         let FieldKey = field.databaseField
 
-        if (field.databaseFieldType === 'increments') {
-            return ``
+        if (field.property.enum) {
+            FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
         }
 
-        if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
+        if (['integer', 'bigInteger'].includes(field.property.type!)) {
             FieldType = 'Int'
         }
 
@@ -48,22 +118,25 @@ class Graphql {
             FieldType = 'Boolean'
         }
 
-        if (field.component === 'BelongsToField') {
-            FieldType = 'ID'
-            FieldKey = `${field.databaseField}`
+        if (field.property.type === 'boolean') {
+            FieldType = 'Boolean'
         }
 
-        if (['HasManyField', 'BelongsToManyField'].includes(field.component)) {
-            const relatedResource = resources.find(
-                resource => resource.data.name === field.name
-            )
-
-            FieldType = `[ID]`
-            FieldKey = `${relatedResource?.data.camelCaseNamePlural}`
-        }
-
-        if (!field.serialize().isNullable && !isUpdate) {
+        if (!field.property.nullable && !isUpdate) {
             FieldType = `${FieldType}!`
+        }
+
+        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+            FieldType = `ID`
+            FieldKey = field.databaseField
+        }
+
+        if (
+            field.relatedProperty.reference === ReferenceType.ONE_TO_MANY ||
+            field.relatedProperty.reference === ReferenceType.MANY_TO_MANY
+        ) {
+            FieldType = `[ID]`
+            FieldKey = field.databaseField
         }
 
         return `
@@ -79,57 +152,48 @@ class Graphql {
         let FieldType = 'String'
         let FieldKey = field.databaseField
 
-        if (field.databaseFieldType === 'increments') {
-            FieldType = 'ID'
-
-            if (config.database === 'mongodb') {
-                FieldKey = 'id'
-            }
+        if (field.property.enum) {
+            FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
         }
 
-        if (field.databaseFieldType === 'enu') {
-            FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
-        }
-
-        if (field.databaseFieldType === 'boolean') {
+        if (field.property.type === 'boolean') {
             FieldType = 'Boolean'
         }
 
-        if (['integer', 'bigInteger'].includes(field.databaseFieldType)) {
+        if (['integer', 'bigInteger'].includes(field.property.type!)) {
             FieldType = 'Int'
         }
 
-        if (field.component === 'BelongsToField') {
-            const relatedResource = resources.find(
-                resource => resource.data.name === field.name
-            )
-
-            if (!relatedResource) {
-                throw new Error(`Resource ${field.name} does not exist.`)
-            }
-
-            FieldType = `${relatedResource.data.pascalCaseName}`
-            FieldKey = relatedResource.data.camelCaseName
+        if (field.property.primary) {
+            FieldType = 'ID'
         }
 
-        if (field.serialize().isRelationshipField) {
+        if (
+            field.relatedProperty.reference === ReferenceType.ONE_TO_MANY ||
+            field.relatedProperty.reference === ReferenceType.MANY_TO_MANY
+        ) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
 
-            if (!relatedResource) {
-                throw new Error(`Resource ${field.name} does not exist.`)
+            if (relatedResource) {
+                FieldType = `[${relatedResource.data.snakeCaseName}]`
+                FieldKey = `${relatedResource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
             }
+        }
 
-            if (
-                ['HasManyField', 'BelongsToManyField'].includes(field.component)
-            ) {
-                FieldType = `[${relatedResource.data.pascalCaseName}]`
-                FieldKey = `${
-                    relatedResource.data.camelCaseNamePlural
-                }(page: Int = 1, per_page: Int = ${
-                    relatedResource.data.perPageOptions[0] || 10
-                }, filters: [${relatedResource.data.pascalCaseName}Filter])`
+        if (field.property.type === 'Date') {
+            FieldType = 'String'
+        }
+
+        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+            const relatedResource = resources.find(
+                resource => resource.data.name === field.name
+            )
+
+            if (relatedResource) {
+                FieldType = `${relatedResource.data.snakeCaseName}`
+                FieldKey = relatedResource.data.snakeCaseName
             }
         }
 
@@ -149,11 +213,7 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.camelCaseNamePlural}(page: Int = 1, per_page: Int = ${
-            resource.data.perPageOptions[0] || 10
-        }, filters: [${resource.data.pascalCaseName}Filter]): [${
-            resource.data.pascalCaseName
-        }]`
+  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]`
     }
 
     private defineFetchSingleQueryForResource(
@@ -161,29 +221,75 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${
-            resource.data.pascalCaseName
+  ${resource.data.snakeCaseName}(${this.getIdKey(config)}: ID!): ${
+            resource.data.snakeCaseName
         }`
+    }
+
+    getWhereQueryFieldType(field: FieldContract, config: PluginSetupConfig) {
+        if (field.property.type === 'boolean') {
+            // return 'boolean_where_query'
+        }
+
+        if (
+            [
+                ReferenceType.MANY_TO_MANY,
+                ReferenceType.ONE_TO_MANY,
+                ReferenceType.MANY_TO_ONE
+            ].includes(field.relatedProperty.reference!)
+        ) {
+            const relatedResource = config.resources.find(
+                resource =>
+                    resource.data.pascalCaseName === field.relatedProperty.type
+            )
+
+            return `${relatedResource?.data.snakeCaseName}_where_query`
+        }
+
+        if (field.property.primary) {
+            return `id_where_query`
+        }
+
+        if (field.property.type === 'integer') {
+            return 'integer_where_query'
+        }
+
+        return 'string_where_query'
+    }
+
+    getWhereQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `
+input ${resource.data.snakeCaseName}_where_query {
+${topLevelOperators.map(
+    operator =>
+        `${operator}: ${
+            operator === '_not'
+                ? `${resource.data.snakeCaseName}_where_query`
+                : `[${resource.data.snakeCaseName}_where_query]`
+        }`
+)}
+${resource.data.fields.map(
+    field =>
+        `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
+)}
+}
+`
     }
 
     getFieldsTypeDefinition(resource: ResourceContract) {
         return resource.data.fields
             .filter(
                 field =>
-                    !field.isHidden && !field.serialize().isRelationshipField
+                    !field.property.hidden &&
+                    !field.serialize().isRelationshipField
             )
             .map(field => {
                 return `
   ${field.databaseField}`
             })
-    }
-
-    private getRelatedFieldsCountDefinition(
-        field: FieldContract,
-        resource: ResourceContract,
-        resources: ResourceContract[]
-    ) {
-        return ``
     }
 
     private setupResourceGraphqlTypes(
@@ -192,8 +298,20 @@ class Graphql {
     ) {
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
-type ${resource.data.pascalCaseName} {${resource.data.fields
-                .filter(field => !field.isHidden)
+${resource.data.fields
+    .filter(field => field.property.enum && !field.property.hidden)
+    .map(
+        field => `
+        enum ${resource.data.snakeCaseName}_${
+            field.snakeCaseName
+        }_enum {${field.property.items?.map(
+            option => `
+            ${option}`
+        )}
+        }`
+    )}
+type ${resource.data.snakeCaseName} {${resource.data.fields
+                .filter(field => !field.property.hidden)
                 .map(field =>
                     this.getGraphqlFieldDefinition(
                         field,
@@ -202,65 +320,54 @@ type ${resource.data.pascalCaseName} {${resource.data.fields
                         config
                     )
                 )}
+   ${resource.data.fields
+       .filter(field =>
+           [ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(
+               field.relatedProperty.reference!
+           )
+       )
+       .map(
+           field =>
+               `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
+       )}
 }
-input create${
-                resource.data.pascalCaseName
-            }Input {${resource.data.fields.map(field =>
-                this.getGraphqlFieldDefinitionForCreateInput(
-                    field,
-                    resource,
-                    resources
+input create_${
+                resource.data.snakeCaseName
+            }_input {${resource.data.fields
+                .filter(
+                    field => !field.property.primary && !field.property.hidden
                 )
-            )}
+                .map(field =>
+                    this.getGraphqlFieldDefinitionForCreateInput(
+                        field,
+                        resource,
+                        resources
+                    )
+                )}
 }
 
-input update${
-                resource.data.pascalCaseName
-            }Input {${resource.data.fields.map(field =>
-                this.getGraphqlFieldDefinitionForCreateInput(
-                    field,
-                    resource,
-                    resources,
-                    true
+input update_${
+                resource.data.snakeCaseName
+            }_input {${resource.data.fields
+                .filter(
+                    field => !field.property.primary && !field.property.hidden
                 )
-            )}
+                .map(field =>
+                    this.getGraphqlFieldDefinitionForCreateInput(
+                        field,
+                        resource,
+                        resources,
+                        true
+                    )
+                )}
 }
 
-enum ${resource.data.pascalCaseName}FieldsEnum {${this.getFieldsTypeDefinition(
+enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
                 resource
             )}
 }
-enum ${resource.data.pascalCaseName}FilterOperators {
-  equals
-  contains
-  not_equals
-  is_null
-  not_null
-  gt
-  gte
-  lt
-  lte
-  matches
-  in
-  not_in
-}
-input ${resource.data.pascalCaseName}Filter {
-  field: ${resource.data.pascalCaseName}FieldsEnum
-  value: [String]
-  operator: ${resource.data.pascalCaseName}FilterOperators
-}
-${resource.data.fields
-    .filter(field => field.databaseFieldType === 'enu')
-    .map(
-        field => `
-enum ${resource.data.pascalCaseName}${
-            field.pascalCaseName
-        }Enum {${field.serialize().selectOptions?.map(
-            option => `
-  ${option.value}`
-        )}
-}`
-    )}
+
+${this.getWhereQueryForResource(resource, config)}
 `
         })
 
@@ -289,256 +396,652 @@ ${resources.map(resource => {
     return `${this.defineDeleteMutationForResource(resource, config)}`
 })}
 }
-type DeletePayload {
-    success: Boolean!
+input string_where_query {
+    ${filterOperators.map(operator => {
+        if (['_in', '_nin'].includes(operator)) {
+            return `${operator}: [String!]`
+        }
+
+        return `${operator}: String`
+    })}
+}
+
+input integer_where_query {
+    ${filterOperators.map(operator => {
+        if (['_in', '_nin'].includes(operator)) {
+            return `${operator}: [Int!]`
+        }
+
+        return `${operator}: Int`
+    })}
+}
+
+input id_where_query {
+    ${filterOperators.map(operator => {
+        if (['_in', '_nin'].includes(operator)) {
+            return `${operator}: [ID!]`
+        }
+
+        return `${operator}: ID`
+    })}
 }
 `
 
-        return buildSchema(this.schemaString)
+        return this.schemaString
     }
 
     private defineCreateMutationForResource(
         resource: ResourceContract,
         config: PluginSetupConfig
     ) {
-        return `create${resource.data.pascalCaseName}(input: create${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!`
+        return `
+        insert_${resource.data.snakeCaseName}(object: create_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
+        insert_${resource.data.snakeCaseNamePlural}(objects: [create_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
+    `
     }
 
     private defineUpdateMutationForResource(
         resource: ResourceContract,
         config: PluginSetupConfig
     ) {
-        return `update${resource.data.pascalCaseName}(${this.getIdKey(
+        return `update_${resource.data.snakeCaseName}(${this.getIdKey(
             config
-        )}: ID!, input: update${resource.data.pascalCaseName}Input!): ${
-            resource.data.pascalCaseName
-        }!`
+        )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${
+            resource.data.snakeCaseName
+        }!
+        update_${resource.data.snakeCaseNamePlural}(where: ${
+            resource.data.snakeCaseName
+        }_where_query!, object: update_${
+            resource.data.snakeCaseName
+        }_input!): [${resource.data.snakeCaseName}]!
+        `
     }
 
     private defineDeleteMutationForResource(
         resource: ResourceContract,
         config: PluginSetupConfig
     ) {
-        return `delete${resource.data.pascalCaseName}(${this.getIdKey(
+        return `delete_${resource.data.snakeCaseName}(${this.getIdKey(
             config
-        )}: ID!): DeletePayload!`
+        )}: ID!): ${resource.data.snakeCaseName}
+        delete_${resource.data.snakeCaseNamePlural}(where: ${
+            resource.data.snakeCaseName
+        }_where_query): [${resource.data.snakeCaseName}]
+        `
     }
 
     private getIdKey(config: PluginSetupConfig) {
         return 'id'
     }
 
-    private getResolvers(
-        resources: ResourceContract[],
-        manager: ManagerContract['setResource'],
-        config: PluginSetupConfig
-    ) {
-        let resolvers: any = {}
+    private getResolvers(resources: ResourceContract[]) {
+        const resolversList: GraphQlQueryContract[] = []
 
-        const getSingleResource = async (
+        const populateFromResolvedNodes = async (
+            manager: EntityManager,
             resource: ResourceContract,
-            field: FieldContract,
-            row: any
+            fieldNode: any,
+            data: any[]
         ) => {
-            let relatedRowJson = await manager(resource)
-                .database()
-                .findOneById(row[field.databaseField])
-
-            const [result] = populateRowWithRelationShips(
-                [relatedRowJson],
-                resource
-            )
-
-            return result
-        }
-
-        const populateRowWithRelationShips = (
-            rows: any[],
-            resource: ResourceContract
-        ) => {
-            const belongsToFields = resource.data.fields.filter(
-                field => field.component === 'BelongsToField'
-            )
-            let belongsToDataLoaders: DataPayload = {}
-
-            belongsToFields.forEach(belongsToField => {
-                const relatedBelongsToResource = resources.find(
-                    r => r.data.name === belongsToField.name
-                )!
-
-                belongsToDataLoaders[
-                    `${resource.data.pascalCaseName}_${relatedBelongsToResource.data.pascalCaseName}_BelongsToField`
-                ] = new DataLoader(async (keys: readonly string[]) => {
-                    const keysWithoutDuplicates = Array.from(
-                        new Set(keys.map(key => key.toString()))
-                    )
-
-                    const rows = await manager(relatedBelongsToResource!)
-                        .database()
-                        .findAllByIds(keysWithoutDuplicates)
-
-                    return populateRowWithRelationShips(
-                        keys.map(
-                            key =>
-                                rows.find(row =>
-                                    [
-                                        row[this.getIdKey(config)].toString()
-                                    ].includes(key.toString())
-                                ) || null
-                        ),
-                        relatedBelongsToResource!
-                    )
-                })
-            })
+            if (!data.length) return
 
             const relationshipFields = resource.data.fields.filter(
-                f =>
-                    f.serialize().isRelationshipField ||
-                    f.component === 'BelongsToField'
+                f => f.relatedProperty.reference
             )
 
-            return rows.map(row => {
-                relationshipFields.forEach(field => {
-                    if (field.component === 'BelongsToField') {
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.name
-                        )!
+            const relatedManyToOneFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.MANY_TO_ONE
+            )
+            const relatedManyToManyFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.MANY_TO_MANY
+            )
+            const relatedOneToManyFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference ===
+                    ReferenceType.ONE_TO_MANY
+            )
+            const relatedOneToOneFields = relationshipFields.filter(
+                field =>
+                    field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+            )
 
-                        const loader =
-                            belongsToDataLoaders[
-                                `${resource.data.pascalCaseName}_${relatedResource.data.pascalCaseName}_BelongsToField`
-                            ]
+            const relatedManyToOneDatabaseFieldNames = relatedManyToOneFields.map(
+                field => field.databaseField
+            )
+            const relatedManyToManyDatabaseFieldNames = relatedManyToManyFields.map(
+                field => field.databaseField
+            )
+            const relatedOneToManyDatabaseFieldNames = relatedOneToManyFields.map(
+                field => field.databaseField
+            )
+            const relatedOneToOneDatabaseFieldNames = relatedOneToOneFields.map(
+                field => field.databaseField
+            )
 
-                        const relatedId = row[field.databaseField]
+            if (Object.keys(fieldNode).length > 0) {
+                const countSelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) => selection.match(/__count/))
+                const countSelectionNames: string[] = countSelections.map(
+                    (selection: string) => selection.split('__')[0]
+                )
 
-                        if (
-                            row &&
-                            relatedId &&
-                            typeof relatedId !== 'function'
-                        ) {
-                            row[relatedResource.data.camelCaseName] = () =>
-                                loader.load(relatedId)
-                        }
+                const manyToOneSelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) =>
+                    relatedManyToOneDatabaseFieldNames.includes(selection)
+                )
+                const manyToManySelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) =>
+                    relatedManyToManyDatabaseFieldNames.includes(selection)
+                )
+                const oneToManySelections = Object.keys(
+                    fieldNode
+                ).filter((selection: string) =>
+                    relatedOneToManyDatabaseFieldNames.includes(selection)
+                )
 
-                        return
-                    }
-
-                    if (
-                        ['BelongsToManyField', 'HasManyField'].includes(
-                            field.component
+                await Promise.all([
+                    Promise.all(
+                        manyToOneSelections.map((selection: string) =>
+                            manager.populate(data, selection)
                         )
-                    ) {
-                        const relatedResource = resources.find(
-                            resource => resource.data.name === field.name
+                    ),
+                    Promise.all(
+                        manyToManySelections.map((selection: string) =>
+                            (async () => {
+                                const field = relatedManyToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                if (
+                                    !fieldNode[selection].args.where &&
+                                    !fieldNode[selection].args.limit &&
+                                    !fieldNode[selection].args.offset
+                                ) {
+                                    await manager.populate(data, selection)
+
+                                    return
+                                }
+
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const relatedData: any = await manager.find(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                },
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[selection].args
+                                                        .where
+                                                )
+                                            },
+                                            getFindOptionsFromArgs(
+                                                fieldNode[selection].args
+                                            )
+                                        )
+
+                                        item[
+                                            field?.databaseField!
+                                        ] = relatedData
+                                    })
+                                )
+                            })()
+                        )
+                    ),
+                    Promise.all(
+                        oneToManySelections.map((selection: string) =>
+                            (async () => {
+                                if (
+                                    !fieldNode[selection].args.where &&
+                                    !fieldNode[selection].args.limit &&
+                                    !fieldNode[selection].args.offset
+                                ) {
+                                    await manager.populate(data, selection)
+
+                                    return
+                                }
+
+                                const field = relatedOneToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const relatedData: any = await manager.find(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data.snakeCaseName]:
+                                                    item.id,
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[selection].args
+                                                        .where
+                                                )
+                                            },
+                                            getFindOptionsFromArgs(
+                                                fieldNode[selection].args
+                                            )
+                                        )
+
+                                        item[
+                                            field?.databaseField!
+                                        ] = relatedData
+                                    })
+                                )
+                            })()
+                        )
+                    ),
+                    Promise.all(
+                        countSelectionNames.map(async selection => {
+                            if (
+                                relatedManyToManyDatabaseFieldNames.includes(
+                                    selection
+                                )
+                            ) {
+                                const field = relatedManyToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                await Promise.all(
+                                    data.map(async item => {
+                                        const count = await manager.count(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                },
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[
+                                                        `${selection}__count`
+                                                    ].args.where
+                                                )
+                                            }
+                                        )
+
+                                        item[
+                                            `${field?.databaseField}__count`
+                                        ] = count
+                                    })
+                                )
+                            }
+
+                            if (
+                                relatedOneToManyDatabaseFieldNames.includes(
+                                    selection
+                                )
+                            ) {
+                                const field = relatedOneToManyFields.find(
+                                    _ => _.databaseField === selection
+                                )
+
+                                const uniqueKeys = Array.from(
+                                    new Set(data.map(_ => _.id))
+                                )
+
+                                const counts: any[] = await Promise.all(
+                                    uniqueKeys.map(async key =>
+                                        manager.count(
+                                            field?.relatedProperty.type!,
+                                            {
+                                                [resource.data
+                                                    .snakeCaseName]: key,
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[
+                                                        `${selection}__count`
+                                                    ].args.where
+                                                )
+                                            }
+                                        )
+                                    )
+                                )
+
+                                data.forEach(item => {
+                                    const index = uniqueKeys.indexOf(item.id)
+
+                                    item[`${field?.databaseField}__count`] =
+                                        counts[index]
+                                })
+                            }
+                        })
+                    )
+                ])
+
+                for (const manyToOneSelection of manyToOneSelections) {
+                    const fieldTypes =
+                        fieldNode[manyToOneSelection].fieldsByTypeName
+
+                    if (Object.keys(fieldTypes).length > 0) {
+                        const field = relatedManyToOneFields.find(
+                            f => f.databaseField === manyToOneSelection
                         )!
 
-                        if (row) {
-                            row[relatedResource.data.camelCaseNamePlural] = (
-                                relatedArgs: any
-                            ) =>
-                                getMultipleResources(
-                                    resource,
-                                    relatedResource,
-                                    field,
-                                    row,
-                                    relatedArgs
-                                )
-                        }
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromResolvedNodes(
+                            manager,
+                            relatedResource,
+                            fieldTypes[
+                                Object.keys(
+                                    fieldNode[manyToOneSelection]
+                                        .fieldsByTypeName
+                                )[0]
+                            ],
+                            data.map(d => d[field.databaseField])
+                        )
                     }
-                })
+                }
 
-                return row
-            })
-        }
+                for (const manyToManySelection of manyToManySelections) {
+                    const fieldTypes =
+                        fieldNode[manyToManySelection].fieldsByTypeName
 
-        const getMultipleResources = async (
-            resource: ResourceContract,
-            relatedResource: ResourceContract,
-            field: FieldContract,
-            row: any,
-            args: any
-        ) => {
-            let rows: any = []
+                    if (Object.keys(fieldTypes).length > 0) {
+                        const field = relatedManyToManyFields.find(
+                            f => f.databaseField === manyToManySelection
+                        )!
 
-            if (field.component === 'BelongsToManyField') {
-                rows = await manager(resource)
-                    .database()
-                    .findAllBelongingToManyData(relatedResource, row.id, args)
-            } else {
-                rows = await manager(resource)
-                    .database()
-                    .findAllHasManyData(relatedResource, row.id, args)
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromResolvedNodes(
+                            manager,
+                            relatedResource,
+                            fieldTypes[
+                                Object.keys(
+                                    fieldNode[manyToManySelection]
+                                        .fieldsByTypeName
+                                )[0]
+                            ],
+                            data
+                                .map(d => d[field.databaseField])
+                                .reduce((acc, d) => [...acc, ...d], [])
+                        )
+                    }
+                }
+
+                for (const oneToManySelection of oneToManySelections) {
+                    const fieldTypes =
+                        fieldNode[oneToManySelection].fieldsByTypeName
+
+                    if (Object.keys(fieldTypes).length > 0) {
+                        const field = relatedOneToManyFields.find(
+                            f => f.databaseField === oneToManySelection
+                        )!
+
+                        const relatedResource = resources.find(
+                            r => r.data.name === field.relatedProperty.type
+                        )!
+
+                        await populateFromResolvedNodes(
+                            manager,
+                            relatedResource,
+                            fieldTypes[
+                                Object.keys(
+                                    fieldNode[oneToManySelection]
+                                        .fieldsByTypeName
+                                )[0]
+                            ],
+                            data
+                                .map(d => d[field.databaseField])
+                                .reduce((acc, d) => [...acc, ...d], [])
+                        )
+                    }
+                }
             }
 
-            return populateRowWithRelationShips(rows, relatedResource)
+            return data
         }
 
         resources.forEach(resource => {
-            // handle fetch all resolvers
-            resolvers[resource.data.camelCaseNamePlural] = async (
-                args: any,
-                request: any,
-                ql: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
+            resolversList.push(
+                graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
+                    .path(resource.data.snakeCaseNamePlural)
+                    .query()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any[] = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where),
+                            getFindOptionsFromArgs(args)
+                        )
 
-                const data = await resourceManager.database().findAllData(args)
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
 
-                return populateRowWithRelationShips(data, resource)
-            }
+                        return data
+                    })
+            )
 
-            // handle fetch one resolvers
-            resolvers[resource.data.camelCaseName] = async (args: any) => {
-                const resourceManager = manager(resource.data.name)
+            resolversList.push(
+                graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
+                    .path(resource.data.snakeCaseName)
+                    .query()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager.findOneOrFail(
+                            resource.data.pascalCaseName,
+                            {
+                                id: args.id
+                            }
+                        )
 
-                let data = await resourceManager
-                    .database()
-                    .findOneById(args.id || args._id)
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
 
-                const [result] = populateRowWithRelationShips([data], resource)
+                        return data
+                    })
+            )
 
-                return result
-            }
+            resolversList.push(
+                graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
+                    .path(`insert_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = ctx.manager.create(
+                            resource.data.pascalCaseName,
+                            args.object
+                        )
 
-            resolvers[`create${resource.data.pascalCaseName}`] = async (
-                args: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
+                        await ctx.manager.persistAndFlush(data)
 
-                let data = await resourceManager.create(args.input)
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
 
-                const [result] = populateRowWithRelationShips([data], resource)
+                        return data
+                    })
+            )
 
-                return result
-            }
-
-            resolvers[`update${resource.data.pascalCaseName}`] = async (
-                args: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
-
-                let data = await resourceManager.update(
-                    args.id || args._id,
-                    args.input
+            resolversList.push(
+                graphQlQuery(
+                    `Insert multiple ${resource.data.snakeCaseNamePlural}`
                 )
+                    .path(`insert_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any[] = args.objects.map((object: any) =>
+                            ctx.manager.create(
+                                resource.data.pascalCaseName,
+                                object
+                            )
+                        )
 
-                const [result] = populateRowWithRelationShips([data], resource)
+                        await ctx.manager.persistAndFlush(data)
 
-                return result
+                        await ctx.manager.persistAndFlush(data)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
+                    .path(`update_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager
+                            .getRepository<any>(resource.data.pascalCaseName)
+                            .findOneOrFail(args.id)
+
+                        ctx.manager.assign(data, args.object)
+
+                        await ctx.manager.persistAndFlush(data)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(
+                    `Update multiple ${resource.data.snakeCaseNamePlural}`
+                )
+                    .path(`update_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where)
+                        )
+
+                        data.forEach(d => {
+                            ctx.manager.assign(d, args.object)
+                        })
+
+                        await ctx.manager.persistAndFlush(data)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
+                    .path(`delete_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager
+                            .getRepository<any>(resource.data.pascalCaseName)
+                            .findOneOrFail(args.id)
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        await ctx.manager.removeAndFlush(data)
+
+                        return data
+                    })
+            )
+
+            resolversList.push(
+                graphQlQuery(
+                    `Delete multiple ${resource.data.snakeCaseNamePlural}`
+                )
+                    .path(`delete_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where)
+                        )
+
+                        await populateFromResolvedNodes(
+                            ctx.manager,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
+
+                        await ctx.manager.removeAndFlush(data)
+
+                        return data
+                    })
+            )
+        })
+
+        return resolversList
+    }
+
+    extensions(extensions: GraphQLPluginExtension[]) {
+        this.pluginExtensions = extensions
+
+        return this
+    }
+
+    configureApollo(config: OmittedApolloConfig) {
+        this.appolloConfig = config
+
+        return this
+    }
+
+    getResolversFromGraphqlQueries(queries: GraphQlQueryContract[]) {
+        const resolvers: any = {
+            Query: {},
+            Mutation: {}
+        }
+
+        queries.forEach(query => {
+            if (query.config.type === 'MUTATION') {
+                resolvers.Mutation[query.config.path] = query.config.handler
             }
 
-            resolvers[`delete${resource.data.pascalCaseName}`] = async (
-                args: any
-            ) => {
-                const resourceManager = manager(resource.data.name)
-
-                const success = await resourceManager.deleteById(
-                    args.id || args._id
-                )
-
-                return {
-                    success
-                }
+            if (query.config.type === 'QUERY') {
+                resolvers.Query[query.config.path] = query.config.handler
             }
         })
 
@@ -546,38 +1049,152 @@ type DeletePayload {
     }
 
     plugin() {
-        return plugin('Graph QL').afterDatabaseSetup(async config => {
-            const { app, resources, manager, database } = config
-            const exposedResources = resources.filter(
-                resource => !resource.data.hideFromApi
-            )
-            const schema = this.setupResourceGraphqlTypes(
-                exposedResources,
-                config
-            )
+        return plugin('GraphQl')
+            .afterDatabaseSetup(async config => {
+                const {
+                    resources,
+                    graphQlExtensions,
+                    graphQlMiddleware,
+                    extendGraphQlQueries
+                } = config
+                const exposedResources = resources.filter(
+                    resource => !resource.data.hideFromApi
+                )
 
-            app.post(
-                this.config.graphqlPath,
-                graphqlHTTP({
-                    schema,
-                    graphiql: this.config.graphiql,
-                    rootValue: this.getResolvers(
-                        exposedResources,
-                        manager,
-                        config
-                    )
+                this.pluginExtensions = this.pluginExtensions.concat(
+                    graphQlExtensions
+                )
+
+                this.setupResourceGraphqlTypes(exposedResources, config)
+
+                extendGraphQlQueries(this.getResolvers(exposedResources))
+
+                graphQlMiddleware.unshift(graphQlQueries => {
+                    const middlewareHandlers: Resolvers = {
+                        Query: {},
+                        Mutation: {}
+                    }
+
+                    const mapArgsToBody: GraphQlMiddleware = async (
+                        resolve,
+                        parent,
+                        args,
+                        context,
+                        info
+                    ) => {
+                        context.body = args
+
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
+
+                        return result
+                    }
+
+                    graphQlQueries.forEach(query => {
+                        if (query.config.type === 'QUERY') {
+                            ;(middlewareHandlers.Query as any)[
+                                query.config.path
+                            ] = mapArgsToBody
+                        }
+
+                        if (query.config.type === 'MUTATION') {
+                            ;(middlewareHandlers.Mutation as any)[
+                                query.config.path
+                            ] = mapArgsToBody
+                        }
+                    })
+
+                    return middlewareHandlers
                 })
-            )
 
-            app.get(
-                this.config.graphqlPath,
-                GraphqlPlayground({
-                    endpoint: this.config.graphqlPath
+                graphQlMiddleware.unshift(graphQlQueries => {
+                    const middlewareHandlers: Resolvers = {
+                        Query: {},
+                        Mutation: {}
+                    }
+
+                    const setEntityManagerContext: GraphQlMiddleware = async (
+                        resolve,
+                        parent,
+                        args,
+                        context,
+                        info
+                    ) => {
+                        context.manager = context.manager.fork()
+
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
+
+                        return result
+                    }
+
+                    graphQlQueries.forEach(query => {
+                        if (query.config.type === 'QUERY') {
+                            ;(middlewareHandlers.Query as any)[
+                                query.config.path
+                            ] = setEntityManagerContext
+                        }
+
+                        if (query.config.type === 'MUTATION') {
+                            ;(middlewareHandlers.Mutation as any)[
+                                query.config.path
+                            ] = setEntityManagerContext
+                        }
+                    })
+
+                    return middlewareHandlers
                 })
-            )
+            })
+            .setup(async config => {
+                const {
+                    graphQlMiddleware,
+                    graphQlTypeDefs,
+                    graphQlQueries,
+                    manager,
+                    app
+                } = config
+                const typeDefs = [gql(this.schemaString), ...graphQlTypeDefs]
 
-            return {}
-        })
+                const resolvers = this.getResolversFromGraphqlQueries(
+                    graphQlQueries
+                )
+
+                const schema = makeExecutableSchema({
+                    typeDefs,
+                    resolvers
+                })
+
+                const graphQlServer = new ApolloServer({
+                    schema: applyMiddleware(
+                        schema,
+                        ...graphQlMiddleware.map(middlewareGenerator =>
+                            middlewareGenerator(
+                                graphQlQueries,
+                                typeDefs,
+                                schema
+                            )
+                        )
+                    ),
+                    ...this.appolloConfig,
+                    context: ctx => ({
+                        ...ctx,
+                        ...config,
+                        manager: manager!.fork()
+                    })
+                })
+
+                graphQlServer.applyMiddleware({
+                    app
+                })
+            })
     }
 }
 

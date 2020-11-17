@@ -1,8 +1,18 @@
 declare module '@tensei/common/config' {
+    import { Signale } from 'signale'
+    import { Mail } from '@tensei/mail'
+    import { Request, Response } from 'express'
     import { Storage } from '@slynova/flydrive'
+    import { EntityManager } from '@mikro-orm/core'
+    import { IMiddleware } from 'graphql-middleware'
     import { sanitizer, validator } from 'indicative'
+    import { EventArgs, FlushEventArgs } from '@mikro-orm/core'
     import { ResourceContract } from '@tensei/common/resources'
+    import { ExecutionParams } from 'subscriptions-transport-ws'
+    import { IResolvers, ITypedef } from 'apollo-server-express'
     import { DashboardContract } from '@tensei/common/dashboards'
+    import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
+    import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
     import {
         Request,
@@ -12,26 +22,103 @@ declare module '@tensei/common/config' {
         RequestHandler
     } from 'express'
 
+    type EndpointTypes = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
+    interface RouteContract {
+        config: RouteConfig
+        path(path: string): this
+        get(): this
+        post(): this
+        put(): this
+        patch(): this
+        delete(): this
+        resource(resource: ResourceContract): this
+        middleware(middleware: RequestHandler[]): this
+        resource(resource: ResourceContract): this
+        authorize(authorize: AuthorizeFunction): this
+        handle(handler: RouteConfig['handler']): this
+    }
+
+    interface GraphQlQueryContract {
+        config: GraphQlQueryConfig
+        path(path: string): this
+        query(): this
+        mutation(): this
+        resource(resource: ResourceContract): this
+        authorize(authorize: AuthorizeFunction): this
+        handle(handler: GraphQlQueryConfig['handler']): this
+    }
+
+    interface RouteConfig {
+        path: string
+        name: string
+        type: EndpointTypes
+        snakeCaseName: string
+        paramCaseName: string
+        resource?: ResourceContract
+        middleware: RequestHandler[]
+        authorize: AuthorizeFunction[]
+        handler: (request: Request, response: Response) => Promise<any>
+    }
+
+    interface GraphQlQueryConfig<
+        TSource = any,
+        TArgs = DataPayload,
+        TContext = ApiContext
+    > {
+        path: string
+        name: string
+        snakeCaseName: string
+        paramCaseName: string
+        resource?: ResourceContract
+        type: 'QUERY' | 'MUTATION'
+        authorize: AuthorizeFunction[]
+        handler: (
+            source: TSource,
+            args: TArgs,
+            context: TContext,
+            info: GraphQLResolveInfo
+        ) => Promise<any>
+    }
+    interface GraphQLPluginExtension {
+        typeDefs: string | DocumentNode
+        resolvers: IResolvers
+    }
+
+    interface GraphQLPluginContext extends TensieContext {
+        req: Request
+        res: Response
+        connection?: ExecutionParams
+    }
+
+    interface ApiContext extends GraphQLPluginContext {}
+
     enum noPagination {
         true = 'true',
         false = 'false'
     }
+    type FilterOperators =
+        | '_and'
+        | '_or'
+        | '_eq'
+        | '_ne'
+        | '_in'
+        | '_nin'
+        | '_not'
+        | '_gt'
+        | '_gte'
+        | '_lt'
+        | '_lte'
+        | '_like'
+        | '_re'
+        | '_ilike'
+        | '_overlap'
+        | '_contains'
+        | '_contained'
     interface Filter {
         field: string
         value: string
-        operator:
-            | 'equals'
-            | 'contains'
-            | 'not_equals'
-            | 'is_null'
-            | 'not_null'
-            | 'gt'
-            | 'gte'
-            | 'lt'
-            | 'lte'
-            | 'matches'
-            | 'in'
-            | 'not_in'
+        operator: FilterOperators
     }
     interface FetchAllRequestQuery {
         perPage?: number
@@ -70,13 +157,17 @@ declare module '@tensei/common/config' {
         permissions: string[]
     }
     type AuthorizeFunction<ModelType = any> = (
-        request: Request,
-        models?: ModelType[],
+        ctx: GraphQLPluginContext
     ) => boolean | Promise<boolean>
-    type HookFunction = (
-        payload: DataPayload,
-        request: Request | null
-    ) => DataPayload
+    type HookFunction<EntityType = DataPayload> = (
+        payload: EventArgs<EntityType>
+    ) => void
+    type FlushHookFunction<EntityType = DataPayload> = (
+        payload: FlushEventArgs
+    ) => Promise<void>
+    type HookFunctionPromised<EntityType = DataPayload> = (
+        payload: EventArgs<EntityType>
+    ) => Promise<void>
     type FieldHookFunction<FieldValueType = any> = (
         payload: DataPayload,
         request: Request
@@ -85,7 +176,12 @@ declare module '@tensei/common/config' {
         name: string
         path: string
     }
-    type SupportedDatabases = 'mysql' | 'pg' | 'sqlite' | 'mongodb'
+    type SupportedDatabases =
+        | 'mongo'
+        | 'mysql'
+        | 'mariadb'
+        | 'postgresql'
+        | 'sqlite'
     type InBuiltEndpoints =
         | 'show'
         | 'index'
@@ -95,24 +191,51 @@ declare module '@tensei/common/config' {
         | 'runAction'
         | 'showRelation'
     type ExpressMiddleware = ErrorRequestHandler | RequestHandler
-    interface Env {
-        port: string | number
-        sessionSecret: string
-    }
     interface EndpointMiddleware {
         type: InBuiltEndpoints
         handler: ExpressMiddleware
     }
+    type DatabaseConfiguration = ConnectionOptions & {
+        type: SupportedDatabases
+    }
+    type AdditionalEntities = {
+        entities?: any[]
+    }
+    type Resolvers<TSource = any, TContext = GraphQLPluginContext> = IResolvers<
+        TSource,
+        TContext
+    >
+    type GraphQlMiddleware<
+        TSource = any,
+        TContext = GraphQLPluginContext,
+        TArgs = any
+    > = IMiddleware<TSource, TContext, TArgs>
+    type MiddlewareGenerator = (
+        graphQlQueries: GraphQlQueryContract[],
+        typeDefs: ITypedef[],
+        schema: GraphQLSchema
+    ) => IMiddleware
     export interface Config {
         databaseClient: any
+        schemas: any
         serverUrl: string
         clientUrl: string
+        mailer: Mail
+        routes: RouteContract[]
+        graphQlTypeDefs: (string | DocumentNode)[]
+        graphQlQueries: GraphQlQueryContract[]
+        graphQlMiddleware: MiddlewareGenerator[]
+        extendGraphQlMiddleware(
+            middlewareGenerators: MiddlewareGenerator[]
+        ): void
         plugins: PluginContract[]
         dashboards: DashboardContract[]
         resources: ResourceContract[]
         scripts: Asset[]
         styles: Asset[]
-        env: Env
+        orm: MikroORM | null
+        logger: Signale
+        databaseConfig: DatabaseConfiguration & AdditionalEntities
         dashboardPath: string
         apiPath: string
         adminTable: string
@@ -122,7 +245,6 @@ declare module '@tensei/common/config' {
         dashboardsMap: {
             [key: string]: DashboardContract
         }
-        database: SupportedDatabases
         pushResource: PluginSetupConfig['pushResource']
 
         showController: Handler
@@ -140,6 +262,12 @@ declare module '@tensei/common/config' {
 
         middleware: EndpointMiddleware[]
         pushMiddleware: (middleware: EndpointMiddleware) => void
+
+        graphQlExtensions: GraphQLPluginExtension[]
+    }
+    export interface TensieContext extends Config {
+        manager: EntityManager
+        body: DataPayload
     }
     type Permission =
         | {
@@ -321,4 +449,6 @@ declare module '@tensei/common/config' {
             databaseField: string
         ) => import('@tensei/common').FieldContract | undefined
     }
+    const graphQlQuery: (name?: string) => GraphQlQueryContract
+    const route: (name?: string) => RouteContract
 }

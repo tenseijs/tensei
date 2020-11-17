@@ -62,7 +62,7 @@ module.exports = resource('Post')
             .falseLabel('Pending')
             .default(false)
             .hideOnIndex(),
-        text('Slug').rules('required', 'slug'),
+        text('Slug').rules('required', 'slug').unique(),
         text('Description').rules('required').hideOnIndex(),
         trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
         integer('Av. CPC').rules('required').hideOnDetail(),
@@ -88,6 +88,10 @@ module.exports = resource('Post')
                     label: 'Sequelize',
                     value: 'sequelize',
                 },
+                {
+                    label: 'Mangojs',
+                    value: 'mangojs',
+                },
             ])
             .rules('required')
             .searchable()
@@ -102,7 +106,7 @@ module.exports = resource('Post')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
-        belongsToMany('Tag'),
+        belongsToMany('Tag').owner(),
         hasMany('Comment'),
     ])
     .perPageOptions([25, 50, 100])

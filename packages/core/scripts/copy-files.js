@@ -19,8 +19,6 @@ copyFiles(
     }
 )
 
-console.log(Path.resolve('..', 'server', 'build', 'index.client.js'))
-
 copyFiles(
     [
         Path.resolve('..', '..', 'client/build/index.js'),

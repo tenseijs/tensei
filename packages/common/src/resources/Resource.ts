@@ -5,13 +5,17 @@ import {
     ResourceData,
     HookFunction,
     FieldContract,
+    FilterContract,
     ResourceContract,
     AuthorizeFunction,
     ValidationMessages,
-    SerializedResource
+    SerializedResource,
+    HookFunctionPromised,
+    FlushHookFunction
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'
+// import { FilterContract } from '@tensei/filters'
 import { snakeCase, paramCase, camelCase, pascalCase } from 'change-case'
 
 interface ResourceDataWithFields extends ResourceData {
@@ -53,40 +57,51 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public hooks: {
-        beforeCreate: HookFunction
-        beforeUpdate: HookFunction
-        afterCreate: HookFunction
-        afterUpdate: HookFunction
+        onInit: HookFunction[]
+        beforeCreate: HookFunctionPromised[]
+        afterCreate: HookFunctionPromised[]
+        beforeUpdate: HookFunctionPromised[]
+        afterUpdate: HookFunctionPromised[]
+        beforeDelete: HookFunctionPromised[]
+        afterDelete: HookFunctionPromised[]
+        beforeFlush: FlushHookFunction[]
+        onFlush: FlushHookFunction[]
+        afterFlush: FlushHookFunction[]
     } = {
-        beforeCreate: (payload, request) => {
-            return payload
-        },
-
-        beforeUpdate: (payload, request) => {
-            return payload
-        },
-
-        afterCreate: (payload, request) => {
-            return payload
-        },
-
-        afterUpdate: (payload, request) => {
-            return payload
-        }
+        onInit: [],
+        beforeCreate: [],
+        afterCreate: [],
+        beforeUpdate: [],
+        afterUpdate: [],
+        beforeDelete: [],
+        afterDelete: [],
+        beforeFlush: [],
+        onFlush: [],
+        afterFlush: []
     }
 
     constructor(name: string, tableName?: string) {
         this.data.name = name
-        this.data.slug = Pluralize(paramCase(name))
         this.data.label = Pluralize(name)
+        this.data.snakeCaseName = snakeCase(name)
         this.data.camelCaseName = camelCase(name)
-        this.data.camelCaseNamePlural = Pluralize(camelCase(name))
-        this.data.table = tableName || Pluralize(snakeCase(name))
         this.data.pascalCaseName = pascalCase(name)
+        this.data.slug = Pluralize(paramCase(name))
+        this.data.slugSingular = paramCase(name)
+        this.data.slugPlural = Pluralize(paramCase(name))
+        this.data.table = tableName || Pluralize(snakeCase(name))
+        this.data.camelCaseNamePlural = Pluralize(camelCase(name))
+        this.data.snakeCaseNamePlural = Pluralize(snakeCase(name))
     }
 
     public Model = (): any => {
         return null
+    }
+
+    public filters(filters: FilterContract[]) {
+        this.data.filters = filters
+
+        return this
     }
 
     public data: ResourceDataWithFields = {
@@ -96,6 +111,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         name: '',
         slug: '',
         label: '',
+        filters: [],
         hideFromApi: false,
         permissions: [],
         group: 'Resources',
@@ -104,8 +120,12 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         valueField: 'id',
         noTimeStamps: false,
         camelCaseName: '',
+        snakeCaseName: '',
+        snakeCaseNamePlural: '',
         camelCaseNamePlural: '',
         pascalCaseName: '',
+        slugPlural: '',
+        slugSingular: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
             email: 'The {{ field }} must be a valid email address.'
@@ -285,37 +305,64 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         }
     }
 
-    public beforeCreate(hook: HookFunction) {
+    public beforeCreate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
-            beforeCreate: hook
+            beforeCreate: [...this.hooks.beforeCreate, hook]
         }
 
         return this
     }
 
-    public beforeUpdate(hook: HookFunction) {
+    public beforeUpdate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
-            beforeUpdate: hook
+            beforeUpdate: [...this.hooks.beforeUpdate, hook]
         }
 
         return this
     }
 
-    public afterCreate(hook: HookFunction) {
+    public afterUpdate(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
-            afterCreate: hook
+            afterUpdate: [...this.hooks.afterUpdate, hook]
         }
 
         return this
     }
 
-    public afterUpdate(hook: HookFunction) {
+    public beforeDelete(hook: HookFunctionPromised) {
         this.hooks = {
             ...this.hooks,
-            afterUpdate: hook
+            beforeDelete: [...this.hooks.beforeDelete, hook]
+        }
+
+        return this
+    }
+
+    public afterDelete(hook: HookFunctionPromised) {
+        this.hooks = {
+            ...this.hooks,
+            afterDelete: [...this.hooks.afterDelete, hook]
+        }
+
+        return this
+    }
+
+    public afterCreate(hook: HookFunctionPromised) {
+        this.hooks = {
+            ...this.hooks,
+            afterCreate: [...this.hooks.afterCreate, hook]
+        }
+
+        return this
+    }
+
+    public onInit(hook: HookFunction) {
+        this.hooks = {
+            ...this.hooks,
+            onInit: [...this.hooks.onInit, hook]
         }
 
         return this

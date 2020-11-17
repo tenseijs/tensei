@@ -1,5 +1,7 @@
 declare module '@tensei/core' {
+    import { DocumentNode } from 'graphql'
     import { SupportedDrivers } from '@tensei/mail'
+    import { ConnectionOptions } from '@mikro-orm/core'
     import { StorageManager, Storage } from '@slynova/flydrive'
     import Express, { Application, Request } from 'express'
     import {
@@ -12,7 +14,11 @@ declare module '@tensei/core' {
         DashboardContract,
         StorageConstructor,
         SupportedDatabases,
-        SupportedStorageDrivers
+        SupportedStorageDrivers,
+        DatabaseConfiguration,
+        RouteContract,
+        GraphQlQueryContract,
+        TensieContext
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -21,18 +27,21 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
-        config: Config
+        ctx: Config
         storage: StorageManager
+        start(fn?: (ctx: Config) => any): Promise<this>
         register(): Promise<this>
+        routes(routes: RouteContract[]): this
+        graphQlTypeDefs(typeDefs: (string | DocumentNode)[]): this
+        graphQlQueries(queries: GraphQlQueryContract[]): this
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
-        sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
+        databaseConfig(databaseConfig: DatabaseConfiguration): this
         apiPath(apiPath: string): this
         serverUrl(url: string): this
         clientUrl(url: string): this
-        manager: (request: Request|null) => ManagerContract['setResource'] | null
         registerMiddleware(): void
         authMiddleware: (
             request: Express.Request,
@@ -57,7 +66,6 @@ declare module '@tensei/core' {
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this
-        database(database: SupportedDatabases): this
         mail(driverName: SupportedDrivers, mailConfig?: {}): this
         storageDriver<
             StorageDriverImplementation extends Storage,
@@ -78,18 +86,20 @@ declare module '@tensei/core' {
         extensions: {
             [key: string]: any
         }
-        config: Config
+        ctx: TensieContext
+        routes(routes: RouteContract[]): this
+        graphQlQueries(queries: GraphQlQueryContract[]): this
         storage: StorageManager
+        start(fn?: (ctx: Config) => any): Promise<this>
         register(): Promise<this>
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
-        database(database: SupportedDatabases): this
         databaseUrl(databaseUrl: string): this
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this
-        manager: () => ManagerContract['setResource'] | null
+        databaseConfig(databaseConfig: DatabaseConfiguration): this
         dashboards(dashboards: DashboardContract[]): this
         registerMiddleware(): void
         serverUrl(url: string): this

@@ -1,9 +1,3 @@
-const Express = require('express')
+const tensei = require('./app')
 
-require('./app')
-    .register()
-    .then(async ({ app }) => {
-        app.listen(5000, () => {
-            console.log('BOOOOM ! WORKING ON http://localhost:5000')
-        })
-    })
+tensei.start().catch(console.error)

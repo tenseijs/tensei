@@ -1,11 +1,12 @@
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
-import ExpressSession from 'express-session'
+import { RequestContext } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
-import ClientController from './controllers/ClientController'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
+import { responseEnhancer } from 'express-response-formatter'
+import ClientController from './controllers/ClientController'
 import {
     StorageManager,
     Storage,
@@ -23,7 +24,7 @@ import {
     Config,
     Manager,
     resource,
-    belongsToMany,
+    RouteContract,
     PluginContract,
     ResourceContract,
     SetupFunctions,
@@ -36,12 +37,21 @@ import {
     SupportedStorageDrivers,
     DatabaseRepositoryInterface
 } from '@tensei/common'
+import Database from './database'
 import MetricController from './controllers/MetricController'
 import FindResourceController from './controllers/resources/FindResourceController'
 import CreateResourceController from './controllers/resources/CreateResourceController'
 import DeleteResourceController from './controllers/resources/DeleteResourceController'
 import UpdateResourceController from './controllers/resources/UpdateResourceController'
-import { TenseiContract } from '@tensei/core'
+import {
+    TenseiContract,
+    DatabaseConfiguration,
+    GraphQLPluginExtension,
+    TensieContext,
+    MiddlewareGenerator,
+    GraphQlQueryContract
+} from '@tensei/core'
+import { IMiddleware, IMiddlewareGenerator } from 'graphql-middleware'
 
 export class Tensei implements TenseiContract {
     public app: Application = Express()
@@ -50,7 +60,6 @@ export class Tensei implements TenseiContract {
     } = {}
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
-    public mailer: Mail = mail().connection('ethereal')
     private storageConfig: StorageManagerConfig = {
         default: 'local',
         disks: {
@@ -65,9 +74,13 @@ export class Tensei implements TenseiContract {
     }
     public storage: StorageManager = new StorageManager(this.storageConfig)
 
-    private databaseRepository: DatabaseRepositoryInterface | null = null
-
-    public config: Config = {
+    public ctx: Config = {
+        schemas: [],
+        routes: [],
+        graphQlQueries: [],
+        graphQlTypeDefs: [],
+        graphQlMiddleware: [],
+        mailer: mail().connection('ethereal'),
         databaseClient: null,
         serverUrl: '',
         clientUrl: '',
@@ -76,19 +89,20 @@ export class Tensei implements TenseiContract {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
-        database: 'sqlite',
-        pushResource: (resource: ResourceContract) => {
-            this.config.resources = [...this.config.resources, resource]
-        },
+        pushResource: (resource: ResourceContract) =>
+            this.resources([...this.ctx.resources, resource]),
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
         middleware: [],
-
         pushMiddleware: (middleware: EndpointMiddleware) => {
-            this.config.middleware = [...this.config.middleware, middleware]
+            this.ctx.middleware = [...this.ctx.middleware, middleware]
         },
-
+        orm: null,
+        databaseConfig: {
+            type: 'sqlite',
+            entities: []
+        },
         showController: this.asyncHandler(FindResourceController.show),
         runActionController: this.asyncHandler(RunActionController.run),
         indexController: this.asyncHandler(IndexResourceController.index),
@@ -98,7 +112,6 @@ export class Tensei implements TenseiContract {
         showRelationController: this.asyncHandler(
             FindResourceController.showRelation
         ),
-
         scripts: [
             {
                 name: 'tensei.js',
@@ -111,25 +124,52 @@ export class Tensei implements TenseiContract {
                 path: Path.resolve(__dirname, 'client', 'index.css')
             }
         ],
-        env: {
-            port: process.env.PORT || 1377,
-            sessionSecret: process.env.SESSION_SECRET || 'test-session-secret'
-        },
         logger: new Signale(),
         indicative: {
             validator,
             sanitizer
+        },
+        graphQlExtensions: [],
+        extendGraphQlMiddleware: (middleware: MiddlewareGenerator[]) => {
+            this.ctx.graphQlMiddleware = [
+                ...this.ctx.graphQlMiddleware,
+                ...middleware
+            ]
         }
     }
 
     public setConfigOnResourceFields() {
-        this.config.resources.forEach(resource => {
+        this.ctx.resources.forEach(resource => {
             resource.data.fields.forEach(field => {
-                field.tenseiConfig = this.config
+                field.tenseiConfig = this.ctx
 
                 field.afterConfigSet()
             })
         })
+    }
+
+    public routes(routes: RouteContract[]) {
+        this.ctx.routes = [...this.ctx.routes, ...routes]
+
+        return this
+    }
+
+    public graphQlQueries(graphQlQueries: GraphQlQueryContract[]) {
+        this.ctx.graphQlQueries = [
+            ...this.ctx.graphQlQueries,
+            ...graphQlQueries
+        ]
+
+        return this
+    }
+
+    public graphQlTypeDefs(graphQlTypeDefs: TensieContext['graphQlTypeDefs']) {
+        this.ctx.graphQlTypeDefs = [
+            ...this.ctx.graphQlTypeDefs,
+            ...graphQlTypeDefs
+        ]
+
+        return this
     }
 
     public async register() {
@@ -141,12 +181,13 @@ export class Tensei implements TenseiContract {
 
         await this.callPluginHook('beforeDatabaseSetup')
         await this.registerDatabase()
+
         await this.callPluginHook('afterDatabaseSetup')
 
         // Please do not change this order. Super important so bugs are not introduced.
         await this.callPluginHook('beforeMiddlewareSetup')
-        this.registerMiddleware()
         this.registerAssetsRoutes()
+        this.registerMiddleware()
         await this.callPluginHook('afterMiddlewareSetup')
 
         await this.callPluginHook('beforeCoreRoutesSetup')
@@ -155,18 +196,58 @@ export class Tensei implements TenseiContract {
 
         await this.callPluginHook('setup')
 
+        return this
+    }
+
+    public async start(fn?: (ctx: Config) => any) {
+        if (!this.registeredApplication) {
+            await this.register()
+        }
+
         this.registeredApplication = true
+
+        if (fn) {
+            const callback = fn(this.ctx)
+
+            if (callback instanceof Promise) {
+                fn(this.ctx).then(() => {
+                    this.listen()
+                })
+            } else {
+                this.listen()
+            }
+
+            return this
+        }
+
+        this.listen()
 
         return this
     }
 
+    private listen() {
+        const port = process.env.PORT || 4500
+
+        this.app.listen(port, () => {
+            this.ctx.logger.success(
+                `🚀 Access your server on ${this.ctx.serverUrl ||
+                    `http://127.0.0.1:${port}`}`
+            )
+        })
+    }
+
     public getPluginArguments() {
+        let gql: any = (text: string) => text
+        try {
+            gql = require('apollo-server-express').gql || gql
+        } catch (e) {}
+
         return {
             app: this.app,
-            ...this.config,
+            ...this.ctx,
             style: (name: Asset['name'], path: Asset['path']) => {
-                this.config.styles = [
-                    ...this.config.styles,
+                this.ctx.styles = [
+                    ...this.ctx.styles,
                     {
                         name,
                         path
@@ -174,22 +255,34 @@ export class Tensei implements TenseiContract {
                 ]
             },
             script: (name: Asset['name'], path: Asset['path']) => {
-                this.config.scripts = [
-                    ...this.config.scripts,
+                this.ctx.scripts = [
+                    ...this.ctx.scripts,
                     {
                         name,
                         path
                     }
                 ]
             },
-            manager: this.manager(),
-            storageDriver: this.storageDriver as any
+            manager: this.ctx.orm ? this.ctx.orm.em.fork() : null,
+            storageDriver: this.storageDriver as any,
+            gql,
+            extendGraphQlQueries: (routes: GraphQlQueryContract[]) => {
+                this.graphQlQueries(routes)
+            },
+            extendGraphQlTypeDefs: (
+                typeDefs: TensieContext['graphQlTypeDefs']
+            ) => {
+                this.graphQlTypeDefs(typeDefs)
+            },
+            extendRoutes: (routes: RouteContract[]) => {
+                this.routes(routes)
+            }
         }
     }
 
     public async callPluginHook(hook: SetupFunctions) {
-        for (let index = 0; index < this.config.plugins.length; index++) {
-            const plugin = this.config.plugins[index]
+        for (let index = 0; index < this.ctx.plugins.length; index++) {
+            const plugin = this.ctx.plugins[index]
 
             const extension = await plugin.data[hook](this.getPluginArguments())
 
@@ -205,32 +298,26 @@ export class Tensei implements TenseiContract {
     }
 
     public dashboardPath(dashboardPath: string) {
-        this.config.dashboardPath = dashboardPath
+        this.ctx.dashboardPath = dashboardPath
 
         return this
     }
 
-    public database(database: SupportedDatabases) {
-        this.config.database = database
-
-        return this
-    }
-
-    public databaseConfig(...allArguments: any) {
-        // @ts-ignore
-        this.config.databaseConfig = allArguments
-
-        return this
-    }
-
-    public sessionSecret(secret: string) {
-        this.config.env.sessionSecret = secret
+    public databaseConfig(databaseConfig: DatabaseConfiguration) {
+        this.ctx.databaseConfig = databaseConfig
 
         return this
     }
 
     public getDatabaseClient = () => {
-        return this.config.databaseClient
+        return this.ctx.databaseClient
+    }
+
+    private async bootDatabase() {
+        const [orm, schemas] = await new Database(this.ctx).init()
+
+        this.ctx.orm = orm
+        this.ctx.schemas = schemas
     }
 
     public async registerDatabase() {
@@ -238,55 +325,7 @@ export class Tensei implements TenseiContract {
             return this
         }
 
-        let Repository = null
-
-        // if database === mysql | sqlite | pg, we'll use the @tensei/knex package, with either mysql, pg or sqlite3 package
-        // We'll require('@tensei/knex') and require('sqlite3') for example. If not found, we'll install.
-        if (['mysql', 'pg', 'sqlite'].includes(this.config.database)) {
-            try {
-                // import('@tensei/knex')
-                Repository = require('@tensei/knex').Repository
-            } catch (error) {
-                this.config.logger.error(
-                    `To use the ${this.config.database} database, you need to install @tensei/knex and ${this.config.database} packages`
-                )
-
-                process.exit(1)
-            }
-        }
-
-        if (['mongodb'].includes(this.config.database)) {
-            try {
-                Repository = require('@tensei/mongoose').Repository
-            } catch (error) {
-                this.config.logger.error(
-                    `To use the ${this.config.database} database, you need to install @tensei/mongoose.`
-                )
-
-                process.exit(1)
-            }
-        }
-
-        const repository: DatabaseRepositoryInterface = new Repository()
-
-        const client = await repository.setup(this.config)
-
-        this.resources(repository.setResourceModels(this.config.resources))
-
-        this.config.databaseClient = client
-        this.databaseRepository = repository
-
-        this.app.use(
-            (
-                request: Express.Request,
-                response: Express.Response,
-                next: Express.NextFunction
-            ) => {
-                // request.db = repository
-
-                next()
-            }
-        )
+        await this.bootDatabase()
 
         this.databaseBooted = true
 
@@ -294,27 +333,13 @@ export class Tensei implements TenseiContract {
     }
 
     public apiPath(apiPath: string) {
-        this.config.apiPath = apiPath
+        this.ctx.apiPath = apiPath
 
         return this
     }
 
-    public manager = (
-        request: Express.Request|null = null
-    ): ManagerContract['setResource'] | null => {
-        if (!this.databaseBooted) {
-            return null
-        }
-
-        return new Manager(
-            request,
-            this.config.resources,
-            this.databaseRepository!
-        ).setResource
-    }
-
     public getSessionPackage() {
-        if (['mongodb'].includes(this.config.database)) {
+        if (['mongodb'].includes(this.ctx.databaseConfig.type)) {
             return 'connect-mongo'
         }
 
@@ -325,21 +350,23 @@ export class Tensei implements TenseiContract {
         let storeArguments: any = {}
 
         if (
-            ['mysql', 'pg', 'sqlite3', 'sqlite'].includes(this.config.database)
+            ['mysql', 'pg', 'sqlite3', 'sqlite'].includes(
+                this.ctx.databaseConfig.type
+            )
         ) {
             storeArguments = {
-                knex: this.config.databaseClient
+                knex: this.ctx.databaseClient
             }
         }
 
-        if (['mongodb'].includes(this.config.database)) {
+        if (['mongodb'].includes(this.ctx.databaseConfig.type)) {
             storeArguments = {
                 mongooseConnection: require('mongoose').connection
             }
         }
 
         return {
-            secret: this.config.env.sessionSecret,
+            secret: process.env.SESSION_SECRET || 'tensei-session-secret',
             store: new Store(storeArguments),
             resave: false,
             saveUninitialized: false
@@ -348,6 +375,8 @@ export class Tensei implements TenseiContract {
 
     public registerMiddleware() {
         this.app.use(BodyParser.json())
+
+        this.app.use(responseEnhancer())
 
         const rootStorage = (this.storageConfig.disks?.local?.config as any)
             .root
@@ -364,29 +393,25 @@ export class Tensei implements TenseiContract {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
-                request.dashboards = this.config.dashboardsMap
-                request.resources = this.config.resourcesMap
-                request.manager = this.manager(request)!
-                request.mailer = this.mailer
-                request.config = this.config
+                request.dashboards = this.ctx.dashboardsMap
+                request.resources = this.ctx.resourcesMap
+                request.manager = this.ctx.orm!.em.fork()
+                request.mailer = this.ctx.mailer
+                request.config = this.ctx
 
                 next()
             }
         )
 
-        const Store = require(this.getSessionPackage())(ExpressSession)
-
-        this.app.use(ExpressSession(this.getSessionPackageConfig(Store)))
-
         this.app.use(this.setAuthMiddleware)
     }
 
     private getApiPath = (path: string) => {
-        return `/${this.config.apiPath}/${path}`
+        return `/${this.ctx.apiPath}/${path}`
     }
 
     private getDashboardApiPath = (path: string) => {
-        return `/${this.config.dashboardPath}/${this.config.apiPath}/${path}`
+        return `/${this.ctx.dashboardPath}/${this.ctx.apiPath}/${path}`
     }
 
     public authMiddleware = async (
@@ -418,21 +443,6 @@ export class Tensei implements TenseiContract {
         response: Express.Response,
         next: Express.NextFunction
     ) => {
-        if (!request.session?.user) {
-            return next()
-        }
-
-        let admin = await request
-            .manager('Administrator')
-            .database()
-            .getAdministratorById(request.session?.user!)
-
-        if (!admin) {
-            return next()
-        }
-
-        request.admin = admin
-
         next()
     }
 
@@ -474,14 +484,14 @@ export class Tensei implements TenseiContract {
             this.getDashboardApiPath(`resources/:resource`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.indexController
+            this.ctx.indexController
         )
 
         this.app.get(
             this.getDashboardApiPath(`resources/:resource/:resourceId`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.showController
+            this.ctx.showController
         )
 
         this.app.get(
@@ -490,14 +500,14 @@ export class Tensei implements TenseiContract {
             ),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.showRelationController
+            this.ctx.showRelationController
         )
 
         this.app.put(
             this.getDashboardApiPath(`resources/:resource/:resourceId`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.updateController
+            this.ctx.updateController
         )
 
         this.app.get(
@@ -511,36 +521,36 @@ export class Tensei implements TenseiContract {
             this.getDashboardApiPath(`resources/:resource/:resourceId`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.updateController
+            this.ctx.updateController
         )
 
         this.app.post(
             this.getDashboardApiPath(`resources/:resource`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.createController
+            this.ctx.createController
         )
 
         this.app.post(
             this.getDashboardApiPath(`resources/:resource/actions/:action`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.runActionController
+            this.ctx.runActionController
         )
 
         this.app.delete(
             this.getDashboardApiPath(`resources/:resource/:resourceId`),
             this.setDashboardOrigin,
             this.authMiddleware,
-            this.config.deleteController
+            this.ctx.deleteController
         )
 
         this.app.get(
-            `/${this.config.dashboardPath}(/*)?`,
+            `/${this.ctx.dashboardPath}(/*)?`,
             this.asyncHandler(ClientController.index)
         )
 
-        this.generateClientFacingApiRoutes()
+        // this.generateClientFacingApiRoutes()
 
         this.app.use(
             (
@@ -549,6 +559,7 @@ export class Tensei implements TenseiContract {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
+                this.ctx.logger.error(error)
                 if (Array.isArray(error)) {
                     return response.status(422).json({
                         message: 'Validation failed.',
@@ -568,8 +579,6 @@ export class Tensei implements TenseiContract {
                     })
                 }
 
-                console.error(error)
-
                 response.status(500).json({
                     message: 'Internal server error.',
                     error
@@ -582,60 +591,60 @@ export class Tensei implements TenseiContract {
         this.app.get(
             this.getApiPath(':resource'),
             ...this.getMiddlewareForEndpoint('index'),
-            this.config.indexController
+            this.ctx.indexController
         )
 
         this.app.get(
             this.getApiPath(':resource/:resourceId'),
             ...this.getMiddlewareForEndpoint('show'),
-            this.config.showController
+            this.ctx.showController
         )
 
         this.app.get(
             this.getApiPath(':resource/:resourceId'),
             ...this.getMiddlewareForEndpoint('showRelation'),
-            this.config.showRelationController
+            this.ctx.showRelationController
         )
 
         this.app.post(
             this.getApiPath(':resource'),
             ...this.getMiddlewareForEndpoint('create'),
-            this.config.createController
+            this.ctx.createController
         )
 
         this.app.put(
             this.getApiPath(':resource/:resourceId'),
             ...this.getMiddlewareForEndpoint('update'),
-            this.config.updateController
+            this.ctx.updateController
         )
 
         this.app.patch(
             this.getApiPath(':resource/:resourceId'),
             ...this.getMiddlewareForEndpoint('update'),
-            this.config.updateController
+            this.ctx.updateController
         )
 
         this.app.delete(
             this.getApiPath(':resource/:resourceId'),
             ...this.getMiddlewareForEndpoint('delete'),
-            this.config.deleteController
+            this.ctx.deleteController
         )
     }
 
     public serverUrl(url: string) {
-        this.config.serverUrl = url
+        this.ctx.serverUrl = url
 
         return this
     }
 
     public clientUrl(url: string) {
-        this.config.clientUrl = url
+        this.ctx.clientUrl = url
 
         return this
     }
 
     private getMiddlewareForEndpoint(endpoint: InBuiltEndpoints) {
-        return this.config.middleware
+        return this.ctx.middleware
             .filter(middleware => middleware.type === endpoint)
             .map(middleware => middleware.handler)
     }
@@ -648,15 +657,15 @@ export class Tensei implements TenseiContract {
                 next: Express.NextFunction
             ) => {
                 // Set the app config on express here. Should probably get its own function soon.
-                request.appConfig = this.config
-                request.scripts = this.config.scripts
-                request.styles = this.config.styles
+                request.config = this.ctx
+                request.scripts = this.ctx.scripts
+                request.styles = this.ctx.styles
 
                 next()
             }
         )
 
-        this.config.scripts.concat(this.config.styles).forEach(asset => {
+        this.ctx.scripts.concat(this.ctx.styles).forEach(asset => {
             this.app.get(
                 `/${asset.name}`,
                 this.asyncHandler(
@@ -690,7 +699,7 @@ export class Tensei implements TenseiContract {
     }
 
     public resources(resources: ResourceContract[]) {
-        const updatedResources = [...this.config.resources, ...resources]
+        const updatedResources = [...this.ctx.resources, ...resources]
 
         const uniqueResources = Array.from(
             new Set(updatedResources.map(resource => resource.data.name))
@@ -702,23 +711,24 @@ export class Tensei implements TenseiContract {
             )
             .filter(Boolean) as ResourceContract[]
 
-        this.config.resources = uniqueResources
+        this.ctx.resources = uniqueResources
 
         const resourcesMap: Config['resourcesMap'] = {}
 
         uniqueResources.forEach(resource => {
             resourcesMap[resource.data.slug] = resource
+            resourcesMap[resource.data.pascalCaseName] = resource
         })
 
-        this.config.resourcesMap = resourcesMap
+        this.ctx.resourcesMap = resourcesMap
 
         return this
     }
 
     public dashboards(dashboards: DashboardContract[]) {
-        const updatedDashboards = [...this.config.dashboards, ...dashboards]
+        const updatedDashboards = [...this.ctx.dashboards, ...dashboards]
 
-        this.config.dashboards = Array.from(
+        this.ctx.dashboards = Array.from(
             new Set(updatedDashboards.map(dashboard => dashboard.config.name))
         )
             .map(resourceName =>
@@ -728,21 +738,21 @@ export class Tensei implements TenseiContract {
             )
             .filter(Boolean) as DashboardContract[]
 
-        this.config.dashboards.forEach(dashboard => {
-            this.config.dashboardsMap[dashboard.config.slug] = dashboard
+        this.ctx.dashboards.forEach(dashboard => {
+            this.ctx.dashboardsMap[dashboard.config.slug] = dashboard
         })
 
         return this
     }
 
     public plugins(plugins: PluginContract[]) {
-        this.config.plugins = plugins
+        this.ctx.plugins = plugins
 
         return this
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.mailer = mail()
+        this.ctx.mailer = mail()
             .connection(driverName)
             .config(mailConfig)
 

@@ -1,8 +1,9 @@
 require('dotenv').config()
 const { auth } = require('@tensei/auth')
+const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
 const { trixPlugin: trix } = require('@tensei/trix')
-const { cashier, plan } = require('@tensei/cashier')
+// const { cashier, plan } = require('@tensei/cashier')
 const { AmazonWebServicesS3Storage } = require('@slynova/flydrive-s3')
 const { tensei, dashboard, valueMetric, plugin } = require('@tensei/core')
 
@@ -14,8 +15,6 @@ const Comment = require('./resources/Comment')
 module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
-    .database('mongodb')
-    .serverUrl('http://localhost:5000')
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
     .storageDriver(
@@ -102,30 +101,20 @@ module.exports = tensei()
         //     ])
         //     .plugin(),
         graphql().plugin(),
-        plugin('Custom Slug Validation').setup(
-            ({ indicative }) => {
-                indicative.validator.extend('slug', {
-                    async: false,
-                    validate(data, field, args, config) {
-                        return data.original[field].match(
-                            /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-                        )
-                    },
-                })
-            }
-        ),
+        rest().plugin(),
+        plugin('Custom Slug Validation').setup(({ indicative }) => {
+            indicative.validator.extend('slug', {
+                async: false,
+                validate(data, field, args, config) {
+                    return data.original[field].match(
+                        /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+                    )
+                },
+            })
+        }),
     ])
-    .databaseConfig('mongodb://localhost/tensei-y', {
-        useUnifiedTopology: true,
-        useNewUrlParser: true,
+    .databaseConfig({
+        type: 'mongo',
+        dbName: 'mikrotensei',
+        debug: true,
     })
-// .databaseConfig({
-//     client: 'mysql',
-//     connection: {
-//         host: '127.0.0.1',
-//         user: 'root',
-//         pass: '',
-//         database: 'flmg',
-//     },
-//     debug: true,
-// })

@@ -1,4 +1,11 @@
-import { FieldContract, User, HookFunction } from '@tensei/common'
+import {
+    User,
+    HookFunction,
+    FieldContract,
+    ResourceContract
+} from '@tensei/common'
+import { AnyEntity } from '@mikro-orm/core'
+import { UserRole } from '@tensei/common'
 
 export interface GrantConfig {
     key: string
@@ -24,7 +31,7 @@ export interface AuthPluginConfig {
     roleResource: string
     permissionResource: string
     rolesAndPermissions: boolean
-    passwordResetsResource: string
+    passwordResetResource: string
     apiPath: string
     jwt: {
         expiresIn: string
@@ -45,9 +52,20 @@ export interface AuthPluginConfig {
     providers: {
         [key: string]: GrantConfig
     }
+    resources: {
+        [key: string]: ResourceContract
+    }
 }
 
-export interface UserWithAuth extends User {
+export interface UserEntity extends AnyEntity {
+    id: number
+    name: string
+    email: string
+    password?: string
+    roles: UserRole[]
+    permissions: string[]
+
+    public: boolean
     two_factor_secret?: string
     two_factor_enabled?: boolean
 

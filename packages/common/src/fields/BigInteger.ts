@@ -8,8 +8,6 @@ export class BigInteger extends Integer {
      */
     public databaseFieldType: string = 'bigInteger'
 
-    protected isRelationshipField: boolean = true
-
     /**
      *
      * This is a short name for the frontend component that

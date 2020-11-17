@@ -17,6 +17,7 @@
         "test": "jest --verbose --runInBand --forceExit"
     },
     "dependencies": {
+        "@mikro-orm/mongodb": "^4.3.0",
         "@tensei/common": "0.0.0",
         "@tensei/mail": "0.0.0"
     },

@@ -6,7 +6,8 @@ import {
     FieldContract,
     SerializedField,
     Config,
-    ResourceContract
+    ResourceContract,
+    FieldProperty
 } from '@tensei/common'
 
 interface Constructor<M> {
@@ -44,6 +45,16 @@ export class Field implements FieldContract {
          */
         showOnCreation: true
     }
+
+    public property: FieldProperty = {
+        name: '',
+        type: 'string',
+        primary: false
+        // nullable: true
+    }
+
+    public relatedProperty: FieldProperty = {}
+
     public tenseiConfig: Config | null = null
     public authorizeCallbacks: {
         authorizedToSee: AuthorizeFunction
@@ -57,30 +68,43 @@ export class Field implements FieldContract {
         authorizedToDelete: request => true
     }
 
+    public onFieldUpdate: any = null
+
     public hooks: {
         beforeCreate: FieldHookFunction
         beforeUpdate: FieldHookFunction
         afterCreate: FieldHookFunction
         afterUpdate: FieldHookFunction
+        onUpdate: FieldHookFunction
     } = {
-        beforeCreate: (payload, request) => {
+        beforeCreate: payload => {
             return payload
         },
 
-        beforeUpdate: (payload, request) => {
+        beforeUpdate: payload => {
             return payload
         },
 
-        afterCreate: (payload, request) => {
+        onUpdate: payload => {
             return payload
         },
 
-        afterUpdate: (payload, request) => {
+        afterCreate: payload => {
+            return payload
+        },
+
+        afterUpdate: payload => {
             return payload
         }
     }
 
     public afterConfigSet() {}
+
+    public onUpdate(onUpdate: any) {
+        this.onFieldUpdate = onUpdate
+
+        return this
+    }
 
     public beforeCreate(hook: FieldHookFunction) {
         this.hooks = {
@@ -163,7 +187,7 @@ export class Field implements FieldContract {
      */
     public isHidden: boolean = false
 
-    protected isRelationshipField: boolean = false
+    public isRelationshipField: boolean = false
 
     /**
      *
@@ -186,6 +210,8 @@ export class Field implements FieldContract {
     public camelCaseNamePlural: string
 
     public pascalCaseName: string
+    public snakeCaseName: string
+    public snakeCaseNamePlural: string
 
     public capsDatabasefieldName: string
 
@@ -227,10 +253,14 @@ export class Field implements FieldContract {
     public constructor(name: string, databaseField?: string) {
         this.name = name
 
+        this.property.name = databaseField || snakeCase(this.name)
+
         this.databaseField = databaseField || snakeCase(this.name)
 
         this.camelCaseName = camelCase(name)
         this.pascalCaseName = pascalCase(name)
+        this.snakeCaseName = snakeCase(name)
+        this.snakeCaseNamePlural = snakeCase(name)
         this.camelCaseNamePlural = Pluralize(this.camelCaseName)
         this.capsDatabasefieldName = this.databaseField.toUpperCase()
     }
@@ -406,20 +436,69 @@ export class Field implements FieldContract {
      * Make this field searchable. will also index
      * this field in the database.
      *
+     * This method optionally takes in the name of the index.
+     *
      */
-    public searchable<T extends FieldContract>(this: T): T {
-        this.isSearchable = true
+    public searchable<T extends FieldContract>(
+        this: T,
+        index: string | boolean = true
+    ): T {
+        this.property.index = index
+
+        return this
+    }
+
+    public onCreate<T extends FieldContract>(this: T, onCreate: () => void): T {
+        this.property.onCreate = onCreate
 
         return this
     }
 
     /**
      *
-     * Make this field sortable
+     * Make this field unique
      *
      */
     public unique<T extends FieldContract>(this: T) {
-        this.isUnique = true
+        this.property.unique = true
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field unsigned
+     *
+     */
+    public unsigned<T extends FieldContract>(this: T) {
+        this.property.unsigned = true
+
+        return this
+    }
+
+    /**
+     * Make this field a primary field
+     *
+     */
+    public primary<T extends FieldContract>(this: T) {
+        this.property.primary = true
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field signed
+     *
+     */
+    public signed<T extends FieldContract>(this: T) {
+        this.property.unsigned = false
+
+        return this
+    }
+
+    public notUnique<T extends FieldContract>(this: T): T {
+        this.property.unique = false
 
         return this
     }
@@ -430,7 +509,26 @@ export class Field implements FieldContract {
      *
      */
     public notNullable<T extends FieldContract>(this: T): T {
-        this.isNullable = false
+        this.property.nullable = false
+        this.relatedProperty.nullable = false
+
+        return this
+    }
+
+    public virtual<T extends FieldContract>(this: T): T {
+        this.property.persist = false
+
+        return this
+    }
+
+    /**
+     *
+     * Make this field nullable
+     *
+     */
+    public nullable<T extends FieldContract>(this: T): T {
+        this.property.nullable = true
+        this.relatedProperty.nullable = true
 
         return this
     }
@@ -459,9 +557,23 @@ export class Field implements FieldContract {
      */
     public default<T extends FieldContract>(
         this: T,
-        value: string | number | boolean
+        value: string | number | boolean | null
     ): T {
         this.defaultValue = value
+        this.property.default = value
+
+        return this
+    }
+
+    /**
+     *
+     * Set the default value for this field.
+     * Will show up on create forms as
+     * default
+     *
+     */
+    public defaultRaw<T extends FieldContract>(this: T, value: string): T {
+        this.property.defaultRaw = value
 
         return this
     }
@@ -523,7 +635,7 @@ export class Field implements FieldContract {
      * in query results.
      */
     public hidden<T extends FieldContract>(this: T): T {
-        this.isHidden = true
+        this.property.hidden = true
 
         return this
     }
@@ -564,25 +676,27 @@ export class Field implements FieldContract {
 
             name: this.name,
             hidden: this.isHidden,
+            isUnique: this.isUnique,
             component: this.component,
             description: this.helpText,
             isNullable: this.isNullable,
             isSortable: this.isSortable,
-            isUnique: this.isUnique,
-            isSearchable: this.isSearchable,
             attributes: this.attributes,
             rules: this.validationRules,
             inputName: this.databaseField,
+            isSearchable: this.isSearchable,
             defaultValue: this.defaultValue,
-            camelCaseName: camelCase(this.name),
-            updateRules: this.updateValidationRules,
-            creationRules: this.creationValidationRules,
             fieldName: this.constructor.name,
+            snakeCaseName: this.snakeCaseName,
             databaseField: this.databaseField,
-            databaseFieldType: this.databaseFieldType,
-            isRelationshipField: this.isRelationshipField,
-            camelCaseNamePlural: this.camelCaseNamePlural,
+            camelCaseName: camelCase(this.name),
             pascalCaseName: this.pascalCaseName,
+            updateRules: this.updateValidationRules,
+            databaseFieldType: this.databaseFieldType,
+            creationRules: this.creationValidationRules,
+            camelCaseNamePlural: this.camelCaseNamePlural,
+            isRelationshipField: this.isRelationshipField,
+            snakeCaseNamePlural: this.snakeCaseNamePlural,
             capsDatabasefieldName: this.capsDatabasefieldName
         }
     }
