@@ -5,7 +5,8 @@
     "license": "MIT",
     "types": "./Tensei.d.ts",
     "files": [
-        "build/"
+        "build/",
+        "Tensei.d.ts"
     ],
     "devDependencies": {
         "@types/bcryptjs": "^2.4.2",
@@ -32,15 +33,11 @@
         "@mikro-orm/core": "^4.3.0",
         "@slynova/flydrive": "^1.0.3",
         "@tensei/common": "^0.2.0",
-        "@tensei/mail": "0.0.0",
+        "@tensei/mail": "^0.2.0",
         "@types/cookie-parser": "^1.4.2",
         "@types/signale": "^1.4.1",
-        "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.0",
         "change-case": "^4.1.1",
-        "classnames": "^2.2.6",
-        "commander": "^5.1.0",
-        "consola": "^2.12.2",
         "cookie-parser": "^1.4.5",
         "date-fns": "^2.14.0",
         "dotenv": "^8.2.0",
@@ -50,16 +47,9 @@
         "express-session": "^1.17.1",
         "graphql-middleware": "^4.0.2",
         "indicative": "^7.4.4",
-        "knex": "^0.21.2",
         "mustache": "^4.0.1",
-        "mysql": "^2.18.1",
-        "numeral": "^2.0.6",
-        "observable-slim": "^0.1.5",
         "pluralize": "^8.0.0",
-        "readline-sync": "^1.4.10",
-        "signale": "^1.4.0",
-        "sqlite3": "^5.0.0",
-        "throttle-debounce": "^2.2.1"
+        "signale": "^1.4.0"
     },
     "config": {
         "commitizen": {

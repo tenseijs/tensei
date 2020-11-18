@@ -46,7 +46,6 @@
         "@types/request": "^2.48.5",
         "@types/speakeasy": "^2.0.5",
         "@types/uniqid": "^5.2.0",
-        "axios": "^0.20.0",
         "bcryptjs": "^2.4.3",
         "change-case": "^4.1.1",
         "dayjs": "^1.8.34",
@@ -58,8 +57,6 @@
         "randomstring": "^1.1.5",
         "request": "^2.88.2",
         "speakeasy": "^2.0.0",
-        "uniqid": "^5.2.0",
-        "uuid": "^8.3.0"
-    },
-    "gitHead": "0b822a43956f8824dabe95b07be2d090fb7d2f0c"
+        "uniqid": "^5.2.0"
+    }
 }

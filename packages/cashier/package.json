@@ -30,6 +30,5 @@
         "@tensei/common": "^0.2.0",
         "dayjs": "^1.8.34",
         "randomstring": "^1.1.5"
-    },
-    "gitHead": "0b822a43956f8824dabe95b07be2d090fb7d2f0c"
+    }
 }
