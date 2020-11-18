@@ -1,6 +1,6 @@
 {
     "name": "express-session-mikro-orm",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "main": "build/index.js",
     "license": "MIT",
     "files": [
@@ -27,5 +27,6 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "0b822a43956f8824dabe95b07be2d090fb7d2f0c"
 }

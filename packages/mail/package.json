@@ -1,6 +1,6 @@
 {
     "name": "@tensei/mail",
-    "version": "0.0.1-alpha.0",
+    "version": "0.0.1",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -46,5 +46,6 @@
         "got": "^11.5.2",
         "nodemailer": "^6.4.11",
         "slugify": "^1.3.4"
-    }
+    },
+    "gitHead": "0b822a43956f8824dabe95b07be2d090fb7d2f0c"
 }

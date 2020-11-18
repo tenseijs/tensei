@@ -1,6 +1,6 @@
 {
     "name": "@tensei/auth",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "main": "./build/index.js",
     "license": "MIT",
     "files": [
@@ -37,7 +37,7 @@
     },
     "dependencies": {
         "@purest/providers": "^1.0.1",
-        "@tensei/common": "0.0.0",
+        "@tensei/common": "^0.0.1",
         "@types/bcryptjs": "^2.4.2",
         "@types/express-session": "^1.17.0",
         "@types/jsonwebtoken": "^8.5.0",
@@ -60,5 +60,6 @@
         "speakeasy": "^2.0.0",
         "uniqid": "^5.2.0",
         "uuid": "^8.3.0"
-    }
+    },
+    "gitHead": "0b822a43956f8824dabe95b07be2d090fb7d2f0c"
 }
