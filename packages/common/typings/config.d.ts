@@ -251,14 +251,6 @@ declare module '@tensei/common/config' {
         }
         pushResource: PluginSetupConfig['pushResource']
 
-        showController: Handler
-        indexController: Handler
-        createController: Handler
-        updateController: Handler
-        deleteController: Handler
-        runActionController: Handler
-        showRelationController: Handler
-
         indicative: {
             validator: typeof validator
             sanitizer: typeof sanitizer

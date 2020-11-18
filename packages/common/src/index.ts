@@ -23,7 +23,6 @@ export { manyToMany, ManyToMany, belongsToMany } from './fields/ManyToMany'
 export { filter } from './filters/Filter'
 
 export { ResourceHelpers } from './helpers'
-export { Manager } from './resources/Manager'
 export { card, Card } from './dashboard/Card'
 export { action, Action } from './actions/Action'
 export { Plugin, plugin } from './plugins/Plugin'

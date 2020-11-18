@@ -7,17 +7,12 @@ import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
-import ClientController from './controllers/ClientController'
 import {
     StorageManager,
     Storage,
     StorageManagerConfig
 } from '@slynova/flydrive'
-import AuthController from './controllers/auth/AuthController'
-import ForgotPasswordController from './controllers/auth/ForgotPasswordController'
 import Express, { Request, Application, NextFunction } from 'express'
-import RunActionController from './controllers/actions/RunActionController'
-import IndexResourceController from './controllers/resources/IndexResourceController'
 
 import {
     text,
@@ -39,11 +34,6 @@ import {
     DatabaseRepositoryInterface
 } from '@tensei/common'
 import Database from './database'
-import MetricController from './controllers/MetricController'
-import FindResourceController from './controllers/resources/FindResourceController'
-import CreateResourceController from './controllers/resources/CreateResourceController'
-import DeleteResourceController from './controllers/resources/DeleteResourceController'
-import UpdateResourceController from './controllers/resources/UpdateResourceController'
 import {
     TenseiContract,
     DatabaseConfiguration,
@@ -104,15 +94,6 @@ export class Tensei implements TenseiContract {
             type: 'sqlite',
             entities: []
         },
-        showController: this.asyncHandler(FindResourceController.show),
-        runActionController: this.asyncHandler(RunActionController.run),
-        indexController: this.asyncHandler(IndexResourceController.index),
-        createController: this.asyncHandler(CreateResourceController.store),
-        updateController: this.asyncHandler(UpdateResourceController.update),
-        deleteController: this.asyncHandler(DeleteResourceController.destroy),
-        showRelationController: this.asyncHandler(
-            FindResourceController.showRelation
-        ),
         scripts: [
             {
                 name: 'tensei.js',
@@ -450,111 +431,6 @@ export class Tensei implements TenseiContract {
     }
 
     public registerCoreRoutes() {
-        // The administration dashboard
-
-        this.app.post(
-            this.getDashboardApiPath('login'),
-            this.setDashboardOrigin,
-            this.asyncHandler(AuthController.login)
-        )
-
-        this.app.post(
-            this.getDashboardApiPath('register'),
-            this.setDashboardOrigin,
-            this.asyncHandler(AuthController.register)
-        )
-
-        this.app.post(
-            this.getDashboardApiPath('forgot-password'),
-            this.setDashboardOrigin,
-            this.asyncHandler(ForgotPasswordController.forgotPassword)
-        )
-
-        this.app.post(
-            this.getDashboardApiPath('reset-password'),
-            this.setDashboardOrigin,
-            this.asyncHandler(ForgotPasswordController.resetPassword)
-        )
-
-        this.app.post(
-            this.getDashboardApiPath('logout'),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.asyncHandler(AuthController.logout)
-        )
-
-        this.app.get(
-            this.getDashboardApiPath(`resources/:resource`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.indexController
-        )
-
-        this.app.get(
-            this.getDashboardApiPath(`resources/:resource/:resourceId`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.showController
-        )
-
-        this.app.get(
-            this.getDashboardApiPath(
-                `resources/:resource/:resourceId/:relatedResource`
-            ),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.showRelationController
-        )
-
-        this.app.put(
-            this.getDashboardApiPath(`resources/:resource/:resourceId`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.updateController
-        )
-
-        this.app.get(
-            this.getDashboardApiPath(`metrics/:dashboard/:metric`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.asyncHandler(MetricController.index)
-        )
-
-        this.app.patch(
-            this.getDashboardApiPath(`resources/:resource/:resourceId`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.updateController
-        )
-
-        this.app.post(
-            this.getDashboardApiPath(`resources/:resource`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.createController
-        )
-
-        this.app.post(
-            this.getDashboardApiPath(`resources/:resource/actions/:action`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.runActionController
-        )
-
-        this.app.delete(
-            this.getDashboardApiPath(`resources/:resource/:resourceId`),
-            this.setDashboardOrigin,
-            this.authMiddleware,
-            this.ctx.deleteController
-        )
-
-        this.app.get(
-            `/${this.ctx.dashboardPath}(/*)?`,
-            this.asyncHandler(ClientController.index)
-        )
-
-        // this.generateClientFacingApiRoutes()
-
         this.app.use(
             (
                 error: any,
@@ -587,50 +463,6 @@ export class Tensei implements TenseiContract {
                     error
                 })
             }
-        )
-    }
-
-    public generateClientFacingApiRoutes() {
-        this.app.get(
-            this.getApiPath(':resource'),
-            ...this.getMiddlewareForEndpoint('index'),
-            this.ctx.indexController
-        )
-
-        this.app.get(
-            this.getApiPath(':resource/:resourceId'),
-            ...this.getMiddlewareForEndpoint('show'),
-            this.ctx.showController
-        )
-
-        this.app.get(
-            this.getApiPath(':resource/:resourceId'),
-            ...this.getMiddlewareForEndpoint('showRelation'),
-            this.ctx.showRelationController
-        )
-
-        this.app.post(
-            this.getApiPath(':resource'),
-            ...this.getMiddlewareForEndpoint('create'),
-            this.ctx.createController
-        )
-
-        this.app.put(
-            this.getApiPath(':resource/:resourceId'),
-            ...this.getMiddlewareForEndpoint('update'),
-            this.ctx.updateController
-        )
-
-        this.app.patch(
-            this.getApiPath(':resource/:resourceId'),
-            ...this.getMiddlewareForEndpoint('update'),
-            this.ctx.updateController
-        )
-
-        this.app.delete(
-            this.getApiPath(':resource/:resourceId'),
-            ...this.getMiddlewareForEndpoint('delete'),
-            this.ctx.deleteController
         )
     }
 

@@ -55,90 +55,28 @@ export class ValueMetrics extends Card implements MetricContract {
     }
 
     public async count(resourceSlugOrResource: string | ResourceContract) {
-        const { manager } = this.request!
-
-        const [currentRange, previousRange] = this.getRanges()
-
-        const managerInstance = manager(resourceSlugOrResource)
-
-        const [count, previousCount] = await Promise.all([
-            managerInstance.aggregateCount(currentRange),
-            managerInstance.aggregateCount(previousRange)
-        ])
-
-        return this.result(count).previous(previousCount)
+        return this.result(12).previous(24)
     }
 
     public async max(
         resourceSlugOrResource: string | ResourceContract,
         columns: string | string[]
     ) {
-        const { manager } = this.request!
-
-        const [currentRange, previousRange] = this.getRanges()
-
-        const managerInstance = manager(resourceSlugOrResource)
-
-        const [count, previousCount] = await Promise.all([
-            managerInstance.aggregateMax(
-                currentRange,
-                typeof columns === 'string' ? [columns] : columns
-            ),
-            managerInstance.aggregateMax(
-                previousRange,
-                typeof columns === 'string' ? [columns] : columns
-            )
-        ])
-
-        return this.result(count).previous(previousCount)
+        return this.result(12).previous(24)
     }
 
     public async min(
         resourceSlugOrResource: string | ResourceContract,
         columns: string | string[]
     ) {
-        const { manager } = this.request!
-
-        const [currentRange, previousRange] = this.getRanges()
-
-        const managerInstance = manager(resourceSlugOrResource)
-
-        const [count, previousCount] = await Promise.all([
-            managerInstance.aggregateMin(
-                currentRange,
-                typeof columns === 'string' ? [columns] : columns
-            ),
-            managerInstance.aggregateMin(
-                previousRange,
-                typeof columns === 'string' ? [columns] : columns
-            )
-        ])
-
-        return this.result(count).previous(previousCount)
+        return this.result(12).previous(24)
     }
 
     public async avg(
         resourceSlugOrResource: string | ResourceContract,
         columns: string | string[]
     ) {
-        const { manager } = this.request!
-
-        const [currentRange, previousRange] = this.getRanges()
-
-        const managerInstance = manager(resourceSlugOrResource)
-
-        const [count, previousCount] = await Promise.all([
-            managerInstance.aggregateAvg(
-                currentRange,
-                typeof columns === 'string' ? [columns] : columns
-            ),
-            managerInstance.aggregateAvg(
-                previousRange,
-                typeof columns === 'string' ? [columns] : columns
-            )
-        ])
-
-        return this.result(count).previous(previousCount)
+        return this.result(12).previous(24)
     }
 
     private getRanges() {

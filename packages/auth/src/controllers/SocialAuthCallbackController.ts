@@ -16,8 +16,6 @@ class SocialAuthCallbackController {
         AsyncHandler(async (request, response) => {
             const { query, params, manager } = request
 
-            console.log('*******', manager)
-
             const provider = params.provider as SupportedSocialProviders
             const access_token =
                 query.access_token || query.code || query.oauth_token
