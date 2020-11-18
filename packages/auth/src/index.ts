@@ -3,8 +3,6 @@ import Uniqid from 'uniqid'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import Randomstring from 'randomstring'
-import { EntityManager } from '@mikro-orm/core'
-import AsyncHandler from 'express-async-handler'
 import { validateAll } from 'indicative/validator'
 import { Request, Response, NextFunction } from 'express'
 import {
@@ -56,6 +54,11 @@ type ResourceShortNames =
     | 'teamInvite'
     | 'passwordReset'
 
+type JwtPayload = {
+    id: string
+    refresh?: boolean
+}
+
 type AuthResources = {
     user: ResourceContract
     team: ResourceContract
@@ -80,9 +83,11 @@ class Auth {
         apiPath: 'auth',
         setupFn: () => this,
         jwt: {
-            expiresIn: '7d',
-            secretKey: process.env.JWT_SECRET || 'auth-secret-key'
+            expiresIn: 60 * 60,
+            secretKey: process.env.JWT_SECRET || 'auth-secret-key',
+            refreshTokenExpiresIn: 60 * 60 * 24 * 7
         },
+        refresTokenCookieName: '___refresh__token',
         teams: false,
         teamFields: [],
         twoFactorAuth: false,
@@ -155,7 +160,16 @@ class Auth {
         return this
     }
 
-    public tokenExpiresIn(tokenExpiresIn: string) {
+    public jwt(config: Partial<AuthPluginConfig['jwt']>) {
+        this.config.jwt = {
+            ...this.config.jwt,
+            ...config
+        }
+
+        return this
+    }
+
+    public tokenExpiresIn(tokenExpiresIn: number) {
         this.config.jwt.expiresIn = tokenExpiresIn
 
         return this
@@ -689,9 +703,6 @@ class Auth {
                                 return next()
                             },
                             async (request, response, next) => {
-                                // @ts-ignore
-                                request.req = request
-
                                 await this.setAuthUserForPublicRoutes(
                                     request as any
                                 )
@@ -817,6 +828,23 @@ class Auth {
         ]
     }
 
+    private setRefreshToken(ctx: ApiContext) {
+        ctx.res.cookie(
+            this.config.refresTokenCookieName,
+            this.generateJwt(
+                {
+                    id: ctx.user.id,
+                    refresh: true
+                },
+                true
+            ),
+            {
+                httpOnly: true,
+                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000
+            }
+        )
+    }
+
     private extendGraphQlQueries() {
         const name = this.resources.user.data.snakeCaseName
 
@@ -856,7 +884,11 @@ class Auth {
             )
                 .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
                 .query()
-                .handle(async (_, args, ctx, info) => ctx.user),
+                .handle(async (_, args, ctx, info) => {
+                    if (ctx.user.public) throw ctx.authenticationError()
+
+                    return ctx.user
+                }),
             graphQlQuery(`Disable Two Factor Auth`)
                 .path('disable_two_factor_auth')
                 .mutation()
@@ -886,8 +918,60 @@ class Auth {
                 .mutation()
                 .handle(async (_, args, ctx, info) =>
                     this.socialAuth(ctx, 'register')
+                ),
+            graphQlQuery('Refresh token')
+                .path('refresh_token')
+                .mutation()
+                .handle(async (_, args, ctx, info) =>
+                    this.handleRefreshTokens(ctx)
                 )
         ]
+    }
+
+    private async handleRefreshTokens(ctx: ApiContext) {
+        const refreshToken = ctx.req.cookies[this.config.refresTokenCookieName]
+
+        if (!refreshToken) {
+            throw ctx.authenticationError('Invalid refresh token.')
+        }
+
+        let tokenPayload: JwtPayload | undefined = undefined
+
+        try {
+            tokenPayload = Jwt.verify(
+                refreshToken,
+                this.config.jwt.secretKey
+            ) as JwtPayload
+        } catch (error) {}
+
+        if (!tokenPayload || !tokenPayload.refresh)
+            throw ctx.authenticationError('Invalid refresh token.')
+
+        const user: any = await ctx.manager.findOne(
+            this.resources.user.data.pascalCaseName,
+            {
+                id: tokenPayload.id
+            },
+            {
+                populate: this.config.rolesAndPermissions
+                    ? ['roles.permissions']
+                    : []
+            }
+        )
+
+        ctx.user = user
+
+        return this.getUserPayload(ctx)
+    }
+
+    private getUserPayload(ctx: ApiContext) {
+        return {
+            token: this.generateJwt({
+                id: ctx.user.id
+            }),
+            expires_in: this.config.jwt.expiresIn,
+            [this.resources.user.data.snakeCaseName]: ctx.user
+        }
     }
 
     private extendGraphQLTypeDefs(gql: any) {
@@ -896,11 +980,13 @@ class Auth {
         return gql`
         type register_${snakeCaseName}_response {
             token: String!
+            expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_${snakeCaseName}_response {
             token: String!
+            expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
@@ -966,6 +1052,7 @@ class Auth {
             resend_verification_email: Boolean!
             social_auth_register(object: social_auth_register_input!): register_${snakeCaseName}_response!
             social_auth_login(object: social_auth_login_input!): login_${snakeCaseName}_response!
+            refresh_token: login_${snakeCaseName}_response!
         }
 
         extend type Query {
@@ -978,7 +1065,8 @@ class Auth {
         return `/${this.config.apiPath}/${path}`
     }
 
-    private register = async ({ manager, mailer, body }: ApiContext) => {
+    private register = async (ctx: ApiContext) => {
+        const { manager, mailer, body } = ctx
         let createUserPayload = await this.validate(
             body.object ? body.object : body
         )
@@ -1023,12 +1111,9 @@ class Auth {
                 )
         }
 
-        return {
-            token: this.generateJwt({
-                id: user.id
-            }),
-            [this.resources.user.data.snakeCaseName]: user
-        }
+        this.setRefreshToken(ctx)
+
+        return this.getUserPayload(ctx)
     }
 
     private resendVerificationEmail = async ({
@@ -1077,9 +1162,10 @@ class Auth {
     }
 
     private socialAuth = async (
-        { body, manager }: ApiContext,
+        ctx: ApiContext,
         action: 'login' | 'register'
     ) => {
+        const { body, manager } = ctx
         const access_token = body.object
             ? body.object.access_token
             : body.access_token
@@ -1169,15 +1255,13 @@ class Auth {
 
         await manager.flush()
 
-        return {
-            token: this.generateJwt({
-                id: user.id
-            }),
-            [this.resources.user.data.snakeCaseName]: user
-        }
+        this.setRefreshToken(ctx)
+
+        return this.getUserPayload(ctx)
     }
 
-    private login = async ({ manager, body }: ApiContext) => {
+    private login = async (ctx: ApiContext) => {
+        const { manager, body } = ctx
         const { email, password, token } = await this.validate(
             body.object ? body.object : body
         )
@@ -1232,12 +1316,9 @@ class Auth {
             }
         }
 
-        return {
-            token: this.generateJwt({
-                id: user.id
-            }),
-            [this.resources.user.data.snakeCaseName]: user.toJSON()
-        }
+        this.setRefreshToken(ctx)
+
+        return this.getUserPayload(ctx)
     }
 
     public authMiddleware = async (
@@ -1644,9 +1725,11 @@ class Auth {
         })
     }
 
-    public generateJwt(payload: DataPayload) {
+    public generateJwt(payload: DataPayload, refresh: boolean = false) {
         return Jwt.sign(payload, this.config.jwt.secretKey, {
-            expiresIn: this.config.jwt.expiresIn
+            expiresIn: refresh
+                ? this.config.jwt.refreshTokenExpiresIn
+                : this.config.jwt.expiresIn
         })
     }
 

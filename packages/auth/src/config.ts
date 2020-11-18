@@ -34,9 +34,11 @@ export interface AuthPluginConfig {
     passwordResetResource: string
     apiPath: string
     jwt: {
-        expiresIn: string
+        expiresIn: number
         secretKey: string
+        refreshTokenExpiresIn: number
     }
+    refresTokenCookieName: string
     teams: boolean
     verifyEmails?: boolean
     skipWelcomeEmail?: boolean

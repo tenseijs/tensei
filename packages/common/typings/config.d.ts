@@ -89,6 +89,10 @@ declare module '@tensei/common/config' {
         req: Request
         res: Response
         connection?: ExecutionParams
+        authenticationError: (message?: string) => unknown
+        forbiddenError: (message?: string) => unknown
+        validationError: (message?: string) => unknown
+        userInputError: (message?: string) => unknown
     }
 
     interface ApiContext extends GraphQLPluginContext {}

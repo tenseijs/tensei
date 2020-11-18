@@ -1,6 +1,7 @@
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
+import CookieParser from 'cookie-parser'
 import { RequestContext } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
@@ -377,6 +378,8 @@ export class Tensei implements TenseiContract {
         this.app.use(BodyParser.json())
 
         this.app.use(responseEnhancer())
+
+        this.app.use(CookieParser())
 
         const rootStorage = (this.storageConfig.disks?.local?.config as any)
             .root

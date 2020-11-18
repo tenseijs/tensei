@@ -1,11 +1,14 @@
-import { ObjectId } from '@mikro-orm/mongodb'
 import { applyMiddleware } from 'graphql-middleware'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
     ApolloServer,
     gql,
     Config as ApolloConfig,
-    makeExecutableSchema
+    makeExecutableSchema,
+    AuthenticationError,
+    ForbiddenError,
+    ValidationError,
+    UserInputError
 } from 'apollo-server-express'
 import {
     plugin,
@@ -1109,19 +1112,8 @@ input id_where_query {
                     return middlewareHandlers
                 })
 
-                graphQlMiddleware.unshift(graphQlQueries => {
-                    const middlewareHandlers: Resolvers = {
-                        Query: {},
-                        Mutation: {}
-                    }
-
-                    const setEntityManagerContext: GraphQlMiddleware = async (
-                        resolve,
-                        parent,
-                        args,
-                        context,
-                        info
-                    ) => {
+                graphQlMiddleware.unshift(() => {
+                    return async (resolve, parent, args, context, info) => {
                         context.manager = context.manager.fork()
 
                         const result = await resolve(
@@ -1133,22 +1125,33 @@ input id_where_query {
 
                         return result
                     }
+                })
 
-                    graphQlQueries.forEach(query => {
-                        if (query.config.type === 'QUERY') {
-                            ;(middlewareHandlers.Query as any)[
-                                query.config.path
-                            ] = setEntityManagerContext
-                        }
+                graphQlMiddleware.unshift(() => {
+                    return async (resolve, parent, args, context, info) => {
+                        context.authenticationError = (message?: string) =>
+                            new AuthenticationError(
+                                message || 'Unauthenticated.'
+                            )
 
-                        if (query.config.type === 'MUTATION') {
-                            ;(middlewareHandlers.Mutation as any)[
-                                query.config.path
-                            ] = setEntityManagerContext
-                        }
-                    })
+                        context.forbiddenError = (message?: string) =>
+                            new ForbiddenError(message || 'Forbidden.')
 
-                    return middlewareHandlers
+                        context.validationError = (message?: string) =>
+                            new ValidationError(message || 'Validation failed.')
+
+                        context.userInputError = (message?: string) =>
+                            new UserInputError(message || 'Invalid user input.')
+
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
+
+                        return result
+                    }
                 })
             })
             .setup(async config => {
