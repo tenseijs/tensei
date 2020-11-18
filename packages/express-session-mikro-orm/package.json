@@ -24,5 +24,8 @@
         "mocha": "^8.2.1",
         "rimraf": "^3.0.2",
         "ts-node": "^9.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }

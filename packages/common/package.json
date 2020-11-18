@@ -36,5 +36,8 @@
         "luxon": "^1.25.0",
         "pluralize": "^8.0.0",
         "signale": "^1.4.0"
+    },
+    "publishConfig": {
+        "access": "public"
     }
 }
