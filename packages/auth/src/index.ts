@@ -885,7 +885,7 @@ class Auth {
                 .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
                 .query()
                 .handle(async (_, args, ctx, info) => {
-                    if (ctx.user.public) throw ctx.authenticationError()
+                    if (! ctx.user || ctx.user.public) throw ctx.authenticationError()
 
                     return ctx.user
                 }),
@@ -1103,6 +1103,8 @@ class Auth {
             await manager.populate([user], ['roles.permissions'])
         }
 
+        ctx.user = user
+
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
             mailer
                 .to(user.email)
@@ -1316,6 +1318,8 @@ class Auth {
             }
         }
 
+        ctx.user = user
+
         this.setRefreshToken(ctx)
 
         return this.getUserPayload(ctx)
@@ -1403,8 +1407,10 @@ class Auth {
         if (!token) return
 
         try {
-            const { id } = Jwt.verify(token, this.config.jwt.secretKey) as {
-                id: number
+            const { id, refresh } = Jwt.verify(token, this.config.jwt.secretKey) as JwtPayload
+
+            if (! id || refresh) {
+                return
             }
 
             const user: any = await manager.findOne(
@@ -1421,41 +1427,6 @@ class Auth {
 
             ctx.user = user
         } catch (error) {}
-    }
-
-    public setAuthMiddleware = async (
-        request: Request,
-        response: Response,
-        next: NextFunction
-    ) => {
-        const { headers, manager } = request
-        const [, token] = (headers['authorization'] || '').split('Bearer ')
-
-        if (!token) {
-            return next()
-        }
-
-        try {
-            const { id } = Jwt.verify(token, this.config.jwt.secretKey) as {
-                id: number
-            }
-
-            const user: any = await manager.findOne(
-                this.resources.user.data.pascalCaseName,
-                { id },
-                {
-                    populate: this.config.rolesAndPermissions
-                        ? ['roles.permissions']
-                        : []
-                }
-            )
-
-            request.user = user
-        } catch (errors) {
-            return next()
-        }
-
-        return next()
     }
 
     private disableTwoFactorAuth = async ({
