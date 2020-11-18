@@ -62,3 +62,30 @@ export class ResourceHelpers {
         return this.resource
     }
 }
+
+/**
+ * Apply typescript mixins to a class constructor.
+ *
+ * @param derivedCtor any
+ * @param constructors any
+ */
+export const mix = (derivedCtor: any, constructors: any[]) => {
+    constructors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+            const propertyDescription = Object.getOwnPropertyDescriptor(
+                baseCtor.prototype,
+                name
+            )
+
+            if (!propertyDescription) {
+                return
+            }
+
+            Object.defineProperty(
+                derivedCtor.prototype,
+                name,
+                propertyDescription
+            )
+        })
+    })
+}
