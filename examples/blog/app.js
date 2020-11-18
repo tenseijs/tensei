@@ -67,7 +67,7 @@ module.exports = tensei()
     ])
     .plugins([
         auth()
-            .name('Customer')
+            .user('Customer')
             .twoFactorAuth()
             .verifyEmails()
             .teams()
@@ -114,7 +114,9 @@ module.exports = tensei()
         }),
     ])
     .databaseConfig({
-        type: 'mongo',
+        type: 'postgresql',
         dbName: 'mikrotensei',
         debug: true,
+        user: 'mikrotensei',
+        password: 'password',
     })

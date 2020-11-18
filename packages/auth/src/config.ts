@@ -27,7 +27,7 @@ export type SupportedSocialProviders =
 export interface AuthPluginConfig {
     fields: FieldContract[]
     profilePictures: boolean
-    nameResource: string
+    userResource: string
     roleResource: string
     permissionResource: string
     rolesAndPermissions: boolean

@@ -947,9 +947,7 @@ input id_where_query {
                             parseWhereArgumentsToWhereQuery(args.where)
                         )
 
-                        data.forEach(d => {
-                            ctx.manager.assign(d, args.object)
-                        })
+                        data.forEach(d => ctx.manager.assign(d, args.object))
 
                         await ctx.manager.persistAndFlush(data)
 
@@ -957,7 +955,7 @@ input id_where_query {
                             ctx.manager,
                             resource,
                             getParsedInfo(info),
-                            [data]
+                            data
                         )
 
                         return data

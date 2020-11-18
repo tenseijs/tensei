@@ -172,7 +172,7 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public async register() {
+    public async boot() {
         if (this.registeredApplication) {
             return this
         }
@@ -201,7 +201,7 @@ export class Tensei implements TenseiContract {
 
     public async start(fn?: (ctx: Config) => any) {
         if (!this.registeredApplication) {
-            await this.register()
+            await this.boot()
         }
 
         this.registeredApplication = true

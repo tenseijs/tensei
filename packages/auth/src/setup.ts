@@ -6,13 +6,11 @@ import { AuthPluginConfig } from './config'
 
 export const setup = async (
     config: PluginSetupConfig,
-    authConfig: AuthPluginConfig
+    [RoleResource, PermissionResource]: ResourceContract[]
 ) => {
     const { resources, orm } = config
 
     const { em } = orm!
-    const RoleResource = authConfig.resources.role
-    const PermissionResource = authConfig.resources.permission
 
     const insertPermissions = await getPermissionsToInsert(
         resources,

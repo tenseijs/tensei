@@ -1,7 +1,5 @@
 import Supertest from 'supertest'
-import { setup, fakeTag, sortArrayById, fakePost, fakeUser } from './setup'
-
-let gql = (t: any) => t.toString()
+import { setup, fakeTag, sortArrayById, fakePost, fakeUser, gql } from './setup'
 
 test('correctly generates insert_resource resolvers for all registered resources', async () => {
     const instance = await setup()

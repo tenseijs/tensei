@@ -30,7 +30,7 @@ declare module '@tensei/core' {
         ctx: Config
         storage: StorageManager
         start(fn?: (ctx: Config) => any): Promise<this>
-        register(): Promise<this>
+        boot(): Promise<this>
         routes(routes: RouteContract[]): this
         graphQlTypeDefs(typeDefs: (string | DocumentNode)[]): this
         graphQlQueries(queries: GraphQlQueryContract[]): this
@@ -91,7 +91,7 @@ declare module '@tensei/core' {
         graphQlQueries(queries: GraphQlQueryContract[]): this
         storage: StorageManager
         start(fn?: (ctx: Config) => any): Promise<this>
-        register(): Promise<this>
+        boot(): Promise<this>
         getPluginArguments(): PluginSetupConfig
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this

@@ -1,3 +1,1 @@
-const tensei = require('./app')
-
-tensei.start().catch(console.error)
+require('./app').start().catch(console.error)

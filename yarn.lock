@@ -2261,6 +2261,14 @@
     "@mikro-orm/mysql-base" "^4.3.0"
     mysql2 "2.2.5"
 
+"@mikro-orm/postgresql@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/postgresql/-/postgresql-4.3.0.tgz#4f8b0e945c9fd9da3a4823cba5358e2feb403a04"
+  integrity sha512-RVP/wZXKppGwgNzHvWC9RlyDOf7PL4Aszgu09lojZvm6fmT4pwR1/tTGE7zW7SDSjatX6KyxGXRIjeY0J6FNMQ==
+  dependencies:
+    "@mikro-orm/knex" "^4.3.0"
+    pg "8.5.1"
+
 "@mikro-orm/sqlite@^4.3.0":
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/@mikro-orm/sqlite/-/sqlite-4.3.0.tgz#5746f2a2020982f6a550f730c681fe4924542361"
@@ -13942,7 +13950,7 @@ pg-types@^2.1.0:
     postgres-date "~1.0.4"
     postgres-interval "^1.1.0"
 
-pg@^8.3.3:
+pg@8.5.1, pg@^8.3.3:
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/pg/-/pg-8.5.1.tgz#34dcb15f6db4a29c702bf5031ef2e1e25a06a120"
   integrity sha512-9wm3yX9lCfjvA98ybCyw2pADUivyNWT/yIP4ZcDVpMN0og70BUWYEGXPCTAQdGTAqnytfRADb7NERrY1qxhIqw==

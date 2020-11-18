@@ -56,15 +56,29 @@ type ResourceShortNames =
     | 'teamInvite'
     | 'passwordReset'
 
+type AuthResources = {
+    user: ResourceContract
+    team: ResourceContract
+    role: ResourceContract
+    oauthIdentity: ResourceContract
+    permission: ResourceContract
+    teamInvite: ResourceContract
+    passwordReset: ResourceContract
+}
+type AuthSetupFn = (resources: AuthResources) => any
+
 class Auth {
-    private config: AuthPluginConfig = {
+    private config: AuthPluginConfig & {
+        setupFn: AuthSetupFn
+    } = {
         profilePictures: false,
-        nameResource: 'User',
+        userResource: 'User',
         roleResource: 'Role',
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
         fields: [],
         apiPath: 'auth',
+        setupFn: () => this,
         jwt: {
             expiresIn: '7d',
             secretKey: process.env.JWT_SECRET || 'auth-secret-key'
@@ -80,8 +94,14 @@ class Auth {
     }
 
     private resources: {
-        [key: string]: ResourceContract
-    } = {}
+        user: ResourceContract
+        team: ResourceContract
+        role: ResourceContract
+        oauthIdentity: ResourceContract
+        permission: ResourceContract
+        teamInvite: ResourceContract
+        passwordReset: ResourceContract
+    } = {} as any
 
     public constructor() {
         this.refreshResources()
@@ -96,7 +116,7 @@ class Auth {
         this.resources.teamInvite = this.teamInviteResource()
         this.resources.passwordReset = this.passwordResetResource()
 
-        this.config.resources = this.resources
+        this.config.setupFn(this.resources)
     }
 
     public afterUpdateUser(hook: HookFunction) {
@@ -117,8 +137,14 @@ class Auth {
         return this
     }
 
-    public name(name: string) {
-        this.config.nameResource = name
+    public setup(fn: AuthSetupFn) {
+        this.config.setupFn = fn
+
+        return this
+    }
+
+    public user(name: string) {
+        this.config.userResource = name
 
         return this
     }
@@ -201,7 +227,7 @@ class Auth {
             passwordField = passwordField.nullable()
         }
 
-        const userResource = resource(this.config.nameResource)
+        const userResource = resource(this.config.userResource)
             .fields([
                 text('Name').searchable().nullable(),
                 text('Email')
@@ -285,8 +311,8 @@ class Auth {
         return resource('Team')
             .fields([
                 text('Name').unique(),
-                belongsTo(this.config.nameResource),
-                belongsToMany(this.config.nameResource),
+                belongsTo(this.config.userResource),
+                belongsToMany(this.config.userResource),
                 ...this.config.teamFields
             ])
             .hideFromNavigation()
@@ -298,7 +324,7 @@ class Auth {
             text('Role'),
             text('Token').unique().rules('required'),
             belongsTo(this.resources.team.data.name),
-            belongsTo(this.config.nameResource)
+            belongsTo(this.config.userResource)
         ])
     }
 
@@ -331,7 +357,7 @@ class Auth {
                     .searchable()
                     .hideOnUpdate()
                     .rules('required'),
-                belongsToMany(this.config.nameResource),
+                belongsToMany(this.config.userResource),
                 belongsToMany(this.config.permissionResource)
             ])
             .displayField('name')
@@ -353,7 +379,7 @@ class Auth {
         return resource('Oauth Identity')
             .hideFromNavigation()
             .fields([
-                belongsTo(this.config.nameResource).nullable(),
+                belongsTo(this.config.userResource).nullable(),
                 textarea('Access Token')
                     .hidden()
                     .hideOnUpdate()
@@ -380,6 +406,25 @@ class Auth {
                     extendGraphQlMiddleware
                 }) => {
                     this.refreshResources()
+
+                    pushResource(this.resources.user)
+                    pushResource(this.resources.passwordReset)
+
+                    if (this.config.rolesAndPermissions) {
+                        pushResource(this.resources.role)
+
+                        pushResource(this.resources.permission)
+                    }
+
+                    if (this.config.teams) {
+                        pushResource(this.resources.team)
+
+                        pushResource(this.resources.teamInvite)
+                    }
+
+                    if (Object.keys(this.config.providers).length > 0) {
+                        pushResource(this.resources.oauthIdentity)
+                    }
 
                     if (Object.keys(this.config.providers).length > 0) {
                         databaseConfig.entities = [
@@ -443,32 +488,16 @@ class Auth {
                         }
                     ])
 
-                    pushResource(this.resources.user)
-                    pushResource(this.resources.passwordReset)
-
-                    if (this.config.rolesAndPermissions) {
-                        pushResource(this.resources.role)
-
-                        pushResource(this.resources.permission)
-                    }
-
-                    if (this.config.teams) {
-                        pushResource(this.resources.team)
-
-                        pushResource(this.resources.teamInvite)
-                    }
-
-                    if (Object.keys(this.config.providers).length > 0) {
-                        pushResource(this.resources.oauthIdentity)
-                    }
-
                     return Promise.resolve()
                 }
             )
 
             .afterDatabaseSetup(async config => {
                 if (this.config.rolesAndPermissions) {
-                    await setup(config, this.config)
+                    await setup(config, [
+                        this.resources.role,
+                        this.resources.permission
+                    ])
                 }
             })
 
@@ -867,12 +896,12 @@ class Auth {
         return gql`
         type register_${snakeCaseName}_response {
             token: String!
-            user: customer!
+            ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_${snakeCaseName}_response {
             token: String!
-            user: customer!
+            ${snakeCaseName}: ${snakeCaseName}!
         }
 
         input login_${snakeCaseName}_input {
@@ -931,16 +960,16 @@ class Auth {
             request_password_reset(object: request_password_reset_input!): Boolean!
             reset_password(object: reset_password_input!): Boolean!
             enable_two_factor_auth: enable_two_factor_auth_response!
-            disable_two_factor_auth(object: disable_two_factor_auth_input!): customer!
-            confirm_enable_two_factor_auth(object: confirm_enable_two_factor_auth_input!): customer!
-            confirm_email(object: confirm_email_input!): customer!
+            disable_two_factor_auth(object: disable_two_factor_auth_input!): ${snakeCaseName}!
+            confirm_enable_two_factor_auth(object: confirm_enable_two_factor_auth_input!): ${snakeCaseName}!
+            confirm_email(object: confirm_email_input!): ${snakeCaseName}!
             resend_verification_email: Boolean!
             social_auth_register(object: social_auth_register_input!): register_${snakeCaseName}_response!
             social_auth_login(object: social_auth_login_input!): login_${snakeCaseName}_response!
         }
 
         extend type Query {
-            authenticated_${snakeCaseName}: customer!
+            authenticated_${snakeCaseName}: ${snakeCaseName}!
         }
     `
     }
@@ -954,19 +983,31 @@ class Auth {
             body.object ? body.object : body
         )
 
-        const authenticatorRole: any = await manager.findOneOrFail(
-            this.resources.role.data.pascalCaseName,
-            {
-                slug: 'authenticated'
+        if (this.config.rolesAndPermissions) {
+            const authenticatorRole: any = await manager.findOneOrFail(
+                this.resources.role.data.pascalCaseName,
+                {
+                    slug: 'authenticated'
+                }
+            )
+
+            if (!authenticatorRole) {
+                throw {
+                    status: 400,
+                    message:
+                        'The authenticated role must be created to use roles and permissions.'
+                }
             }
-        )
+
+            createUserPayload.roles = [authenticatorRole.id]
+        }
 
         const UserResource = this.resources.user
 
-        const user: any = manager.create(UserResource.data.pascalCaseName, {
-            ...createUserPayload,
-            roles: [authenticatorRole.id]
-        })
+        const user: any = manager.create(
+            UserResource.data.pascalCaseName,
+            createUserPayload
+        )
 
         await manager.persistAndFlush(user)
 
@@ -975,16 +1016,18 @@ class Auth {
         }
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
-            mailer.to(user.email).sendRaw(`
-                    Please verify your email using this link: ${user.email_verification_token}
-                `)
+            mailer
+                .to(user.email)
+                .sendRaw(
+                    `Please verify your email using this link: ${user.email_verification_token}`
+                )
         }
 
         return {
             token: this.generateJwt({
                 id: user.id
             }),
-            user
+            [this.resources.user.data.snakeCaseName]: user
         }
     }
 
@@ -1130,7 +1173,7 @@ class Auth {
             token: this.generateJwt({
                 id: user.id
             }),
-            user
+            [this.resources.user.data.snakeCaseName]: user
         }
     }
 
@@ -1145,7 +1188,9 @@ class Auth {
                 email
             },
             {
-                populate: ['roles.permissions']
+                populate: this.config.rolesAndPermissions
+                    ? ['roles.permissions']
+                    : []
             }
         )
 
@@ -1163,7 +1208,7 @@ class Auth {
             }
         }
 
-        if (user.two_factor_enabled) {
+        if (this.config.twoFactorAuth && user.two_factor_enabled) {
             const Speakeasy = require('speakeasy')
 
             if (!token) {
@@ -1191,7 +1236,7 @@ class Auth {
             token: this.generateJwt({
                 id: user.id
             }),
-            user: user.toJSON()
+            [this.resources.user.data.snakeCaseName]: user.toJSON()
         }
     }
 

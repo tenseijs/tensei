@@ -237,7 +237,11 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public fields(fields: FieldContract[]) {
-        this.data.fields = [id('ID'), ...fields]
+        if (this.data.fields.length) {
+            this.data.fields = [...this.data.fields, ...fields]
+        } else {
+            this.data.fields = [id('ID'), ...fields]
+        }
 
         return this
     }
