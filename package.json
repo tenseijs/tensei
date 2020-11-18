@@ -12,7 +12,8 @@
         "test": "yarn lerna run test",
         "build": "yarn lerna run build",
         "dev": "yarn lerna run dev",
-        "prettier": "yarn lerna run prettier"
+        "prettier": "yarn lerna run prettier",
+        "publish": "yarn build && yarn lerna publish"
     },
     "config": {
         "commitizen": {
