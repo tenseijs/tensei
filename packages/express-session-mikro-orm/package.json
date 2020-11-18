@@ -1,8 +1,11 @@
 {
     "name": "express-session-mikro-orm",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "main": "build/index.js",
     "license": "MIT",
+    "files": [
+        "build/"
+    ],
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
         "build": "rimraf build && tsc --p tsconfig.json",

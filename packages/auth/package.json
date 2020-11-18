@@ -3,6 +3,9 @@
     "version": "0.0.0",
     "main": "./build/index.js",
     "license": "MIT",
+    "files": [
+        "build/"
+    ],
     "types": "./build/index.d.ts",
     "devDependencies": {
         "@types/express": "^4.17.6",

@@ -4,6 +4,9 @@
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
+    "files": [
+        "build/"
+    ],
     "devDependencies": {
         "@types/express": "^4.17.6",
         "@types/jest": "^25.2.3",
