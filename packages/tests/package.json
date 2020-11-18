@@ -1,6 +1,6 @@
 {
     "name": "@tensei/tests",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "license": "MIT",
     "devDependencies": {
         "@types/faker": "^4.1.12",
@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "@mikro-orm/mongodb": "^4.3.0",
-        "@tensei/common": "^0.0.1",
+        "@tensei/common": "^0.1.0",
         "@tensei/mail": "0.0.0"
     },
     "config": {
