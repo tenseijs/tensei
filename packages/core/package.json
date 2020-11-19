@@ -3,10 +3,8 @@
     "version": "0.2.1",
     "main": "./build/index.js",
     "license": "MIT",
-    "types": "./Tensei.d.ts",
     "files": [
-        "build/",
-        "Tensei.d.ts"
+        "build/"
     ],
     "devDependencies": {
         "@types/bcryptjs": "^2.4.2",

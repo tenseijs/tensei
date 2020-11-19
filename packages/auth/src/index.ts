@@ -87,6 +87,7 @@ class Auth {
             secretKey: process.env.JWT_SECRET || 'auth-secret-key',
             refreshTokenExpiresIn: 60 * 60 * 24 * 7
         },
+        cookieOptions: {},
         refresTokenCookieName: '___refresh__token',
         teams: false,
         teamFields: [],
@@ -828,6 +829,12 @@ class Auth {
         ]
     }
 
+    cookieOptions(cookieOptions: AuthPluginConfig['cookieOptions']) {
+        this.config.cookieOptions = cookieOptions
+
+        return this
+    }
+
     private setRefreshToken(ctx: ApiContext) {
         ctx.res.cookie(
             this.config.refresTokenCookieName,
@@ -839,8 +846,9 @@ class Auth {
                 true
             ),
             {
+                ...this.config.cookieOptions,
                 httpOnly: true,
-                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000
+                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000,
             }
         )
     }
@@ -924,8 +932,22 @@ class Auth {
                 .mutation()
                 .handle(async (_, args, ctx, info) =>
                     this.handleRefreshTokens(ctx)
-                )
+                ),
+            graphQlQuery('Remove refresh token')
+                .path('remove_refresh_token')
+                .mutation()
+                .handle(async (_, args, ctx, info) => this.removeRefreshTokens(ctx))
         ]
+    }
+
+    private async removeRefreshTokens(ctx: ApiContext) {
+        ctx.res.cookie(this.config.refresTokenCookieName, '', {
+            ...this.config.cookieOptions,
+            httpOnly: true,
+            maxAge: 0,
+        })
+
+        return true
     }
 
     private async handleRefreshTokens(ctx: ApiContext) {
@@ -1053,6 +1075,7 @@ class Auth {
             social_auth_register(object: social_auth_register_input!): register_${snakeCaseName}_response!
             social_auth_login(object: social_auth_login_input!): login_${snakeCaseName}_response!
             refresh_token: login_${snakeCaseName}_response!
+            remove_refresh_token: Boolean!
         }
 
         extend type Query {
@@ -1382,7 +1405,7 @@ class Auth {
                 slug: 'public'
             },
             {
-                populate: ['permissions'],
+                populate: [this.resources.permission.data.snakeCaseNamePlural],
                 refresh: true
             }
         )
@@ -1390,8 +1413,8 @@ class Auth {
         if (!user) {
             ctx.user = {
                 public: true,
-                roles: [publicRole as UserRole],
-                permissions: publicRole.permissions
+                [this.resources.role.data.snakeCaseNamePlural]: [publicRole as UserRole],
+                [this.resources.permission.data.snakeCaseNamePlural]: publicRole[this.resources.permission.data.snakeCaseNamePlural]
                     .toJSON()
                     .map((permission: any) => permission.slug)
             } as any

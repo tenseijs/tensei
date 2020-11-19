@@ -4,6 +4,7 @@ import {
     FieldContract,
     ResourceContract
 } from '@tensei/common'
+import { CookieOptions } from 'express'
 import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'
 
@@ -40,6 +41,7 @@ export interface AuthPluginConfig {
     }
     refresTokenCookieName: string
     teams: boolean
+    cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>,
     verifyEmails?: boolean
     skipWelcomeEmail?: boolean
     teamFields: FieldContract[]

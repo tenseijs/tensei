@@ -8,7 +8,8 @@ import {
     AuthenticationError,
     ForbiddenError,
     ValidationError,
-    UserInputError
+    UserInputError,
+    GetMiddlewareOptions
 } from 'apollo-server-express'
 import {
     plugin,
@@ -95,6 +96,8 @@ class Graphql {
     private pluginExtensions: GraphQLPluginExtension[] = []
 
     private appolloConfig: OmittedApolloConfig = {}
+
+    private getMiddlewareOptions: GetMiddlewareOptions = {}
 
     schemaString: string = ''
 
@@ -1024,8 +1027,14 @@ input id_where_query {
         return this
     }
 
-    configureApollo(config: OmittedApolloConfig) {
+    configure(config: OmittedApolloConfig) {
         this.appolloConfig = config
+
+        return this
+    }
+
+    middlewareOptions(config: GetMiddlewareOptions) {
+        this.getMiddlewareOptions = config || {}
 
         return this
     }
@@ -1193,7 +1202,8 @@ input id_where_query {
                 })
 
                 graphQlServer.applyMiddleware({
-                    app
+                    app,
+                    ...this.getMiddlewareOptions
                 })
             })
     }
