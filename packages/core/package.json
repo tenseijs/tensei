@@ -2,6 +2,7 @@
     "name": "@tensei/core",
     "version": "0.2.1",
     "main": "./build/index.js",
+    "types": "./typings/tensei.d.ts",
     "license": "MIT",
     "files": [
         "build/"
