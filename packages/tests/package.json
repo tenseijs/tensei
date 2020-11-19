@@ -18,8 +18,7 @@
     },
     "dependencies": {
         "@mikro-orm/mongodb": "^4.3.0",
-        "@tensei/common": "^0.2.1",
-        "@tensei/mail": "0.0.0"
+        "@tensei/common": "^0.2.1"
     },
     "config": {
         "commitizen": {

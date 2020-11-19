@@ -18,6 +18,7 @@
         "typescript": "^3.9.7"
     },
     "dependencies": {
+        "@contentful/forma-36-react-components": "^3.67.1",
         "@tensei/common": "^0.2.1",
         "trix": "^1.2.4"
     },
