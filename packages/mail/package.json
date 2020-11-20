@@ -33,7 +33,6 @@
         "access": "public"
     },
     "dependencies": {
-        "@adonisjs/mail": "3.0.10",
         "@types/get-stream": "^3.0.2",
         "@types/got": "^9.6.11",
         "@types/nodemailer": "^6.4.0",

@@ -848,7 +848,7 @@ class Auth {
             {
                 ...this.config.cookieOptions,
                 httpOnly: true,
-                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000,
+                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000
             }
         )
     }
@@ -893,7 +893,8 @@ class Auth {
                 .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
                 .query()
                 .handle(async (_, args, ctx, info) => {
-                    if (! ctx.user || ctx.user.public) throw ctx.authenticationError()
+                    if (!ctx.user || ctx.user.public)
+                        throw ctx.authenticationError()
 
                     return ctx.user
                 }),
@@ -936,7 +937,9 @@ class Auth {
             graphQlQuery('Remove refresh token')
                 .path('remove_refresh_token')
                 .mutation()
-                .handle(async (_, args, ctx, info) => this.removeRefreshTokens(ctx))
+                .handle(async (_, args, ctx, info) =>
+                    this.removeRefreshTokens(ctx)
+                )
         ]
     }
 
@@ -944,7 +947,7 @@ class Auth {
         ctx.res.cookie(this.config.refresTokenCookieName, '', {
             ...this.config.cookieOptions,
             httpOnly: true,
-            maxAge: 0,
+            maxAge: 0
         })
 
         return true
@@ -1413,8 +1416,13 @@ class Auth {
         if (!user) {
             ctx.user = {
                 public: true,
-                [this.resources.role.data.snakeCaseNamePlural]: [publicRole as UserRole],
-                [this.resources.permission.data.snakeCaseNamePlural]: publicRole[this.resources.permission.data.snakeCaseNamePlural]
+                [this.resources.role.data.snakeCaseNamePlural]: [
+                    publicRole as UserRole
+                ],
+                [this.resources.permission.data
+                    .snakeCaseNamePlural]: publicRole[
+                    this.resources.permission.data.snakeCaseNamePlural
+                ]
                     .toJSON()
                     .map((permission: any) => permission.slug)
             } as any
@@ -1430,9 +1438,12 @@ class Auth {
         if (!token) return
 
         try {
-            const { id, refresh } = Jwt.verify(token, this.config.jwt.secretKey) as JwtPayload
+            const { id, refresh } = Jwt.verify(
+                token,
+                this.config.jwt.secretKey
+            ) as JwtPayload
 
-            if (! id || refresh) {
+            if (!id || refresh) {
                 return
             }
 

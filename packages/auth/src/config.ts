@@ -41,7 +41,7 @@ export interface AuthPluginConfig {
     }
     refresTokenCookieName: string
     teams: boolean
-    cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>,
+    cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>
     verifyEmails?: boolean
     skipWelcomeEmail?: boolean
     teamFields: FieldContract[]

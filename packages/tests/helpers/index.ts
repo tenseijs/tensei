@@ -1,10 +1,12 @@
 import Faker from 'faker'
 import { EntityManager } from '@mikro-orm/core'
 import { MongoDriver } from '@mikro-orm/mongodb'
-import { TenseiContract, plugin } from '@tensei/core'
 import { Tag, Comment, User, Post, Reaction } from './resources'
+import { TenseiContract, plugin, tensei, PluginContract } from '@tensei/core'
 
 export const resources = [Tag, Comment, User, Post, Reaction]
+
+let loggedDatabase = false
 
 export const fakeTag = () =>
     ({
@@ -39,6 +41,38 @@ export const fakePost = () => ({
     scheduled_for: Faker.date.future(),
     published_at: Faker.date.past()
 })
+
+export const getDatabaseCredentials = () => {
+    const config = {
+        type: (process.env.DATABASE_TYPE || 'mysql') as any,
+        dbName: process.env.DATABASE_NAME || 'tensei',
+        user: process.env.DATABASE_USER || 'root',
+        password: process.env.DATABASE_PASSWORD || ''
+    }
+
+    return config
+}
+
+export const setup = async (plugins: PluginContract[] = [], reset = true) => {
+    const instance = await tensei()
+        .resources(resources)
+        .plugins(plugins)
+        .databaseConfig(getDatabaseCredentials())
+        .boot()
+
+    reset && (await cleanupDatabase(instance))
+
+    // @ts-ignore
+    if (!loggedDatabase) {
+        instance.ctx.logger.info(
+            `Running tensei tests for ${instance.ctx.orm.em.config.get('type')}`
+        )
+
+        loggedDatabase = true
+    }
+
+    return instance
+}
 
 export const cleanupDatabase = async (instance: TenseiContract) => {
     const type = instance.ctx.orm.config.get('type')

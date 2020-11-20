@@ -309,13 +309,13 @@ test('Can request a password reset and reset password', async () => {
     })
 })
 
-test('access tokens and refresh tokens are generated correctly', async (done) => {
+test('access tokens and refresh tokens are generated correctly', async done => {
     const jwtExpiresIn = 2 // in seconds
     const refreshTokenExpiresIn = 4 // in seconds
 
     const {
         ctx: {
-            orm: { em },
+            orm: { em }
         },
         app
     } = await setup([
@@ -327,7 +327,7 @@ test('access tokens and refresh tokens are generated correctly', async (done) =>
                 refreshTokenExpiresIn
             })
             .plugin(),
-        graphql().plugin(),
+        graphql().plugin()
     ])
 
     const client = Supertest(app)
@@ -355,41 +355,50 @@ test('access tokens and refresh tokens are generated correctly', async (done) =>
     })
 
     const accessToken: string = login_response.body.data.login_student.token
-    const refreshToken: string = login_response.headers['set-cookie'][0].split(';')[0].split('=')[1]
+    const refreshToken: string = login_response.headers['set-cookie'][0]
+        .split(';')[0]
+        .split('=')[1]
 
     setTimeout(async () => {
         // Wait for the jwt to expire, then run a test, make sure its invalid and fails.
-        const authenticated_response = await client.post(`/graphql`).send({
-            query: gql`
-                query authenticated_student {
-                    authenticated_student {
-                        id
-                        name
-                        email
-                    }
-                }
-            `,
-        }).set('Authorization', `Bearer ${accessToken}`)
-
-        expect(authenticated_response.body.data).toBeNull()
-        expect(authenticated_response.body.errors[0].message).toBe('Unauthenticated.')
-
-        // Refresh the jwt with the valid refresh token. Expect to get a new, valid JWT
-
-        const refresh_token_response = await client.post(`/graphql`).send({
-            query: gql`
-                mutation refresh_token {
-                    refresh_token {
-                        token
-                        student {
+        const authenticated_response = await client
+            .post(`/graphql`)
+            .send({
+                query: gql`
+                    query authenticated_student {
+                        authenticated_student {
                             id
+                            name
                             email
                         }
                     }
-                }
-            `,
-        }).set('Cookie', `___refresh__token=${refreshToken}`)
+                `
+            })
+            .set('Authorization', `Bearer ${accessToken}`)
 
+        expect(authenticated_response.body.data).toBeNull()
+        expect(authenticated_response.body.errors[0].message).toBe(
+            'Unauthenticated.'
+        )
+
+        // Refresh the jwt with the valid refresh token. Expect to get a new, valid JWT
+
+        const refresh_token_response = await client
+            .post(`/graphql`)
+            .send({
+                query: gql`
+                    mutation refresh_token {
+                        refresh_token {
+                            token
+                            student {
+                                id
+                                email
+                            }
+                        }
+                    }
+                `
+            })
+            .set('Cookie', `___refresh__token=${refreshToken}`)
 
         expect(refresh_token_response.body.data.refresh_token).toEqual({
             token: expect.any(String),
@@ -400,19 +409,27 @@ test('access tokens and refresh tokens are generated correctly', async (done) =>
         })
 
         // Make a request with the refreshed jwt. Expect it to return a valid authenticated user
-        const authenticated_refreshed_response = await client.post(`/graphql`).send({
-            query: gql`
-                query authenticated_student {
-                    authenticated_student {
-                        id
-                        name
-                        email
+        const authenticated_refreshed_response = await client
+            .post(`/graphql`)
+            .send({
+                query: gql`
+                    query authenticated_student {
+                        authenticated_student {
+                            id
+                            name
+                            email
+                        }
                     }
-                }
-            `,
-        }).set('Authorization', `Bearer ${refresh_token_response.body.data.refresh_token.token}`)
+                `
+            })
+            .set(
+                'Authorization',
+                `Bearer ${refresh_token_response.body.data.refresh_token.token}`
+            )
 
-        expect(authenticated_refreshed_response.body.data.authenticated_student).toEqual({
+        expect(
+            authenticated_refreshed_response.body.data.authenticated_student
+        ).toEqual({
             name: null,
             id: user.id.toString(),
             email: user.email
@@ -422,55 +439,70 @@ test('access tokens and refresh tokens are generated correctly', async (done) =>
     setTimeout(async () => {
         // After the refresh token has expired, make a call to confirm it can no longer return fresh and new jwts
 
-        const invalid_refresh_token_response = await client.post(`/graphql`).send({
-            query: gql`
-                mutation refresh_token {
-                    refresh_token {
-                        token
-                        student {
-                            id
-                            email
+        const invalid_refresh_token_response = await client
+            .post(`/graphql`)
+            .send({
+                query: gql`
+                    mutation refresh_token {
+                        refresh_token {
+                            token
+                            student {
+                                id
+                                email
+                            }
                         }
                     }
-                }
-            `,
-        }).set('Cookie', `___refresh__token=${refreshToken}`)
+                `
+            })
+            .set('Cookie', `___refresh__token=${refreshToken}`)
 
-        expect(invalid_refresh_token_response.body.errors[0].message).toBe('Invalid refresh token.')
+        expect(invalid_refresh_token_response.body.errors[0].message).toBe(
+            'Invalid refresh token.'
+        )
 
         done()
     }, refreshTokenExpiresIn * 1000)
 
-    const authenticated_response = await client.post(`/graphql`).send({
-        query: gql`
-            query authenticated_student {
-                authenticated_student {
-                    id
-                    name
-                    email
+    const authenticated_response = await client
+        .post(`/graphql`)
+        .send({
+            query: gql`
+                query authenticated_student {
+                    authenticated_student {
+                        id
+                        name
+                        email
+                    }
                 }
-            }
-        `,
-    }).set('Authorization', `Bearer ${accessToken}`)
+            `
+        })
+        .set('Authorization', `Bearer ${accessToken}`)
 
-    const refresh_token_has_no_access_response = await client.post(`/graphql`).send({
-        query: gql`
-            query authenticated_student {
-                authenticated_student {
-                    id
-                    name
-                    email
+    const refresh_token_has_no_access_response = await client
+        .post(`/graphql`)
+        .send({
+            query: gql`
+                query authenticated_student {
+                    authenticated_student {
+                        id
+                        name
+                        email
+                    }
                 }
-            }
-        `,
-    }).set('Authorization', `Bearer ${refreshToken}`)
+            `
+        })
+        .set('Authorization', `Bearer ${refreshToken}`)
 
     expect(refresh_token_has_no_access_response.body.data).toBeNull()
-    expect(refresh_token_has_no_access_response.body.errors[0].message).toBe('Unauthenticated.')
+    expect(refresh_token_has_no_access_response.body.errors[0].message).toBe(
+        'Unauthenticated.'
+    )
 
     expect(authenticated_response.body.data.authenticated_student).toEqual({
         name: null,
         id: user.id.toString(),
         email: user.email
     })
+
+    // @ts-ignore
 }, 10000)

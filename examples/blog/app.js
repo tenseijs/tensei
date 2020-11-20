@@ -40,12 +40,14 @@ module.exports = tensei()
                 secret: process.env.LINKEDIN_SECRET,
             })
             .plugin(),
-        graphql().middlewareOptions({
-            cors: {
-                credentials: true,
-                origin: ['http://localhost:3001']
-            }
-        }).plugin(),
+        graphql()
+            .middlewareOptions({
+                cors: {
+                    credentials: true,
+                    origin: ['http://localhost:3001'],
+                },
+            })
+            .plugin(),
         rest().plugin(),
         plugin('Custom Slug Validation').setup(({ indicative }) => {
             indicative.validator.extend('slug', {
@@ -59,9 +61,18 @@ module.exports = tensei()
         }),
     ])
     .databaseConfig({
-        type: 'mysql',
-        dbName: 'mikrotensei',
+        // type: 'mysql',
+        // dbName: 'mikrotensei',
         // debug: true,
         // user: 'mikrotensei',
         // password: 'password',
+
+        type: 'sqlite',
+        dbName: 'mikrotensei',
+
+        // type: 'postgresql',
+        // // debug: true,
+        // dbName: 'bahdcoder',
+        // user: 'bahdcoder',
+        // password: 'bahdcoder'
     })
