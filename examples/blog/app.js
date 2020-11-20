@@ -2,7 +2,7 @@ require('dotenv').config()
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
-const { tensei, plugin } = require('@tensei/core')
+const { tensei, plugin, route } = require('@tensei/core')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -14,6 +14,16 @@ module.exports = tensei()
     .resources([Tag, Post, User, Comment])
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
+    .routes([
+        route('Get products')
+            .get()
+            .path('/products')
+            .handle((req, res) =>
+                res.formatter.ok({
+                    name: 'Product 1',
+                })
+            ),
+    ])
     .plugins([
         auth()
             .user('Customer')
@@ -61,14 +71,14 @@ module.exports = tensei()
         }),
     ])
     .databaseConfig({
-        // type: 'mysql',
-        // dbName: 'mikrotensei',
+        type: 'mysql',
+        dbName: 'mikrotensei',
         // debug: true,
         // user: 'mikrotensei',
         // password: 'password',
 
-        type: 'sqlite',
-        dbName: 'mikrotensei',
+        // type: 'sqlite',
+        // dbName: 'mikrotensei',
 
         // type: 'postgresql',
         // // debug: true,

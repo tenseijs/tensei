@@ -2,7 +2,13 @@ import Faker from 'faker'
 import { EntityManager } from '@mikro-orm/core'
 import { MongoDriver } from '@mikro-orm/mongodb'
 import { Tag, Comment, User, Post, Reaction } from './resources'
-import { TenseiContract, plugin, tensei, PluginContract, DatabaseConfiguration } from '@tensei/core'
+import {
+    TenseiContract,
+    plugin,
+    tensei,
+    PluginContract,
+    DatabaseConfiguration
+} from '@tensei/core'
 
 export const resources = [Tag, Comment, User, Post, Reaction]
 
@@ -46,13 +52,13 @@ export const getDatabaseCredentials = () => {
     const databaseType = (process.env.DATABASE_TYPE || 'mysql') as any
 
     const config: DatabaseConfiguration = {
-        type: databaseType,
+        type: databaseType
     }
 
     if (databaseType === 'postgresql') {
         config.dbName = process.env.DATABASE_NAME || 'postgres'
         config.user = process.env.DATABASE_USER || 'postgres'
-        config.password = process.env.DATABASE_PASSWORD  || 'postgres'
+        config.password = process.env.DATABASE_PASSWORD || 'postgres'
     } else {
         config.dbName = process.env.DATABASE_NAME || 'tensei'
         config.user = process.env.DATABASE_USER || 'root'

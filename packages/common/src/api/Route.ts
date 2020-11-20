@@ -12,6 +12,7 @@ export class Route implements RouteContract {
         path: '',
         name: '',
         type: 'GET',
+        internal: false,
         middleware: [],
         snakeCaseName: '',
         paramCaseName: '',
@@ -85,6 +86,12 @@ export class Route implements RouteContract {
 
     handle(handler: RouteConfig['handler']) {
         this.config.handler = handler
+
+        return this
+    }
+
+    internal() {
+        this.config.internal = true
 
         return this
     }

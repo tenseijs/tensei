@@ -570,12 +570,16 @@ class Auth {
                 async ({ graphQlQueries, routes, apiPath }) => {
                     graphQlQueries.forEach(query => {
                         if (query.config.resource) {
-                            const { path } = query.config
+                            const { path, internal } = query.config
                             const {
                                 snakeCaseNamePlural: plural,
                                 snakeCaseName: singular,
                                 slug
                             } = query.config.resource.data
+
+                            if (!internal) {
+                                return
+                            }
 
                             if (
                                 [
@@ -626,13 +630,19 @@ class Auth {
 
                     routes.forEach(route => {
                         if (route.config.resource) {
-                            const { resource, path, type } = route.config
+                            const {
+                                resource,
+                                path,
+                                type,
+                                internal
+                            } = route.config
 
                             const { slugSingular, slugPlural } = resource.data
 
                             if (
                                 path === `/${apiPath}/${slugPlural}` &&
-                                type === 'POST'
+                                type === 'POST' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -643,7 +653,8 @@ class Auth {
 
                             if (
                                 path === `/${apiPath}/${slugPlural}` &&
-                                type === 'GET'
+                                type === 'GET' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -654,7 +665,8 @@ class Auth {
 
                             if (
                                 path === `/${apiPath}/${slugPlural}/:id` &&
-                                type === 'GET'
+                                type === 'GET' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -668,7 +680,8 @@ class Auth {
                                     `/${apiPath}/${slugPlural}/:id`,
                                     `/${apiPath}/${slugPlural}`
                                 ].includes(path) &&
-                                ['PUT', 'PATCH'].includes(type)
+                                ['PUT', 'PATCH'].includes(type) &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -682,7 +695,8 @@ class Auth {
                                     `/${apiPath}/${slugPlural}/:id`,
                                     `/${apiPath}/${slugPlural}`
                                 ].includes(path) &&
-                                type === 'DELETE'
+                                type === 'DELETE' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -694,9 +708,6 @@ class Auth {
 
                         route.middleware([
                             async (request, response, next) => {
-                                // @ts-ignore
-                                request.req = request
-
                                 await this.getAuthUserFromContext(
                                     request as any
                                 )
@@ -730,8 +741,6 @@ class Auth {
                                 next()
                             }
                         ])
-
-                        route.authorize(() => false)
                     })
                 }
             )
