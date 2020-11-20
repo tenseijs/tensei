@@ -1,6 +1,11 @@
 import { Request, Response } from 'express'
 import qs from 'qs'
-import { FindOptions, FilterQuery, AnyEntity, EntityName } from '@mikro-orm/core'
+import {
+    FindOptions,
+    FilterQuery,
+    AnyEntity,
+    EntityName
+} from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { responseEnhancer } from 'express-response-formatter'
 import { plugin, route, ResourceContract, RouteContract } from '@tensei/common'
@@ -18,7 +23,7 @@ class Rest {
             total,
             page:
                 findOptions.offset ||
-                    (findOptions.offset === 0 && findOptions.limit)
+                (findOptions.offset === 0 && findOptions.limit)
                     ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
                     : null,
             per_page: findOptions.limit ? findOptions.limit : null,
@@ -72,7 +77,7 @@ class Rest {
             const parsedQuery = qs.parse(strigifiedQuery, {
                 decoder(value) {
                     if (/^(\d+|\d*\.\d+)$/.test(value)) {
-                        return parseFloat(value);
+                        return parseFloat(value)
                     }
 
                     value = value.replace(/where/, '')
@@ -81,15 +86,15 @@ class Rest {
                         true: true,
                         false: false,
                         null: null,
-                        undefined: undefined,
-                    };
+                        undefined: undefined
+                    }
                     if (value in keywords) {
-                        return keywords[value];
+                        return keywords[value]
                     }
 
-                    return value;
+                    return value
                 }
-            });
+            })
             whereOptions = parsedQuery
         }
 
@@ -151,7 +156,9 @@ class Rest {
                             query,
                             resource
                         )
-                        const whereOptions = this.parseQueryToWhereOptions(query)
+                        const whereOptions = this.parseQueryToWhereOptions(
+                            query
+                        )
 
                         const [entities, total] = await manager.findAndCount(
                             modelName,
@@ -172,7 +179,10 @@ class Rest {
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, query }, response) => {
-                        const findOptions = this.parseQueryToFindOptions(query, resource)
+                        const findOptions = this.parseQueryToFindOptions(
+                            query,
+                            resource
+                        )
 
                         const entity = await manager.findOne(
                             modelName as EntityName<AnyEntity<any>>,
@@ -195,15 +205,23 @@ class Rest {
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id/:relatedResource`))
                     .handle(async ({ manager, params, query }, response) => {
-                        const whereOptions = this.parseQueryToWhereOptions(query)
+                        const whereOptions = this.parseQueryToWhereOptions(
+                            query
+                        )
                         try {
                             const entity = await manager.findOne(
                                 modelName as EntityName<AnyEntity<any>>,
-                                params.id as FilterQuery<AnyEntity<any>>,
+                                params.id as FilterQuery<AnyEntity<any>>
                             )
 
-                            await manager.populate(entity, params.relatedResource, whereOptions)
-                            return response.formatter.ok(entity?.[params.relatedResource])
+                            await manager.populate(
+                                entity,
+                                params.relatedResource,
+                                whereOptions
+                            )
+                            return response.formatter.ok(
+                                entity?.[params.relatedResource]
+                            )
                         } catch (error) {
                             if (error?.name === 'ValidationError') {
                                 return response.formatter.notFound(
@@ -223,10 +241,15 @@ class Rest {
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, body }, response) => {
-                        const entity = manager.findOne(modelName as EntityName<AnyEntity<any>>, params.id as FilterQuery<AnyEntity<any>>)
+                        const entity = manager.findOne(
+                            modelName as EntityName<AnyEntity<any>>,
+                            params.id as FilterQuery<AnyEntity<any>>
+                        )
 
                         if (!entity) {
-                            return response.formatter.notFound(`Could not find resourceName with ID of ${params.id}`)
+                            return response.formatter.notFound(
+                                `Could not find resourceName with ID of ${params.id}`
+                            )
                         }
 
                         manager.assign(entity, body)
@@ -243,11 +266,17 @@ class Rest {
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, body }, response) => {
-                        const modelRepository = manager.getRepository(modelName as EntityName<AnyEntity<any>>)
-                        const entity = modelRepository.findOne(params.id as FilterQuery<AnyEntity<any>>)
+                        const modelRepository = manager.getRepository(
+                            modelName as EntityName<AnyEntity<any>>
+                        )
+                        const entity = modelRepository.findOne(
+                            params.id as FilterQuery<AnyEntity<any>>
+                        )
 
                         if (!entity) {
-                            return response.formatter.notFound(`Could not find resourceName with ID of ${params.id}`)
+                            return response.formatter.notFound(
+                                `Could not find resourceName with ID of ${params.id}`
+                            )
                         }
 
                         await modelRepository.removeAndFlush(entity)
@@ -273,7 +302,7 @@ class Rest {
             )
             .setup(async ({ app, routes }) => {
                 routes.forEach(route => {
-                    ; (app as any)[route.config.type.toLowerCase()](
+                    ;(app as any)[route.config.type.toLowerCase()](
                         route.config.path,
                         ...route.config.middleware.map(fn => AsyncHandler(fn)),
                         AsyncHandler(
