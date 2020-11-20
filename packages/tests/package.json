@@ -18,7 +18,11 @@
     },
     "dependencies": {
         "@mikro-orm/mongodb": "^4.3.0",
-        "@tensei/common": "^0.2.3"
+        "@mikro-orm/mysql": "^4.3.0",
+        "@mikro-orm/sqlite": "^4.3.0",
+        "@mikro-orm/postgresql": "^4.3.0",
+        "@tensei/common": "^0.2.3",
+        "@tensei/mail": "^0.2.3"
     },
     "config": {
         "commitizen": {

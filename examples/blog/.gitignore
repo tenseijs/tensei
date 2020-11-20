@@ -3,3 +3,4 @@ node_modules/
 connect-session-knex.sqlite
 blog.sqlite
 storage/
+mikrotensei
