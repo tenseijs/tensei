@@ -44,7 +44,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Build packages
-        run: echo "This command would be yarn build in future"
+        run: yarn build
       - name: Run package tests on mysql database
         run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
         env:
