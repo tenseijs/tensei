@@ -15,37 +15,39 @@ module.exports = tensei()
     .clientUrl('https://google.com')
     .defaultStorageDriver('local')
     .plugins([
-        auth()
-            .user('Customer')
-            .twoFactorAuth()
-            .verifyEmails()
-            .teams()
-            .apiPath('auth')
-            .rolesAndPermissions()
-            .social('github', {
-                key: process.env.GITHUB_KEY,
-                secret: process.env.GITHUB_SECRET,
-                scope: ['user', 'user:email'],
-            })
-            .social('gitlab', {
-                key: process.env.GITLAB_KEY,
-                secret: process.env.GITLAB_SECRET,
-            })
-            .social('google', {
-                key: process.env.GOOGLE_KEY,
-                secret: process.env.GOOGLE_SECRET,
-            })
-            .social('linkedin', {
-                key: process.env.LINKEDIN_KEY,
-                secret: process.env.LINKEDIN_SECRET,
+        // auth()
+        //     .user('Customer')
+        //     .twoFactorAuth()
+        //     .verifyEmails()
+        //     .teams()
+        //     .apiPath('auth')
+        //     .rolesAndPermissions()
+        //     .social('github', {
+        //         key: process.env.GITHUB_KEY,
+        //         secret: process.env.GITHUB_SECRET,
+        //         scope: ['user', 'user:email'],
+        //     })
+        //     .social('gitlab', {
+        //         key: process.env.GITLAB_KEY,
+        //         secret: process.env.GITLAB_SECRET,
+        //     })
+        //     .social('google', {
+        //         key: process.env.GOOGLE_KEY,
+        //         secret: process.env.GOOGLE_SECRET,
+        //     })
+        //     .social('linkedin', {
+        //         key: process.env.LINKEDIN_KEY,
+        //         secret: process.env.LINKEDIN_SECRET,
+        //     })
+        //     .plugin(),
+        graphql()
+            .middlewareOptions({
+                cors: {
+                    credentials: true,
+                    origin: ['http://localhost:3001'],
+                },
             })
             .plugin(),
-        graphql().middlewareOptions({
-            cors: {
-                credentials: true,
-                origin: ['http://localhost:3001']
-            }
-        }).plugin(),
         rest().plugin(),
         plugin('Custom Slug Validation').setup(({ indicative }) => {
             indicative.validator.extend('slug', {
@@ -63,5 +65,5 @@ module.exports = tensei()
         dbName: 'mikrotensei',
         // debug: true,
         // user: 'mikrotensei',
-        // password: 'password',
+        password: 'password',
     })

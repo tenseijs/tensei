@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
-import { FindOptions } from '@mikro-orm/core'
+import qs from 'qs'
+import { FindOptions, FilterQuery, AnyEntity, EntityName } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { responseEnhancer } from 'express-response-formatter'
 import { plugin, route, ResourceContract, RouteContract } from '@tensei/common'
@@ -17,7 +18,7 @@ class Rest {
             total,
             page:
                 findOptions.offset ||
-                (findOptions.offset === 0 && findOptions.limit)
+                    (findOptions.offset === 0 && findOptions.limit)
                     ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
                     : null,
             per_page: findOptions.limit ? findOptions.limit : null,
@@ -44,7 +45,7 @@ class Rest {
         }
 
         if (query.filters) {
-            findOptions.filters = query.filters.split(',')
+            findOptions.filters = query.filters
         }
 
         if (query.sort) {
@@ -61,6 +62,38 @@ class Rest {
         }
 
         return findOptions
+    }
+
+    public parseQueryToWhereOptions(query: any) {
+        let whereOptions: FilterQuery<any> = {}
+
+        if (query.where) {
+            const strigifiedQuery = qs.stringify(query.where, { encode: false })
+            const parsedQuery = qs.parse(strigifiedQuery, {
+                decoder(value) {
+                    if (/^(\d+|\d*\.\d+)$/.test(value)) {
+                        return parseFloat(value);
+                    }
+
+                    value = value.replace(/where/, '')
+
+                    let keywords: any = {
+                        true: true,
+                        false: false,
+                        null: null,
+                        undefined: undefined,
+                    };
+                    if (value in keywords) {
+                        return keywords[value];
+                    }
+
+                    return value;
+                }
+            });
+            whereOptions = parsedQuery
+        }
+
+        return whereOptions
     }
 
     extendRoutes(
@@ -118,10 +151,11 @@ class Rest {
                             query,
                             resource
                         )
+                        const whereOptions = this.parseQueryToWhereOptions(query)
 
                         const [entities, total] = await manager.findAndCount(
                             modelName,
-                            {},
+                            whereOptions,
                             findOptions
                         )
 
@@ -137,12 +171,49 @@ class Rest {
                     .get()
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
-                    .handle(async ({ manager, params }, response) => {
-                        const entity = await manager.findOneOrFail(modelName, {
-                            id: params.id
-                        })
+                    .handle(async ({ manager, params, query }, response) => {
+                        const findOptions = this.parseQueryToFindOptions(query, resource)
 
+                        const entity = await manager.findOne(
+                            modelName as EntityName<AnyEntity<any>>,
+                            params.id as FilterQuery<AnyEntity<any>>,
+                            findOptions
+                        )
+
+                        if (!entity) {
+                            return response.formatter.notFound(
+                                `could not find ${modelName} with ID ${params.id}`
+                            )
+                        }
                         return response.formatter.ok(entity)
+                    })
+            )
+
+            routes.push(
+                route(`Fetch ${singular} relations`)
+                    .get()
+                    .resource(resource)
+                    .path(getApiPath(`${plural}/:id/:relatedResource`))
+                    .handle(async ({ manager, params, query }, response) => {
+                        const whereOptions = this.parseQueryToWhereOptions(query)
+                        try {
+                            const entity = await manager.findOne(
+                                modelName as EntityName<AnyEntity<any>>,
+                                params.id as FilterQuery<AnyEntity<any>>,
+                            )
+
+                            await manager.populate(entity, params.relatedResource, whereOptions)
+                            return response.formatter.ok(entity?.[params.relatedResource])
+                        } catch (error) {
+                            if (error?.name === 'ValidationError') {
+                                return response.formatter.notFound(
+                                    `The ${modelName} model does not have a '${params.relatedResource}' property`
+                                )
+                            }
+                            return response.formatter.badRequest({
+                                message: 'The request was not understood.'
+                            })
+                        }
                     })
             )
 
@@ -152,15 +223,35 @@ class Rest {
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, body }, response) => {
-                        const entity = await manager.findOneOrFail(modelName, {
-                            id: params.id
-                        })
+                        const entity = manager.findOne(modelName as EntityName<AnyEntity<any>>, params.id as FilterQuery<AnyEntity<any>>)
+
+                        if (!entity) {
+                            return response.formatter.notFound(`Could not find resourceName with ID of ${params.id}`)
+                        }
 
                         manager.assign(entity, body)
 
                         await manager.persistAndFlush(entity)
 
                         return response.formatter.ok(entity)
+                    })
+            )
+
+            routes.push(
+                route(`Delete single ${singular}`)
+                    .delete()
+                    .resource(resource)
+                    .path(getApiPath(`${plural}/:id`))
+                    .handle(async ({ manager, params, body }, response) => {
+                        const modelRepository = manager.getRepository(modelName as EntityName<AnyEntity<any>>)
+                        const entity = modelRepository.findOne(params.id as FilterQuery<AnyEntity<any>>)
+
+                        if (!entity) {
+                            return response.formatter.notFound(`Could not find resourceName with ID of ${params.id}`)
+                        }
+
+                        await modelRepository.removeAndFlush(entity)
+                        return response.formatter.noContent({})
                     })
             )
         })
@@ -182,7 +273,7 @@ class Rest {
             )
             .setup(async ({ app, routes }) => {
                 routes.forEach(route => {
-                    ;(app as any)[route.config.type.toLowerCase()](
+                    ; (app as any)[route.config.type.toLowerCase()](
                         route.config.path,
                         ...route.config.middleware.map(fn => AsyncHandler(fn)),
                         AsyncHandler(

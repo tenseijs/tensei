@@ -21,7 +21,8 @@
     },
     "dependencies": {
         "@tensei/common": "^0.2.3",
-        "express-response-formatter": "^2.0.2"
+        "express-response-formatter": "^2.0.2",
+        "qs": "^6.9.4"
     },
     "publishConfig": {
         "access": "public"
