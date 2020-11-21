@@ -6,7 +6,8 @@
     "license": "MIT",
     "files": [
         "build/",
-        "typings/"
+        "typings/",
+        "core.d.ts"
     ],
     "devDependencies": {
         "@types/bcryptjs": "^2.4.2",

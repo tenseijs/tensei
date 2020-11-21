@@ -218,11 +218,15 @@ declare module '@tensei/common/config' {
         TContext = GraphQLPluginContext,
         TArgs = any
     > = IMiddleware<TSource, TContext, TArgs>
-    type MiddlewareGenerator = (
+    type MiddlewareGenerator<
+        TSource = any,
+        TContext = GraphQLPluginContext,
+        TArgs = any
+    > = (
         graphQlQueries: GraphQlQueryContract[],
         typeDefs: ITypedef[],
         schema: GraphQLSchema
-    ) => IMiddleware
+    ) => IMiddleware<TSource, TContext, TArgs>
     export interface Config {
         databaseClient: any
         schemas: any

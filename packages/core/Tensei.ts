@@ -363,6 +363,8 @@ export class Tensei implements TenseiContract {
 
         this.app.use(CookieParser())
 
+        this.app.disable('x-powered-by')
+
         const rootStorage = (this.storageConfig.disks?.local?.config as any)
             .root
         const publicPath = (this.storageConfig.disks?.local?.config as any)

@@ -4,7 +4,7 @@ import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import Randomstring from 'randomstring'
 import { validateAll } from 'indicative/validator'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction, response } from 'express'
 import {
     plugin,
     resource,
@@ -808,8 +808,10 @@ class Auth {
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
                 .get()
-                .handle(async (request, response) =>
-                    response.formatter.ok(request.user)
+                .handle(async ({ user }, { formatter: { ok, unauthorized } }) =>
+                    user && ! user.public ? ok(user) : unauthorized({
+                        message: 'Unauthorized.'
+                    })
                 ),
             route(`Resend Verification email`)
                 .path(this.getApiPath('verification/resend'))
@@ -833,6 +835,28 @@ class Auth {
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.socialAuth(request as any, 'register')
+                    )
+                ),
+            route('Refresh Token')
+                .path(this.getApiPath('refresh-token'))
+                .post()
+                .handle(async (request, { formatter: { ok, unauthorized } }) => {
+                    try {
+                        return ok(
+                            await this.handleRefreshTokens(request as any)
+                        )
+                    } catch (error) {
+                        return unauthorized({
+                            message: error.message || 'Invalid refresh token.'
+                        })
+                    }
+                }),
+            route('Remove refresh Token')
+                .path(this.getApiPath('refresh-token'))
+                .delete()
+                .handle(async (request, response) =>
+                    response.formatter.ok(
+                        await this.removeRefreshTokens(request as any)
                     )
                 )
         ]
@@ -978,8 +1002,9 @@ class Auth {
             ) as JwtPayload
         } catch (error) {}
 
-        if (!tokenPayload || !tokenPayload.refresh)
+        if (!tokenPayload || !tokenPayload.refresh) {
             throw ctx.authenticationError('Invalid refresh token.')
+        }
 
         const user: any = await ctx.manager.findOne(
             this.resources.user.data.pascalCaseName,

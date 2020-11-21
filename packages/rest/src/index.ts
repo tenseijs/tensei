@@ -1,4 +1,4 @@
-import { Request, Response, request } from 'express'
+import { Request, Response } from 'express'
 import qs from 'qs'
 import {
     FindOptions,
@@ -15,7 +15,7 @@ class Rest {
         return `/${apiPath}/${path}`
     }
 
-    public getPageMetaFromFindOptions(
+    private getPageMetaFromFindOptions(
         total: number,
         findOptions: FindOptions<any>
     ) {
@@ -31,7 +31,7 @@ class Rest {
         }
     }
 
-    public parseQueryToFindOptions(query: any, resource: ResourceContract) {
+    private parseQueryToFindOptions(query: any, resource: ResourceContract) {
         let findOptions: FindOptions<any> = {}
 
         if (query.page && query.page !== '-1') {
@@ -69,7 +69,7 @@ class Rest {
         return findOptions
     }
 
-    public parseQueryToWhereOptions(query: any) {
+    private parseQueryToWhereOptions(query: any) {
         let whereOptions: FilterQuery<any> = {}
 
         if (query.where) {
@@ -101,7 +101,7 @@ class Rest {
         return whereOptions
     }
 
-    extendRoutes(
+    private extendRoutes(
         resources: ResourceContract[],
         getApiPath: (path: string) => string
     ) {
@@ -299,6 +299,46 @@ class Rest {
             .afterDatabaseSetup(
                 async ({ extendRoutes, resources, apiPath, app }) => {
                     app.use(responseEnhancer())
+
+                    app.use((request, response, next) => {
+                        // @ts-ignore
+                        request.req = request
+
+                        return next()
+                    })
+
+                    app.use((request, response, next) => {
+                        request.authenticationError = (
+                            message: string = 'Unauthenticated.'
+                        ) => ({
+                            status: 401,
+                            message
+                        })
+
+                        request.forbiddenError = (
+                            message: string = 'Forbidden.'
+                        ) => ({
+                            status: 400,
+                            message
+                        })
+
+                        request.validationError = (
+                            message: string = 'Validation failed.'
+                        ) => ({
+                            status: 422,
+                            message
+                        })
+
+                        request.userInputError = (
+                            message: string = 'Validation failed.'
+                        ) => ({
+                            status: 422,
+                            message
+                        })
+
+                        return next()
+                    })
+
                     extendRoutes(
                         this.extendRoutes(resources, (path: string) =>
                             this.getApiPath(apiPath, path)
@@ -317,6 +357,7 @@ class Rest {
                         }
                     )
                 })
+
                 routes.forEach(route => {
                     ;(app as any)[route.config.type.toLowerCase()](
                         route.config.path,
