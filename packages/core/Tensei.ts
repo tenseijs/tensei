@@ -212,8 +212,9 @@ export class Tensei implements TenseiContract {
 
         this.app.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${this.ctx.serverUrl ||
-                    `http://127.0.0.1:${port}`}`
+                `🚀 Access your server on ${
+                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
+                }`
             )
         })
     }
@@ -361,6 +362,8 @@ export class Tensei implements TenseiContract {
         this.app.use(responseEnhancer())
 
         this.app.use(CookieParser())
+
+        this.app.disable('x-powered-by')
 
         const rootStorage = (this.storageConfig.disks?.local?.config as any)
             .root
@@ -587,9 +590,7 @@ export class Tensei implements TenseiContract {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
+        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }

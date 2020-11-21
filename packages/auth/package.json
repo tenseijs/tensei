@@ -4,7 +4,9 @@
     "main": "./build/index.js",
     "license": "MIT",
     "files": [
-        "build/"
+        "build/",
+        "auth.d.ts",
+        "auth.config.d.ts"
     ],
     "types": "./build/index.d.ts",
     "devDependencies": {

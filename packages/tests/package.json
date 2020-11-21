@@ -22,7 +22,7 @@
         "@mikro-orm/sqlite": "^4.3.0",
         "@mikro-orm/postgresql": "^4.3.0",
         "@tensei/common": "^0.2.3",
-        "@tensei/core": "^0.2.3" 
+        "@tensei/core": "^0.2.3"
     },
     "config": {
         "commitizen": {

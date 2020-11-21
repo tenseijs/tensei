@@ -7,12 +7,20 @@ import { RequestHandler } from 'express'
 import purestConfig from '@purest/providers'
 import { TensieContext, PluginSetupConfig } from '@tensei/common'
 import AsyncHandler from 'express-async-handler'
-import { AuthPluginConfig, SupportedSocialProviders } from 'config'
+import {
+    AuthPluginConfig,
+    SupportedSocialProviders,
+    AuthResources
+} from '../config'
 
 const purest = Purest({ request: Request })
 
 class SocialAuthCallbackController {
-    public connect = (authConfig: AuthPluginConfig): RequestHandler =>
+    public connect = (
+        authConfig: AuthPluginConfig & {
+            resources: AuthResources
+        }
+    ): RequestHandler =>
         AsyncHandler(async (request, response) => {
             const { query, params, manager } = request
 
