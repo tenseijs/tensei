@@ -31,6 +31,7 @@ import {
 import {
     AuthData,
     GrantConfig,
+    AuthResources,
     AuthPluginConfig,
     SupportedSocialProviders,
     defaultProviderScopes
@@ -59,15 +60,6 @@ type JwtPayload = {
     refresh?: boolean
 }
 
-type AuthResources = {
-    user: ResourceContract
-    team: ResourceContract
-    role: ResourceContract
-    oauthIdentity: ResourceContract
-    permission: ResourceContract
-    teamInvite: ResourceContract
-    passwordReset: ResourceContract
-}
 type AuthSetupFn = (resources: AuthResources) => any
 
 class Auth {
@@ -95,8 +87,7 @@ class Auth {
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
-        providers: {},
-        resources: {}
+        providers: {}
     }
 
     private resources: {
@@ -560,7 +551,10 @@ class Auth {
 
                     app.get(
                         `/${this.config.apiPath}/:provider/callback`,
-                        SocialAuthCallbackController.connect(this.config)
+                        SocialAuthCallbackController.connect({
+                            ...this.config,
+                            resources: this.resources
+                        })
                     )
                 }
 
@@ -809,9 +803,11 @@ class Auth {
                 .path(this.getApiPath('me'))
                 .get()
                 .handle(async ({ user }, { formatter: { ok, unauthorized } }) =>
-                    user && ! user.public ? ok(user) : unauthorized({
-                        message: 'Unauthorized.'
-                    })
+                    user && !user.public
+                        ? ok(user)
+                        : unauthorized({
+                              message: 'Unauthorized.'
+                          })
                 ),
             route(`Resend Verification email`)
                 .path(this.getApiPath('verification/resend'))
@@ -840,17 +836,20 @@ class Auth {
             route('Refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .post()
-                .handle(async (request, { formatter: { ok, unauthorized } }) => {
-                    try {
-                        return ok(
-                            await this.handleRefreshTokens(request as any)
-                        )
-                    } catch (error) {
-                        return unauthorized({
-                            message: error.message || 'Invalid refresh token.'
-                        })
+                .handle(
+                    async (request, { formatter: { ok, unauthorized } }) => {
+                        try {
+                            return ok(
+                                await this.handleRefreshTokens(request as any)
+                            )
+                        } catch (error) {
+                            return unauthorized({
+                                message:
+                                    error.message || 'Invalid refresh token.'
+                            })
+                        }
                     }
-                }),
+                ),
             route('Remove refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .delete()

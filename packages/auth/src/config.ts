@@ -25,6 +25,15 @@ export type SupportedSocialProviders =
     | 'twitter'
     | 'linkedin'
 
+export type AuthResources = {
+    user: ResourceContract
+    team: ResourceContract
+    role: ResourceContract
+    oauthIdentity: ResourceContract
+    permission: ResourceContract
+    teamInvite: ResourceContract
+    passwordReset: ResourceContract
+}
 export interface AuthPluginConfig {
     fields: FieldContract[]
     profilePictures: boolean
@@ -55,9 +64,6 @@ export interface AuthPluginConfig {
     beforeOAuthIdentityCreated?: HookFunction
     providers: {
         [key: string]: GrantConfig
-    }
-    resources: {
-        [key: string]: ResourceContract
     }
 }
 

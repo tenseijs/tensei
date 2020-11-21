@@ -13,6 +13,7 @@ module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
     .clientUrl('https://google.com')
+    .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
     .routes([
         route('Get products')
@@ -75,18 +76,9 @@ module.exports = tensei()
         }),
     ])
     .databaseConfig({
-        type: 'mysql',
-        dbName: 'mikrotensei',
-        // debug: true,
-        // user: 'mikrotensei',
-        // password: 'password',
-
-        // type: 'sqlite',
-        // dbName: 'mikrotensei',
-
-        // type: 'postgresql',
-        // // debug: true,
-        // dbName: 'bahdcoder',
-        // user: 'bahdcoder',
-        // password: 'bahdcoder'
+        type: process.env.DATABASE_TYPE || 'mysql',
+        dbName: process.env.DATABASE_NAME || 'mikrotensei',
+        debug: process.env.DEBUG || false,
+        user: process.env.DATABASE_USER || 'mikrotensei',
+        password: process.env.DATABASE_PASSWORD || '',
     })
