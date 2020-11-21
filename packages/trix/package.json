@@ -1,6 +1,6 @@
 {
     "name": "@tensei/trix",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -19,7 +19,7 @@
     },
     "dependencies": {
         "@contentful/forma-36-react-components": "^3.67.1",
-        "@tensei/common": "^0.2.3",
+        "@tensei/common": "^0.2.4",
         "react-dom": "^17.0.1",
         "trix": "^1.2.4"
     },
