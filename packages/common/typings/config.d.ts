@@ -24,8 +24,12 @@ declare module '@tensei/common/config' {
 
     type EndpointTypes = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
+    interface RouteExtendContract extends any {}
+
     interface RouteContract {
-        config: RouteConfig
+        config: RouteConfig & {
+            extend: RouteExtendContract
+        }
         path(path: string): this
         get(): this
         post(): this
@@ -33,6 +37,7 @@ declare module '@tensei/common/config' {
         patch(): this
         delete(): this
         internal(): this
+        extend(extend: RouteExtendContract): this
         resource(resource: ResourceContract): this
         middleware(middleware: RequestHandler[]): this
         resource(resource: ResourceContract): this
@@ -61,7 +66,7 @@ declare module '@tensei/common/config' {
         resource?: ResourceContract
         middleware: RequestHandler[]
         authorize: AuthorizeFunction[]
-        handler: (request: Request, response: Response) => Promise<any>
+        handler: (request: Request, response: Response) => any | Promise<any>
     }
 
     interface GraphQlQueryConfig<

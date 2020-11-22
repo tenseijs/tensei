@@ -8,7 +8,14 @@ import {
 } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { responseEnhancer } from 'express-response-formatter'
-import { plugin, route, ResourceContract, RouteContract } from '@tensei/common'
+import {
+    plugin,
+    route,
+    ResourceContract,
+    RouteContract,
+    Field,
+    FieldContract
+} from '@tensei/common'
 
 class Rest {
     private getApiPath = (apiPath: string, path: string) => {
@@ -101,6 +108,37 @@ class Rest {
         return whereOptions
     }
 
+    private getFieldDocsParameters(
+        field: FieldContract,
+        resources: ResourceContract[],
+        location: 'query' | 'body' = 'body'
+    ) {
+        let properties: any = {
+            required:
+                !field.property.nullable && !field.relatedProperty.reference,
+            name: field.databaseField,
+            in: location,
+            description: field.helpText
+        }
+
+        if (field.relatedProperty) {
+            if (['m:n', '1:m'].includes(field.relatedProperty.reference!)) {
+                properties.schema = {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }
+
+                properties.description =
+                    field.helpText ||
+                    `This should be an array of IDs of ${field.databaseField} to relate to this entity.`
+            }
+        }
+
+        return properties
+    }
+
     private extendRoutes(
         resources: ResourceContract[],
         getApiPath: (path: string) => string
@@ -113,6 +151,7 @@ class Rest {
                 slugPlural: plural,
                 pascalCaseName: modelName
             } = resource.data
+            const fields = resource.data.fields.filter(f => !f.property.primary)
 
             routes.push(
                 route(`Insert ${singular}`)
@@ -120,6 +159,14 @@ class Rest {
                     .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
+                    .extend({
+                        docs: {
+                            summary: `Insert a single ${singular}.`,
+                            parameters: fields.map(field =>
+                                this.getFieldDocsParameters(field, resources)
+                            )
+                        }
+                    })
                     .handle(async ({ manager, body }, response) => {
                         const entity = manager.create(modelName, body)
 
@@ -135,6 +182,12 @@ class Rest {
                     .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
+                    .extend({
+                        docs: {
+                            summary: `Insert multiple ${plural}.`,
+                            description: `This endpoint inserts multiple ${plural}. Provide an array of objects containing the ${plural} you want to insert.`
+                        }
+                    })
                     .handle(async ({ manager, body }, response) => {
                         const entities = (
                             body.objects || []
@@ -154,6 +207,12 @@ class Rest {
                     .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
+                    .extend({
+                        docs: {
+                            summary: `Fetch multiple ${plural}`,
+                            description: `This endpoint fetches all ${plural} that match an optional where query.`
+                        }
+                    })
                     .handle(async ({ manager, query }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
                             query,
@@ -181,6 +240,13 @@ class Rest {
                     .get()
                     .internal()
                     .resource(resource)
+                    .extend({
+                        docs: {
+                            summary: `Fetch a single ${singular}`,
+                            description: `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`,
+                            parameters: []
+                        }
+                    })
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, query }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
@@ -208,6 +274,15 @@ class Rest {
                     .get()
                     .internal()
                     .resource(resource)
+                    .extend({
+                        docs: {
+                            summary: `Fetch relation to a ${singular}`,
+                            description: `This endpoint figures out the relationship passed as /:related-resource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.`,
+                            parameters: fields.map(field =>
+                                this.getFieldDocsParameters(field, resources)
+                            )
+                        }
+                    })
                     .path(getApiPath(`${plural}/:id/:related-resource`))
                     .handle(async ({ manager, params, query }, response) => {
                         const whereOptions = this.parseQueryToWhereOptions(
@@ -245,6 +320,12 @@ class Rest {
                     .put()
                     .internal()
                     .resource(resource)
+                    .extend({
+                        docs: {
+                            summary: `Update a single ${singular}`,
+                            description: `This endpoint update a single ${singular}. Provide the primary key ID of the entity you want to delete.`
+                        }
+                    })
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, body }, response) => {
                         const entity = manager.findOne(
@@ -269,8 +350,18 @@ class Rest {
             routes.push(
                 route(`Delete single ${singular}`)
                     .delete()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
+                    .extend({
+                        docs: {
+                            summary: `Delete a single ${singular}`,
+                            description: `This endpoint deletes a single ${singular}. Provide the primary key ID of the entity you want to delete.`,
+                            parameters: fields.map(field =>
+                                this.getFieldDocsParameters(field, resources)
+                            )
+                        }
+                    })
                     .handle(async ({ manager, params, body }, response) => {
                         const modelRepository = manager.getRepository(
                             modelName as EntityName<AnyEntity<any>>

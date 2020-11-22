@@ -98,6 +98,12 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return null
     }
 
+    public description(description: string) {
+        this.data.description = description
+
+        return this
+    }
+
     public filters(filters: FilterContract[]) {
         this.data.filters = filters
 
@@ -112,6 +118,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         slug: '',
         label: '',
         filters: [],
+        description: '',
         hideFromApi: false,
         permissions: [],
         group: 'Resources',

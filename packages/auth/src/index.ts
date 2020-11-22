@@ -743,16 +743,32 @@ class Auth {
     private extendRoutes() {
         const name = this.resources.user.data.slugSingular
 
+        const extend = {
+            tags: ['Auth']
+        }
+
         return [
             route(`Login ${name}`)
                 .path(this.getApiPath('login'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Login an existing ${name}.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(await this.login(request as any))
                 ),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Register a new ${name}.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.created(
                         await this.register(request as any)
@@ -761,6 +777,12 @@ class Auth {
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Request a password reset for a ${name} using the ${name} email.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.forgotPassword(request as any)
@@ -770,6 +792,12 @@ class Auth {
             route(`Reset password`)
                 .path(this.getApiPath('passwords/reset'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Reset a ${name} password using a password reset token.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.resetPassword(request as any)
@@ -778,6 +806,12 @@ class Auth {
             route(`Enable Two Factor Auth`)
                 .path(this.getApiPath('two-factor/enable'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Enable two factor authentication for an existing ${name}.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.enableTwoFactorAuth(request as any)
@@ -786,6 +820,13 @@ class Auth {
             route(`Confirm Enable Two Factor Auth`)
                 .path(this.getApiPath('two-factor/enable/confirm'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Confirm enable two factor authentication for an existing ${name}.`,
+                        description: `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.enableTwoFactorAuth(request as any)
@@ -794,6 +835,12 @@ class Auth {
             route(`Disable Two Factor Auth`)
                 .path(this.getApiPath('two-factor/disable'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Disable two factor authentication for an existing ${name}.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.disableTwoFactorAuth(request as any)
@@ -802,6 +849,12 @@ class Auth {
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
                 .get()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Get the authenticated ${name} from a valid JWT.`
+                    }
+                })
                 .handle(async ({ user }, { formatter: { ok, unauthorized } }) =>
                     user && !user.public
                         ? ok(user)
@@ -812,6 +865,12 @@ class Auth {
             route(`Resend Verification email`)
                 .path(this.getApiPath('verification/resend'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Resend verification email to ${name} email.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.resendVerificationEmail(request as any)
@@ -820,6 +879,13 @@ class Auth {
             route(`Social Auth Login`)
                 .path(this.getApiPath('social/login'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Login a ${name} via a social provider.`,
+                        description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.socialAuth(request as any, 'login')
@@ -828,6 +894,13 @@ class Auth {
             route(`Social Auth Register`)
                 .path(this.getApiPath('social/register'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Register a ${name} via a social provider.`,
+                        description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.socialAuth(request as any, 'register')
@@ -836,6 +909,13 @@ class Auth {
             route('Refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .post()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Request a new JWT (access token) using a refresh token.`,
+                        description: `The refresh token is set in cookies response for all endpoints that return an access token (login, register).`
+                    }
+                })
                 .handle(
                     async (request, { formatter: { ok, unauthorized } }) => {
                         try {
@@ -853,6 +933,13 @@ class Auth {
             route('Remove refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .delete()
+                .extend({
+                    docs: {
+                        ...extend,
+                        summary: `Invalidate a refresh token.`,
+                        description: `Sets the refresh token cookie to an invalid value and expires it.`
+                    }
+                })
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.removeRefreshTokens(request as any)

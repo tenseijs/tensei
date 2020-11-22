@@ -3,12 +3,15 @@ import {
     RouteConfig,
     AuthorizeFunction,
     RouteContract,
-    ResourceContract
+    ResourceContract,
+    RouteExtendContract
 } from '@tensei/common'
 import { RequestHandler } from 'express'
 
 export class Route implements RouteContract {
-    public config: RouteConfig = {
+    public config: RouteConfig & {
+        extend: RouteExtendContract
+    } = {
         path: '',
         name: '',
         type: 'GET',
@@ -17,7 +20,8 @@ export class Route implements RouteContract {
         snakeCaseName: '',
         paramCaseName: '',
         authorize: [],
-        handler: async () => {}
+        handler: async () => {},
+        extend: {}
     }
 
     constructor(name?: string) {
@@ -92,6 +96,12 @@ export class Route implements RouteContract {
 
     internal() {
         this.config.internal = true
+
+        return this
+    }
+
+    extend(extend: RouteExtendContract) {
+        this.config.extend = extend
 
         return this
     }

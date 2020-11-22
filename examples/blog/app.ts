@@ -1,18 +1,18 @@
-require('dotenv').config()
-const { docs } = require('@tensei/docs')
-const { auth } = require('@tensei/auth')
-const { rest } = require('@tensei/rest')
-const { graphql } = require('@tensei/graphql')
-const { tensei, plugin, route } = require('@tensei/core')
+import 'dotenv/config'
+import { docs } from '@tensei/docs'
+import { auth } from '@tensei/auth'
+import { rest } from '@tensei/rest'
+import { graphql } from '@tensei/graphql'
+import { tensei, plugin, route, SupportedDatabases } from '@tensei/core'
 
-const Tag = require('./resources/Tag')
-const Post = require('./resources/Post')
-const User = require('./resources/User')
-const Comment = require('./resources/Comment')
+import Tag from './resources/Tag'
+import Post from './resources/Post'
+import User from './resources/User'
+import CommentResource from './resources/Comment'
 
 module.exports = tensei()
     .dashboardPath('tensei')
-    .resources([Tag, Post, User, Comment])
+    .resources([Tag, Post, User, CommentResource])
     .clientUrl('https://google.com')
     .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
@@ -22,10 +22,10 @@ module.exports = tensei()
             .path('/products')
             .extend({
                 docs: {
-                    tags: ['Products'],
-                },
+                    tags: ['Products']
+                }
             })
-            .handle((req, res) =>
+            .handle(async (req, res) =>
                 res.formatter.ok({
                     name: 'Product 1',
                 })
@@ -70,8 +70,9 @@ module.exports = tensei()
             })
             .plugin(),
         rest().plugin(),
-        docs().plugin(),
-        plugin('Custom Slug Validation').setup(({ indicative }) => {
+        docs()
+        .plugin(),
+        plugin('Custom Slug Validation').setup(async ({ indicative }) => {
             indicative.validator.extend('slug', {
                 async: false,
                 validate(data, field) {
@@ -83,8 +84,9 @@ module.exports = tensei()
         }),
     ])
     .databaseConfig({
-        type: process.env.DATABASE_TYPE || 'mysql',
+        type: (process.env.DATABASE_TYPE || 'mysql') as SupportedDatabases,
         dbName: process.env.DATABASE_NAME || 'mikrotensei',
+        // @ts-ignore
         debug: process.env.DEBUG || false,
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',

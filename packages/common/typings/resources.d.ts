@@ -27,6 +27,7 @@ declare module '@tensei/common/resources' {
         hideFromApi: boolean
         camelCaseName: string
         displayField: string
+        description: string
         snakeCaseName: string
         snakeCaseNamePlural: string
         noTimeStamps: boolean

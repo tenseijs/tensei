@@ -14,7 +14,7 @@ export interface GrantConfig {
     scope?: string[]
     callback?: string
     redirect_uri?: string
-    clientCallback: string
+    clientCallback?: string
 }
 
 export type SupportedSocialProviders =
