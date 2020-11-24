@@ -1076,7 +1076,7 @@ input id_where_query {
                     extendGraphQlQueries
                 } = config
                 const exposedResources = resources.filter(
-                    resource => !resource.data.hideFromApi
+                    resource => !resource.hiddenFromApi()
                 )
 
                 this.pluginExtensions = this.pluginExtensions.concat(

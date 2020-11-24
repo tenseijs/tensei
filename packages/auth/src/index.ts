@@ -45,6 +45,7 @@ import { graphQlQuery } from '@tensei/common'
 import { ApiContext } from '@tensei/common'
 import { GraphQlQueryContract } from '@tensei/common'
 import { route } from '@tensei/common'
+import { snakeCase } from 'change-case'
 
 type ResourceShortNames =
     | 'user'
@@ -80,7 +81,7 @@ class Auth {
             refreshTokenExpiresIn: 60 * 60 * 24 * 7
         },
         cookieOptions: {},
-        refresTokenCookieName: '___refresh__token',
+        refreshTokenCookieName: '___refresh__token',
         teams: false,
         teamFields: [],
         twoFactorAuth: false,
@@ -235,7 +236,6 @@ class Auth {
 
         const userResource = resource(this.config.userResource)
             .fields([
-                text('Name').searchable().nullable(),
                 text('Email')
                     .unique()
                     .searchable()
@@ -388,13 +388,14 @@ class Auth {
                 belongsTo(this.config.userResource).nullable(),
                 textarea('Access Token')
                     .hidden()
+                    .hideFromApi()
                     .hideOnUpdate()
                     .hideOnIndex()
                     .hideOnDetail()
                     .hideOnCreate(),
                 text('Email'),
-                textarea('Temporal Token').nullable(),
-                json('Payload'),
+                textarea('Temporal Token').nullable().hidden(),
+                json('Payload').hidden().hideFromApi(),
                 text('Provider').rules('required'),
                 text('Provider User ID')
             ])
@@ -740,6 +741,14 @@ class Auth {
             )
     }
 
+    private getRegistrationFieldsDocs() {
+        const properties: any = {}
+
+        // TODO: Calculate and push new registration fields to be exposed to API
+
+        return properties
+    }
+
     private extendRoutes() {
         const name = this.resources.user.data.slugSingular
 
@@ -754,11 +763,44 @@ class Auth {
                 .extend({
                     docs: {
                         ...extend,
-                        summary: `Login an existing ${name}.`
+                        summary: `Login an existing ${name}.`,
+                        parameters: [
+                            {
+                                required: true,
+                                type: 'object',
+                                name: 'body',
+                                in: 'body',
+                                schema: {
+                                    $ref: `#/definitions/LoginInput`
+                                }
+                            }
+                        ],
+                        definitions: {
+                            LoginInput: {
+                                type: 'object',
+                                properties: {
+                                    email: {
+                                        required: true,
+                                        type: 'string',
+                                        format: 'email'
+                                    },
+                                    password: {
+                                        required: true,
+                                        type: 'string'
+                                    }
+                                }
+                            }
+                        }
                     }
                 })
-                .handle(async (request, response) =>
-                    response.formatter.ok(await this.login(request as any))
+                .handle(async (request, { formatter: { ok, unprocess } }) =>
+                    {
+                        try {
+                            return ok(await this.login(request as any))
+                        } catch (error) {
+                            return unprocess(error)
+                        }
+                    }
                 ),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
@@ -766,13 +808,45 @@ class Auth {
                 .extend({
                     docs: {
                         ...extend,
-                        summary: `Register a new ${name}.`
+                        summary: `Register a new ${name}.`,
+                        parameters: [
+                            {
+                                required: true,
+                                type: 'object',
+                                name: 'body',
+                                in: 'body',
+                                schema: {
+                                    $ref: `#/definitions/RegisterInput`
+                                }
+                            }
+                        ],
+                        definitions: {
+                            RegisterInput: {
+                                type: 'object',
+                                properties: {
+                                    email: {
+                                        required: true,
+                                        type: 'string',
+                                        format: 'email'
+                                    },
+                                    password: {
+                                        required: true,
+                                        type: 'string'
+                                    },
+                                    ...this.getRegistrationFieldsDocs()
+                                }
+                            }
+                        }
                     }
                 })
-                .handle(async (request, response) =>
-                    response.formatter.created(
-                        await this.register(request as any)
-                    )
+                .handle(
+                    async (request, { formatter: { created, unprocess } }) => {
+                        try {
+                            return created(await this.register(request as any))
+                        } catch (error) {
+                            return unprocess(error)
+                        }
+                    }
                 ),
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
@@ -780,7 +854,29 @@ class Auth {
                 .extend({
                     docs: {
                         ...extend,
-                        summary: `Request a password reset for a ${name} using the ${name} email.`
+                        summary: `Request a password reset for a ${name} using the ${name} email.`,
+                        parameters: [
+                            {
+                                required: true,
+                                type: 'object',
+                                name: 'body',
+                                in: 'body',
+                                schema: {
+                                    $ref: `#/definitions/RequestPasswordInput`
+                                }
+                            }
+                        ],
+                        definitions: {
+                            RequestPasswordInput: {
+                                properties: {
+                                    email: {
+                                        type: 'string',
+                                        required: true,
+                                        format: 'email'
+                                    }
+                                }
+                            }
+                        }
                     }
                 })
                 .handle(async (request, response) =>
@@ -795,7 +891,33 @@ class Auth {
                 .extend({
                     docs: {
                         ...extend,
-                        summary: `Reset a ${name} password using a password reset token.`
+                        summary: `Reset a ${name} password using a password reset token.`,
+                        parameters: [
+                            {
+                                required: true,
+                                type: 'object',
+                                name: 'body',
+                                in: 'body',
+                                schema: {
+                                    $ref: `#/definitions/ResetPasswordInput`
+                                }
+                            }
+                        ],
+                        definitions: {
+                            ResetPasswordInput: {
+                                properties: {
+                                    password: {
+                                        type: 'string',
+                                        required: true
+                                    },
+                                    token: {
+                                        type: 'string',
+                                        required: true,
+                                        description: `This token was sent to the ${name}'s email. Provide it here to reset the ${name}'s password.`
+                                    }
+                                }
+                            }
+                        }
                     }
                 })
                 .handle(async (request, response) =>
@@ -912,8 +1034,15 @@ class Auth {
                 .extend({
                     docs: {
                         ...extend,
-                        summary: `Request a new JWT (access token) using a refresh token.`,
-                        description: `The refresh token is set in cookies response for all endpoints that return an access token (login, register).`
+                        summary: `Request a new (access token) using a refresh token.`,
+                        description: `The refresh token is set in cookies response for all endpoints that return an access token (login, register).`,
+                        parameters: [
+                            {
+                                name: this.config.refreshTokenCookieName,
+                                required: true,
+                                in: 'cookie'
+                            }
+                        ]
                     }
                 })
                 .handle(
@@ -937,7 +1066,14 @@ class Auth {
                     docs: {
                         ...extend,
                         summary: `Invalidate a refresh token.`,
-                        description: `Sets the refresh token cookie to an invalid value and expires it.`
+                        description: `Sets the refresh token cookie to an invalid value and expires it.`,
+                        parameters: [
+                            {
+                                name: this.config.refreshTokenCookieName,
+                                required: true,
+                                in: 'cookie'
+                            }
+                        ]
                     }
                 })
                 .handle(async (request, response) =>
@@ -956,7 +1092,7 @@ class Auth {
 
     private setRefreshToken(ctx: ApiContext) {
         ctx.res.cookie(
-            this.config.refresTokenCookieName,
+            this.config.refreshTokenCookieName,
             this.generateJwt(
                 {
                     id: ctx.user.id,
@@ -1063,7 +1199,7 @@ class Auth {
     }
 
     private async removeRefreshTokens(ctx: ApiContext) {
-        ctx.res.cookie(this.config.refresTokenCookieName, '', {
+        ctx.res.cookie(this.config.refreshTokenCookieName, '', {
             ...this.config.cookieOptions,
             httpOnly: true,
             maxAge: 0
@@ -1073,7 +1209,7 @@ class Auth {
     }
 
     private async handleRefreshTokens(ctx: ApiContext) {
-        const refreshToken = ctx.req.cookies[this.config.refresTokenCookieName]
+        const refreshToken = ctx.req.cookies[this.config.refreshTokenCookieName]
 
         if (!refreshToken) {
             throw ctx.authenticationError('Invalid refresh token.')
@@ -1837,10 +1973,6 @@ class Auth {
         } = {
             email: 'required|email',
             password: 'required|min:8'
-        }
-
-        if (registration) {
-            rules.name = 'required'
         }
 
         return await validateAll(data, rules, {

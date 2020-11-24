@@ -48,7 +48,7 @@ export interface AuthPluginConfig {
         secretKey: string
         refreshTokenExpiresIn: number
     }
-    refresTokenCookieName: string
+    refreshTokenCookieName: string
     teams: boolean
     cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>
     verifyEmails?: boolean

@@ -17,6 +17,7 @@ const User = resource('User')
             .hideOnUpdate()
             .hideOnIndex()
             .hideOnDetail()
+            .hidden()
             .rules('required', 'min:8', 'max:24')
             .notNullable(),
         hasMany('Post'),

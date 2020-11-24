@@ -1,11 +1,19 @@
-import { RouteExtendContract } from '@tensei/common'
+import { RouteExtendContract, ResourceExtendContract } from '@tensei/common'
 
 declare module '@tensei/common' {
     interface RouteExtendContract {
-        docs: {
+        docs?: {
             tags?: string[]
             summary?: string
             description?: string
+            parameters?: any[]
+            definitions?: any
+        }
+    }
+
+    interface ResourceExtendContract {
+        docs?: {
+            definitions?: any
         }
     }
 }

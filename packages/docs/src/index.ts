@@ -112,13 +112,22 @@ class Docs {
         }
 
         if (field.relatedProperty.type) {
+            const relatedResource = resources.find(r =>
+                [r.data.name, r.data.pascalCaseName].includes(
+                    field.relatedProperty.type!
+                )
+            )
             if (['m:n', '1:m'].includes(field.relatedProperty.reference!)) {
                 property.type = 'array'
                 property.items = {
-                    $ref: `#/definitions/ID`
+                    $ref: `#/definitions/${
+                        input ? 'ID' : relatedResource?.data.pascalCaseName
+                    }`
                 }
             } else {
-                property.$ref = `#/definitions/ID`
+                property.$ref = `#/definitions/${
+                    input ? 'ID' : relatedResource?.data.pascalCaseName
+                }`
             }
 
             return property
@@ -160,8 +169,26 @@ class Docs {
                     type: 'string'
                 }
 
+                this.docs.definitions.PaginationMeta = {
+                    type: 'object',
+                    properties: {
+                        page: {
+                            type: 'integer'
+                        },
+                        per_page: {
+                            type: 'integer'
+                        },
+                        page_count: {
+                            type: 'integer'
+                        },
+                        total: {
+                            type: 'integer'
+                        }
+                    }
+                }
+
                 resources
-                    .filter(r => !r.data.hideFromApi)
+                    .filter(r => !r.hiddenFromApi())
                     .forEach(resource => {
                         const properties: any = {}
                         const inputProperties: any = {}
@@ -192,57 +219,117 @@ class Docs {
                             type: 'object',
                             properties
                         }
+
+                        this.docs.definitions[
+                            `${resource.data.pascalCaseName}Input`
+                        ] = {
+                            type: 'object',
+                            properties: inputProperties,
+                            required: resource.data.fields
+                                .filter(f => {
+                                    if (
+                                        ['1:m', 'm:n'].includes(
+                                            f.relatedProperty.reference!
+                                        )
+                                    ) {
+                                        return false
+                                    }
+
+                                    return (
+                                        !f.property.nullable ||
+                                        f.validationRules.includes('required')
+                                    )
+                                })
+                                .map(f => f.databaseField)
+                        }
+
+                        this.docs.definitions[
+                            `${resource.data.pascalCaseName}FetchResponse`
+                        ] = {
+                            type: 'object',
+                            properties: {
+                                data: {
+                                    type: 'array',
+                                    items: {
+                                        $ref: `#/definitions/${resource.data.pascalCaseName}`
+                                    }
+                                },
+                                meta: {
+                                    type: 'object',
+                                    $ref: `#/definitions/PaginationMeta`
+                                }
+                            }
+                        }
+
+                        this.docs.definitions[
+                            `${resource.data.pascalCaseName}FetchQuery`
+                        ] = {
+                            type: 'object',
+                            properties: {
+                                where: {
+                                    type: 'object',
+                                    items: {
+                                        $ref: `#/definitions/${resource.data.pascalCaseName}`
+                                    }
+                                },
+                                page: {
+                                    type: 'integer',
+                                    required: false
+                                }
+                            }
+                        }
                     })
 
                 routes.forEach(route => {
-                    if (route.config.extend.docs) {
-                        this.docs.tags
-                    }
-
                     const inputProperties: any[] = []
 
-                    if (
-                        ['POST', 'PATCH', 'PUT'].includes(route.config.type) &&
-                        route.config.internal
-                    ) {
-                        route.config.resource?.data.fields
-                            .filter(f => !f.property.primary)
-                            .forEach(field => {
-                                inputProperties.push({
-                                    ...this.getPropertyFromField(
-                                        resources,
-                                        field,
-                                        true
-                                    ),
-                                    name: field.databaseField,
-                                    required:
-                                        !field.property.nullable &&
-                                        !field.relatedProperty.reference &&
-                                        !['PATCH', 'PUT'].includes(
-                                            route.config.type
-                                        ),
-                                    in: 'body'
-                                })
+                    if (route.config.internal) {
+                        if (
+                            ['POST', 'PATCH', 'PUT'].includes(route.config.type)
+                        ) {
+                            inputProperties.push({
+                                required: true,
+                                name: 'body',
+                                in: 'body',
+                                schema: {
+                                    $ref: `#/definitions/${route.config.resource?.data?.pascalCaseName}Input`
+                                }
                             })
+
+                            if (['PUT', 'PATCH'].includes(route.config.type)) {
+                                inputProperties.push({
+                                    required: true,
+                                    name: 'id',
+                                    in: 'path'
+                                })
+                            }
+                        } else if (
+                            ['DELETE', 'GET'].includes(route.config.type) &&
+                            !!route.config.path.match(/:id/)
+                        ) {
+                            inputProperties.push({
+                                required: true,
+                                name: 'id',
+                                in: 'path'
+                            })
+
+                            if (!!route.config.path.match(/:relatedResource/)) {
+                                inputProperties.push({
+                                    required: true,
+                                    name: 'relatedResource',
+                                    in: 'path'
+                                })
+                            }
+                        } else {
+                        }
                     }
 
-                    if (
-                        route.config.type === 'DELETE' &&
-                        route.config.internal
-                    ) {
-                        inputProperties.push({
-                            required: true,
-                            name: 'id',
-                            in: 'path'
-                        })
-                    }
+                    const parsedPath = route.config.path
+                        .replace(':id', '{id}')
+                        .replace(':relatedResource', '{relatedResource}')
 
-                    this.docs.paths[
-                        route.config.path
-                            .replace(':id', '{id}')
-                            .replace(':related-resource', '{related-resource}')
-                    ] = {
-                        ...(this.docs.paths[route.config.path] || {}),
+                    this.docs.paths[parsedPath] = {
+                        ...(this.docs.paths[parsedPath] || {}),
                         [route.config.type.toLowerCase()]: {
                             consumes: ['application/json'],
                             produces: ['application/json'],
@@ -250,7 +337,16 @@ class Docs {
                                 ? [route.config.resource.data.label]
                                 : route.config.extend?.docs?.tags || [],
                             ...(route.config.extend.docs || {}),
-                            parameters: inputProperties
+                            parameters: route.config.extend.docs?.parameters
+                                ? route.config.extend.docs?.parameters
+                                : inputProperties
+                        }
+                    }
+
+                    if (route.config.extend.docs?.definitions) {
+                        this.docs.definitions = {
+                            ...this.docs.definitions,
+                            ...route.config.extend.docs?.definitions
                         }
                     }
                 })
@@ -263,6 +359,8 @@ class Docs {
 
                 router.use(path, Ui.serve)
                 router.get(path, Ui.setup(this.docs))
+
+                app.get('/docs-json', (_, resp) => resp.json(this.docs))
 
                 app.use(router)
             }

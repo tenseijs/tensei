@@ -11,7 +11,8 @@ import {
     ValidationMessages,
     SerializedResource,
     HookFunctionPromised,
-    FlushHookFunction
+    FlushHookFunction,
+    ResourceExtendContract
 } from '@tensei/common'
 
 import Pluralize from 'pluralize'
@@ -118,8 +119,14 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         slug: '',
         label: '',
         filters: [],
+        extend: {},
         description: '',
         hideFromApi: false,
+        hideFromCreateApi: false,
+        hideFromFetchApi: false,
+        hideFromDeleteApi: false,
+        hideFromShowApi: false,
+        hideFromUpdateApi: false,
         permissions: [],
         group: 'Resources',
         groupSlug: 'resources',
@@ -148,7 +155,41 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public hideFromApi() {
-        this.data.hideFromApi = true
+        this.data.hideFromCreateApi = true
+        this.data.hideFromFetchApi = true
+        this.data.hideFromShowApi = true
+        this.data.hideFromDeleteApi = true
+        this.data.hideFromUpdateApi = true
+
+        return this
+    }
+
+    public hideFromCreateApi() {
+        this.data.hideFromCreateApi = true
+
+        return this
+    }
+
+    public hideFromUpdateApi() {
+        this.data.hideFromUpdateApi = true
+
+        return this
+    }
+
+    public hideFromDeleteApi() {
+        this.data.hideFromDeleteApi = true
+
+        return this
+    }
+
+    public hideFromFetchApi() {
+        this.data.hideFromFetchApi = true
+
+        return this
+    }
+
+    public hideFromShowApi() {
+        this.data.hideFromShowApi = true
 
         return this
     }
@@ -377,6 +418,46 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         }
 
         return this
+    }
+
+    public extend(extend: ResourceExtendContract) {
+        this.data.extend = extend
+
+        return this
+    }
+
+    public getCreateApiExposedFields() {
+        return this.data.fields.filter(
+            f => !f.showHideFieldFromApi.hideFromCreateApi
+        )
+    }
+
+    public getUpdateApiExposedFields() {
+        return this.data.fields.filter(
+            f => !f.showHideFieldFromApi.hideFromUpdateApi
+        )
+    }
+
+    public getFetchApiExposedFields() {
+        return this.data.fields.filter(
+            f => !f.showHideFieldFromApi.hideFromFetchApi
+        )
+    }
+
+    public getShowApiExposedFields() {
+        return this.data.fields.filter(
+            f => !f.showHideFieldFromApi.hideFromShowApi
+        )
+    }
+
+    public hiddenFromApi() {
+        return (
+            this.data.hideFromCreateApi &&
+            this.data.hideFromDeleteApi &&
+            this.data.hideFromFetchApi &&
+            this.data.hideFromShowApi &&
+            this.data.hideFromUpdateApi
+        )
     }
 }
 

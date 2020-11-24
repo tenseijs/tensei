@@ -108,37 +108,6 @@ class Rest {
         return whereOptions
     }
 
-    private getFieldDocsParameters(
-        field: FieldContract,
-        resources: ResourceContract[],
-        location: 'query' | 'body' = 'body'
-    ) {
-        let properties: any = {
-            required:
-                !field.property.nullable && !field.relatedProperty.reference,
-            name: field.databaseField,
-            in: location,
-            description: field.helpText
-        }
-
-        if (field.relatedProperty) {
-            if (['m:n', '1:m'].includes(field.relatedProperty.reference!)) {
-                properties.schema = {
-                    type: 'array',
-                    items: {
-                        type: 'string'
-                    }
-                }
-
-                properties.description =
-                    field.helpText ||
-                    `This should be an array of IDs of ${field.databaseField} to relate to this entity.`
-            }
-        }
-
-        return properties
-    }
-
     private extendRoutes(
         resources: ResourceContract[],
         getApiPath: (path: string) => string
@@ -161,10 +130,7 @@ class Rest {
                     .path(getApiPath(plural))
                     .extend({
                         docs: {
-                            summary: `Insert a single ${singular}.`,
-                            parameters: fields.map(field =>
-                                this.getFieldDocsParameters(field, resources)
-                            )
+                            summary: `Insert a single ${singular}.`
                         }
                     })
                     .handle(async ({ manager, body }, response) => {
@@ -173,31 +139,6 @@ class Rest {
                         await manager.persistAndFlush(entity)
 
                         return response.status(201).json(entity)
-                    })
-            )
-
-            routes.push(
-                route(`Insert multiple ${plural}`)
-                    .post()
-                    .internal()
-                    .resource(resource)
-                    .path(getApiPath(plural))
-                    .extend({
-                        docs: {
-                            summary: `Insert multiple ${plural}.`,
-                            description: `This endpoint inserts multiple ${plural}. Provide an array of objects containing the ${plural} you want to insert.`
-                        }
-                    })
-                    .handle(async ({ manager, body }, response) => {
-                        const entities = (
-                            body.objects || []
-                        ).map((object: any) =>
-                            manager.create(modelName, object)
-                        )
-
-                        await manager.persistAndFlush(entities)
-
-                        return response.formatter.created(entities)
                     })
             )
 
@@ -243,8 +184,7 @@ class Rest {
                     .extend({
                         docs: {
                             summary: `Fetch a single ${singular}`,
-                            description: `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`,
-                            parameters: []
+                            description: `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`
                         }
                     })
                     .path(getApiPath(`${plural}/:id`))
@@ -277,35 +217,34 @@ class Rest {
                     .extend({
                         docs: {
                             summary: `Fetch relation to a ${singular}`,
-                            description: `This endpoint figures out the relationship passed as /:related-resource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.`,
-                            parameters: fields.map(field =>
-                                this.getFieldDocsParameters(field, resources)
-                            )
+                            description: `This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.`
                         }
                     })
-                    .path(getApiPath(`${plural}/:id/:related-resource`))
+                    .path(getApiPath(`${plural}/:id/:relatedResource`))
                     .handle(async ({ manager, params, query }, response) => {
                         const whereOptions = this.parseQueryToWhereOptions(
                             query
                         )
                         try {
-                            const entity = await manager.findOne(
+                            const entity = await manager.findOneOrFail(
                                 modelName as EntityName<AnyEntity<any>>,
-                                params.id as FilterQuery<AnyEntity<any>>
+                                params.id as FilterQuery<AnyEntity<any>>,
+                                this.parseQueryToFindOptions(query, resource)
                             )
 
                             await manager.populate(
                                 entity,
-                                params['related-resource'],
+                                params['relatedResource'],
                                 whereOptions
                             )
+
                             return response.formatter.ok(
-                                entity?.[params['related-resource']]
+                                entity?.[params['relatedResource']]
                             )
                         } catch (error) {
                             if (error?.name === 'ValidationError') {
                                 return response.formatter.notFound(
-                                    `The ${modelName} model does not have a '${params['related-resource']}' property`
+                                    `The ${modelName} model does not have a '${params['relatedResource']}' property`
                                 )
                             }
                             return response.formatter.badRequest({
@@ -317,7 +256,7 @@ class Rest {
 
             routes.push(
                 route(`Update single ${singular}`)
-                    .put()
+                    .patch()
                     .internal()
                     .resource(resource)
                     .extend({
@@ -327,24 +266,27 @@ class Rest {
                         }
                     })
                     .path(getApiPath(`${plural}/:id`))
-                    .handle(async ({ manager, params, body }, response) => {
-                        const entity = manager.findOne(
-                            modelName as EntityName<AnyEntity<any>>,
-                            params.id as FilterQuery<AnyEntity<any>>
-                        )
-
-                        if (!entity) {
-                            return response.formatter.notFound(
-                                `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
+                    .handle(
+                        async ({ manager, params, body, query }, response) => {
+                            const entity = manager.findOne(
+                                modelName as EntityName<AnyEntity<any>>,
+                                params.id as FilterQuery<AnyEntity<any>>,
+                                this.parseQueryToFindOptions(query, resource)
                             )
+
+                            if (!entity) {
+                                return response.formatter.notFound(
+                                    `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
+                                )
+                            }
+
+                            manager.assign(entity, body)
+
+                            await manager.persistAndFlush(entity)
+
+                            return response.formatter.ok(entity)
                         }
-
-                        manager.assign(entity, body)
-
-                        await manager.persistAndFlush(entity)
-
-                        return response.formatter.ok(entity)
-                    })
+                    )
             )
 
             routes.push(
@@ -356,18 +298,17 @@ class Rest {
                     .extend({
                         docs: {
                             summary: `Delete a single ${singular}`,
-                            description: `This endpoint deletes a single ${singular}. Provide the primary key ID of the entity you want to delete.`,
-                            parameters: fields.map(field =>
-                                this.getFieldDocsParameters(field, resources)
-                            )
+                            description: `This endpoint deletes a single ${singular}. Provide the primary key ID of the entity you want to delete.`
                         }
                     })
-                    .handle(async ({ manager, params, body }, response) => {
+                    .handle(async ({ manager, params, query }, response) => {
                         const modelRepository = manager.getRepository(
                             modelName as EntityName<AnyEntity<any>>
                         )
+
                         const entity = modelRepository.findOne(
-                            params.id as FilterQuery<AnyEntity<any>>
+                            params.id as FilterQuery<AnyEntity<any>>,
+                            this.parseQueryToFindOptions(query, resource)
                         )
 
                         if (!entity) {
@@ -377,7 +318,7 @@ class Rest {
                         }
 
                         await modelRepository.removeAndFlush(entity)
-                        return response.formatter.noContent({})
+                        return response.formatter.ok(entity)
                     })
             )
         })
