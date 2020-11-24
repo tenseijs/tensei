@@ -121,7 +121,6 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         filters: [],
         extend: {},
         description: '',
-        hideFromApi: false,
         hideFromCreateApi: false,
         hideFromFetchApi: false,
         hideFromDeleteApi: false,
