@@ -11,7 +11,22 @@ class Docs {
         },
         tags: [],
         definitions: {},
-        paths: {}
+        paths: {},
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        },
+        securityDefinitions: {
+            Bearer: {
+                in: 'header',
+                type: 'apiKey',
+                name: 'Authorization'
+            }
+        }
     }
 
     private logoUrl: string = ''
@@ -163,7 +178,7 @@ class Docs {
     }
 
     plugin() {
-        return plugin('API Documentation').setup(
+        return plugin('Rest API Documentation').setup(
             async ({ app, resources, routes }) => {
                 this.docs.definitions.ID = {
                     type: 'string'
@@ -193,14 +208,18 @@ class Docs {
                         const properties: any = {}
                         const inputProperties: any = {}
 
-                        resource.data.fields.forEach(field => {
-                            properties[
-                                field.databaseField
-                            ] = this.getPropertyFromField(resources, field)
-                        })
+                        resource.data.fields
+                            .filter(f => !f.hiddenFromApi())
+                            .forEach(field => {
+                                properties[
+                                    field.databaseField
+                                ] = this.getPropertyFromField(resources, field)
+                            })
 
                         resource.data.fields
-                            .filter(f => !f.property.primary)
+                            .filter(
+                                f => !f.property.primary && !f.property.hidden
+                            )
                             .forEach(field => {
                                 inputProperties[
                                     field.databaseField
@@ -260,28 +279,50 @@ class Docs {
                                 }
                             }
                         }
-
-                        this.docs.definitions[
-                            `${resource.data.pascalCaseName}FetchQuery`
-                        ] = {
-                            type: 'object',
-                            properties: {
-                                where: {
-                                    type: 'object',
-                                    items: {
-                                        $ref: `#/definitions/${resource.data.pascalCaseName}`
-                                    }
-                                },
-                                page: {
-                                    type: 'integer',
-                                    required: false
-                                }
-                            }
-                        }
                     })
 
                 routes.forEach(route => {
                     const inputProperties: any[] = []
+                    const responseTypes: any = {
+                        500: {
+                            description: 'Server error.'
+                        }
+                    }
+
+                    const queryArgumentsForFetchQuery = [
+                        {
+                            type: 'deepObject',
+                            required: false,
+                            name: 'where',
+                            in: 'query',
+                            description:
+                                'This should be a JSON stringified version of a valid query object, for example: {"name":{"$eq":"string"}}'
+                        },
+                        {
+                            type: 'integer',
+                            required: false,
+                            name: 'page',
+                            in: 'query'
+                        },
+                        {
+                            type: 'integer',
+                            required: false,
+                            name: 'per_page',
+                            in: 'query'
+                        },
+                        {
+                            type: 'string',
+                            required: false,
+                            name: 'populate',
+                            in: 'query'
+                        },
+                        {
+                            type: 'string',
+                            required: false,
+                            name: 'fields',
+                            in: 'query'
+                        }
+                    ]
 
                     if (route.config.internal) {
                         if (
@@ -297,30 +338,74 @@ class Docs {
                             })
 
                             if (['PUT', 'PATCH'].includes(route.config.type)) {
-                                inputProperties.push({
-                                    required: true,
-                                    name: 'id',
-                                    in: 'path'
-                                })
+                                inputProperties.push(
+                                    {
+                                        required: true,
+                                        name: 'id',
+                                        in: 'path'
+                                    },
+                                    {
+                                        type: 'string',
+                                        required: false,
+                                        name: 'populate',
+                                        in: 'query'
+                                    }
+                                )
+
+                                responseTypes[404] = {
+                                    description: `The ${route.config.resource?.data.pascalCaseName} was not found.`
+                                }
+
+                                responseTypes[200] = {
+                                    description: 'The operation was successful.'
+                                }
+                                responseTypes[422] = {
+                                    description:
+                                        'Validation errors were found with the data provided.'
+                                }
+                            } else {
+                                responseTypes['201'] = {
+                                    description: 'The operation was successful.'
+                                }
+                                responseTypes['422'] = {
+                                    description:
+                                        'Validation errors were found with the data provided.'
+                                }
                             }
                         } else if (
                             ['DELETE', 'GET'].includes(route.config.type) &&
                             !!route.config.path.match(/:id/)
                         ) {
-                            inputProperties.push({
-                                required: true,
-                                name: 'id',
-                                in: 'path'
-                            })
+                            inputProperties.push(
+                                {
+                                    required: true,
+                                    name: 'id',
+                                    in: 'path'
+                                },
+                                {
+                                    type: 'string',
+                                    required: false,
+                                    name: 'populate',
+                                    in: 'query'
+                                }
+                            )
+
+                            responseTypes[404] = {
+                                description: `The ${route.config.resource?.data.snakeCaseName} was not found.`
+                            }
 
                             if (!!route.config.path.match(/:relatedResource/)) {
-                                inputProperties.push({
-                                    required: true,
-                                    name: 'relatedResource',
-                                    in: 'path'
-                                })
+                                inputProperties.push(
+                                    {
+                                        required: true,
+                                        name: 'relatedResource',
+                                        in: 'path'
+                                    },
+                                    ...queryArgumentsForFetchQuery
+                                )
                             }
                         } else {
+                            inputProperties.push(...queryArgumentsForFetchQuery)
                         }
                     }
 
@@ -337,9 +422,12 @@ class Docs {
                                 ? [route.config.resource.data.label]
                                 : route.config.extend?.docs?.tags || [],
                             ...(route.config.extend.docs || {}),
-                            parameters: route.config.extend.docs?.parameters
+                            parameters: route.config.extend?.docs?.parameters
                                 ? route.config.extend.docs?.parameters
-                                : inputProperties
+                                : inputProperties,
+                            responses: route.config.extend?.docs?.responses
+                                ? route.config.extend?.docs?.responses
+                                : responseTypes
                         }
                     }
 

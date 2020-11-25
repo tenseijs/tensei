@@ -80,7 +80,12 @@ class Rest {
         let whereOptions: FilterQuery<any> = {}
 
         if (query.where) {
-            const strigifiedQuery = qs.stringify(query.where, { encode: false })
+            const strigifiedQuery = qs.stringify(
+                typeof query.where === 'string'
+                    ? JSON.parse(query.where)
+                    : query.where,
+                { encode: false }
+            )
             const parsedQuery = qs.parse(strigifiedQuery, {
                 decoder(value) {
                     if (/^(\d+|\d*\.\d+)$/.test(value)) {
@@ -306,14 +311,14 @@ class Rest {
                             modelName as EntityName<AnyEntity<any>>
                         )
 
-                        const entity = modelRepository.findOne(
+                        const entity = await modelRepository.findOne(
                             params.id as FilterQuery<AnyEntity<any>>,
                             this.parseQueryToFindOptions(query, resource)
                         )
 
                         if (!entity) {
                             return response.formatter.notFound(
-                                `Could not find resourceName with ID of ${params.id}`
+                                `Could not find ${resource.data.pascalCaseName} with ID of ${params.id}`
                             )
                         }
 
@@ -379,15 +384,11 @@ class Rest {
                 }
             )
             .setup(async ({ app, routes }) => {
-                routes.forEach(route => {
-                    route.config.middleware.unshift(
-                        async (request, response, next) => {
-                            // @ts-ignore
-                            request.req = request
+                app.use((request, _, next) => {
+                    // @ts-ignore
+                    request.req = request
 
-                            return next()
-                        }
-                    )
+                    return next()
                 })
 
                 routes.forEach(route => {

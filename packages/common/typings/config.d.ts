@@ -24,7 +24,7 @@ declare module '@tensei/common/config' {
 
     type EndpointTypes = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
-    interface RouteExtendContract extends any {}
+    interface RouteExtendContract extends Record<string, any> {}
 
     interface RouteContract {
         config: RouteConfig & {

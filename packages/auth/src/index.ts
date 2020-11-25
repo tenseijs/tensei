@@ -386,18 +386,12 @@ class Auth {
             .hideFromNavigation()
             .fields([
                 belongsTo(this.config.userResource).nullable(),
-                textarea('Access Token')
-                    .hidden()
-                    .hideFromApi()
-                    .hideOnUpdate()
-                    .hideOnIndex()
-                    .hideOnDetail()
-                    .hideOnCreate(),
-                text('Email'),
+                textarea('Access Token').hidden().hideFromApi(),
+                text('Email').hidden(),
                 textarea('Temporal Token').nullable().hidden(),
                 json('Payload').hidden().hideFromApi(),
                 text('Provider').rules('required'),
-                text('Provider User ID')
+                text('Provider User ID').hidden()
             ])
     }
 
@@ -562,7 +556,7 @@ class Auth {
                 return {}
             })
             .afterCoreRoutesSetup(
-                async ({ graphQlQueries, routes, apiPath }) => {
+                async ({ graphQlQueries, routes, apiPath, app }) => {
                     graphQlQueries.forEach(query => {
                         if (query.config.resource) {
                             const { path, internal } = query.config
@@ -623,7 +617,40 @@ class Auth {
                         }
                     })
 
+                    app.use(async (request, response, next) => {
+                        await this.getAuthUserFromContext(request as any)
+
+                        return next()
+                    })
+
+                    app.use(async (request, response, next) => {
+                        await this.setAuthUserForPublicRoutes(request as any)
+
+                        return next()
+                    })
+
                     routes.forEach(route => {
+                        route.middleware([
+                            async (request, response, next) => {
+                                const authorizers = await Promise.all(
+                                    route.config.authorize.map(fn =>
+                                        fn(request as any)
+                                    )
+                                )
+
+                                if (
+                                    authorizers.filter(authorized => authorized)
+                                        .length !==
+                                    route.config.authorize.length
+                                ) {
+                                    return response.status(401).json({
+                                        message: `Unauthorized.`
+                                    })
+                                }
+
+                                next()
+                            }
+                        ])
                         if (route.config.resource) {
                             const {
                                 resource,
@@ -633,6 +660,18 @@ class Auth {
                             } = route.config
 
                             const { slugSingular, slugPlural } = resource.data
+
+                            route.extend({
+                                ...route.config.extend,
+                                docs: {
+                                    ...route.config.extend?.docs,
+                                    security: [
+                                        {
+                                            Bearer: []
+                                        }
+                                    ]
+                                }
+                            })
 
                             if (
                                 path === `/${apiPath}/${slugPlural}` &&
@@ -700,42 +739,6 @@ class Auth {
                                 )
                             }
                         }
-
-                        route.middleware([
-                            async (request, response, next) => {
-                                await this.getAuthUserFromContext(
-                                    request as any
-                                )
-
-                                return next()
-                            },
-                            async (request, response, next) => {
-                                await this.setAuthUserForPublicRoutes(
-                                    request as any
-                                )
-
-                                return next()
-                            },
-                            async (request, response, next) => {
-                                const authorizers = await Promise.all(
-                                    route.config.authorize.map(fn =>
-                                        fn(request as any)
-                                    )
-                                )
-
-                                if (
-                                    authorizers.filter(authorized => authorized)
-                                        .length !==
-                                    route.config.authorize.length
-                                ) {
-                                    return response.status(401).json({
-                                        message: `Unauthorized.`
-                                    })
-                                }
-
-                                next()
-                            }
-                        ])
                     })
                 }
             )
@@ -793,15 +796,13 @@ class Auth {
                         }
                     }
                 })
-                .handle(async (request, { formatter: { ok, unprocess } }) =>
-                    {
-                        try {
-                            return ok(await this.login(request as any))
-                        } catch (error) {
-                            return unprocess(error)
-                        }
+                .handle(async (request, { formatter: { ok, unprocess } }) => {
+                    try {
+                        return ok(await this.login(request as any))
+                    } catch (error) {
+                        return unprocess(error)
                     }
-                ),
+                }),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
                 .post()
@@ -934,6 +935,7 @@ class Auth {
                         summary: `Enable two factor authentication for an existing ${name}.`
                     }
                 })
+                .authorize(({ user }) => user && !user.public)
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.enableTwoFactorAuth(request as any)
@@ -949,6 +951,7 @@ class Auth {
                         description: `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
                     }
                 })
+                .authorize(({ user }) => user && !user.public)
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.enableTwoFactorAuth(request as any)
@@ -957,12 +960,14 @@ class Auth {
             route(`Disable Two Factor Auth`)
                 .path(this.getApiPath('two-factor/disable'))
                 .post()
+                .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
                         ...extend,
                         summary: `Disable two factor authentication for an existing ${name}.`
                     }
                 })
+                .authorize(({ user }) => !!user)
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.disableTwoFactorAuth(request as any)
@@ -971,22 +976,26 @@ class Auth {
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
                 .get()
+                .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
                         ...extend,
-                        summary: `Get the authenticated ${name} from a valid JWT.`
+                        summary: `Get the authenticated ${name} from a valid JWT.`,
+                        security: [
+                            {
+                                Bearer: []
+                            }
+                        ]
                     }
                 })
-                .handle(async ({ user }, { formatter: { ok, unauthorized } }) =>
-                    user && !user.public
-                        ? ok(user)
-                        : unauthorized({
-                              message: 'Unauthorized.'
-                          })
+                .handle(
+                    async ({ user }, { formatter: { ok, unauthorized } }) =>
+                        user
                 ),
             route(`Resend Verification email`)
                 .path(this.getApiPath('verification/resend'))
                 .post()
+                .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
                         ...extend,
@@ -1031,6 +1040,7 @@ class Auth {
             route('Refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .post()
+                .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
                         ...extend,
@@ -1062,6 +1072,7 @@ class Auth {
             route('Remove refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .delete()
+                .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
                         ...extend,
@@ -1605,34 +1616,6 @@ class Auth {
         this.setRefreshToken(ctx)
 
         return this.getUserPayload(ctx)
-    }
-
-    public authMiddleware = async (
-        request: Request,
-        response: Response,
-        next: NextFunction
-    ) => {
-        if (!request.user) {
-            return response.status(401).json({
-                message: 'Unauthenticated.'
-            })
-        }
-
-        next()
-    }
-
-    public verifiedMiddleware = async (
-        request: Request,
-        response: Response,
-        next: NextFunction
-    ) => {
-        if (!request.user?.email_verified_at) {
-            return response.status(400).json({
-                message: 'Unverified.'
-            })
-        }
-
-        next()
     }
 
     public authorizeResolver = async (

@@ -73,9 +73,7 @@ test('Can add new fields to the user resource using the setup function', async (
             .role('Department')
             .permission('Power')
             .setup(({ role, user }) => {
-                user.fields([
-                    text('Name')
-                ])
+                user.fields([text('Name')])
                 role.fields([text('Description').nullable()]).beforeCreate(
                     async ({ entity, em }) => {
                         em.assign(entity, {
@@ -124,9 +122,7 @@ test('Can enable email verification for auth', async () => {
                 .user('Customer')
                 .verifyEmails()
                 .setup(({ user }) => {
-                    user.fields([
-                        text('Name')
-                    ])
+                    user.fields([text('Name')])
                 })
                 .plugin(),
             graphql().plugin(),
@@ -331,9 +327,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .verifyEmails()
             .user('Student')
             .setup(({ user }) => {
-                user.fields([
-                    text('Name').nullable()
-                ])
+                user.fields([text('Name').nullable()])
             })
             .jwt({
                 expiresIn: jwtExpiresIn,

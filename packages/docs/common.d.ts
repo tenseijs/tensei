@@ -8,6 +8,7 @@ declare module '@tensei/common' {
             description?: string
             parameters?: any[]
             definitions?: any
+            responses?: any
         }
     }
 
