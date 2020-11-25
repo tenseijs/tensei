@@ -8,7 +8,14 @@ import {
 } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { responseEnhancer } from 'express-response-formatter'
-import { plugin, route, ResourceContract, RouteContract } from '@tensei/common'
+import {
+    plugin,
+    route,
+    ResourceContract,
+    RouteContract,
+    Field,
+    FieldContract
+} from '@tensei/common'
 
 class Rest {
     private getApiPath = (apiPath: string, path: string) => {
@@ -73,7 +80,12 @@ class Rest {
         let whereOptions: FilterQuery<any> = {}
 
         if (query.where) {
-            const strigifiedQuery = qs.stringify(query.where, { encode: false })
+            const strigifiedQuery = qs.stringify(
+                typeof query.where === 'string'
+                    ? JSON.parse(query.where)
+                    : query.where,
+                { encode: false }
+            )
             const parsedQuery = qs.parse(strigifiedQuery, {
                 decoder(value) {
                     if (/^(\d+|\d*\.\d+)$/.test(value)) {
@@ -113,6 +125,7 @@ class Rest {
                 slugPlural: plural,
                 pascalCaseName: modelName
             } = resource.data
+            const fields = resource.data.fields.filter(f => !f.property.primary)
 
             routes.push(
                 route(`Insert ${singular}`)
@@ -120,6 +133,11 @@ class Rest {
                     .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
+                    .extend({
+                        docs: {
+                            summary: `Insert a single ${singular}.`
+                        }
+                    })
                     .handle(async ({ manager, body }, response) => {
                         const entity = manager.create(modelName, body)
 
@@ -130,30 +148,17 @@ class Rest {
             )
 
             routes.push(
-                route(`Insert multiple ${plural}`)
-                    .post()
-                    .internal()
-                    .resource(resource)
-                    .path(getApiPath(plural))
-                    .handle(async ({ manager, body }, response) => {
-                        const entities = (
-                            body.objects || []
-                        ).map((object: any) =>
-                            manager.create(modelName, object)
-                        )
-
-                        await manager.persistAndFlush(entities)
-
-                        return response.formatter.created(entities)
-                    })
-            )
-
-            routes.push(
                 route(`Fetch multiple ${plural}`)
                     .get()
                     .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
+                    .extend({
+                        docs: {
+                            summary: `Fetch multiple ${plural}`,
+                            description: `This endpoint fetches all ${plural} that match an optional where query.`
+                        }
+                    })
                     .handle(async ({ manager, query }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
                             query,
@@ -181,6 +186,12 @@ class Rest {
                     .get()
                     .internal()
                     .resource(resource)
+                    .extend({
+                        docs: {
+                            summary: `Fetch a single ${singular}`,
+                            description: `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`
+                        }
+                    })
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, query }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
@@ -208,29 +219,37 @@ class Rest {
                     .get()
                     .internal()
                     .resource(resource)
-                    .path(getApiPath(`${plural}/:id/:related-resource`))
+                    .extend({
+                        docs: {
+                            summary: `Fetch relation to a ${singular}`,
+                            description: `This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.`
+                        }
+                    })
+                    .path(getApiPath(`${plural}/:id/:relatedResource`))
                     .handle(async ({ manager, params, query }, response) => {
                         const whereOptions = this.parseQueryToWhereOptions(
                             query
                         )
                         try {
-                            const entity = await manager.findOne(
+                            const entity = await manager.findOneOrFail(
                                 modelName as EntityName<AnyEntity<any>>,
-                                params.id as FilterQuery<AnyEntity<any>>
+                                params.id as FilterQuery<AnyEntity<any>>,
+                                this.parseQueryToFindOptions(query, resource)
                             )
 
                             await manager.populate(
                                 entity,
-                                params['related-resource'],
+                                params['relatedResource'],
                                 whereOptions
                             )
+
                             return response.formatter.ok(
-                                entity?.[params['related-resource']]
+                                entity?.[params['relatedResource']]
                             )
                         } catch (error) {
                             if (error?.name === 'ValidationError') {
                                 return response.formatter.notFound(
-                                    `The ${modelName} model does not have a '${params['related-resource']}' property`
+                                    `The ${modelName} model does not have a '${params['relatedResource']}' property`
                                 )
                             }
                             return response.formatter.badRequest({
@@ -242,51 +261,69 @@ class Rest {
 
             routes.push(
                 route(`Update single ${singular}`)
-                    .put()
+                    .patch()
                     .internal()
                     .resource(resource)
-                    .path(getApiPath(`${plural}/:id`))
-                    .handle(async ({ manager, params, body }, response) => {
-                        const entity = manager.findOne(
-                            modelName as EntityName<AnyEntity<any>>,
-                            params.id as FilterQuery<AnyEntity<any>>
-                        )
-
-                        if (!entity) {
-                            return response.formatter.notFound(
-                                `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
-                            )
+                    .extend({
+                        docs: {
+                            summary: `Update a single ${singular}`,
+                            description: `This endpoint update a single ${singular}. Provide the primary key ID of the entity you want to delete.`
                         }
-
-                        manager.assign(entity, body)
-
-                        await manager.persistAndFlush(entity)
-
-                        return response.formatter.ok(entity)
                     })
+                    .path(getApiPath(`${plural}/:id`))
+                    .handle(
+                        async ({ manager, params, body, query }, response) => {
+                            const entity = manager.findOne(
+                                modelName as EntityName<AnyEntity<any>>,
+                                params.id as FilterQuery<AnyEntity<any>>,
+                                this.parseQueryToFindOptions(query, resource)
+                            )
+
+                            if (!entity) {
+                                return response.formatter.notFound(
+                                    `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
+                                )
+                            }
+
+                            manager.assign(entity, body)
+
+                            await manager.persistAndFlush(entity)
+
+                            return response.formatter.ok(entity)
+                        }
+                    )
             )
 
             routes.push(
                 route(`Delete single ${singular}`)
                     .delete()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
-                    .handle(async ({ manager, params, body }, response) => {
+                    .extend({
+                        docs: {
+                            summary: `Delete a single ${singular}`,
+                            description: `This endpoint deletes a single ${singular}. Provide the primary key ID of the entity you want to delete.`
+                        }
+                    })
+                    .handle(async ({ manager, params, query }, response) => {
                         const modelRepository = manager.getRepository(
                             modelName as EntityName<AnyEntity<any>>
                         )
-                        const entity = modelRepository.findOne(
-                            params.id as FilterQuery<AnyEntity<any>>
+
+                        const entity = await modelRepository.findOne(
+                            params.id as FilterQuery<AnyEntity<any>>,
+                            this.parseQueryToFindOptions(query, resource)
                         )
 
                         if (!entity) {
                             return response.formatter.notFound(
-                                `Could not find resourceName with ID of ${params.id}`
+                                `Could not find ${resource.data.pascalCaseName} with ID of ${params.id}`
                             )
                         }
 
                         await modelRepository.removeAndFlush(entity)
-                        return response.formatter.noContent({})
+                        return response.formatter.ok(entity)
                     })
             )
         })
@@ -300,45 +337,6 @@ class Rest {
                 async ({ extendRoutes, resources, apiPath, app }) => {
                     app.use(responseEnhancer())
 
-                    app.use((request, response, next) => {
-                        // @ts-ignore
-                        request.req = request
-
-                        return next()
-                    })
-
-                    app.use((request, response, next) => {
-                        request.authenticationError = (
-                            message: string = 'Unauthenticated.'
-                        ) => ({
-                            status: 401,
-                            message
-                        })
-
-                        request.forbiddenError = (
-                            message: string = 'Forbidden.'
-                        ) => ({
-                            status: 400,
-                            message
-                        })
-
-                        request.validationError = (
-                            message: string = 'Validation failed.'
-                        ) => ({
-                            status: 422,
-                            message
-                        })
-
-                        request.userInputError = (
-                            message: string = 'Validation failed.'
-                        ) => ({
-                            status: 422,
-                            message
-                        })
-
-                        return next()
-                    })
-
                     extendRoutes(
                         this.extendRoutes(resources, (path: string) =>
                             this.getApiPath(apiPath, path)
@@ -347,15 +345,11 @@ class Rest {
                 }
             )
             .setup(async ({ app, routes }) => {
-                routes.forEach(route => {
-                    route.config.middleware.unshift(
-                        async (request, response, next) => {
-                            // @ts-ignore
-                            request.req = request
+                app.use((request, _, next) => {
+                    // @ts-ignore
+                    request.req = request
 
-                            return next()
-                        }
-                    )
+                    return next()
                 })
 
                 routes.forEach(route => {

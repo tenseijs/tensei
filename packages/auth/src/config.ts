@@ -14,7 +14,7 @@ export interface GrantConfig {
     scope?: string[]
     callback?: string
     redirect_uri?: string
-    clientCallback: string
+    clientCallback?: string
 }
 
 export type SupportedSocialProviders =
@@ -48,7 +48,7 @@ export interface AuthPluginConfig {
         secretKey: string
         refreshTokenExpiresIn: number
     }
-    refresTokenCookieName: string
+    refreshTokenCookieName: string
     teams: boolean
     cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>
     verifyEmails?: boolean

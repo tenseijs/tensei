@@ -1,4 +1,0 @@
-# Properties
-## `bus`
-## `bootingCallbacks`
-## `config`

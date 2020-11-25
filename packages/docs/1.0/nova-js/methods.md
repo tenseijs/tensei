@@ -1,5 +1,0 @@
-# Methods
-
-## `booting`
-
-## `request`

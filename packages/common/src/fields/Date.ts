@@ -57,7 +57,7 @@ export class DateField extends Field {
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
-        this.property.type = 'Date'
+        this.property.type = 'date'
 
         // this.default(format(new Date(), this.dateFormat))
     }

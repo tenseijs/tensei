@@ -24,9 +24,14 @@ declare module '@tensei/common/resources' {
         label: string
         groupSlug: string
         valueField: string
-        hideFromApi: boolean
+        hideFromCreateApi: boolean
+        hideFromFetchApi: boolean
+        hideFromShowApi: boolean
+        hideFromUpdateApi: boolean
+        hideFromDeleteApi: boolean
         camelCaseName: string
         displayField: string
+        description: string
         snakeCaseName: string
         snakeCaseNamePlural: string
         noTimeStamps: boolean
@@ -39,6 +44,7 @@ declare module '@tensei/common/resources' {
         camelCaseNamePlural: string
         displayInNavigation: boolean
         validationMessages: ValidationMessages
+        extend: ResourceExtendContract
     }
     interface ResourceDataWithFields extends ResourceData {
         fields: FieldContract[]
@@ -48,6 +54,8 @@ declare module '@tensei/common/resources' {
         fields: SerializedField[]
         actions: SerializedAction[]
     }
+
+    export interface ResourceExtendContract extends any {}
 
     export interface ResourceContract<ResourceType = {}> {
         authorizeCallbacks: {
@@ -80,6 +88,17 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         hideFromApi(): this
+        hiddenFromApi(): boolean
+        hideFromCreateApi(): this
+        hideFromUpdateApi(): this
+        hideFromDeleteApi(): this
+        hideFromFetchApi(): this
+        hideFromShowApi(): this
+        getCreateApiExposedFields(): FieldContract[]
+        getUpdateApiExposedFields(): FieldContract[]
+        getFetchApiExposedFields(): FieldContract[]
+        getShowApiExposedFields(): FieldContract[]
+        extend(extend: ResourceExtendContract): this
         filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
@@ -140,6 +159,16 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         hideFromApi(): this
+        hiddenFromApi(): boolean
+        hideFromCreateApi(): this
+        hideFromUpdateApi(): this
+        hideFromDeleteApi(): this
+        hideFromFetchApi(): this
+        hideFromShowApi(): this
+        getCreateApiExposedFields(): FieldContract[]
+        getUpdateApiExposedFields(): FieldContract[]
+        getFetchApiExposedFields(): FieldContract[]
+        getShowApiExposedFields(): FieldContract[]
         filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this

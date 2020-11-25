@@ -46,6 +46,14 @@ export class Field implements FieldContract {
         showOnCreation: true
     }
 
+    public showHideFieldFromApi = {
+        hideFromShowApi: false,
+        hideFromCreateApi: false,
+        hideFromUpdateApi: false,
+        hideFromDeleteApi: false,
+        hideFromFetchApi: false
+    }
+
     public property: FieldProperty = {
         name: '',
         type: 'string',
@@ -420,6 +428,46 @@ export class Field implements FieldContract {
         return this
     }
 
+    public hideFromApi() {
+        this.showHideFieldFromApi.hideFromCreateApi = true
+        this.showHideFieldFromApi.hideFromFetchApi = true
+        this.showHideFieldFromApi.hideFromShowApi = true
+        this.showHideFieldFromApi.hideFromDeleteApi = true
+        this.showHideFieldFromApi.hideFromUpdateApi = true
+
+        return this
+    }
+
+    public hideFromCreateApi() {
+        this.showHideFieldFromApi.hideFromCreateApi = true
+
+        return this
+    }
+
+    public hideFromUpdateApi() {
+        this.showHideFieldFromApi.hideFromUpdateApi = true
+
+        return this
+    }
+
+    public hideFromDeleteApi() {
+        this.showHideFieldFromApi.hideFromDeleteApi = true
+
+        return this
+    }
+
+    public hideFromFetchApi() {
+        this.showHideFieldFromApi.hideFromFetchApi = true
+
+        return this
+    }
+
+    public hideFromShowApi() {
+        this.showHideFieldFromApi.hideFromShowApi = true
+
+        return this
+    }
+
     /**
      *
      * Make this field sortable
@@ -662,6 +710,13 @@ export class Field implements FieldContract {
         this.authorizeCallbacks['authorizedToDelete'] = authorizeFunction
 
         return this
+    }
+
+    public hiddenFromApi() {
+        return (
+            Object.values(this.showHideFieldFromApi).filter(shown => shown)
+                .length === 0 || !!this.property.hidden
+        )
     }
 
     /**

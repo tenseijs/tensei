@@ -17,7 +17,11 @@ test('Registers auth resources when plugin is registered', async () => {
 test('Can customize the name of the authenticator user', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().user('Customer').plugin()])
+    } = await setup([
+        auth()
+            .user('Customer')
+            .plugin()
+    ])
 
     expect(
         resources.find(resource => resource.data.name === 'Customer')
@@ -27,7 +31,11 @@ test('Can customize the name of the authenticator user', async () => {
 test('Enabling roles and permissions registers Role and permission resources', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().rolesAndPermissions().plugin()])
+    } = await setup([
+        auth()
+            .rolesAndPermissions()
+            .plugin()
+    ])
 
     expect(
         resources.filter(resource =>
@@ -64,7 +72,8 @@ test('Can add new fields to the user resource using the setup function', async (
             .rolesAndPermissions()
             .role('Department')
             .permission('Power')
-            .setup(({ role }) => {
+            .setup(({ role, user }) => {
+                user.fields([text('Name')])
                 role.fields([text('Description').nullable()]).beforeCreate(
                     async ({ entity, em }) => {
                         em.assign(entity, {
@@ -109,7 +118,13 @@ test('Can enable email verification for auth', async () => {
         app
     } = await setup(
         [
-            auth().user('Customer').verifyEmails().plugin(),
+            auth()
+                .user('Customer')
+                .verifyEmails()
+                .setup(({ user }) => {
+                    user.fields([text('Name')])
+                })
+                .plugin(),
             graphql().plugin(),
             setupFakeMailer(mailerMock)
         ],
@@ -207,7 +222,10 @@ test('Can request a password reset and reset password', async () => {
         },
         app
     } = await setup([
-        auth().verifyEmails().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
         graphql().plugin(),
         setupFakeMailer(mailerMock)
     ])
@@ -308,6 +326,9 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         auth()
             .verifyEmails()
             .user('Student')
+            .setup(({ user }) => {
+                user.fields([text('Name').nullable()])
+            })
             .jwt({
                 expiresIn: jwtExpiresIn,
                 refreshTokenExpiresIn

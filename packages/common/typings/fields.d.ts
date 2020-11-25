@@ -157,6 +157,13 @@ declare module '@tensei/common/fields' {
              */
             showOnCreation: boolean
         }
+        showHideFieldFromApi: {
+            hideFromShowApi: boolean
+            hideFromCreateApi: boolean
+            hideFromUpdateApi: boolean
+            hideFromDeleteApi: boolean
+            hideFromFetchApi: boolean
+        }
         tenseiConfig: Config | null
         authorizeCallbacks: {
             authorizedToSee: AuthorizeFunction
@@ -329,6 +336,13 @@ declare module '@tensei/common/fields' {
          * update forms.
          */
         exceptOnForms(): this
+        hideFromApi(): this
+        hideFromCreateApi(): this
+        hideFromUpdateApi(): this
+        hideFromDeleteApi(): this
+        hideFromFetchApi(): this
+        hideFromShowApi(): this
+        hiddenFromApi(): boolean
         /**
          *
          * Make this field sortable

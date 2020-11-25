@@ -2,7 +2,6 @@ import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
-import { RequestContext } from '@mikro-orm/core'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
 import { mail, SupportedDrivers, Mail } from '@tensei/mail'
@@ -154,12 +153,52 @@ export class Tensei implements TenseiContract {
         return this
     }
 
+    private forceMiddleware() {
+        this.app.use((request, response, next) => {
+            request.req = request
+
+            return next()
+        })
+
+        this.app.use((request, response, next) => {
+            request.authenticationError = (
+                message: string = 'Unauthenticated.'
+            ) => ({
+                status: 401,
+                message
+            })
+
+            request.forbiddenError = (message: string = 'Forbidden.') => ({
+                status: 400,
+                message
+            })
+
+            request.validationError = (
+                message: string = 'Validation failed.'
+            ) => ({
+                status: 422,
+                message
+            })
+
+            request.userInputError = (
+                message: string = 'Validation failed.'
+            ) => ({
+                status: 422,
+                message
+            })
+
+            return next()
+        })
+    }
+
     public async boot() {
         if (this.registeredApplication) {
             return this
         }
 
         this.setConfigOnResourceFields()
+
+        this.forceMiddleware()
 
         await this.callPluginHook('beforeDatabaseSetup')
         await this.registerDatabase()
@@ -212,9 +251,8 @@ export class Tensei implements TenseiContract {
 
         this.app.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
-                }`
+                `🚀 Access your server on ${this.ctx.serverUrl ||
+                    `http://127.0.0.1:${port}`}`
             )
         })
     }
@@ -590,7 +628,9 @@ export class Tensei implements TenseiContract {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
+        this.ctx.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }

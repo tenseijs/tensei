@@ -126,7 +126,7 @@ class Database {
     }
 
     private generateEntityClass(resource: ResourceContract) {
-        const entityClass = function () {}
+        const entityClass = function() {}
 
         Object.defineProperty(entityClass, 'name', {
             value: resource.data.pascalCaseName,
