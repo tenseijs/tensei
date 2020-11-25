@@ -1668,7 +1668,7 @@ class Auth {
         }
     }
 
-    public getAuthUserFromContext = async (ctx: GraphQLPluginContext) => {
+    public getAuthUserFromContext = async (ctx: ApiContext) => {
         const { req, manager } = ctx
 
         const { headers } = req

@@ -425,9 +425,10 @@ class Docs {
                             parameters: route.config.extend?.docs?.parameters
                                 ? route.config.extend.docs?.parameters
                                 : inputProperties,
-                            responses: route.config.extend?.docs?.responses
-                                ? route.config.extend?.docs?.responses
-                                : responseTypes
+                            responses: {
+                                ...responseTypes,
+                                ...(route.config.extend?.docs?.responses || {})
+                            }
                         }
                     }
 
@@ -448,7 +449,7 @@ class Docs {
                 router.use(path, Ui.serve)
                 router.get(path, Ui.setup(this.docs))
 
-                app.get('/docs-json', (_, resp) => resp.json(this.docs))
+                app.get(`${path}.json`, (_, resp) => resp.json(this.docs))
 
                 app.use(router)
             }

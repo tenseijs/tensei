@@ -337,45 +337,6 @@ class Rest {
                 async ({ extendRoutes, resources, apiPath, app }) => {
                     app.use(responseEnhancer())
 
-                    app.use((request, response, next) => {
-                        // @ts-ignore
-                        request.req = request
-
-                        return next()
-                    })
-
-                    app.use((request, response, next) => {
-                        request.authenticationError = (
-                            message: string = 'Unauthenticated.'
-                        ) => ({
-                            status: 401,
-                            message
-                        })
-
-                        request.forbiddenError = (
-                            message: string = 'Forbidden.'
-                        ) => ({
-                            status: 400,
-                            message
-                        })
-
-                        request.validationError = (
-                            message: string = 'Validation failed.'
-                        ) => ({
-                            status: 422,
-                            message
-                        })
-
-                        request.userInputError = (
-                            message: string = 'Validation failed.'
-                        ) => ({
-                            status: 422,
-                            message
-                        })
-
-                        return next()
-                    })
-
                     extendRoutes(
                         this.extendRoutes(resources, (path: string) =>
                             this.getApiPath(apiPath, path)

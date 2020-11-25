@@ -1,0 +1,332 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Generates all routes for REST api 1`] = `
+Object {
+  "components": Object {
+    "securitySchemes": Object {
+      "bearerAuth": Object {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+      },
+    },
+  },
+  "definitions": Object {
+    "Comment": Object {
+      "properties": Object {},
+      "type": "object",
+    },
+    "CommentFetchResponse": Object {
+      "properties": Object {
+        "data": Object {
+          "items": Object {
+            "$ref": "#/definitions/Comment",
+          },
+          "type": "array",
+        },
+        "meta": Object {
+          "$ref": "#/definitions/PaginationMeta",
+          "type": "object",
+        },
+      },
+      "type": "object",
+    },
+    "CommentInput": Object {
+      "properties": Object {
+        "body": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "post": Object {
+          "$ref": "#/definitions/ID",
+          "description": "",
+        },
+        "title": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+      },
+      "required": Array [
+        "id",
+        "title",
+        "body",
+        "post",
+      ],
+      "type": "object",
+    },
+    "ID": Object {
+      "type": "string",
+    },
+    "PaginationMeta": Object {
+      "properties": Object {
+        "page": Object {
+          "type": "integer",
+        },
+        "page_count": Object {
+          "type": "integer",
+        },
+        "per_page": Object {
+          "type": "integer",
+        },
+        "total": Object {
+          "type": "integer",
+        },
+      },
+      "type": "object",
+    },
+    "Post": Object {
+      "properties": Object {},
+      "type": "object",
+    },
+    "PostFetchResponse": Object {
+      "properties": Object {
+        "data": Object {
+          "items": Object {
+            "$ref": "#/definitions/Post",
+          },
+          "type": "array",
+        },
+        "meta": Object {
+          "$ref": "#/definitions/PaginationMeta",
+          "type": "object",
+        },
+      },
+      "type": "object",
+    },
+    "PostInput": Object {
+      "properties": Object {
+        "approved": Object {
+          "description": "",
+          "type": "boolean",
+        },
+        "av_cpc": Object {
+          "description": "",
+          "format": "int32",
+          "type": "integer",
+        },
+        "category": Object {
+          "description": "",
+          "enum": Array [
+            "javascript",
+            "angular",
+            "mysql",
+            "pg",
+          ],
+          "format": "string",
+          "type": "string",
+        },
+        "content": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "description": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "published_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "scheduled_for": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "tags": Object {
+          "description": "",
+          "items": Object {
+            "$ref": "#/definitions/ID",
+          },
+          "type": "array",
+        },
+        "title": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "user": Object {
+          "$ref": "#/definitions/ID",
+          "description": "",
+        },
+      },
+      "required": Array [
+        "id",
+        "title",
+        "description",
+        "content",
+        "av_cpc",
+        "category",
+        "user",
+        "published_at",
+        "approved",
+        "scheduled_for",
+      ],
+      "type": "object",
+    },
+    "Reaction": Object {
+      "properties": Object {},
+      "type": "object",
+    },
+    "ReactionFetchResponse": Object {
+      "properties": Object {
+        "data": Object {
+          "items": Object {
+            "$ref": "#/definitions/Reaction",
+          },
+          "type": "array",
+        },
+        "meta": Object {
+          "$ref": "#/definitions/PaginationMeta",
+          "type": "object",
+        },
+      },
+      "type": "object",
+    },
+    "ReactionInput": Object {
+      "properties": Object {
+        "like": Object {
+          "description": "",
+          "type": "boolean",
+        },
+      },
+      "required": Array [
+        "id",
+        "like",
+      ],
+      "type": "object",
+    },
+    "Tag": Object {
+      "properties": Object {},
+      "type": "object",
+    },
+    "TagFetchResponse": Object {
+      "properties": Object {
+        "data": Object {
+          "items": Object {
+            "$ref": "#/definitions/Tag",
+          },
+          "type": "array",
+        },
+        "meta": Object {
+          "$ref": "#/definitions/PaginationMeta",
+          "type": "object",
+        },
+      },
+      "type": "object",
+    },
+    "TagInput": Object {
+      "properties": Object {
+        "description": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "name": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "posts": Object {
+          "description": "",
+          "items": Object {
+            "$ref": "#/definitions/ID",
+          },
+          "type": "array",
+        },
+      },
+      "required": Array [
+        "id",
+        "name",
+        "description",
+      ],
+      "type": "object",
+    },
+    "User": Object {
+      "properties": Object {},
+      "type": "object",
+    },
+    "UserFetchResponse": Object {
+      "properties": Object {
+        "data": Object {
+          "items": Object {
+            "$ref": "#/definitions/User",
+          },
+          "type": "array",
+        },
+        "meta": Object {
+          "$ref": "#/definitions/PaginationMeta",
+          "type": "object",
+        },
+      },
+      "type": "object",
+    },
+    "UserInput": Object {
+      "properties": Object {
+        "email": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "full_name": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "password": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "posts": Object {
+          "description": "",
+          "items": Object {
+            "$ref": "#/definitions/ID",
+          },
+          "type": "array",
+        },
+      },
+      "required": Array [
+        "id",
+        "full_name",
+        "email",
+        "password",
+      ],
+      "type": "object",
+    },
+  },
+  "info": Object {
+    "contact": Object {},
+    "license": Object {},
+  },
+  "paths": Object {},
+  "securityDefinitions": Object {
+    "Bearer": Object {
+      "in": "header",
+      "name": "Authorization",
+      "type": "apiKey",
+    },
+  },
+  "swagger": "2.0",
+  "tags": Array [
+    Object {
+      "name": "Tags",
+    },
+    Object {
+      "name": "Comments",
+    },
+    Object {
+      "name": "Users",
+    },
+    Object {
+      "name": "Posts",
+    },
+    Object {
+      "name": "Reactions",
+    },
+  ],
+}
+`;

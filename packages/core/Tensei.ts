@@ -153,12 +153,52 @@ export class Tensei implements TenseiContract {
         return this
     }
 
+    private forceMiddleware() {
+        this.app.use((request, response, next) => {
+            request.req = request
+
+            return next()
+        })
+
+        this.app.use((request, response, next) => {
+            request.authenticationError = (
+                message: string = 'Unauthenticated.'
+            ) => ({
+                status: 401,
+                message
+            })
+
+            request.forbiddenError = (message: string = 'Forbidden.') => ({
+                status: 400,
+                message
+            })
+
+            request.validationError = (
+                message: string = 'Validation failed.'
+            ) => ({
+                status: 422,
+                message
+            })
+
+            request.userInputError = (
+                message: string = 'Validation failed.'
+            ) => ({
+                status: 422,
+                message
+            })
+
+            return next()
+        })
+    }
+
     public async boot() {
         if (this.registeredApplication) {
             return this
         }
 
         this.setConfigOnResourceFields()
+
+        this.forceMiddleware()
 
         await this.callPluginHook('beforeDatabaseSetup')
         await this.registerDatabase()
