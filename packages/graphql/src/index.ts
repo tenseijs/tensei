@@ -101,8 +101,6 @@ class Graphql {
 
     schemaString: string = ''
 
-    private resolvers: GraphQlQueryContract[] = []
-
     private getGraphqlFieldDefinitionForCreateInput = (
         field: FieldContract,
         resource: ResourceContract,

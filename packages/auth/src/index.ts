@@ -4,7 +4,6 @@ import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import Randomstring from 'randomstring'
 import { validateAll } from 'indicative/validator'
-import { Request, Response, NextFunction, response } from 'express'
 import {
     plugin,
     resource,
@@ -16,20 +15,23 @@ import {
     dateTime,
     HookFunction,
     DataPayload,
-    InBuiltEndpoints,
     FieldContract,
     hasMany,
-    ResourceContract,
     boolean,
-    TensieContext,
+    select,
     Resolvers,
-    MiddlewareGenerator,
+    graphQlQuery,
     GraphQlMiddleware,
-    GraphQLPluginContext
+    GraphQLPluginContext,
+    route,
+    GraphQlQueryContract,
+    ApiContext,
+    UserRole
 } from '@tensei/common'
 
 import {
     AuthData,
+    TokenTypes,
     GrantConfig,
     AuthResources,
     AuthPluginConfig,
@@ -39,22 +41,6 @@ import {
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
 import { setup } from './setup'
-import { UserRole } from '@tensei/common'
-import { Permission } from '@tensei/common'
-import { graphQlQuery } from '@tensei/common'
-import { ApiContext } from '@tensei/common'
-import { GraphQlQueryContract } from '@tensei/common'
-import { route } from '@tensei/common'
-import { snakeCase } from 'change-case'
-
-type ResourceShortNames =
-    | 'user'
-    | 'team'
-    | 'role'
-    | 'oauthIdentity'
-    | 'permission'
-    | 'teamInvite'
-    | 'passwordReset'
 
 type JwtPayload = {
     id: string
@@ -70,13 +56,14 @@ class Auth {
         profilePictures: false,
         userResource: 'User',
         roleResource: 'Role',
+        disableCookies: false,
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
         fields: [],
         apiPath: 'auth',
         setupFn: () => this,
-        jwt: {
-            expiresIn: 60 * 60,
+        tokensConfig: {
+            accessTokenExpiresIn: 60 * 60,
             secretKey: process.env.JWT_SECRET || 'auth-secret-key',
             refreshTokenExpiresIn: 60 * 60 * 24 * 7
         },
@@ -91,15 +78,7 @@ class Auth {
         providers: {}
     }
 
-    private resources: {
-        user: ResourceContract
-        team: ResourceContract
-        role: ResourceContract
-        oauthIdentity: ResourceContract
-        permission: ResourceContract
-        teamInvite: ResourceContract
-        passwordReset: ResourceContract
-    } = {} as any
+    private resources: AuthResources = {} as any
 
     public constructor() {
         this.refreshResources()
@@ -109,6 +88,7 @@ class Auth {
         this.resources.user = this.userResource()
         this.resources.team = this.teamResource()
         this.resources.role = this.roleResource()
+        this.resources.token = this.tokenResource()
         this.resources.oauthIdentity = this.oauthResource()
         this.resources.permission = this.permissionResource()
         this.resources.teamInvite = this.teamInviteResource()
@@ -119,6 +99,12 @@ class Auth {
 
     public afterUpdateUser(hook: HookFunction) {
         this.config.afterUpdateUser = hook
+
+        return this
+    }
+
+    public noCookies() {
+        this.config.disableCookies = true
 
         return this
     }
@@ -153,9 +139,9 @@ class Auth {
         return this
     }
 
-    public jwt(config: Partial<AuthPluginConfig['jwt']>) {
-        this.config.jwt = {
-            ...this.config.jwt,
+    public configureTokens(config: Partial<AuthPluginConfig['tokensConfig']>) {
+        this.config.tokensConfig = {
+            ...this.config.tokensConfig,
             ...config
         }
 
@@ -163,13 +149,13 @@ class Auth {
     }
 
     public tokenExpiresIn(tokenExpiresIn: number) {
-        this.config.jwt.expiresIn = tokenExpiresIn
+        this.config.tokensConfig.accessTokenExpiresIn = tokenExpiresIn
 
         return this
     }
 
     public tokenSecretKey(secret: string) {
-        this.config.jwt.secretKey = secret
+        this.config.tokensConfig.secretKey = secret
 
         return this
     }
@@ -313,6 +299,30 @@ class Auth {
         return userResource
     }
 
+    private tokenResource() {
+        return resource('Token').fields([
+            text('Token').notNullable().hidden().searchable().unique(),
+            text('Name').searchable().nullable(),
+            select('Type')
+                .options([
+                    {
+                        label: 'Refresh Token',
+                        value: 'REFRESH'
+                    },
+                    {
+                        label: 'API Token',
+                        value: 'API'
+                    }
+                ])
+                .searchable()
+                .nullable(),
+            dateTime('Last Used At').nullable(),
+            dateTime('Compromised At').nullable(),
+            dateTime('Expires At').hidden(),
+            belongsTo(this.config.userResource)
+        ])
+    }
+
     private teamResource() {
         return resource('Team')
             .fields([
@@ -409,6 +419,7 @@ class Auth {
                     this.refreshResources()
 
                     pushResource(this.resources.user)
+                    pushResource(this.resources.token)
                     pushResource(this.resources.passwordReset)
 
                     if (this.config.rolesAndPermissions) {
@@ -456,6 +467,9 @@ class Auth {
                                 ) => {
                                     await this.getAuthUserFromContext(context)
                                     await this.setAuthUserForPublicRoutes(
+                                        context
+                                    )
+                                    await this.ensureAuthUserIsNotCompromised(
                                         context
                                     )
                                     await this.authorizeResolver(context, query)
@@ -617,20 +631,29 @@ class Auth {
                         }
                     })
 
-                    app.use(async (request, response, next) => {
-                        await this.getAuthUserFromContext(request as any)
-
-                        return next()
-                    })
-
-                    app.use(async (request, response, next) => {
-                        await this.setAuthUserForPublicRoutes(request as any)
-
-                        return next()
-                    })
-
                     routes.forEach(route => {
                         route.middleware([
+                            async (request, response, next) => {
+                                await this.getAuthUserFromContext(
+                                    request as any
+                                )
+
+                                return next()
+                            },
+                            async (request, response, next) => {
+                                await this.setAuthUserForPublicRoutes(
+                                    request as any
+                                )
+
+                                return next()
+                            },
+                            async (request, response, next) => {
+                                await this.ensureAuthUserIsNotCompromised(
+                                    request as any
+                                )
+
+                                return next()
+                            },
                             async (request, response, next) => {
                                 const authorizers = await Promise.all(
                                     route.config.authorize.map(fn =>
@@ -643,9 +666,9 @@ class Auth {
                                         .length !==
                                     route.config.authorize.length
                                 ) {
-                                    return response.status(401).json({
-                                        message: `Unauthorized.`
-                                    })
+                                    throw request.forbiddenError(
+                                        'Unauthorized.'
+                                    )
                                 }
 
                                 next()
@@ -988,10 +1011,7 @@ class Auth {
                         ]
                     }
                 })
-                .handle(
-                    async ({ user }, { formatter: { ok, unauthorized } }) =>
-                        user
-                ),
+                .handle(async ({ user }, { formatter: { ok } }) => ok(user)),
             route(`Resend Verification email`)
                 .path(this.getApiPath('verification/resend'))
                 .post()
@@ -1101,22 +1121,18 @@ class Auth {
         return this
     }
 
-    private setRefreshToken(ctx: ApiContext) {
-        ctx.res.cookie(
-            this.config.refreshTokenCookieName,
-            this.generateJwt(
-                {
-                    id: ctx.user.id,
-                    refresh: true
-                },
-                true
-            ),
-            {
+    private async setRefreshTokenOnCookie(ctx: ApiContext): Promise<string> {
+        const refreshToken = await this.generateRefreshToken(ctx)
+
+        if (! this.config.disableCookies) {
+            ctx.res.cookie(this.config.refreshTokenCookieName, refreshToken, {
                 ...this.config.cookieOptions,
                 httpOnly: true,
-                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000
-            }
-        )
+                maxAge: this.config.tokensConfig.refreshTokenExpiresIn * 1000
+            })
+        }
+
+        return refreshToken
     }
 
     private extendGraphQlQueries() {
@@ -1220,48 +1236,76 @@ class Auth {
     }
 
     private async handleRefreshTokens(ctx: ApiContext) {
-        const refreshToken = ctx.req.cookies[this.config.refreshTokenCookieName]
+        const { body } = ctx
+        const userField = this.resources.user.data.snakeCaseName
+        const tokenName = this.resources.token.data.pascalCaseName
+
+        const refreshToken =
+            ctx.req.cookies[this.config.refreshTokenCookieName] ||
+            (body
+                ? body.object
+                    ? body.object.refresh_token
+                    : body.refresh_token
+                : undefined)
 
         if (!refreshToken) {
             throw ctx.authenticationError('Invalid refresh token.')
         }
 
-        let tokenPayload: JwtPayload | undefined = undefined
-
-        try {
-            tokenPayload = Jwt.verify(
-                refreshToken,
-                this.config.jwt.secretKey
-            ) as JwtPayload
-        } catch (error) {}
-
-        if (!tokenPayload || !tokenPayload.refresh) {
-            throw ctx.authenticationError('Invalid refresh token.')
-        }
-
-        const user: any = await ctx.manager.findOne(
-            this.resources.user.data.pascalCaseName,
+        const token: any = await ctx.manager.findOne(
+            tokenName,
             {
-                id: tokenPayload.id
+                token: refreshToken,
+                type: TokenTypes.REFRESH
             },
             {
-                populate: this.config.rolesAndPermissions
-                    ? ['roles.permissions']
-                    : []
+                populate: [`${userField}.roles.permissions`]
             }
         )
 
-        ctx.user = user
+        if (!token) {
+            throw ctx.authenticationError('Invalid refresh token.')
+        }
 
-        return this.getUserPayload(ctx)
+        if (token.last_used_at) {
+            // This token has been used before.
+            // We'll block the user's access to the API by marking this refresh token as compromised.
+            // Human interaction is required to lift this limit, something like deleting the compromised tokens.
+
+            ctx.manager.assign(token, {
+                compromised_at: Dayjs().format()
+            })
+
+            await ctx.manager.persistAndFlush(token)
+
+            throw ctx.authenticationError('Invalid refresh token.')
+        }
+
+        if (!token[userField] || Dayjs(token.expires_on).isBefore(Dayjs())) {
+            token && (await ctx.manager.removeAndFlush(token))
+
+            throw ctx.authenticationError('Invalid refresh token.')
+        }
+
+        ctx.manager.assign(token, {
+            last_used_at: Dayjs().format(),
+            expires_at: Dayjs().subtract(1, 'second').format()
+        })
+
+        await ctx.manager.persistAndFlush(token)
+
+        ctx.user = token[userField]
+
+        return this.getUserPayload(ctx, await this.setRefreshTokenOnCookie(ctx))
     }
 
-    private getUserPayload(ctx: ApiContext) {
+    private getUserPayload(ctx: ApiContext, refreshToken?: string) {
         return {
-            token: this.generateJwt({
+            access_token: this.generateJwt({
                 id: ctx.user.id
             }),
-            expires_in: this.config.jwt.expiresIn,
+            refresh_token: refreshToken,
+            expires_in: this.config.tokensConfig.accessTokenExpiresIn,
             [this.resources.user.data.snakeCaseName]: ctx.user
         }
     }
@@ -1271,13 +1315,15 @@ class Auth {
 
         return gql`
         type register_${snakeCaseName}_response {
-            token: String!
+            access_token: String!
+            refresh_token: String
             expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_${snakeCaseName}_response {
-            token: String!
+            access_token: String!
+            refresh_token: String
             expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
@@ -1332,6 +1378,10 @@ class Auth {
             password: String!
         }
 
+        input refresh_token_input {
+            refresh_token: String
+        }
+
         extend type Mutation {
             login_${snakeCaseName}(object: login_${snakeCaseName}_input!): login_${snakeCaseName}_response!
             register_${snakeCaseName}(object: create_${snakeCaseName}_input!): register_${snakeCaseName}_response!
@@ -1344,7 +1394,7 @@ class Auth {
             resend_verification_email: Boolean!
             social_auth_register(object: social_auth_register_input!): register_${snakeCaseName}_response!
             social_auth_login(object: social_auth_login_input!): login_${snakeCaseName}_response!
-            refresh_token: login_${snakeCaseName}_response!
+            refresh_token(object: refresh_token_input): login_${snakeCaseName}_response!
             remove_refresh_token: Boolean!
         }
 
@@ -1406,9 +1456,9 @@ class Auth {
                 )
         }
 
-        this.setRefreshToken(ctx)
+        const refreshToken = await this.setRefreshTokenOnCookie(ctx)
 
-        return this.getUserPayload(ctx)
+        return this.getUserPayload(ctx, refreshToken)
     }
 
     private resendVerificationEmail = async ({
@@ -1550,7 +1600,7 @@ class Auth {
 
         await manager.flush()
 
-        this.setRefreshToken(ctx)
+        await this.setRefreshTokenOnCookie(ctx)
 
         return this.getUserPayload(ctx)
     }
@@ -1574,27 +1624,20 @@ class Auth {
         )
 
         if (!user) {
-            throw {
-                message: 'Invalid credentials.',
-                status: 401
-            }
+            throw ctx.authenticationError('Invalid credentials.')
         }
 
         if (!Bcrypt.compareSync(password, user.password)) {
-            throw {
-                message: 'Invalid credentials.',
-                status: 401
-            }
+            throw ctx.authenticationError('Invalid credentials.')
         }
 
         if (this.config.twoFactorAuth && user.two_factor_enabled) {
             const Speakeasy = require('speakeasy')
 
             if (!token) {
-                throw {
-                    message: 'The two factor authentication token is required.',
-                    status: 400
-                }
+                throw ctx.userInputError(
+                    'The two factor authentication token is required.'
+                )
             }
 
             const verified = Speakeasy.totp.verify({
@@ -1604,18 +1647,15 @@ class Auth {
             })
 
             if (!verified) {
-                throw {
-                    status: 400,
-                    message: `Invalid two factor authentication token.`
-                }
+                throw ctx.userInputError(
+                    'Invalid two factor authentication token.'
+                )
             }
         }
 
         ctx.user = user
 
-        this.setRefreshToken(ctx)
-
-        return this.getUserPayload(ctx)
+        return this.getUserPayload(ctx, await this.setRefreshTokenOnCookie(ctx))
     }
 
     public authorizeResolver = async (
@@ -1630,7 +1670,7 @@ class Auth {
             authorized.filter(result => result).length !==
             query.config.authorize.length
         ) {
-            throw new Error('Unauthorized.')
+            throw ctx.forbiddenError('Unauthorized.')
         }
     }
 
@@ -1668,6 +1708,27 @@ class Auth {
         }
     }
 
+    private ensureAuthUserIsNotCompromised = async (ctx: ApiContext) => {
+        if (!ctx.user || (ctx.user && ctx.user.public)) {
+            return
+        }
+
+        const compromisedTokensCount = await ctx.manager.count(
+            this.resources.token.data.pascalCaseName,
+            {
+                [this.resources.user.data.snakeCaseName]: ctx.user.id,
+                type: TokenTypes.REFRESH,
+                compromised_at: {
+                    $ne: null
+                }
+            }
+        )
+
+        if (compromisedTokensCount) {
+            throw ctx.forbiddenError('Credentials have been compromised.')
+        }
+    }
+
     public getAuthUserFromContext = async (ctx: ApiContext) => {
         const { req, manager } = ctx
 
@@ -1677,12 +1738,12 @@ class Auth {
         if (!token) return
 
         try {
-            const { id, refresh } = Jwt.verify(
+            const { id } = Jwt.verify(
                 token,
-                this.config.jwt.secretKey
+                this.config.tokensConfig.secretKey
             ) as JwtPayload
 
-            if (!id || refresh) {
+            if (!id) {
                 return
             }
 
@@ -1965,11 +2026,43 @@ class Auth {
         })
     }
 
-    public generateJwt(payload: DataPayload, refresh: boolean = false) {
-        return Jwt.sign(payload, this.config.jwt.secretKey, {
-            expiresIn: refresh
-                ? this.config.jwt.refreshTokenExpiresIn
-                : this.config.jwt.expiresIn
+    public async generateRefreshToken(
+        ctx: GraphQLPluginContext
+    ): Promise<string> {
+        const plainTextToken = this.generateRandomToken(48)
+
+        // Expire all existing refresh tokens for this customer.
+        await ctx.manager.nativeUpdate(
+            this.resources.token.data.pascalCaseName,
+            {
+                [this.resources.user.data.snakeCaseName]: ctx.user.id
+            } as any,
+            {
+                expires_at: Dayjs().subtract(1, 'second').format()
+            }
+        )
+
+        const entity = ctx.manager.create(
+            this.resources.token.data.pascalCaseName,
+            {
+                token: plainTextToken,
+                [this.resources.user.data.snakeCaseName]: ctx.user.id,
+                type: 'REFRESH',
+                expires_at: Dayjs().add(
+                    this.config.tokensConfig.refreshTokenExpiresIn,
+                    'second'
+                )
+            }
+        )
+
+        await ctx.manager.persistAndFlush(entity)
+
+        return plainTextToken
+    }
+
+    public generateJwt(payload: DataPayload) {
+        return Jwt.sign(payload, this.config.tokensConfig.secretKey, {
+            expiresIn: this.config.tokensConfig.accessTokenExpiresIn
         })
     }
 
@@ -1981,8 +2074,12 @@ class Auth {
         return this
     }
 
-    public generateRandomToken() {
-        return Randomstring.generate(32) + Uniqid() + Randomstring.generate(32)
+    public generateRandomToken(length = 32) {
+        return (
+            Randomstring.generate(length) +
+            Uniqid() +
+            Randomstring.generate(length)
+        )
     }
 
     public social(provider: SupportedSocialProviders, config: GrantConfig) {

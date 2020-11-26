@@ -33,19 +33,27 @@ export type AuthResources = {
     permission: ResourceContract
     teamInvite: ResourceContract
     passwordReset: ResourceContract
+    token: ResourceContract
 }
+
+export enum TokenTypes {
+    REFRESH = 'REFRESH',
+    API = 'API'
+}
+
 export interface AuthPluginConfig {
     fields: FieldContract[]
     profilePictures: boolean
     userResource: string
     roleResource: string
+    disableCookies: boolean
     permissionResource: string
     rolesAndPermissions: boolean
     passwordResetResource: string
     apiPath: string
-    jwt: {
-        expiresIn: number
+    tokensConfig: {
         secretKey: string
+        accessTokenExpiresIn: number
         refreshTokenExpiresIn: number
     }
     refreshTokenCookieName: string

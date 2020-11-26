@@ -39,10 +39,6 @@ module.exports = tensei()
             .teams()
             .apiPath('auth')
             .rolesAndPermissions()
-            .jwt({
-                expiresIn: 60,
-                refreshTokenExpiresIn: 60 * 2,
-            })
             .social('github', {
                 key: process.env.GITHUB_KEY,
                 secret: process.env.GITHUB_SECRET,
