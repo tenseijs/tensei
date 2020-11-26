@@ -394,6 +394,8 @@ export class Tensei implements TenseiContract {
         }
     }
 
+    public registerCoreRoutes() {}
+
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
