@@ -591,7 +591,7 @@ class Auth {
                                 ].includes(path)
                             ) {
                                 return query.authorize(({ user }) =>
-                                    user.permissions!.includes(`insert:${slug}`)
+                                    user?.permissions?.includes(`insert:${slug}`)
                                 )
                             }
 
@@ -602,7 +602,7 @@ class Auth {
                                 ].includes(path)
                             ) {
                                 return query.authorize(({ user }) =>
-                                    user.permissions!.includes(`delete:${slug}`)
+                                    user?.permissions?.includes(`delete:${slug}`)
                                 )
                             }
 
@@ -613,19 +613,19 @@ class Auth {
                                 ].includes(path)
                             ) {
                                 return query.authorize(({ user }) =>
-                                    user.permissions!.includes(`update:${slug}`)
+                                    user?.permissions?.includes(`update:${slug}`)
                                 )
                             }
 
                             if (path === plural) {
                                 return query.authorize(({ user }) =>
-                                    user.permissions!.includes(`fetch:${slug}`)
+                                    user?.permissions?.includes(`fetch:${slug}`)
                                 )
                             }
 
                             if (path === singular) {
                                 return query.authorize(({ user }) =>
-                                    user.permissions!.includes(`show:${slug}`)
+                                    user?.permissions?.includes(`show:${slug}`)
                                 )
                             }
                         }
@@ -702,7 +702,7 @@ class Auth {
                                 internal
                             ) {
                                 return route.authorize(({ user }) =>
-                                    user.permissions!.includes(
+                                    user?.permissions?.includes(
                                         `insert:${slugSingular}`
                                     )
                                 )
@@ -714,7 +714,7 @@ class Auth {
                                 internal
                             ) {
                                 return route.authorize(({ user }) =>
-                                    user.permissions!.includes(
+                                    user?.permissions?.includes(
                                         `fetch:${slugSingular}`
                                     )
                                 )
@@ -726,7 +726,7 @@ class Auth {
                                 internal
                             ) {
                                 return route.authorize(({ user }) =>
-                                    user.permissions!.includes(
+                                    user?.permissions?.includes(
                                         `show:${slugSingular}`
                                     )
                                 )
@@ -741,7 +741,7 @@ class Auth {
                                 internal
                             ) {
                                 return route.authorize(({ user }) =>
-                                    user.permissions!.includes(
+                                    user?.permissions?.includes(
                                         `update:${slugSingular}`
                                     )
                                 )
@@ -756,7 +756,7 @@ class Auth {
                                 internal
                             ) {
                                 return route.authorize(({ user }) =>
-                                    user.permissions!.includes(
+                                    user?.permissions!.includes(
                                         `delete:${slugSingular}`
                                     )
                                 )
@@ -1689,7 +1689,7 @@ class Auth {
                 slug: 'public'
             },
             {
-                populate: [this.resources.permission.data.snakeCaseNamePlural],
+                populate: ['permissions'],
                 refresh: true
             }
         )
@@ -1697,13 +1697,10 @@ class Auth {
         if (!user) {
             ctx.user = {
                 public: true,
-                [this.resources.role.data.snakeCaseNamePlural]: [
+                roles: [
                     publicRole as UserRole
                 ],
-                [this.resources.permission.data
-                    .snakeCaseNamePlural]: publicRole[
-                    this.resources.permission.data.snakeCaseNamePlural
-                ]
+                permissions: publicRole.permissions
                     .toJSON()
                     .map((permission: any) => permission.slug)
             } as any
@@ -1760,6 +1757,13 @@ class Auth {
                         : []
                 }
             )
+
+            if (this.config.rolesAndPermissions) {
+                user.permissions = user.roles.reduce((acc: string[], role: UserRole) => [
+                    ...acc,
+                    ...role.permissions.map(p => p.slug)
+                ], [])
+            }
 
             ctx.user = user
         } catch (error) {}
