@@ -319,7 +319,7 @@ class Auth {
             dateTime('Last Used At').nullable(),
             dateTime('Compromised At').nullable(),
             dateTime('Expires At').hidden(),
-            belongsTo(this.config.userResource)
+            belongsTo(this.config.userResource).nullable()
         ])
     }
 
