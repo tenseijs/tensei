@@ -1124,7 +1124,7 @@ class Auth {
     private async setRefreshTokenOnCookie(ctx: ApiContext): Promise<string> {
         const refreshToken = await this.generateRefreshToken(ctx)
 
-        if (! this.config.disableCookies) {
+        if (!this.config.disableCookies) {
             ctx.res.cookie(this.config.refreshTokenCookieName, refreshToken, {
                 ...this.config.cookieOptions,
                 httpOnly: true,
@@ -1161,37 +1161,33 @@ class Auth {
                 .handle(async (_, args, ctx, info) =>
                     this.enableTwoFactorAuth(ctx)
                 )
-                .authorize(({ user }) => !user.public),
+                .authorize(({ user }) => user && !user.public),
             graphQlQuery('Confirm Enable Two Factor Auth')
                 .path('confirm_enable_two_factor_auth')
                 .mutation()
                 .handle(async (_, args, ctx, info) =>
                     this.confirmEnableTwoFactorAuth(ctx)
                 )
-                .authorize(({ user }) => !user.public),
+                .authorize(({ user }) => user && !user.public),
             graphQlQuery(
                 `Get authenticated ${this.resources.user.data.snakeCaseName}`
             )
                 .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
                 .query()
-                .handle(async (_, args, ctx, info) => {
-                    if (!ctx.user || ctx.user.public)
-                        throw ctx.authenticationError()
-
-                    return ctx.user
-                }),
+                .authorize(({ user }) => user && !user.public)
+                .handle(async (_, args, ctx, info) => ctx.user),
             graphQlQuery(`Disable Two Factor Auth`)
                 .path('disable_two_factor_auth')
                 .mutation()
                 .handle(async (_, args, ctx, info) =>
                     this.disableTwoFactorAuth(ctx)
                 )
-                .authorize(({ user }) => !user.public),
+                .authorize(({ user }) => user && !user.public),
             graphQlQuery('Confirm Email')
                 .path('confirm_email')
                 .mutation()
                 .handle(async (_, args, ctx, info) => this.confirmEmail(ctx))
-                .authorize(({ user }) => !user.public),
+                .authorize(({ user }) => user && !user.public),
             graphQlQuery('Resend Verification Email')
                 .path('resend_verification_email')
                 .mutation()
@@ -1259,7 +1255,13 @@ class Auth {
                 type: TokenTypes.REFRESH
             },
             {
-                populate: [`${userField}.roles.permissions`]
+                populate: [
+                    `${userField}${
+                        this.config.rolesAndPermissions
+                            ? '.roles.permissions'
+                            : ''
+                    }`
+                ]
             }
         )
 
@@ -1492,7 +1494,7 @@ class Auth {
         ) {
             manager.assign(user, {
                 email_verification_token: null,
-                email_verified_at: Dayjs().format('YYYY-MM-DD HH:mm:ss')
+                email_verified_at: Dayjs().format()
             })
 
             await manager.persistAndFlush(user)
@@ -2038,7 +2040,8 @@ class Auth {
                 [this.resources.user.data.snakeCaseName]: ctx.user.id
             } as any,
             {
-                expires_at: Dayjs().subtract(1, 'second').format()
+                expires_at: Dayjs().subtract(1, 'second').format(),
+                last_used_at: Dayjs().subtract(1, 'second').format()
             }
         )
 
