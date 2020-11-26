@@ -212,10 +212,10 @@ export class Tensei implements TenseiContract {
         await this.callPluginHook('afterMiddlewareSetup')
 
         await this.callPluginHook('beforeCoreRoutesSetup')
-        this.registerCoreRoutes()
         await this.callPluginHook('afterCoreRoutesSetup')
 
         await this.callPluginHook('setup')
+        this.registerAsyncErrorHandler()
 
         return this
     }
@@ -394,6 +394,8 @@ export class Tensei implements TenseiContract {
         }
     }
 
+    public registerCoreRoutes() {}
+
     public registerMiddleware() {
         this.app.use(BodyParser.json())
 
@@ -471,7 +473,7 @@ export class Tensei implements TenseiContract {
         next()
     }
 
-    public registerCoreRoutes() {
+    public registerAsyncErrorHandler() {
         this.app.use(
             (
                 error: any,

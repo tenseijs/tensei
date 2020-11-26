@@ -392,6 +392,10 @@ declare module '@tensei/common/fields' {
             this: T,
             value: string | number | boolean
         ): T
+        defaultRaw<T extends FieldContract>(
+            this: T,
+            value: string | number | boolean
+        ): T
         /**
          *
          * Set html attributes for this component

@@ -20,10 +20,6 @@ declare global {
             appConfig: Config
             scripts: Asset[]
             styles: Asset[]
-            authenticationError: (message?: string) => unknown
-            forbiddenError: (message?: string) => unknown
-            validationError: (message?: string) => unknown
-            userInputError: (message?: string) => unknown
         }
     }
 }

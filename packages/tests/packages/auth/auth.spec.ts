@@ -116,20 +116,17 @@ test('Can enable email verification for auth', async () => {
             mailer
         },
         app
-    } = await setup(
-        [
-            auth()
-                .user('Customer')
-                .verifyEmails()
-                .setup(({ user }) => {
-                    user.fields([text('Name')])
-                })
-                .plugin(),
-            graphql().plugin(),
-            setupFakeMailer(mailerMock)
-        ],
-        false
-    )
+    } = await setup([
+        auth()
+            .user('Customer')
+            .verifyEmails()
+            .setup(({ user }) => {
+                user.fields([text('Name')])
+            })
+            .plugin(),
+        graphql().plugin(),
+        setupFakeMailer(mailerMock)
+    ])
 
     const client = Supertest(app)
 
@@ -145,7 +142,8 @@ test('Can enable email verification for auth', async () => {
                 register_customer(
                     object: { name: $name, email: $email, password: $password }
                 ) {
-                    token
+                    access_token
+                    refresh_token
                     customer {
                         id
                         email
@@ -162,7 +160,8 @@ test('Can enable email verification for auth', async () => {
     })
 
     expect(response.status).toBe(200)
-    expect(response.body.data.register_customer.token).toBeDefined()
+    expect(response.body.data.register_customer.access_token).toBeDefined()
+    expect(response.body.data.register_customer.refresh_token).toBeDefined()
 
     const registeredCustomer: any = await em.findOne('Customer', {
         email: user.email
@@ -199,7 +198,7 @@ test('Can enable email verification for auth', async () => {
         })
         .set(
             'Authorization',
-            `Bearer ${response.body.data.register_customer.token}`
+            `Bearer ${response.body.data.register_customer.access_token}`
         )
 
     expect(verify_email_response.body.data.confirm_email).toEqual({
@@ -289,7 +288,8 @@ test('Can request a password reset and reset password', async () => {
         query: gql`
             mutation login_student($email: String!, $password: String!) {
                 login_student(object: { email: $email, password: $password }) {
-                    token
+                    access_token
+                    refresh_token
                     student {
                         id
                         email
@@ -305,7 +305,8 @@ test('Can request a password reset and reset password', async () => {
 
     expect(login_response.status).toBe(200)
     expect(login_response.body.data.login_student).toEqual({
-        token: expect.any(String),
+        access_token: expect.any(String),
+        refresh_token: expect.any(String),
         student: {
             id: user.id.toString(),
             email: user.email
@@ -329,8 +330,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .setup(({ user }) => {
                 user.fields([text('Name').nullable()])
             })
-            .jwt({
-                expiresIn: jwtExpiresIn,
+            .configureTokens({
+                accessTokenExpiresIn: jwtExpiresIn,
                 refreshTokenExpiresIn
             })
             .plugin(),
@@ -347,7 +348,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         query: gql`
             mutation login_student($email: String!, $password: String!) {
                 login_student(object: { email: $email, password: $password }) {
-                    token
+                    access_token
                     student {
                         id
                         email
@@ -361,7 +362,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         }
     })
 
-    const accessToken: string = login_response.body.data.login_student.token
+    const accessToken: string =
+        login_response.body.data.login_student.access_token
     const refreshToken: string = login_response.headers['set-cookie'][0]
         .split(';')[0]
         .split('=')[1]
@@ -385,7 +387,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
         expect(authenticated_response.body.data).toBeNull()
         expect(authenticated_response.body.errors[0].message).toBe(
-            'Unauthenticated.'
+            'Unauthorized.'
         )
 
         // Refresh the jwt with the valid refresh token. Expect to get a new, valid JWT
@@ -396,7 +398,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
                 query: gql`
                     mutation refresh_token {
                         refresh_token {
-                            token
+                            access_token
                             student {
                                 id
                                 email
@@ -408,7 +410,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .set('Cookie', `___refresh__token=${refreshToken}`)
 
         expect(refresh_token_response.body.data.refresh_token).toEqual({
-            token: expect.any(String),
+            access_token: expect.any(String),
             student: {
                 id: user.id.toString(),
                 email: user.email
@@ -431,7 +433,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             })
             .set(
                 'Authorization',
-                `Bearer ${refresh_token_response.body.data.refresh_token.token}`
+                `Bearer ${refresh_token_response.body.data.refresh_token.access_token}`
             )
 
         expect(
@@ -452,7 +454,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
                 query: gql`
                     mutation refresh_token {
                         refresh_token {
-                            token
+                            access_token
                             student {
                                 id
                                 email
@@ -502,7 +504,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
     expect(refresh_token_has_no_access_response.body.data).toBeNull()
     expect(refresh_token_has_no_access_response.body.errors[0].message).toBe(
-        'Unauthenticated.'
+        'Unauthorized.'
     )
 
     expect(authenticated_response.body.data.authenticated_student).toEqual({
