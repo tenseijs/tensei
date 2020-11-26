@@ -81,7 +81,7 @@ module.exports = tensei()
     .databaseConfig({
         type: process.env.DATABASE_TYPE || 'mysql',
         dbName: process.env.DATABASE_NAME || 'mikrotensei',
-        debug: process.env.DEBUG || false,
+        debug: process.env.DEBUG || true,
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',
     })

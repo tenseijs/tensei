@@ -160,6 +160,11 @@ declare module '@tensei/common/config' {
         id: number
         name: string
         slug: string
+        permissions: ({
+            id: number
+            name: string
+            slug: string
+        })[]
     }
     interface User {
         id: number
