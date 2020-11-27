@@ -4,7 +4,8 @@ import {
     PluginSetupFunction,
     SetupFunctions,
     PluginContract,
-    Permission
+    Permission,
+    ServerStartedPluginSetupFunction
 } from '@tensei/common'
 
 export class Plugin implements PluginContract {
@@ -12,6 +13,7 @@ export class Plugin implements PluginContract {
         permissions: [] as Permission[],
         setup: (config: PluginSetupConfig) => Promise.resolve(),
 
+        serverStarted: () => {},
         beforeDatabaseSetup: (config: PluginSetupConfig) => Promise.resolve(),
         afterDatabaseSetup: (config: PluginSetupConfig) => Promise.resolve(),
 
@@ -43,6 +45,12 @@ export class Plugin implements PluginContract {
 
     public setup(setupFunction: PluginSetupFunction) {
         this.setValue('setup', setupFunction)
+
+        return this
+    }
+
+    public serverStarted(setupFunction: PluginSetupFunction) {
+        this.setValue('serverStarted', setupFunction)
 
         return this
     }

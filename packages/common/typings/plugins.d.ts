@@ -1,11 +1,12 @@
 declare module '@tensei/common/plugins' {
     import { Application } from 'express'
     import {
-        StorageManager,
         Storage,
+        StorageManager,
         StorageManagerConfig
     } from '@slynova/flydrive'
     import { DocumentNode } from 'graphql'
+    import { Server } from 'http'
     import { EntityManager } from '@mikro-orm/core'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
     import {
@@ -22,6 +23,12 @@ declare module '@tensei/common/plugins' {
 
     type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
 
+    type ServerStartedPluginSetupFunction = (
+        config: PluginSetupConfig & {
+            server: Server
+        }
+    ) => void
+
     type SetupFunctions =
         | 'setup'
         | 'beforeDatabaseSetup'
@@ -30,10 +37,12 @@ declare module '@tensei/common/plugins' {
         | 'afterMiddlewareSetup'
         | 'beforeCoreRoutesSetup'
         | 'afterCoreRoutesSetup'
+        | 'serverStarted'
 
     interface PluginSetupConfig extends Config {
         resources: ResourceContract[]
         app: Application
+        server: Server
         resourcesMap: {
             [key: string]: ResourceContract
         }
@@ -63,15 +72,29 @@ declare module '@tensei/common/plugins' {
         slug: string
         data: {
             permissions: Permission[]
-            setup: (config: PluginSetupConfig) => Promise<void>
-            beforeDatabaseSetup: (config: PluginSetupConfig) => Promise<void>
-            afterDatabaseSetup: (config: PluginSetupConfig) => Promise<void>
-            beforeMiddlewareSetup: (config: PluginSetupConfig) => Promise<void>
-            afterMiddlewareSetup: (config: PluginSetupConfig) => Promise<void>
-            beforeCoreRoutesSetup: (config: PluginSetupConfig) => Promise<void>
-            afterCoreRoutesSetup: (config: PluginSetupConfig) => Promise<void>
+            setup: (config: PluginSetupConfig) => void | Promise<void>
+            serverStarted: (config: PluginSetupConfig) => void | Promise<void>
+            beforeDatabaseSetup: (
+                config: PluginSetupConfig
+            ) => void | Promise<void>
+            afterDatabaseSetup: (
+                config: PluginSetupConfig
+            ) => void | Promise<void>
+            beforeMiddlewareSetup: (
+                config: PluginSetupConfig
+            ) => void | Promise<void>
+            afterMiddlewareSetup: (
+                config: PluginSetupConfig
+            ) => void | Promise<void>
+            beforeCoreRoutesSetup: (
+                config: PluginSetupConfig
+            ) => void | Promise<void>
+            afterCoreRoutesSetup: (
+                config: PluginSetupConfig
+            ) => void | Promise<void>
         }
         setup(setupFunction: PluginSetupFunction): this
+        serverStarted: (setupFunction: PluginSetupFunction) => this
         beforeDatabaseSetup(setupFunction: PluginSetupFunction): this
         afterDatabaseSetup(setupFunction: PluginSetupFunction): this
         beforeMiddlewareSetup(setupFunction: PluginSetupFunction): this

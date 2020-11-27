@@ -12,9 +12,11 @@ export class GraphQlQuery implements GraphQlQueryContract {
         name: '',
         internal: false,
         type: 'QUERY',
+        middleware: [],
         snakeCaseName: '',
         paramCaseName: '',
         authorize: [],
+        filter: () => true,
         handler: async () => {}
     }
 
@@ -52,14 +54,32 @@ export class GraphQlQuery implements GraphQlQueryContract {
         return this
     }
 
+    subscription() {
+        this.config.type = 'SUBSCRIPTION'
+
+        return this
+    }
+
     authorize(authorize: AuthorizeFunction) {
         this.config.authorize = [...this.config.authorize, authorize]
 
         return this
     }
 
+    middleware(middleware: GraphQlQueryConfig['handler'][]) {
+        this.config.middleware = [...this.config.middleware, ...middleware]
+
+        return this
+    }
+
     handle(handler: GraphQlQueryConfig['handler']) {
         this.config.handler = handler
+
+        return this
+    }
+
+    filter(filter: GraphQlQueryConfig['filter']) {
+        this.config.filter = filter
 
         return this
     }
