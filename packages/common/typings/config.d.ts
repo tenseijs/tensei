@@ -45,6 +45,28 @@ declare module '@tensei/common/config' {
         handle(handler: RouteConfig['handler']): this
     }
 
+    interface UtilsContract {
+        validator: (
+            resource: ResourceContract,
+            manager: EntityManager,
+            resourcesMap: {
+                [key: string]: ResourceContract
+            },
+            modelId?: string | number | undefined
+        ) => {
+            getValidationRules: (
+                creationRules?: boolean
+            ) => {
+                [key: string]: string
+            }
+            validate: (
+                payload: DataPayload,
+                creationRules?: boolean,
+                modelId?: string | number | undefined
+            ) => Promise<[boolean, DataPayload | array[any]]>
+        }
+    }
+
     interface GraphQlQueryContract {
         config: GraphQlQueryConfig
         path(path: string): this
@@ -112,7 +134,7 @@ declare module '@tensei/common/config' {
         authenticationError: (message?: string) => unknown
         forbiddenError: (message?: string) => unknown
         validationError: (message?: string) => unknown
-        userInputError: (message?: string) => unknown
+        userInputError: (message?: string, properties?: any) => unknown
     }
 
     interface ApiContext extends GraphQLPluginContext {}
@@ -476,4 +498,5 @@ declare module '@tensei/common/config' {
     }
     const graphQlQuery: (name?: string) => GraphQlQueryContract
     const route: (name?: string) => RouteContract
+    const Utils: UtilsContract
 }

@@ -626,8 +626,14 @@ input id_where_query {
                         context.validationError = (message?: string) =>
                             new ValidationError(message || 'Validation failed.')
 
-                        context.userInputError = (message?: string) =>
-                            new UserInputError(message || 'Invalid user input.')
+                        context.userInputError = (
+                            message?: string,
+                            properties?: any
+                        ) =>
+                            new UserInputError(
+                                message || 'Invalid user input.',
+                                properties
+                            )
 
                         const result = await resolve(
                             parent,

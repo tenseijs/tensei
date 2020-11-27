@@ -9,7 +9,8 @@ import {
     resource,
     textarea,
     belongsTo,
-    belongsToMany
+    belongsToMany,
+    hasMany
 } from '@tensei/common'
 
 export default resource('Post')
@@ -65,7 +66,8 @@ export default resource('Post')
             .sortable()
             .searchable()
             .unique()
-            .rules('required', 'max:64'),
+            .creationRules('required', 'max:64', 'unique:title')
+            .updateRules('required', 'max:64', 'unique:title,{id}'),
         text('Description').rules('required'),
         textarea('Content')
             .rules('required', 'max:2000', 'min:12')
@@ -104,7 +106,8 @@ export default resource('Post')
         dateTime('Scheduled For')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a'),
-        belongsToMany('Tag')
+        belongsToMany('Tag'),
+        hasMany('Comment')
     ])
     .perPageOptions([25, 50, 100])
     .displayField('title')

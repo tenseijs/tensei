@@ -10,10 +10,21 @@ test('correctly generates insert_resource resolvers for all registered resources
 
     const response = await client.post('/graphql').send({
         query: gql`
-            mutation insert_tag($name: String!, $description: String!) {
-                insert_tag(object: { name: $name, description: $description }) {
+            mutation insert_tag(
+                $name: String!
+                $priority: Int!
+                $description: String!
+            ) {
+                insert_tag(
+                    object: {
+                        name: $name
+                        priority: $priority
+                        description: $description
+                    }
+                ) {
                     id
                     name
+                    priority
                     description
                 }
             }
@@ -32,6 +43,107 @@ test('correctly generates insert_resource resolvers for all registered resources
     })
 })
 
+test('correctly validates all insert queries for a resource', async () => {
+    const instance = await setup()
+
+    const client = Supertest(instance.app)
+
+    const tag = fakeTag()
+
+    const response = await client.post('/graphql').send({
+        query: gql`
+            mutation insert_tag(
+                $name: String!
+                $description: String!
+                $priority: Int!
+            ) {
+                insert_tag(
+                    object: {
+                        name: $name
+                        description: $description
+                        priority: $priority
+                    }
+                ) {
+                    id
+                    name
+                    priority
+                    description
+                }
+            }
+        `,
+        variables: {
+            ...tag,
+            priority: 34
+        }
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.body.errors[0].message).toBe('Validation failed.')
+    expect(response.body.errors[0].extensions.code).toBe('BAD_USER_INPUT')
+    expect(response.body.errors[0].extensions.errors).toEqual([
+        {
+            message: 'under validation failed on priority',
+            validation: 'under',
+            field: 'priority'
+        }
+    ])
+})
+
+test('correctly validates all update queries for a resource', async () => {
+    const instance = await setup()
+
+    const client = Supertest(instance.app)
+
+    const tagEntity = instance.ctx.orm.em.create('Tag', fakeTag())
+
+    await instance.ctx.orm.em.persistAndFlush(tagEntity)
+
+    const tag = await instance.ctx.orm.em.findOne('Tag', {
+        name: tagEntity.name,
+        description: tagEntity.description
+    })
+
+    const response = await client.post('/graphql').send({
+        query: gql`
+            mutation update_tag(
+                $id: ID!
+                $name: String!
+                $description: String!
+                $priority: Int!
+            ) {
+                update_tag(
+                    id: $id
+                    object: {
+                        name: $name
+                        description: $description
+                        priority: $priority
+                    }
+                ) {
+                    id
+                    name
+                    priority
+                    description
+                }
+            }
+        `,
+        variables: {
+            ...tag,
+            priority: 56
+        }
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.body.errors[0].message).toBe('Validation failed.')
+    expect(response.body.errors[0].extensions.code).toBe('BAD_USER_INPUT')
+    expect(response.body.errors[0].extensions.errors).toEqual([
+        {
+            message: 'under validation failed on priority',
+            validation: 'under',
+            field: 'priority'
+        }
+    ])
+})
+
 test('correctly generates insert_resources resolvers for all registered resources', async () => {
     const instance = await setup()
 
@@ -46,15 +158,25 @@ test('correctly generates insert_resources resolvers for all registered resource
                 $description: String!
                 $name2: String!
                 $description2: String!
+                $priority: Int!
             ) {
                 insert_tags(
                     objects: [
-                        { name: $name, description: $description }
-                        { name: $name2, description: $description2 }
+                        {
+                            name: $name
+                            description: $description
+                            priority: $priority
+                        }
+                        {
+                            name: $name2
+                            description: $description2
+                            priority: $priority
+                        }
                     ]
                 ) {
                     id
                     name
+                    priority
                     description
                 }
             }
