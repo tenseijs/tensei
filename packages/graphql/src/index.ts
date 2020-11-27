@@ -47,6 +47,8 @@ class Graphql {
 
     private getMiddlewareOptions: GetMiddlewareOptions = {}
 
+    private pubsub: PubSub | undefined
+
     schemaString: string = `
     scalar JSON
     scalar JSONObject
@@ -466,7 +468,8 @@ input id_where_query {
         return this
     }
 
-    subscriptions() {
+    subscriptions(pubsub?: PubSub) {
+        this.pubsub = pubsub || new PubSub()
         this.subscriptionsEnabled = true
 
         return this
@@ -658,12 +661,6 @@ input id_where_query {
                     resolvers
                 })
 
-                let pubsub: PubSub
-
-                if (this.subscriptionsEnabled) {
-                    pubsub = new PubSub()
-                }
-
                 const graphQlServer = new ApolloServer({
                     schema: applyMiddleware(
                         schema,
@@ -679,7 +676,7 @@ input id_where_query {
                     context: ctx => ({
                         ...ctx,
                         ...config,
-                        pubsub,
+                        pubsub: this.pubsub,
                         manager: manager!.fork()
                     })
                 })

@@ -4,6 +4,7 @@ const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
 const { tensei, plugin, route } = require('@tensei/core')
+const { RedisPubSub } = require('graphql-redis-subscriptions')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -58,6 +59,7 @@ module.exports = tensei()
             })
             .plugin(),
         graphql()
+            .subscriptions(new RedisPubSub())
             .middlewareOptions({
                 cors: {
                     credentials: true,
