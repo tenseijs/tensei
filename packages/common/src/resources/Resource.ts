@@ -431,6 +431,10 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         )
     }
 
+    public getPrimaryField() {
+        return this.data.fields.find(f => f.property.primary)
+    }
+
     public getUpdateApiExposedFields() {
         return this.data.fields.filter(
             f => !f.showHideFieldFromApi.hideFromUpdateApi

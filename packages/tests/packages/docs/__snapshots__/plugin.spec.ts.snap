@@ -116,6 +116,13 @@ Object {
           "format": "string",
           "type": "string",
         },
+        "comments": Object {
+          "description": "",
+          "items": Object {
+            "$ref": "#/definitions/ID",
+          },
+          "type": "array",
+        },
         "content": Object {
           "description": "",
           "format": "string",
@@ -236,6 +243,11 @@ Object {
             "$ref": "#/definitions/ID",
           },
           "type": "array",
+        },
+        "priority": Object {
+          "description": "",
+          "format": "int32",
+          "type": "integer",
         },
       },
       "required": Array [

@@ -94,6 +94,7 @@ declare module '@tensei/common/resources' {
         hideFromDeleteApi(): this
         hideFromFetchApi(): this
         hideFromShowApi(): this
+        getPrimaryField(): FieldContract | undefined
         getCreateApiExposedFields(): FieldContract[]
         getUpdateApiExposedFields(): FieldContract[]
         getFetchApiExposedFields(): FieldContract[]

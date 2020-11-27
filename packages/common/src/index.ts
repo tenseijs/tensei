@@ -30,5 +30,6 @@ export { resource, Resource } from './resources/Resource'
 export { dashboard, Dashboard } from './dashboard/Dashboard'
 export { valueMetric, ValueMetrics } from './metrics/Value'
 
+export { Utils } from './utils'
 export { route, Route } from './api/Route'
 export { graphQlQuery, GraphQlQuery } from './api/GraphQlQuery'

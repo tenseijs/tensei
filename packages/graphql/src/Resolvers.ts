@@ -1,3 +1,4 @@
+import { Utils } from '@tensei/common'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
 import {
@@ -390,9 +391,21 @@ export const getResolvers = (
                 .internal()
                 .resource(resource)
                 .handle(async (_, args, ctx, info) => {
+                    const [passed, payload] = await Utils.validator(
+                        resource,
+                        ctx.manager,
+                        ctx.resourcesMap
+                    ).validate(args.object)
+
+                    if (!passed) {
+                        throw ctx.userInputError('Validation failed.', {
+                            errors: payload
+                        })
+                    }
+
                     const data = ctx.manager.create(
                         resource.data.pascalCaseName,
-                        args.object
+                        payload
                     )
 
                     await ctx.manager.persistAndFlush(data)
@@ -463,7 +476,20 @@ export const getResolvers = (
                         .getRepository<any>(resource.data.pascalCaseName)
                         .findOneOrFail(args.id)
 
-                    ctx.manager.assign(data, args.object)
+                    const [passed, payload] = await Utils.validator(
+                        resource,
+                        ctx.manager,
+                        ctx.resourcesMap,
+                        args.id
+                    ).validate(args.object)
+
+                    if (!passed) {
+                        throw ctx.userInputError('Validation failed.', {
+                            errors: payload
+                        })
+                    }
+
+                    ctx.manager.assign(data, payload)
 
                     await ctx.manager.persistAndFlush(data)
 
@@ -497,6 +523,18 @@ export const getResolvers = (
                         resource.data.pascalCaseName,
                         parseWhereArgumentsToWhereQuery(args.where)
                     )
+
+                    const [passed, payload] = await Utils.validator(
+                        resource,
+                        ctx.manager,
+                        ctx.resourcesMap
+                    ).validate(args.object)
+
+                    if (!passed) {
+                        throw ctx.userInputError('Validation failed.', {
+                            errors: payload
+                        })
+                    }
 
                     data.forEach(d => ctx.manager.assign(d, args.object))
 

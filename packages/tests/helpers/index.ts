@@ -17,6 +17,7 @@ let loggedDatabase = false
 export const fakeTag = () =>
     ({
         name: Faker.lorem.word(),
+        priority: 3,
         description: Faker.lorem.sentence()
     } as {
         id?: string | number
