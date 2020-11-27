@@ -2,9 +2,10 @@ import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
+import { createServer, Server } from 'http'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
-import { mail, SupportedDrivers, Mail } from '@tensei/mail'
+import { mail, SupportedDrivers } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
 import {
     StorageManager,
@@ -14,37 +15,30 @@ import {
 import Express, { Request, Application, NextFunction } from 'express'
 
 import {
-    text,
     Asset,
     Config,
-    Manager,
-    resource,
     RouteContract,
     PluginContract,
     ResourceContract,
     SetupFunctions,
-    ManagerContract,
     InBuiltEndpoints,
     DashboardContract,
-    SupportedDatabases,
     EndpointMiddleware,
     StorageConstructor,
-    SupportedStorageDrivers,
-    DatabaseRepositoryInterface
+    SupportedStorageDrivers
 } from '@tensei/common'
 import Database from './database'
 import {
     TenseiContract,
     DatabaseConfiguration,
-    GraphQLPluginExtension,
     TensieContext,
     MiddlewareGenerator,
     GraphQlQueryContract
 } from '@tensei/core'
-import { IMiddleware, IMiddlewareGenerator } from 'graphql-middleware'
 
 export class Tensei implements TenseiContract {
     public app: Application = Express()
+    public server: Server = createServer(this.app)
     public extensions: {
         [key: string]: any
     } = {}
@@ -249,7 +243,7 @@ export class Tensei implements TenseiContract {
     private listen() {
         const port = process.env.PORT || 4500
 
-        this.app.listen(port, () => {
+        this.server.listen(port, () => {
             this.ctx.logger.success(
                 `🚀 Access your server on ${this.ctx.serverUrl ||
                     `http://127.0.0.1:${port}`}`
@@ -265,6 +259,7 @@ export class Tensei implements TenseiContract {
 
         return {
             app: this.app,
+            server: this.server,
             ...this.ctx,
             style: (name: Asset['name'], path: Asset['path']) => {
                 this.ctx.styles = [
@@ -301,11 +296,13 @@ export class Tensei implements TenseiContract {
         }
     }
 
-    public async callPluginHook(hook: SetupFunctions) {
+    public async callPluginHook(hook: SetupFunctions, payload?: any) {
         for (let index = 0; index < this.ctx.plugins.length; index++) {
             const plugin = this.ctx.plugins[index]
 
-            const extension = await plugin.data[hook](this.getPluginArguments())
+            const extension = await plugin.data[hook](
+                payload || this.getPluginArguments()
+            )
 
             if (hook === 'setup') {
                 this.extensions = {

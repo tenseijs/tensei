@@ -4,6 +4,7 @@ const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
 const { tensei, plugin, route } = require('@tensei/core')
+const { RedisPubSub } = require('graphql-redis-subscriptions')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -58,6 +59,7 @@ module.exports = tensei()
             })
             .plugin(),
         graphql()
+            .subscriptions(new RedisPubSub())
             .middlewareOptions({
                 cors: {
                     credentials: true,
@@ -81,7 +83,7 @@ module.exports = tensei()
     .databaseConfig({
         type: process.env.DATABASE_TYPE || 'mysql',
         dbName: process.env.DATABASE_NAME || 'mikrotensei',
-        debug: process.env.DEBUG || true,
+        debug: process.env.DEBUG || false,
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',
     })

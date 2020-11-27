@@ -9,9 +9,9 @@ declare module '@tensei/common/config' {
     import { EventArgs, FlushEventArgs } from '@mikro-orm/core'
     import { ResourceContract } from '@tensei/common/resources'
     import { ExecutionParams } from 'subscriptions-transport-ws'
-    import { IResolvers, ITypedef } from 'apollo-server-express'
     import { DashboardContract } from '@tensei/common/dashboards'
     import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
+    import { IResolvers, ITypedef, PubSub } from 'apollo-server-express'
     import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
     import {
@@ -51,9 +51,12 @@ declare module '@tensei/common/config' {
         query(): this
         mutation(): this
         internal(): this
+        subscription(): this
         resource(resource: ResourceContract): this
         authorize(authorize: AuthorizeFunction): this
+        filter(filter: GraphQlQueryConfig['filter']): this
         handle(handler: GraphQlQueryConfig['handler']): this
+        middleware(middleware: GraphQlQueryConfig['handler'][]): this
     }
 
     interface RouteConfig {
@@ -76,18 +79,25 @@ declare module '@tensei/common/config' {
     > {
         path: string
         name: string
+        middleware: GraphQlQueryConfig['handler'][]
         internal: boolean
         snakeCaseName: string
         paramCaseName: string
         resource?: ResourceContract
-        type: 'QUERY' | 'MUTATION'
+        type: 'QUERY' | 'MUTATION' | 'SUBSCRIPTION'
         authorize: AuthorizeFunction[]
         handler: (
             source: TSource,
             args: TArgs,
             context: TContext,
             info: GraphQLResolveInfo
-        ) => Promise<any>
+        ) => any | Promise<any>
+        filter: (
+            payload: DataPayload,
+            args: {
+                filter: TArgs
+            }
+        ) => boolean | Promise<boolean>
     }
     interface GraphQLPluginExtension {
         typeDefs: string | DocumentNode
@@ -97,6 +107,7 @@ declare module '@tensei/common/config' {
     interface GraphQLPluginContext extends TensieContext {
         req: Request
         res: Response
+        pubsub: PubSub
         connection?: ExecutionParams
         authenticationError: (message?: string) => unknown
         forbiddenError: (message?: string) => unknown
@@ -160,11 +171,11 @@ declare module '@tensei/common/config' {
         id: number
         name: string
         slug: string
-        permissions: ({
+        permissions: {
             id: number
             name: string
             slug: string
-        })[]
+        }[]
     }
     interface User {
         id: number

@@ -497,6 +497,35 @@ class Auth {
                                         query.config.path
                                     ] = getAuthorizer(query)
                                 }
+
+                                if (query.config.type === 'SUBSCRIPTION') {
+                                    query.middleware([
+                                        async (parent, args, ctx, info) => {
+                                            const authorizationToken =
+                                                ctx.connection?.context
+                                                    ?.Authorization
+
+                                            if (!authorizationToken) {
+                                                return
+                                            }
+
+                                            await this.populateContextFromToken(
+                                                authorizationToken.split(
+                                                    ' '
+                                                )[1],
+                                                ctx
+                                            )
+                                        },
+                                        async (parent, args, ctx, info) =>
+                                            this.setAuthUserForPublicRoutes(
+                                                ctx
+                                            ),
+                                        async (parent, args, ctx, info) =>
+                                            this.ensureAuthUserIsNotCompromised(
+                                                ctx
+                                            )
+                                    ])
+                                }
                             })
 
                             return resolverAuthorizers
@@ -591,7 +620,9 @@ class Auth {
                                 ].includes(path)
                             ) {
                                 return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(`insert:${slug}`)
+                                    user?.permissions?.includes(
+                                        `insert:${slug}`
+                                    )
                                 )
                             }
 
@@ -602,7 +633,9 @@ class Auth {
                                 ].includes(path)
                             ) {
                                 return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(`delete:${slug}`)
+                                    user?.permissions?.includes(
+                                        `delete:${slug}`
+                                    )
                                 )
                             }
 
@@ -613,7 +646,9 @@ class Auth {
                                 ].includes(path)
                             ) {
                                 return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(`update:${slug}`)
+                                    user?.permissions?.includes(
+                                        `update:${slug}`
+                                    )
                                 )
                             }
 
@@ -1697,9 +1732,7 @@ class Auth {
         if (!user) {
             ctx.user = {
                 public: true,
-                roles: [
-                    publicRole as UserRole
-                ],
+                roles: [publicRole as UserRole],
                 permissions: publicRole.permissions
                     .toJSON()
                     .map((permission: any) => permission.slug)
@@ -1728,13 +1761,11 @@ class Auth {
         }
     }
 
-    public getAuthUserFromContext = async (ctx: ApiContext) => {
-        const { req, manager } = ctx
-
-        const { headers } = req
-        const [, token] = (headers['authorization'] || '').split('Bearer ')
-
-        if (!token) return
+    private populateContextFromToken = async (
+        token: string,
+        ctx: ApiContext
+    ) => {
+        const { manager } = ctx
 
         try {
             const { id } = Jwt.verify(
@@ -1759,14 +1790,30 @@ class Auth {
             )
 
             if (this.config.rolesAndPermissions) {
-                user.permissions = user.roles.reduce((acc: string[], role: UserRole) => [
-                    ...acc,
-                    ...role.permissions.map(p => p.slug)
-                ], [])
+                user.permissions = user?.roles
+                    ?.toJSON()
+                    .reduce(
+                        (acc: string[], role: UserRole) => [
+                            ...acc,
+                            ...role.permissions.map(p => p.slug)
+                        ],
+                        []
+                    )
             }
 
             ctx.user = user
         } catch (error) {}
+    }
+
+    public getAuthUserFromContext = async (ctx: ApiContext) => {
+        const { req } = ctx
+
+        const { headers } = req
+        const [, token] = (headers['authorization'] || '').split('Bearer ')
+
+        if (!token) return
+
+        return this.populateContextFromToken(token, ctx)
     }
 
     private disableTwoFactorAuth = async ({

@@ -1,94 +1,42 @@
 import { applyMiddleware } from 'graphql-middleware'
-import { parseResolveInfo } from 'graphql-parse-resolve-info'
+import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
 import {
-    ApolloServer,
     gql,
+    ApolloServer,
     Config as ApolloConfig,
     makeExecutableSchema,
     AuthenticationError,
     ForbiddenError,
     ValidationError,
     UserInputError,
-    GetMiddlewareOptions
+    GetMiddlewareOptions,
+    PubSub,
+    withFilter
 } from 'apollo-server-express'
 import {
     plugin,
     FieldContract,
     ResourceContract,
     PluginSetupConfig,
-    FilterOperators,
     GraphQLPluginExtension,
     Resolvers,
-    graphQlQuery,
     GraphQlMiddleware,
     GraphQlQueryContract
 } from '@tensei/common'
-import { EntityManager, ReferenceType } from '@mikro-orm/core'
+import { ReferenceType } from '@mikro-orm/core'
 
-const filterOperators: FilterOperators[] = [
-    '_eq',
-    '_ne',
-    '_in',
-    '_nin',
-    '_gt',
-    '_gte',
-    '_lt',
-    '_lte',
-    '_like',
-    '_re',
-    '_ilike',
-    '_overlap',
-    '_contains',
-    '_contained'
-]
+import {
+    topLevelOperators,
+    filterOperators,
+    getResolvers,
+    authorizeResolver
+} from './Resolvers'
 
-const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
-
-const allOperators = filterOperators.concat(topLevelOperators)
-
-const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
-    if (!whereArgument) {
-        return {}
-    }
-    let whereArgumentString = JSON.stringify(whereArgument)
-
-    allOperators.forEach(operator => {
-        whereArgumentString = whereArgumentString.replace(
-            `"${operator}"`,
-            `"$${operator.split('_')[1]}"`
-        )
-    })
-
-    return JSON.parse(whereArgumentString)
-}
-
-const getParsedInfo = (ql: any) => {
-    const parsedInfo = parseResolveInfo(ql, {
-        keepRoot: false
-    }) as any
-
-    return parsedInfo.fieldsByTypeName[
-        Object.keys(parsedInfo.fieldsByTypeName)[0]
-    ]
-}
-
-const getFindOptionsFromArgs = (args: any) => {
-    let findOptions: any = {}
-
-    if (!args) {
-        return {}
-    }
-
-    if (args.limit) {
-        findOptions.limit = args.limit
-    }
-
-    if (args.offset) {
-        findOptions.limit = args.offset
-    }
-
-    return findOptions
-}
+import {
+    defineCreateSubscriptionsForResource,
+    defineDeleteSubscriptionsForResource,
+    defineUpdateSubscriptionsForResource
+} from './Subscriptions'
 
 type OmittedApolloConfig = Omit<ApolloConfig, 'typeDefs' | 'resolvers'>
 
@@ -99,7 +47,14 @@ class Graphql {
 
     private getMiddlewareOptions: GetMiddlewareOptions = {}
 
-    schemaString: string = ''
+    private pubsub: PubSub | undefined
+
+    schemaString: string = `
+    scalar JSON
+    scalar JSONObject
+    `
+
+    private subscriptionsEnabled = false
 
     private getGraphqlFieldDefinitionForCreateInput = (
         field: FieldContract,
@@ -230,7 +185,11 @@ class Graphql {
         }`
     }
 
-    getWhereQueryFieldType(field: FieldContract, config: PluginSetupConfig) {
+    getWhereQueryFieldType(
+        field: FieldContract,
+        config: PluginSetupConfig,
+        filter = false
+    ) {
         if (field.property.type === 'boolean') {
             // return 'boolean_where_query'
         }
@@ -247,7 +206,9 @@ class Graphql {
                     resource.data.pascalCaseName === field.relatedProperty.type
             )
 
-            return `${relatedResource?.data.snakeCaseName}_where_query`
+            return `${relatedResource?.data.snakeCaseName}_${
+                filter ? 'subscription_filter' : 'where_query'
+            }`
         }
 
         if (field.property.primary) {
@@ -279,6 +240,16 @@ ${resource.data.fields.map(
     field =>
         `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
 )}
+}
+input ${resource.data.snakeCaseName}_subscription_filter {
+    ${resource.data.fields.map(
+        field =>
+            `${field.databaseField}: ${this.getWhereQueryFieldType(
+                field,
+                config,
+                true
+            )}`
+    )}
 }
 `
     }
@@ -385,6 +356,19 @@ ${this.getWhereQueryForResource(resource, config)}
         )}
 }
 `
+        this.schemaString = `${
+            this.schemaString
+        }type Subscription {${resources.map(
+            resource => `${defineCreateSubscriptionsForResource(resource)}`
+        )}
+${resources.map(
+    resource => `${defineUpdateSubscriptionsForResource(resource)}`
+)}
+${resources.map(
+    resource => `${defineDeleteSubscriptionsForResource(resource)}`
+)}
+}`
+
         this.schemaString = `${this.schemaString}type Mutation {${resources.map(
             resource => {
                 return `${this.defineCreateMutationForResource(
@@ -478,557 +462,15 @@ input id_where_query {
         return 'id'
     }
 
-    private getResolvers(resources: ResourceContract[]) {
-        const resolversList: GraphQlQueryContract[] = []
-
-        const populateFromResolvedNodes = async (
-            manager: EntityManager,
-            resource: ResourceContract,
-            fieldNode: any,
-            data: any[]
-        ) => {
-            if (!data.length) return
-
-            const relationshipFields = resource.data.fields.filter(
-                f => f.relatedProperty.reference
-            )
-
-            const relatedManyToOneFields = relationshipFields.filter(
-                field =>
-                    field.relatedProperty.reference ===
-                    ReferenceType.MANY_TO_ONE
-            )
-            const relatedManyToManyFields = relationshipFields.filter(
-                field =>
-                    field.relatedProperty.reference ===
-                    ReferenceType.MANY_TO_MANY
-            )
-            const relatedOneToManyFields = relationshipFields.filter(
-                field =>
-                    field.relatedProperty.reference ===
-                    ReferenceType.ONE_TO_MANY
-            )
-            const relatedOneToOneFields = relationshipFields.filter(
-                field =>
-                    field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
-            )
-
-            const relatedManyToOneDatabaseFieldNames = relatedManyToOneFields.map(
-                field => field.databaseField
-            )
-            const relatedManyToManyDatabaseFieldNames = relatedManyToManyFields.map(
-                field => field.databaseField
-            )
-            const relatedOneToManyDatabaseFieldNames = relatedOneToManyFields.map(
-                field => field.databaseField
-            )
-            const relatedOneToOneDatabaseFieldNames = relatedOneToOneFields.map(
-                field => field.databaseField
-            )
-
-            if (Object.keys(fieldNode).length > 0) {
-                const countSelections = Object.keys(
-                    fieldNode
-                ).filter((selection: string) => selection.match(/__count/))
-                const countSelectionNames: string[] = countSelections.map(
-                    (selection: string) => selection.split('__')[0]
-                )
-
-                const manyToOneSelections = Object.keys(
-                    fieldNode
-                ).filter((selection: string) =>
-                    relatedManyToOneDatabaseFieldNames.includes(selection)
-                )
-                const manyToManySelections = Object.keys(
-                    fieldNode
-                ).filter((selection: string) =>
-                    relatedManyToManyDatabaseFieldNames.includes(selection)
-                )
-                const oneToManySelections = Object.keys(
-                    fieldNode
-                ).filter((selection: string) =>
-                    relatedOneToManyDatabaseFieldNames.includes(selection)
-                )
-
-                await Promise.all([
-                    Promise.all(
-                        manyToOneSelections.map((selection: string) =>
-                            manager.populate(data, selection)
-                        )
-                    ),
-                    Promise.all(
-                        manyToManySelections.map((selection: string) =>
-                            (async () => {
-                                const field = relatedManyToManyFields.find(
-                                    _ => _.databaseField === selection
-                                )
-
-                                if (
-                                    !fieldNode[selection].args.where &&
-                                    !fieldNode[selection].args.limit &&
-                                    !fieldNode[selection].args.offset
-                                ) {
-                                    await manager.populate(data, selection)
-
-                                    return
-                                }
-
-                                await Promise.all(
-                                    data.map(async item => {
-                                        const relatedData: any = await manager.find(
-                                            field?.relatedProperty.type!,
-                                            {
-                                                [resource.data
-                                                    .snakeCaseNamePlural]: {
-                                                    id: {
-                                                        $in: [item.id]
-                                                    }
-                                                },
-                                                ...parseWhereArgumentsToWhereQuery(
-                                                    fieldNode[selection].args
-                                                        .where
-                                                )
-                                            },
-                                            getFindOptionsFromArgs(
-                                                fieldNode[selection].args
-                                            )
-                                        )
-
-                                        item[
-                                            field?.databaseField!
-                                        ] = relatedData
-                                    })
-                                )
-                            })()
-                        )
-                    ),
-                    Promise.all(
-                        oneToManySelections.map((selection: string) =>
-                            (async () => {
-                                if (
-                                    !fieldNode[selection].args.where &&
-                                    !fieldNode[selection].args.limit &&
-                                    !fieldNode[selection].args.offset
-                                ) {
-                                    await manager.populate(data, selection)
-
-                                    return
-                                }
-
-                                const field = relatedOneToManyFields.find(
-                                    _ => _.databaseField === selection
-                                )
-
-                                await Promise.all(
-                                    data.map(async item => {
-                                        const relatedData: any = await manager.find(
-                                            field?.relatedProperty.type!,
-                                            {
-                                                [resource.data.snakeCaseName]:
-                                                    item.id,
-                                                ...parseWhereArgumentsToWhereQuery(
-                                                    fieldNode[selection].args
-                                                        .where
-                                                )
-                                            },
-                                            getFindOptionsFromArgs(
-                                                fieldNode[selection].args
-                                            )
-                                        )
-
-                                        item[
-                                            field?.databaseField!
-                                        ] = relatedData
-                                    })
-                                )
-                            })()
-                        )
-                    ),
-                    Promise.all(
-                        countSelectionNames.map(async selection => {
-                            if (
-                                relatedManyToManyDatabaseFieldNames.includes(
-                                    selection
-                                )
-                            ) {
-                                const field = relatedManyToManyFields.find(
-                                    _ => _.databaseField === selection
-                                )
-
-                                await Promise.all(
-                                    data.map(async item => {
-                                        const count = await manager.count(
-                                            field?.relatedProperty.type!,
-                                            {
-                                                [resource.data
-                                                    .snakeCaseNamePlural]: {
-                                                    id: {
-                                                        $in: [item.id]
-                                                    }
-                                                },
-                                                ...parseWhereArgumentsToWhereQuery(
-                                                    fieldNode[
-                                                        `${selection}__count`
-                                                    ].args.where
-                                                )
-                                            }
-                                        )
-
-                                        item[
-                                            `${field?.databaseField}__count`
-                                        ] = count
-                                    })
-                                )
-                            }
-
-                            if (
-                                relatedOneToManyDatabaseFieldNames.includes(
-                                    selection
-                                )
-                            ) {
-                                const field = relatedOneToManyFields.find(
-                                    _ => _.databaseField === selection
-                                )
-
-                                const uniqueKeys = Array.from(
-                                    new Set(data.map(_ => _.id))
-                                )
-
-                                const counts: any[] = await Promise.all(
-                                    uniqueKeys.map(async key =>
-                                        manager.count(
-                                            field?.relatedProperty.type!,
-                                            {
-                                                [resource.data
-                                                    .snakeCaseName]: key,
-                                                ...parseWhereArgumentsToWhereQuery(
-                                                    fieldNode[
-                                                        `${selection}__count`
-                                                    ].args.where
-                                                )
-                                            }
-                                        )
-                                    )
-                                )
-
-                                data.forEach(item => {
-                                    const index = uniqueKeys.indexOf(item.id)
-
-                                    item[`${field?.databaseField}__count`] =
-                                        counts[index]
-                                })
-                            }
-                        })
-                    )
-                ])
-
-                for (const manyToOneSelection of manyToOneSelections) {
-                    const fieldTypes =
-                        fieldNode[manyToOneSelection].fieldsByTypeName
-
-                    if (Object.keys(fieldTypes).length > 0) {
-                        const field = relatedManyToOneFields.find(
-                            f => f.databaseField === manyToOneSelection
-                        )!
-
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.relatedProperty.type
-                        )!
-
-                        await populateFromResolvedNodes(
-                            manager,
-                            relatedResource,
-                            fieldTypes[
-                                Object.keys(
-                                    fieldNode[manyToOneSelection]
-                                        .fieldsByTypeName
-                                )[0]
-                            ],
-                            data.map(d => d[field.databaseField])
-                        )
-                    }
-                }
-
-                for (const manyToManySelection of manyToManySelections) {
-                    const fieldTypes =
-                        fieldNode[manyToManySelection].fieldsByTypeName
-
-                    if (Object.keys(fieldTypes).length > 0) {
-                        const field = relatedManyToManyFields.find(
-                            f => f.databaseField === manyToManySelection
-                        )!
-
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.relatedProperty.type
-                        )!
-
-                        await populateFromResolvedNodes(
-                            manager,
-                            relatedResource,
-                            fieldTypes[
-                                Object.keys(
-                                    fieldNode[manyToManySelection]
-                                        .fieldsByTypeName
-                                )[0]
-                            ],
-                            data
-                                .map(d => d[field.databaseField])
-                                .reduce((acc, d) => [...acc, ...d], [])
-                        )
-                    }
-                }
-
-                for (const oneToManySelection of oneToManySelections) {
-                    const fieldTypes =
-                        fieldNode[oneToManySelection].fieldsByTypeName
-
-                    if (Object.keys(fieldTypes).length > 0) {
-                        const field = relatedOneToManyFields.find(
-                            f => f.databaseField === oneToManySelection
-                        )!
-
-                        const relatedResource = resources.find(
-                            r => r.data.name === field.relatedProperty.type
-                        )!
-
-                        await populateFromResolvedNodes(
-                            manager,
-                            relatedResource,
-                            fieldTypes[
-                                Object.keys(
-                                    fieldNode[oneToManySelection]
-                                        .fieldsByTypeName
-                                )[0]
-                            ],
-                            data
-                                .map(d => d[field.databaseField])
-                                .reduce((acc, d) => [...acc, ...d], [])
-                        )
-                    }
-                }
-            }
-
-            return data
-        }
-
-        resources.forEach(resource => {
-            resolversList.push(
-                graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
-                    .path(resource.data.snakeCaseNamePlural)
-                    .query()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data: any[] = await ctx.manager.find(
-                            resource.data.pascalCaseName,
-                            parseWhereArgumentsToWhereQuery(args.where),
-                            getFindOptionsFromArgs(args)
-                        )
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            data
-                        )
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
-                    .path(resource.data.snakeCaseName)
-                    .query()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data: any = await ctx.manager.findOneOrFail(
-                            resource.data.pascalCaseName,
-                            {
-                                id: args.id
-                            }
-                        )
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            [data]
-                        )
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
-                    .path(`insert_${resource.data.snakeCaseName}`)
-                    .mutation()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data = ctx.manager.create(
-                            resource.data.pascalCaseName,
-                            args.object
-                        )
-
-                        await ctx.manager.persistAndFlush(data)
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            [data]
-                        )
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(
-                    `Insert multiple ${resource.data.snakeCaseNamePlural}`
-                )
-                    .path(`insert_${resource.data.snakeCaseNamePlural}`)
-                    .mutation()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data: any[] = args.objects.map((object: any) =>
-                            ctx.manager.create(
-                                resource.data.pascalCaseName,
-                                object
-                            )
-                        )
-
-                        await ctx.manager.persistAndFlush(data)
-
-                        await ctx.manager.persistAndFlush(data)
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            data
-                        )
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
-                    .path(`update_${resource.data.snakeCaseName}`)
-                    .mutation()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data: any = await ctx.manager
-                            .getRepository<any>(resource.data.pascalCaseName)
-                            .findOneOrFail(args.id)
-
-                        ctx.manager.assign(data, args.object)
-
-                        await ctx.manager.persistAndFlush(data)
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            [data]
-                        )
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(
-                    `Update multiple ${resource.data.snakeCaseNamePlural}`
-                )
-                    .path(`update_${resource.data.snakeCaseNamePlural}`)
-                    .mutation()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data = await ctx.manager.find(
-                            resource.data.pascalCaseName,
-                            parseWhereArgumentsToWhereQuery(args.where)
-                        )
-
-                        data.forEach(d => ctx.manager.assign(d, args.object))
-
-                        await ctx.manager.persistAndFlush(data)
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            data
-                        )
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
-                    .path(`delete_${resource.data.snakeCaseName}`)
-                    .mutation()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data: any = await ctx.manager
-                            .getRepository<any>(resource.data.pascalCaseName)
-                            .findOneOrFail(args.id)
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            [data]
-                        )
-
-                        await ctx.manager.removeAndFlush(data)
-
-                        return data
-                    })
-            )
-
-            resolversList.push(
-                graphQlQuery(
-                    `Delete multiple ${resource.data.snakeCaseNamePlural}`
-                )
-                    .path(`delete_${resource.data.snakeCaseNamePlural}`)
-                    .mutation()
-                    .internal()
-                    .resource(resource)
-                    .handle(async (_, args, ctx, info) => {
-                        const data = await ctx.manager.find(
-                            resource.data.pascalCaseName,
-                            parseWhereArgumentsToWhereQuery(args.where)
-                        )
-
-                        await populateFromResolvedNodes(
-                            ctx.manager,
-                            resource,
-                            getParsedInfo(info),
-                            data
-                        )
-
-                        await ctx.manager.removeAndFlush(data)
-
-                        return data
-                    })
-            )
-        })
-
-        return resolversList
-    }
-
     extensions(extensions: GraphQLPluginExtension[]) {
         this.pluginExtensions = extensions
+
+        return this
+    }
+
+    subscriptions(pubsub?: PubSub) {
+        this.pubsub = pubsub || new PubSub()
+        this.subscriptionsEnabled = true
 
         return this
     }
@@ -1048,7 +490,8 @@ input id_where_query {
     getResolversFromGraphqlQueries(queries: GraphQlQueryContract[]) {
         const resolvers: any = {
             Query: {},
-            Mutation: {}
+            Mutation: {},
+            Subscription: {}
         }
 
         queries.forEach(query => {
@@ -1058,6 +501,29 @@ input id_where_query {
 
             if (query.config.type === 'QUERY') {
                 resolvers.Query[query.config.path] = query.config.handler
+            }
+
+            if (query.config.type === 'SUBSCRIPTION') {
+                resolvers.Subscription[query.config.path] = {
+                    subscribe: async (
+                        _: any,
+                        args: any,
+                        ctx: any,
+                        info: any
+                    ) => {
+                        for (const middleware of query.config.middleware) {
+                            await middleware(_, args, ctx, info)
+                        }
+
+                        await authorizeResolver(ctx, query)
+
+                        return withFilter(
+                            () =>
+                                query.config.handler(_, args, ctx, info) as any,
+                            query.config.filter
+                        )(_, args, ctx, info)
+                    }
+                }
             }
         })
 
@@ -1083,12 +549,17 @@ input id_where_query {
 
                 this.setupResourceGraphqlTypes(exposedResources, config)
 
-                extendGraphQlQueries(this.getResolvers(exposedResources))
+                extendGraphQlQueries(
+                    getResolvers(exposedResources, {
+                        subscriptionsEnabled: this.subscriptionsEnabled
+                    })
+                )
 
                 graphQlMiddleware.unshift(graphQlQueries => {
                     const middlewareHandlers: Resolvers = {
                         Query: {},
-                        Mutation: {}
+                        Mutation: {},
+                        Subscription: {}
                     }
 
                     const mapArgsToBody: GraphQlMiddleware = async (
@@ -1179,9 +650,11 @@ input id_where_query {
                 } = config
                 const typeDefs = [gql(this.schemaString), ...graphQlTypeDefs]
 
-                const resolvers = this.getResolversFromGraphqlQueries(
-                    graphQlQueries
-                )
+                const resolvers = {
+                    ...this.getResolversFromGraphqlQueries(graphQlQueries),
+                    JSON: GraphQLJSON,
+                    JSONObject: GraphQLJSONObject
+                }
 
                 const schema = makeExecutableSchema({
                     typeDefs,
@@ -1203,6 +676,7 @@ input id_where_query {
                     context: ctx => ({
                         ...ctx,
                         ...config,
+                        pubsub: this.pubsub,
                         manager: manager!.fork()
                     })
                 })
@@ -1211,6 +685,10 @@ input id_where_query {
                     app,
                     ...this.getMiddlewareOptions
                 })
+
+                if (this.subscriptionsEnabled) {
+                    graphQlServer.installSubscriptionHandlers(config.server)
+                }
             })
     }
 }

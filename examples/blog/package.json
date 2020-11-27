@@ -10,6 +10,7 @@
         "@slynova/flydrive-s3": "^1.0.3",
         "dotenv": "^8.2.0",
         "faker": "^4.1.0",
+        "graphql-redis-subscriptions": "^2.3.1",
         "pg": "^8.3.3"
     },
     "devDependencies": {
