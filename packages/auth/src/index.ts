@@ -235,6 +235,7 @@ class Auth {
                     .creationRules('required')
                     .onlyOnForms()
                     .hideOnUpdate(),
+                dateTime('Blocked At').nullable(),
                 ...socialFields,
                 ...(this.config.rolesAndPermissions
                     ? [belongsToMany(this.config.roleResource)]
@@ -469,7 +470,7 @@ class Auth {
                                     await this.setAuthUserForPublicRoutes(
                                         context
                                     )
-                                    await this.ensureAuthUserIsNotCompromised(
+                                    await this.ensureAuthUserIsNotBlocked(
                                         context
                                     )
                                     await this.authorizeResolver(context, query)
@@ -521,9 +522,7 @@ class Auth {
                                                 ctx
                                             ),
                                         async (parent, args, ctx, info) =>
-                                            this.ensureAuthUserIsNotCompromised(
-                                                ctx
-                                            )
+                                            this.ensureAuthUserIsNotBlocked(ctx)
                                     ])
                                 }
                             })
@@ -683,7 +682,7 @@ class Auth {
                                 return next()
                             },
                             async (request, response, next) => {
-                                await this.ensureAuthUserIsNotCompromised(
+                                await this.ensureAuthUserIsNotBlocked(
                                     request as any
                                 )
 
@@ -1313,7 +1312,14 @@ class Auth {
                 compromised_at: Dayjs().format()
             })
 
-            await ctx.manager.persistAndFlush(token)
+            ctx.manager.assign(token[userField], {
+                blocked_at: Dayjs().format()
+            })
+
+            ctx.manager.persist(token)
+            ctx.manager.persist(token[userField])
+
+            await ctx.manager.flush()
 
             throw ctx.authenticationError('Invalid refresh token.')
         }
@@ -1664,6 +1670,10 @@ class Auth {
             throw ctx.authenticationError('Invalid credentials.')
         }
 
+        if (user.blocked_at) {
+            throw ctx.forbiddenError('Your account is temporarily disabled.')
+        }
+
         if (!Bcrypt.compareSync(password, user.password)) {
             throw ctx.authenticationError('Invalid credentials.')
         }
@@ -1740,24 +1750,13 @@ class Auth {
         }
     }
 
-    private ensureAuthUserIsNotCompromised = async (ctx: ApiContext) => {
+    private ensureAuthUserIsNotBlocked = async (ctx: ApiContext) => {
         if (!ctx.user || (ctx.user && ctx.user.public)) {
             return
         }
 
-        const compromisedTokensCount = await ctx.manager.count(
-            this.resources.token.data.pascalCaseName,
-            {
-                [this.resources.user.data.snakeCaseName]: ctx.user.id,
-                type: TokenTypes.REFRESH,
-                compromised_at: {
-                    $ne: null
-                }
-            }
-        )
-
-        if (compromisedTokensCount) {
-            throw ctx.forbiddenError('Credentials have been compromised.')
+        if (ctx.user.blocked_at) {
+            throw ctx.forbiddenError('Your account is temporarily disabled.')
         }
     }
 

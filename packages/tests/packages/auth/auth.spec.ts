@@ -515,3 +515,119 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
     // @ts-ignore
 }, 10000)
+
+test('if a refresh token is used twice (compromised), the user is automatically blocked', async () => {
+    const {
+        ctx: {
+            orm: { em }
+        },
+        app
+    } = await setup([
+        auth()
+            .user('Customer')
+            .noCookies()
+            .plugin(),
+        graphql().plugin()
+    ])
+
+    const client = Supertest(app)
+
+    const user = em.create('Customer', fakeUser())
+
+    await em.persistAndFlush(user)
+
+    const login_response = await client.post(`/graphql`).send({
+        query: gql`
+            mutation login_customer($email: String!, $password: String!) {
+                login_customer(object: { email: $email, password: $password }) {
+                    access_token
+                    refresh_token
+                    customer {
+                        id
+                        email
+                    }
+                }
+            }
+        `,
+        variables: {
+            password: 'password',
+            email: user.email
+        }
+    })
+
+    const { refresh_token } = login_response.body.data.login_customer
+
+    const refresh_token_response = await client.post(`/graphql`).send({
+        query: gql`
+            mutation refresh_token($refresh_token: String!) {
+                refresh_token(object: { refresh_token: $refresh_token }) {
+                    access_token
+                    refresh_token
+                    customer {
+                        email
+                    }
+                }
+            }
+        `,
+        variables: {
+            refresh_token
+        }
+    })
+
+    expect(refresh_token_response.status).toBe(200)
+    expect(refresh_token_response.body.data.refresh_token).toEqual({
+        access_token: expect.any(String),
+        refresh_token: expect.any(String),
+        customer: {
+            email: expect.any(String)
+        }
+    })
+    const compromised_refresh_token_response = await client
+        .post(`/graphql`)
+        .send({
+            query: gql`
+                mutation refresh_token($refresh_token: String!) {
+                    refresh_token(object: { refresh_token: $refresh_token }) {
+                        access_token
+                        refresh_token
+                        customer {
+                            id
+                            email
+                        }
+                    }
+                }
+            `,
+            variables: {
+                refresh_token
+            }
+        })
+
+    expect(compromised_refresh_token_response.status).toBe(200)
+    expect(compromised_refresh_token_response.body.errors[0].message).toBe(
+        'Invalid refresh token.'
+    )
+
+    const login_response_after_blocked = await client.post(`/graphql`).send({
+        query: gql`
+            mutation login_customer($email: String!, $password: String!) {
+                login_customer(object: { email: $email, password: $password }) {
+                    access_token
+                    refresh_token
+                    customer {
+                        id
+                        email
+                    }
+                }
+            }
+        `,
+        variables: {
+            password: 'password',
+            email: user.email
+        }
+    })
+
+    expect(login_response_after_blocked.status).toBe(200)
+    expect(login_response_after_blocked.body.errors[0].message).toBe(
+        'Your account is temporarily disabled.'
+    )
+})
