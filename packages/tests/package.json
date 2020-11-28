@@ -1,6 +1,6 @@
 {
     "name": "@tensei/tests",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "license": "MIT",
     "devDependencies": {
         "@types/faker": "^4.1.12",
