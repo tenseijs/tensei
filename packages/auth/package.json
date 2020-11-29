@@ -60,5 +60,6 @@
         "request": "^2.88.2",
         "speakeasy": "^2.0.0",
         "uniqid": "^5.2.0"
-    }
+    },
+    "gitHead": "e891d0776360c97f7d8035cb283b296739c29ff8"
 }
