@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
