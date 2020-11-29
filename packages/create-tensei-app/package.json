@@ -1,6 +1,6 @@
 {
     "name": "create-tensei-app",
-    "version": "0.0.1",
+    "version": "0.4.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -10,7 +10,6 @@
     "bin": {
         "create-tensei-app": "./build/index.js"
     },
-    "devDependencies": {},
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
         "build": "tsc --p tsconfig.json",
