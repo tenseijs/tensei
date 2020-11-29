@@ -1,0 +1,18 @@
+{
+    "name": "{{ project_name }}",
+    "version": "1.0.0",
+    "main": "src/index.js",
+    "license": "MIT",
+    "dependencies": {
+        "@mikro-orm/{{ mikro_orm_database }}": "^{{ mikro_orm_package_version }}",
+        "@tensei/auth": "^{{ auth_package_version }}",
+        "@tensei/core": "^{{ core_package_version }}",
+        "@tensei/{{ api_package }}": "^{{ api_package_version }}"
+    },
+    "scripts": {
+        "dev": "nodemon src/index"
+    },
+    "devDependencies": {
+        "nodemon": "^{{ nodemon_version }}"
+    }
+}

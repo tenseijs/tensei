@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import Path from 'path'
 import { Signale } from 'signale'
 import BodyParser from 'body-parser'
@@ -245,8 +246,9 @@ export class Tensei implements TenseiContract {
 
         this.server.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${this.ctx.serverUrl ||
-                    `http://127.0.0.1:${port}`}`
+                `🚀 Access your server on ${
+                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
+                }`
             )
         })
     }
@@ -627,9 +629,7 @@ export class Tensei implements TenseiContract {
     }
 
     public mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
+        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }
