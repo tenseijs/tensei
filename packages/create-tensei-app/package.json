@@ -5,7 +5,8 @@
     "license": "MIT",
     "types": "./build/index.d.ts",
     "files": [
-        "build/"
+        "build/",
+        "templates/"
     ],
     "bin": {
         "create-tensei-app": "./build/index.js"
