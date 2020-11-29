@@ -11,10 +11,10 @@
 <div align="center">
   <h3>
     <strong>
-    API creation made simple, secure and fast
+    The fastest and easiest way to build powerful and secure APIs
     </strong>
   </h3>
-  <p>Tensei is the most advanced framework for building powerful and secure APIs with ease. </p>
+  <p>Open source Node.js Headless CMS 🚀. </p>
 </div>
 
 <br />
