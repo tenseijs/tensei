@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.2](https://github.com/tenseijs/tensei/compare/v0.4.1...v0.4.2) (2020-11-29)
+
+
+### Bug Fixes
+
+* **core:** remove dotenv/config package from core ([0961e42](https://github.com/tenseijs/tensei/commit/0961e42875ed6ca7669d12e247de1a92b17df788))
+
+
+
+
+
 ## [0.4.1](https://github.com/tenseijs/tensei/compare/v0.4.0...v0.4.1) (2020-11-29)
 
 
