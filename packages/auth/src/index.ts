@@ -4,7 +4,7 @@ import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import Randomstring from 'randomstring'
 import { validateAll } from 'indicative/validator'
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction, response } from 'express'
 import {
     plugin,
     resource,
@@ -31,6 +31,7 @@ import {
 import {
     AuthData,
     GrantConfig,
+    AuthResources,
     AuthPluginConfig,
     SupportedSocialProviders,
     defaultProviderScopes
@@ -59,15 +60,6 @@ type JwtPayload = {
     refresh?: boolean
 }
 
-type AuthResources = {
-    user: ResourceContract
-    team: ResourceContract
-    role: ResourceContract
-    oauthIdentity: ResourceContract
-    permission: ResourceContract
-    teamInvite: ResourceContract
-    passwordReset: ResourceContract
-}
 type AuthSetupFn = (resources: AuthResources) => any
 
 class Auth {
@@ -95,8 +87,7 @@ class Auth {
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
-        providers: {},
-        resources: {}
+        providers: {}
     }
 
     private resources: {
@@ -560,7 +551,10 @@ class Auth {
 
                     app.get(
                         `/${this.config.apiPath}/:provider/callback`,
-                        SocialAuthCallbackController.connect(this.config)
+                        SocialAuthCallbackController.connect({
+                            ...this.config,
+                            resources: this.resources
+                        })
                     )
                 }
 
@@ -570,12 +564,16 @@ class Auth {
                 async ({ graphQlQueries, routes, apiPath }) => {
                     graphQlQueries.forEach(query => {
                         if (query.config.resource) {
-                            const { path } = query.config
+                            const { path, internal } = query.config
                             const {
                                 snakeCaseNamePlural: plural,
                                 snakeCaseName: singular,
                                 slug
                             } = query.config.resource.data
+
+                            if (!internal) {
+                                return
+                            }
 
                             if (
                                 [
@@ -626,13 +624,19 @@ class Auth {
 
                     routes.forEach(route => {
                         if (route.config.resource) {
-                            const { resource, path, type } = route.config
+                            const {
+                                resource,
+                                path,
+                                type,
+                                internal
+                            } = route.config
 
                             const { slugSingular, slugPlural } = resource.data
 
                             if (
                                 path === `/${apiPath}/${slugPlural}` &&
-                                type === 'POST'
+                                type === 'POST' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -643,7 +647,8 @@ class Auth {
 
                             if (
                                 path === `/${apiPath}/${slugPlural}` &&
-                                type === 'GET'
+                                type === 'GET' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -654,7 +659,8 @@ class Auth {
 
                             if (
                                 path === `/${apiPath}/${slugPlural}/:id` &&
-                                type === 'GET'
+                                type === 'GET' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -668,7 +674,8 @@ class Auth {
                                     `/${apiPath}/${slugPlural}/:id`,
                                     `/${apiPath}/${slugPlural}`
                                 ].includes(path) &&
-                                ['PUT', 'PATCH'].includes(type)
+                                ['PUT', 'PATCH'].includes(type) &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -682,7 +689,8 @@ class Auth {
                                     `/${apiPath}/${slugPlural}/:id`,
                                     `/${apiPath}/${slugPlural}`
                                 ].includes(path) &&
-                                type === 'DELETE'
+                                type === 'DELETE' &&
+                                internal
                             ) {
                                 return route.authorize(({ user }) =>
                                     user.permissions!.includes(
@@ -694,9 +702,6 @@ class Auth {
 
                         route.middleware([
                             async (request, response, next) => {
-                                // @ts-ignore
-                                request.req = request
-
                                 await this.getAuthUserFromContext(
                                     request as any
                                 )
@@ -730,8 +735,6 @@ class Auth {
                                 next()
                             }
                         ])
-
-                        route.authorize(() => false)
                     })
                 }
             )
@@ -799,8 +802,12 @@ class Auth {
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
                 .get()
-                .handle(async (request, response) =>
-                    response.formatter.ok(request.user)
+                .handle(async ({ user }, { formatter: { ok, unauthorized } }) =>
+                    user && !user.public
+                        ? ok(user)
+                        : unauthorized({
+                              message: 'Unauthorized.'
+                          })
                 ),
             route(`Resend Verification email`)
                 .path(this.getApiPath('verification/resend'))
@@ -825,6 +832,31 @@ class Auth {
                     response.formatter.ok(
                         await this.socialAuth(request as any, 'register')
                     )
+                ),
+            route('Refresh Token')
+                .path(this.getApiPath('refresh-token'))
+                .post()
+                .handle(
+                    async (request, { formatter: { ok, unauthorized } }) => {
+                        try {
+                            return ok(
+                                await this.handleRefreshTokens(request as any)
+                            )
+                        } catch (error) {
+                            return unauthorized({
+                                message:
+                                    error.message || 'Invalid refresh token.'
+                            })
+                        }
+                    }
+                ),
+            route('Remove refresh Token')
+                .path(this.getApiPath('refresh-token'))
+                .delete()
+                .handle(async (request, response) =>
+                    response.formatter.ok(
+                        await this.removeRefreshTokens(request as any)
+                    )
                 )
         ]
     }
@@ -848,7 +880,7 @@ class Auth {
             {
                 ...this.config.cookieOptions,
                 httpOnly: true,
-                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000,
+                maxAge: this.config.jwt.refreshTokenExpiresIn * 1000
             }
         )
     }
@@ -893,7 +925,8 @@ class Auth {
                 .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
                 .query()
                 .handle(async (_, args, ctx, info) => {
-                    if (! ctx.user || ctx.user.public) throw ctx.authenticationError()
+                    if (!ctx.user || ctx.user.public)
+                        throw ctx.authenticationError()
 
                     return ctx.user
                 }),
@@ -936,7 +969,9 @@ class Auth {
             graphQlQuery('Remove refresh token')
                 .path('remove_refresh_token')
                 .mutation()
-                .handle(async (_, args, ctx, info) => this.removeRefreshTokens(ctx))
+                .handle(async (_, args, ctx, info) =>
+                    this.removeRefreshTokens(ctx)
+                )
         ]
     }
 
@@ -944,7 +979,7 @@ class Auth {
         ctx.res.cookie(this.config.refresTokenCookieName, '', {
             ...this.config.cookieOptions,
             httpOnly: true,
-            maxAge: 0,
+            maxAge: 0
         })
 
         return true
@@ -966,8 +1001,9 @@ class Auth {
             ) as JwtPayload
         } catch (error) {}
 
-        if (!tokenPayload || !tokenPayload.refresh)
+        if (!tokenPayload || !tokenPayload.refresh) {
             throw ctx.authenticationError('Invalid refresh token.')
+        }
 
         const user: any = await ctx.manager.findOne(
             this.resources.user.data.pascalCaseName,
@@ -1413,8 +1449,13 @@ class Auth {
         if (!user) {
             ctx.user = {
                 public: true,
-                [this.resources.role.data.snakeCaseNamePlural]: [publicRole as UserRole],
-                [this.resources.permission.data.snakeCaseNamePlural]: publicRole[this.resources.permission.data.snakeCaseNamePlural]
+                [this.resources.role.data.snakeCaseNamePlural]: [
+                    publicRole as UserRole
+                ],
+                [this.resources.permission.data
+                    .snakeCaseNamePlural]: publicRole[
+                    this.resources.permission.data.snakeCaseNamePlural
+                ]
                     .toJSON()
                     .map((permission: any) => permission.slug)
             } as any
@@ -1430,9 +1471,12 @@ class Auth {
         if (!token) return
 
         try {
-            const { id, refresh } = Jwt.verify(token, this.config.jwt.secretKey) as JwtPayload
+            const { id, refresh } = Jwt.verify(
+                token,
+                this.config.jwt.secretKey
+            ) as JwtPayload
 
-            if (! id || refresh) {
+            if (!id || refresh) {
                 return
             }
 

@@ -1,6 +1,4 @@
 <div align="center">
-  <br />
-  <br />
   <img src="https://res.cloudinary.com/bahdcoder/image/upload/v1604236130/Asset_1_4x_fhcfyg.png" width="450px">
 </div>
 

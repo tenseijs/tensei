@@ -818,6 +818,7 @@ input id_where_query {
                 graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
                     .path(resource.data.snakeCaseNamePlural)
                     .query()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any[] = await ctx.manager.find(
@@ -841,6 +842,7 @@ input id_where_query {
                 graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
                     .path(resource.data.snakeCaseName)
                     .query()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any = await ctx.manager.findOneOrFail(
@@ -865,6 +867,7 @@ input id_where_query {
                 graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
                     .path(`insert_${resource.data.snakeCaseName}`)
                     .mutation()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data = ctx.manager.create(
@@ -891,6 +894,7 @@ input id_where_query {
                 )
                     .path(`insert_${resource.data.snakeCaseNamePlural}`)
                     .mutation()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any[] = args.objects.map((object: any) =>
@@ -919,6 +923,7 @@ input id_where_query {
                 graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
                     .path(`update_${resource.data.snakeCaseName}`)
                     .mutation()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any = await ctx.manager
@@ -946,6 +951,7 @@ input id_where_query {
                 )
                     .path(`update_${resource.data.snakeCaseNamePlural}`)
                     .mutation()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data = await ctx.manager.find(
@@ -972,6 +978,7 @@ input id_where_query {
                 graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
                     .path(`delete_${resource.data.snakeCaseName}`)
                     .mutation()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any = await ctx.manager
@@ -997,6 +1004,7 @@ input id_where_query {
                 )
                     .path(`delete_${resource.data.snakeCaseNamePlural}`)
                     .mutation()
+                    .internal()
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data = await ctx.manager.find(

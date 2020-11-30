@@ -12,16 +12,16 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: testdb
+          MYSQL_DATABASE: tensei
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       postgres:
-        image: postgres:11
+        image: postgres
         env:
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: ''
-          POSTGRES_DB: 'tenseitestdb'
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tensei
         ports:
           - 5432:5432
       mongodb:
@@ -44,7 +44,19 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Build packages
-        run: echo "This command would be yarn build in future"
-      - name: Run package tests
+        run: yarn build
+      - name: Run package tests on mysql database
         run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
-
+        env:
+          DATABASE_TYPE: mysql
+          DATABASE_NAME: tensei
+          DATABASE_USER: root
+      - name: Run package tests on postgresql database
+        run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
+        env:
+          DATABASE_TYPE: postgresql
+      - name: Run package tests on sqlite database
+        run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
+        env:
+          DATABASE_TYPE: sqlite
+          DATABASE_NAME: tensei

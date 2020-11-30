@@ -92,22 +92,20 @@ class Database {
             if (!resource.data.noTimeStamps) {
                 entityProperties.created_at = {
                     reference: ReferenceType.SCALAR,
-                    length: 3,
-                    defaultRaw: 'current_timestamp(3)',
+                    defaultRaw: 'current_timestamp',
                     name: 'created_at',
                     type: 'Date',
                     fieldNames: ['created_at'],
-                    columnTypes: ['timestamp(3)']
+                    columnTypes: ['timestamp']
                 }
 
                 entityProperties.updated_at = {
                     reference: ReferenceType.SCALAR,
-                    length: 3,
-                    defaultRaw: 'current_timestamp(3)',
+                    defaultRaw: 'current_timestamp',
                     name: 'updated_at',
                     type: 'Date',
                     fieldNames: ['updated_at'],
-                    columnTypes: ['timestamp(3)']
+                    columnTypes: ['timestamp']
                 }
             }
 
@@ -128,7 +126,7 @@ class Database {
     }
 
     private generateEntityClass(resource: ResourceContract) {
-        const entityClass = function() {}
+        const entityClass = function () {}
 
         Object.defineProperty(entityClass, 'name', {
             value: resource.data.pascalCaseName,

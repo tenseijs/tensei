@@ -16,7 +16,7 @@ class Rest {
         return `/${apiPath}/${path}`
     }
 
-    public getPageMetaFromFindOptions(
+    private getPageMetaFromFindOptions(
         total: number,
         findOptions: FindOptions<any>
     ) {
@@ -32,7 +32,7 @@ class Rest {
         }
     }
 
-    public parseQueryToFindOptions(query: any, resource: ResourceContract) {
+    private parseQueryToFindOptions(query: any, resource: ResourceContract) {
         let findOptions: FindOptions<any> = {}
 
         if (query.page && query.page !== '-1') {
@@ -162,6 +162,7 @@ class Rest {
             routes.push(
                 route(`Insert ${singular}`)
                     .post()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
                     .handle(async ({ manager, body }, response) => {
@@ -176,6 +177,7 @@ class Rest {
             routes.push(
                 route(`Insert multiple ${plural}`)
                     .post()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
                     .handle(async ({ manager, body }, response) => {
@@ -194,6 +196,7 @@ class Rest {
             routes.push(
                 route(`Fetch multiple ${plural}`)
                     .get()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(plural))
                     .handle(async ({ manager, query, resources }, response) => {
@@ -226,6 +229,7 @@ class Rest {
             routes.push(
                 route(`Fetch single ${singular}`)
                     .get()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, query }, response) => {
@@ -252,8 +256,9 @@ class Rest {
             routes.push(
                 route(`Fetch ${singular} relations`)
                     .get()
+                    .internal()
                     .resource(resource)
-                    .path(getApiPath(`${plural}/:id/:relatedResource`))
+                    .path(getApiPath(`${plural}/:id/:related-resource`))
                     .handle(async ({ manager, params, query }, response) => {
                         const whereOptions = this.parseQueryToWhereOptions(
                             query
@@ -266,16 +271,16 @@ class Rest {
 
                             await manager.populate(
                                 entity,
-                                params.relatedResource,
+                                params['related-resource'],
                                 whereOptions
                             )
                             return response.formatter.ok(
-                                entity?.[params.relatedResource]
+                                entity?.[params['related-resource']]
                             )
                         } catch (error) {
                             if (error?.name === 'ValidationError') {
                                 return response.formatter.notFound(
-                                    `The ${modelName} model does not have a '${params.relatedResource}' property`
+                                    `The ${modelName} model does not have a '${params['related-resource']}' property`
                                 )
                             }
                             return response.formatter.badRequest({
@@ -288,6 +293,7 @@ class Rest {
             routes.push(
                 route(`Update single ${singular}`)
                     .put()
+                    .internal()
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .handle(async ({ manager, params, body }, response) => {
@@ -298,7 +304,7 @@ class Rest {
 
                         if (!entity) {
                             return response.formatter.notFound(
-                                `Could not find resourceName with ID of ${params.id}`
+                                `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
                             )
                         }
 
@@ -343,6 +349,46 @@ class Rest {
             .afterDatabaseSetup(
                 async ({ extendRoutes, resources, apiPath, app }) => {
                     app.use(responseEnhancer())
+
+                    app.use((request, response, next) => {
+                        // @ts-ignore
+                        request.req = request
+
+                        return next()
+                    })
+
+                    app.use((request, response, next) => {
+                        request.authenticationError = (
+                            message: string = 'Unauthenticated.'
+                        ) => ({
+                            status: 401,
+                            message
+                        })
+
+                        request.forbiddenError = (
+                            message: string = 'Forbidden.'
+                        ) => ({
+                            status: 400,
+                            message
+                        })
+
+                        request.validationError = (
+                            message: string = 'Validation failed.'
+                        ) => ({
+                            status: 422,
+                            message
+                        })
+
+                        request.userInputError = (
+                            message: string = 'Validation failed.'
+                        ) => ({
+                            status: 422,
+                            message
+                        })
+
+                        return next()
+                    })
+
                     extendRoutes(
                         this.extendRoutes(resources, (path: string) =>
                             this.getApiPath(apiPath, path)
@@ -351,6 +397,17 @@ class Rest {
                 }
             )
             .setup(async ({ app, routes }) => {
+                routes.forEach(route => {
+                    route.config.middleware.unshift(
+                        async (request, response, next) => {
+                            // @ts-ignore
+                            request.req = request
+
+                            return next()
+                        }
+                    )
+                })
+
                 routes.forEach(route => {
                     ; (app as any)[route.config.type.toLowerCase()](
                         route.config.path,

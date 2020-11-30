@@ -10,6 +10,7 @@ export class GraphQlQuery implements GraphQlQueryContract {
     public config: GraphQlQueryConfig = {
         path: '',
         name: '',
+        internal: false,
         type: 'QUERY',
         snakeCaseName: '',
         paramCaseName: '',
@@ -59,6 +60,12 @@ export class GraphQlQuery implements GraphQlQueryContract {
 
     handle(handler: GraphQlQueryConfig['handler']) {
         this.config.handler = handler
+
+        return this
+    }
+
+    internal() {
+        this.config.internal = true
 
         return this
     }

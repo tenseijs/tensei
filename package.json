@@ -4,16 +4,13 @@
     "main": "./build/server/index.js",
     "license": "MIT",
     "types": "./build/typings/index.d.ts",
-    "devDependencies": {
-        "lerna": "^3.22.1",
-        "prettier": "^2.0.5"
-    },
     "scripts": {
         "test": "yarn lerna run test",
         "build": "yarn lerna run build",
         "dev": "yarn lerna run dev",
         "prettier": "yarn lerna run prettier",
-        "publish": "yarn build && yarn lerna publish"
+        "publish": "yarn build && yarn lerna publish",
+        "commit": "yarn git-cz"
     },
     "config": {
         "commitizen": {
@@ -36,5 +33,13 @@
             "**/laravel-mix",
             "**/node-sass"
         ]
+    },
+    "dependencies": {
+        "@commitlint/cli": "^11.0.0",
+        "@commitlint/config-conventional": "^11.0.0",
+        "commitizen": "^4.2.2",
+        "husky": "^4.3.0",
+        "lerna": "^3.22.1",
+        "prettier": "^2.0.5"
     }
 }

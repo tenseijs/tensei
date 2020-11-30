@@ -32,6 +32,7 @@ declare module '@tensei/common/config' {
         put(): this
         patch(): this
         delete(): this
+        internal(): this
         resource(resource: ResourceContract): this
         middleware(middleware: RequestHandler[]): this
         resource(resource: ResourceContract): this
@@ -44,6 +45,7 @@ declare module '@tensei/common/config' {
         path(path: string): this
         query(): this
         mutation(): this
+        internal(): this
         resource(resource: ResourceContract): this
         authorize(authorize: AuthorizeFunction): this
         handle(handler: GraphQlQueryConfig['handler']): this
@@ -52,6 +54,7 @@ declare module '@tensei/common/config' {
     interface RouteConfig {
         path: string
         name: string
+        internal: boolean
         type: EndpointTypes
         snakeCaseName: string
         paramCaseName: string
@@ -68,6 +71,7 @@ declare module '@tensei/common/config' {
     > {
         path: string
         name: string
+        internal: boolean
         snakeCaseName: string
         paramCaseName: string
         resource?: ResourceContract
@@ -214,11 +218,15 @@ declare module '@tensei/common/config' {
         TContext = GraphQLPluginContext,
         TArgs = any
     > = IMiddleware<TSource, TContext, TArgs>
-    type MiddlewareGenerator = (
+    type MiddlewareGenerator<
+        TSource = any,
+        TContext = GraphQLPluginContext,
+        TArgs = any
+    > = (
         graphQlQueries: GraphQlQueryContract[],
         typeDefs: ITypedef[],
         schema: GraphQLSchema
-    ) => IMiddleware
+    ) => IMiddleware<TSource, TContext, TArgs>
     export interface Config {
         databaseClient: any
         schemas: any
