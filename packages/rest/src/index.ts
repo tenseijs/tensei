@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import Pluralize from 'pluralize'
 import qs from 'qs'
 import {
     FindOptions,
@@ -23,7 +24,7 @@ class Rest {
             total,
             page:
                 findOptions.offset ||
-                (findOptions.offset === 0 && findOptions.limit)
+                    (findOptions.offset === 0 && findOptions.limit)
                     ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
                     : null,
             per_page: findOptions.limit ? findOptions.limit : null,
@@ -41,8 +42,16 @@ class Rest {
                 query.page >= 1 ? (query.page - 1) * findOptions.limit : 0
         }
 
-        if (query.populate) {
-            findOptions.populate = query.populate.split(',')
+        if (query.popu) {
+            const strigifiedQuery = qs.stringify(query.popu, { encode: false })
+            const parsedQuery = qs.parse(strigifiedQuery, {
+                arrayLimit: 100,
+                depth: 20
+            })
+
+            console.log(JSON.stringify(parsedQuery, null, 3), '--->>parsedQuery')
+
+            findOptions.populate = parsedQuery
         }
 
         if (query.fields) {
@@ -67,6 +76,42 @@ class Rest {
         }
 
         return findOptions
+    }
+
+    public transformToInfoObject(resources: any, data: any) {
+        const res = data.reduce((acc: any, currVal: any) => {
+            const fields = this.getModelFields(resources, Pluralize(currVal.relation))
+            acc = {
+                ...acc,
+                [currVal.relation]: {
+                    ...fields
+                }
+            }
+            if (currVal.populate) {
+                acc[currVal.relation] = {
+                    ...acc[currVal.relation],
+                    ...this.transformToInfoObject(resources, currVal.populate)
+                }
+            }
+            return acc
+        }, {});
+        return res
+    }
+
+    public getModelFields(resources: any, modelName: any) {
+        const fields = resources[modelName].data.fields.reduce((acc: any, currVal: any) => {
+            acc = {
+                ...acc,
+                [currVal.databaseField]: {
+                    name: currVal.databaseField,
+                    alias: currVal.databaseField,
+                    args: {},
+                    fieldsByTypeName: {}
+                }
+            }
+            return acc;
+        }, {})
+        return fields;
     }
 
     public parseQueryToWhereOptions(query: any) {
@@ -151,7 +196,7 @@ class Rest {
                     .get()
                     .resource(resource)
                     .path(getApiPath(plural))
-                    .handle(async ({ manager, query }, response) => {
+                    .handle(async ({ manager, query, resources }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
                             query,
                             resource
@@ -159,6 +204,11 @@ class Rest {
                         const whereOptions = this.parseQueryToWhereOptions(
                             query
                         )
+
+                        const populateValues = Object.values(findOptions.populate as any).map(item => Object.values(item as any))[0]
+                        const res = this.transformToInfoObject(resources, populateValues)
+
+                        console.log(JSON.stringify(res, null, 2), '====>>>Ress')
 
                         const [entities, total] = await manager.findAndCount(
                             modelName,
@@ -302,7 +352,7 @@ class Rest {
             )
             .setup(async ({ app, routes }) => {
                 routes.forEach(route => {
-                    ;(app as any)[route.config.type.toLowerCase()](
+                    ; (app as any)[route.config.type.toLowerCase()](
                         route.config.path,
                         ...route.config.middleware.map(fn => AsyncHandler(fn)),
                         AsyncHandler(

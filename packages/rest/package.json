@@ -22,6 +22,7 @@
     "dependencies": {
         "@tensei/common": "^0.2.3",
         "express-response-formatter": "^2.0.2",
+        "pluralize": "^8.0.0",
         "qs": "^6.9.4"
     },
     "publishConfig": {
