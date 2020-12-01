@@ -78,7 +78,10 @@ class Rest {
 
     public transformToInfoObject(resources: any, data: any) {
         const res = data.reduce((acc: any, currVal: any) => {
-            const fields = this.getModelFields(resources, Pluralize(currVal.relation))
+            const fields = this.getModelFields(
+                resources,
+                Pluralize(currVal.relation)
+            )
             acc = {
                 ...acc,
                 [currVal.relation]: {
@@ -95,29 +98,35 @@ class Rest {
                 acc[currVal.relation] = {
                     ...acc[currVal.relation],
                     fieldsByTypeName: {
-                        ...this.transformToInfoObject(resources, currVal.populate)
+                        ...this.transformToInfoObject(
+                            resources,
+                            currVal.populate
+                        )
                     }
                 }
             }
             return acc
-        }, {});
+        }, {})
         return res
     }
 
     public getModelFields(resources: any, modelName: any) {
-        const fields = resources[modelName].data.fields.reduce((acc: any, currVal: any) => {
-            acc = {
-                ...acc,
-                [currVal.databaseField]: {
-                    name: currVal.databaseField,
-                    alias: currVal.databaseField,
-                    args: {},
-                    fieldsByTypeName: {}
+        const fields = resources[modelName].data.fields.reduce(
+            (acc: any, currVal: any) => {
+                acc = {
+                    ...acc,
+                    [currVal.databaseField]: {
+                        name: currVal.databaseField,
+                        alias: currVal.databaseField,
+                        args: {},
+                        fieldsByTypeName: {}
+                    }
                 }
-            }
-            return acc;
-        }, {})
-        return fields;
+                return acc
+            },
+            {}
+        )
+        return fields
     }
 
     public parseQueryToWhereOptions(query: any) {
@@ -214,8 +223,13 @@ class Rest {
                             query
                         )
 
-                        const populateValues = Object.values(findOptions.populate as any).map(item => Object.values(item as any))[0]
-                        const res = this.transformToInfoObject(resources, populateValues)
+                        const populateValues = Object.values(
+                            findOptions.populate as any
+                        ).map(item => Object.values(item as any))[0]
+                        const res = this.transformToInfoObject(
+                            resources,
+                            populateValues
+                        )
                         const fields = this.getModelFields(resources, modelName)
 
                         const infoObj = {
@@ -223,7 +237,10 @@ class Rest {
                             ...res
                         }
 
-                        console.log(JSON.stringify(infoObj, null, 5), '====>>>Ress')
+                        console.log(
+                            JSON.stringify(infoObj, null, 5),
+                            '====>>>Ress'
+                        )
 
                         const [entities, total] = await manager.findAndCount(
                             modelName,
