@@ -54,7 +54,7 @@ test('Adds new route definitions to API documentation', async () => {
     const path = '/accessories/query'
 
     const { app } = await setup([
-        plugin('New route').afterCoreRoutesSetup(async ({ extendRoutes }) => {
+        plugin('New route').boot(async ({ extendRoutes }) => {
             extendRoutes([
                 route('Fetch Accessories')
                     .get()

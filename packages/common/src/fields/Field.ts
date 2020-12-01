@@ -261,9 +261,10 @@ export class Field implements FieldContract {
     public constructor(name: string, databaseField?: string) {
         this.name = name
 
-        this.property.name = databaseField || snakeCase(this.name)
-
         this.databaseField = databaseField || snakeCase(this.name)
+
+        this.property.name = this.databaseField
+        this.relatedProperty.name = this.databaseField
 
         this.camelCaseName = camelCase(name)
         this.pascalCaseName = pascalCase(name)

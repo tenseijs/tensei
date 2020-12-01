@@ -72,7 +72,7 @@ module.exports = tensei()
         rest().plugin(),
         docs()
         .plugin(),
-        plugin('Custom Slug Validation').setup(async ({ indicative }) => {
+        plugin('Custom Slug Validation').register(async ({ indicative }) => {
             indicative.validator.extend('slug', {
                 async: false,
                 validate(data, field) {

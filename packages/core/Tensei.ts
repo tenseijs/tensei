@@ -7,11 +7,7 @@ import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
 import { mail, SupportedDrivers } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
-import {
-    StorageManager,
-    Storage,
-    StorageManagerConfig
-} from '@slynova/flydrive'
+import { StorageManager, Storage } from '@slynova/flydrive'
 import Express, { Request, Application, NextFunction } from 'express'
 
 import {
@@ -33,7 +29,8 @@ import {
     DatabaseConfiguration,
     TensieContext,
     MiddlewareGenerator,
-    GraphQlQueryContract
+    GraphQlQueryContract,
+    PluginSetupConfig
 } from '@tensei/core'
 
 export class Tensei implements TenseiContract {
@@ -44,7 +41,8 @@ export class Tensei implements TenseiContract {
     } = {}
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
-    private storageConfig: StorageManagerConfig = {
+
+    private defaultStorageConfig = {
         default: 'local',
         disks: {
             local: {
@@ -56,7 +54,6 @@ export class Tensei implements TenseiContract {
             }
         }
     }
-    public storage: StorageManager = new StorageManager(this.storageConfig)
 
     public ctx: Config = {
         schemas: [],
@@ -64,6 +61,8 @@ export class Tensei implements TenseiContract {
         graphQlQueries: [],
         graphQlTypeDefs: [],
         graphQlMiddleware: [],
+        storage: new StorageManager(this.defaultStorageConfig),
+        storageConfig: this.defaultStorageConfig,
         mailer: mail().connection('ethereal'),
         databaseClient: null,
         serverUrl: '',
@@ -73,15 +72,10 @@ export class Tensei implements TenseiContract {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
-        pushResource: (resource: ResourceContract) =>
-            this.resources([...this.ctx.resources, resource]),
         adminTable: 'administrators',
         dashboardPath: 'admin',
         apiPath: 'api',
         middleware: [],
-        pushMiddleware: (middleware: EndpointMiddleware) => {
-            this.ctx.middleware = [...this.ctx.middleware, middleware]
-        },
         orm: null,
         databaseConfig: {
             type: 'sqlite',
@@ -110,6 +104,9 @@ export class Tensei implements TenseiContract {
                 ...this.ctx.graphQlMiddleware,
                 ...middleware
             ]
+        },
+        extendResources: (resources: ResourceContract[]) => {
+            this.resources(resources)
         }
     }
 
@@ -194,21 +191,15 @@ export class Tensei implements TenseiContract {
 
         this.forceMiddleware()
 
-        await this.callPluginHook('beforeDatabaseSetup')
+        await this.callPluginHook('register')
+
         await this.registerDatabase()
 
-        await this.callPluginHook('afterDatabaseSetup')
-
-        // Please do not change this order. Super important so bugs are not introduced.
-        await this.callPluginHook('beforeMiddlewareSetup')
         this.registerAssetsRoutes()
         this.registerMiddleware()
-        await this.callPluginHook('afterMiddlewareSetup')
 
-        await this.callPluginHook('beforeCoreRoutesSetup')
-        await this.callPluginHook('afterCoreRoutesSetup')
+        await this.callPluginHook('boot')
 
-        await this.callPluginHook('setup')
         this.registerAsyncErrorHandler()
 
         return this
@@ -252,7 +243,7 @@ export class Tensei implements TenseiContract {
         })
     }
 
-    public getPluginArguments() {
+    getPluginArguments: () => PluginSetupConfig = () => {
         let gql: any = (text: string) => text
         try {
             gql = require('apollo-server-express').gql || gql
@@ -281,7 +272,6 @@ export class Tensei implements TenseiContract {
                 ]
             },
             manager: this.ctx.orm ? this.ctx.orm.em.fork() : null,
-            storageDriver: this.storageDriver as any,
             gql,
             extendGraphQlQueries: (routes: GraphQlQueryContract[]) => {
                 this.graphQlQueries(routes)
@@ -291,9 +281,9 @@ export class Tensei implements TenseiContract {
             ) => {
                 this.graphQlTypeDefs(typeDefs)
             },
-            extendRoutes: (routes: RouteContract[]) => {
-                this.routes(routes)
-            }
+            extendRoutes: (routes: RouteContract[]) => this.routes(routes),
+            currentCtx: () => this.ctx,
+            storageDriver: this.storageDriver
         }
     }
 
@@ -301,16 +291,7 @@ export class Tensei implements TenseiContract {
         for (let index = 0; index < this.ctx.plugins.length; index++) {
             const plugin = this.ctx.plugins[index]
 
-            const extension = await plugin.data[hook](
-                payload || this.getPluginArguments()
-            )
-
-            if (hook === 'setup') {
-                this.extensions = {
-                    ...this.extensions,
-                    [plugin.slug]: extension
-                }
-            }
+            await plugin.data[hook](payload || this.getPluginArguments())
         }
 
         return this
@@ -403,9 +384,9 @@ export class Tensei implements TenseiContract {
 
         this.app.disable('x-powered-by')
 
-        const rootStorage = (this.storageConfig.disks?.local?.config as any)
+        const rootStorage = (this.ctx.storageConfig.disks?.local?.config as any)
             .root
-        const publicPath = (this.storageConfig.disks?.local?.config as any)
+        const publicPath = (this.ctx.storageConfig.disks?.local?.config as any)
             .publicPath
 
         if (rootStorage && publicPath) {
@@ -427,48 +408,6 @@ export class Tensei implements TenseiContract {
                 next()
             }
         )
-
-        this.app.use(this.setAuthMiddleware)
-    }
-
-    private getApiPath = (path: string) => {
-        return `/${this.ctx.apiPath}/${path}`
-    }
-
-    private getDashboardApiPath = (path: string) => {
-        return `/${this.ctx.dashboardPath}/${this.ctx.apiPath}/${path}`
-    }
-
-    public authMiddleware = async (
-        request: Express.Request,
-        response: Express.Response,
-        next: Express.NextFunction
-    ) => {
-        if (!request.admin) {
-            return response.status(401).json({
-                message: 'Unauthenticated.'
-            })
-        }
-
-        next()
-    }
-
-    public setDashboardOrigin = async (
-        request: Express.Request,
-        response: Express.Response,
-        next: Express.NextFunction
-    ) => {
-        request.originatedFromDashboard = true
-
-        next()
-    }
-
-    public setAuthMiddleware = async (
-        request: Express.Request,
-        response: Express.Response,
-        next: Express.NextFunction
-    ) => {
-        next()
     }
 
     public registerAsyncErrorHandler() {
@@ -519,12 +458,6 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    private getMiddlewareForEndpoint(endpoint: InBuiltEndpoints) {
-        return this.ctx.middleware
-            .filter(middleware => middleware.type === endpoint)
-            .map(middleware => middleware.handler)
-    }
-
     public registerAssetsRoutes() {
         this.app.use(
             (
@@ -570,7 +503,7 @@ export class Tensei implements TenseiContract {
         }
     }
 
-    public asyncHandler(handler: Express.Handler) {
+    private asyncHandler(handler: Express.Handler) {
         return AsyncHandler(handler)
     }
 
@@ -627,13 +560,13 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public mail(driverName: SupportedDrivers, mailConfig = {}) {
+    private mail(driverName: SupportedDrivers, mailConfig = {}) {
         this.ctx.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }
 
-    public storageDriver<
+    private storageDriver<
         StorageDriverImplementation extends Storage,
         DriverConfig extends unknown
     >(
@@ -641,10 +574,10 @@ export class Tensei implements TenseiContract {
         driverConfig: DriverConfig,
         storageImplementation: StorageConstructor<StorageDriverImplementation>
     ) {
-        this.storageConfig = {
-            ...this.storageConfig,
+        this.ctx.storageConfig = {
+            ...this.ctx.storageConfig,
             disks: {
-                ...this.storageConfig.disks,
+                ...this.ctx.storageConfig.disks,
                 [driverName]: {
                     driver: driverName,
                     config: driverConfig
@@ -652,9 +585,9 @@ export class Tensei implements TenseiContract {
             }
         }
 
-        this.storage = new StorageManager(this.storageConfig)
+        this.ctx.storage = new StorageManager(this.ctx.storageConfig)
 
-        this.storage.registerDriver<StorageDriverImplementation>(
+        this.ctx.storage.registerDriver<StorageDriverImplementation>(
             driverName,
             storageImplementation
         )
@@ -663,12 +596,12 @@ export class Tensei implements TenseiContract {
     }
 
     public defaultStorageDriver(driverName: string) {
-        this.storageConfig = {
-            ...this.storageConfig,
+        this.ctx.storageConfig = {
+            ...this.ctx.storageConfig,
             default: driverName
         }
 
-        this.storage = new StorageManager(this.storageConfig)
+        this.ctx.storage = new StorageManager(this.ctx.storageConfig)
 
         return this
     }

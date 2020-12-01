@@ -65,8 +65,10 @@ class Database {
             resource.data.fields.forEach(field => {
                 if (field.isRelationshipField) {
                     this.updateFieldRelationshipRelatedProperty(field, resource)
-                    entityProperties[field.databaseField] =
-                        field.relatedProperty
+                    entityProperties[field.databaseField] = {
+                        ...field.property,
+                        ...field.relatedProperty
+                    }
                 } else {
                     if (
                         field.databaseField === 'id' &&

@@ -2,7 +2,6 @@ declare module '@tensei/common/config' {
     import { Signale } from 'signale'
     import { Mail } from '@tensei/mail'
     import { Request, Response } from 'express'
-    import { Storage } from '@slynova/flydrive'
     import { EntityManager } from '@mikro-orm/core'
     import { IMiddleware } from 'graphql-middleware'
     import { sanitizer, validator } from 'indicative'
@@ -14,6 +13,11 @@ declare module '@tensei/common/config' {
     import { IResolvers, ITypedef, PubSub } from 'apollo-server-express'
     import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
+    import {
+        Storage,
+        StorageManager,
+        StorageManagerConfig
+    } from '@slynova/flydrive'
     import {
         Request,
         Handler,
@@ -276,6 +280,8 @@ declare module '@tensei/common/config' {
         serverUrl: string
         clientUrl: string
         mailer: Mail
+        storage: StorageManager
+        storageConfig: StorageManagerConfig
         routes: RouteContract[]
         graphQlTypeDefs: (string | DocumentNode)[]
         graphQlQueries: GraphQlQueryContract[]
@@ -300,7 +306,7 @@ declare module '@tensei/common/config' {
         dashboardsMap: {
             [key: string]: DashboardContract
         }
-        pushResource: PluginSetupConfig['pushResource']
+        extendResources: PluginSetupConfig['extendResources']
 
         indicative: {
             validator: typeof validator
@@ -308,7 +314,6 @@ declare module '@tensei/common/config' {
         }
 
         middleware: EndpointMiddleware[]
-        pushMiddleware: (middleware: EndpointMiddleware) => void
 
         graphQlExtensions: GraphQLPluginExtension[]
     }

@@ -1,0 +1,33 @@
+{
+    "name": "@tensei/media",
+    "version": "0.4.1",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "types": "./build/index.d.ts",
+    "files": [
+        "build/"
+    ],
+    "devDependencies": {},
+    "scripts": {
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "build": "tsc --p tsconfig.json",
+        "dev": "tsc --watch --p tsconfig.json",
+        "test": "jest --verbose --runInBand --forceExit"
+    },
+    "dependencies": {
+        "@tensei/common": "^0.4.1"
+    },
+    "config": {
+        "commitizen": {
+            "path": "cz-conventional-changelog"
+        }
+    },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

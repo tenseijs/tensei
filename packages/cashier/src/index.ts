@@ -69,12 +69,12 @@ class Cashier {
 
     public plugin() {
         return plugin('Cashier')
-            .beforeDatabaseSetup(({ pushResource }) => {
-                pushResource(this.subscriptionsResource())
+            .register(({ extendResources }) => {
+                extendResources([this.subscriptionsResource()])
 
                 return Promise.resolve()
             })
-            .setup(({ resources }) => {
+            .boot(({ resources }) => {
                 const customerResource = resources.find(
                     resource =>
                         resource.data.name === this.config.customerResourceName

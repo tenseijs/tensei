@@ -38,7 +38,8 @@ export const projectDirectoryExists = (project: string) =>
     Fs.existsSync(Path.resolve(process.cwd(), project))
 
 export const createProjectFolder = (project: string) =>
-    console.log(Path.resolve(process.cwd(), project)) as any || Fs.mkdirSync(Path.resolve(process.cwd(), project))
+    (console.log(Path.resolve(process.cwd(), project)) as any) ||
+    Fs.mkdirSync(Path.resolve(process.cwd(), project))
 
 export const createProjectFile = (
     project: string,
@@ -62,9 +63,15 @@ export const hasYarnInstalled = () => {
     }
 }
 
-export const installProjectDependencies = (packageManager: string, project: string, runDev =true) => {
+export const installProjectDependencies = (
+    packageManager: string,
+    project: string,
+    runDev = true
+) => {
     try {
-        const spinner = Ora(`Installing dependencies with ${packageManager}`).start()
+        const spinner = Ora(
+            `Installing dependencies with ${packageManager}`
+        ).start()
 
         Execa.sync(packageManager, ['install'], {
             cwd: Path.resolve(process.cwd(), project),
@@ -73,7 +80,9 @@ export const installProjectDependencies = (packageManager: string, project: stri
 
         spinner.stop()
 
-        signale.success(`🚀 Done installing project.\n\n🎉 Congratulations on the start of something amazing!\n\n💻 Run the following command to get started:\n\ncd ${project} && ${packageManager} run dev\n\n`)
+        signale.success(
+            `🚀 Done installing project.\n\n🎉 Congratulations on the start of something amazing!\n\n💻 Run the following command to get started:\n\ncd ${project} && ${packageManager} run dev\n\n`
+        )
 
         process.exit(0)
     } catch (e) {
