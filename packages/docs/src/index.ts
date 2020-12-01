@@ -178,7 +178,7 @@ class Docs {
     }
 
     plugin() {
-        return plugin('Rest API Documentation').setup(
+        return plugin('Rest API Documentation').boot(
             async ({ app, resources, routes }) => {
                 this.docs.definitions.ID = {
                     type: 'string'

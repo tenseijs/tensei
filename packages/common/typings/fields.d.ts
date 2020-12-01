@@ -78,6 +78,7 @@ declare module '@tensei/common/fields' {
         fixedOrder?: boolean
         fixedOrderColumn?: string
         pivotTable?: string
+        joinColumn?: string
         joinColumns?: string[]
         inverseJoinColumns?: string[]
         referencedColumnNames?: string[]
@@ -531,6 +532,7 @@ declare module '@tensei/common/fields' {
     interface LinkContract extends TextContract {}
     interface RelationshipField extends FieldContract {
         cascades(cascades: Cascade[]): this
+        foreignKey(foreignKey: string): this
         owner(): this
     }
     const oneToOne: (name: string, databaseField?: string) => RelationshipField

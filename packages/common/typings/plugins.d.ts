@@ -18,10 +18,13 @@ declare module '@tensei/common/plugins' {
         StorageConstructor,
         GraphQLPluginExtension,
         RouteContract,
-        GraphQlQueryContract
+        GraphQlQueryContract,
+        TensieContext
     } from '@tensei/common/config'
 
-    type PluginSetupFunction = (config: PluginSetupConfig) => Promise<any>
+    type PluginSetupFunction = (
+        config: PluginSetupConfig
+    ) => void | Promise<void>
 
     type ServerStartedPluginSetupFunction = (
         config: PluginSetupConfig & {
@@ -29,15 +32,7 @@ declare module '@tensei/common/plugins' {
         }
     ) => void
 
-    type SetupFunctions =
-        | 'setup'
-        | 'beforeDatabaseSetup'
-        | 'afterDatabaseSetup'
-        | 'beforeMiddlewareSetup'
-        | 'afterMiddlewareSetup'
-        | 'beforeCoreRoutesSetup'
-        | 'afterCoreRoutesSetup'
-        | 'serverStarted'
+    type SetupFunctions = 'boot' | 'register'
 
     interface PluginSetupConfig extends Config {
         resources: ResourceContract[]
@@ -58,13 +53,13 @@ declare module '@tensei/common/plugins' {
         ): void
         manager: EntityManager | null
         gql: (types: string | TemplateStringsArray) => DocumentNode
-        pushResource: (resource: ResourceContract) => void
-        pushMiddleware: (middleware: EndpointMiddleware) => void
         style: (name: Asset['name'], path: Asset['path']) => void
         script: (name: Asset['name'], path: Asset['path']) => void
         extendGraphQlQueries: (queries: GraphQlQueryContract[]) => any
         extendGraphQlTypeDefs: (typeDefs: (string | DocumentNode)[]) => any
         extendRoutes: (queries: RouteContract[]) => any
+        extendResources: (resources: ResourceContract[]) => any
+        currentCtx: () => Config
     }
 
     export abstract class PluginContract {
@@ -72,35 +67,11 @@ declare module '@tensei/common/plugins' {
         slug: string
         data: {
             permissions: Permission[]
-            setup: (config: PluginSetupConfig) => void | Promise<void>
-            serverStarted: (config: PluginSetupConfig) => void | Promise<void>
-            beforeDatabaseSetup: (
-                config: PluginSetupConfig
-            ) => void | Promise<void>
-            afterDatabaseSetup: (
-                config: PluginSetupConfig
-            ) => void | Promise<void>
-            beforeMiddlewareSetup: (
-                config: PluginSetupConfig
-            ) => void | Promise<void>
-            afterMiddlewareSetup: (
-                config: PluginSetupConfig
-            ) => void | Promise<void>
-            beforeCoreRoutesSetup: (
-                config: PluginSetupConfig
-            ) => void | Promise<void>
-            afterCoreRoutesSetup: (
-                config: PluginSetupConfig
-            ) => void | Promise<void>
+            boot: (config: PluginSetupConfig) => void | Promise<void>
+            register: (config: PluginSetupConfig) => void | Promise<void>
         }
-        setup(setupFunction: PluginSetupFunction): this
-        serverStarted: (setupFunction: PluginSetupFunction) => this
-        beforeDatabaseSetup(setupFunction: PluginSetupFunction): this
-        afterDatabaseSetup(setupFunction: PluginSetupFunction): this
-        beforeMiddlewareSetup(setupFunction: PluginSetupFunction): this
-        afterMiddlewareSetup(setupFunction: PluginSetupFunction): this
-        beforeCoreRoutesSetup(setupFunction: PluginSetupFunction): this
-        afterCoreRoutesSetup(setupFunction: PluginSetupFunction): this
+        boot(setupFunction: PluginSetupFunction): this
+        register(setupFunction: PluginSetupFunction): this
     }
 
     export declare class Plugin extends PluginContract {}

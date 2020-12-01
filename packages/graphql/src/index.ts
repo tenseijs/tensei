@@ -137,7 +137,7 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `[${relatedResource.data.snakeCaseName}]`
-                FieldKey = `${relatedResource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
+                FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
             }
         }
 
@@ -152,7 +152,7 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `${relatedResource.data.snakeCaseName}`
-                FieldKey = relatedResource.data.snakeCaseName
+                FieldKey = field.databaseField
             }
         }
 
@@ -532,19 +532,12 @@ input id_where_query {
 
     plugin() {
         return plugin('GraphQl')
-            .afterDatabaseSetup(async config => {
-                const {
-                    resources,
-                    graphQlExtensions,
-                    graphQlMiddleware,
-                    extendGraphQlQueries
-                } = config
-                const exposedResources = resources.filter(
-                    resource => !resource.hiddenFromApi()
-                )
+            .register(config => {})
+            .boot(async config => {
+                const { extendGraphQlQueries, currentCtx, app } = config
 
-                this.pluginExtensions = this.pluginExtensions.concat(
-                    graphQlExtensions
+                const exposedResources = currentCtx().resources.filter(
+                    resource => !resource.hiddenFromApi()
                 )
 
                 this.setupResourceGraphqlTypes(exposedResources, config)
@@ -555,7 +548,12 @@ input id_where_query {
                     })
                 )
 
-                graphQlMiddleware.unshift(graphQlQueries => {
+                const typeDefs = [
+                    gql(this.schemaString),
+                    ...currentCtx().graphQlTypeDefs
+                ]
+
+                currentCtx().graphQlMiddleware.unshift(graphQlQueries => {
                     const middlewareHandlers: Resolvers = {
                         Query: {},
                         Mutation: {},
@@ -598,7 +596,7 @@ input id_where_query {
                     return middlewareHandlers
                 })
 
-                graphQlMiddleware.unshift(() => {
+                currentCtx().graphQlMiddleware.unshift(() => {
                     return async (resolve, parent, args, context, info) => {
                         context.manager = context.manager.fork()
 
@@ -613,7 +611,7 @@ input id_where_query {
                     }
                 })
 
-                graphQlMiddleware.unshift(() => {
+                currentCtx().graphQlMiddleware.unshift(() => {
                     return async (resolve, parent, args, context, info) => {
                         context.authenticationError = (message?: string) =>
                             new AuthenticationError(
@@ -645,19 +643,11 @@ input id_where_query {
                         return result
                     }
                 })
-            })
-            .setup(async config => {
-                const {
-                    graphQlMiddleware,
-                    graphQlTypeDefs,
-                    graphQlQueries,
-                    manager,
-                    app
-                } = config
-                const typeDefs = [gql(this.schemaString), ...graphQlTypeDefs]
 
                 const resolvers = {
-                    ...this.getResolversFromGraphqlQueries(graphQlQueries),
+                    ...this.getResolversFromGraphqlQueries(
+                        currentCtx().graphQlQueries
+                    ),
                     JSON: GraphQLJSON,
                     JSONObject: GraphQLJSONObject
                 }
@@ -670,12 +660,13 @@ input id_where_query {
                 const graphQlServer = new ApolloServer({
                     schema: applyMiddleware(
                         schema,
-                        ...graphQlMiddleware.map(middlewareGenerator =>
-                            middlewareGenerator(
-                                graphQlQueries,
-                                typeDefs,
-                                schema
-                            )
+                        ...currentCtx().graphQlMiddleware.map(
+                            middlewareGenerator =>
+                                middlewareGenerator(
+                                    currentCtx().graphQlQueries,
+                                    typeDefs,
+                                    schema
+                                )
                         )
                     ),
                     ...this.appolloConfig,
@@ -683,7 +674,7 @@ input id_where_query {
                         ...ctx,
                         ...config,
                         pubsub: this.pubsub,
-                        manager: manager!.fork()
+                        manager: currentCtx().orm?.em?.fork()
                     })
                 })
 

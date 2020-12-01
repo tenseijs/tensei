@@ -408,35 +408,40 @@ class Auth {
 
     public plugin() {
         return plugin('Auth')
-            .beforeDatabaseSetup(
+            .register(
                 ({
                     gql,
-                    pushResource,
+                    extendResources,
                     databaseConfig,
+                    graphQlTypeDefs,
                     extendGraphQlTypeDefs,
                     extendGraphQlQueries,
                     extendGraphQlMiddleware
                 }) => {
                     this.refreshResources()
 
-                    pushResource(this.resources.user)
-                    pushResource(this.resources.token)
-                    pushResource(this.resources.passwordReset)
+                    extendResources([
+                        this.resources.user,
+                        this.resources.token,
+                        this.resources.passwordReset
+                    ])
 
                     if (this.config.rolesAndPermissions) {
-                        pushResource(this.resources.role)
-
-                        pushResource(this.resources.permission)
+                        extendResources([
+                            this.resources.role,
+                            this.resources.permission
+                        ])
                     }
 
                     if (this.config.teams) {
-                        pushResource(this.resources.team)
-
-                        pushResource(this.resources.teamInvite)
+                        extendResources([
+                            this.resources.team,
+                            this.resources.teamInvite
+                        ])
                     }
 
                     if (Object.keys(this.config.providers).length > 0) {
-                        pushResource(this.resources.oauthIdentity)
+                        extendResources([this.resources.oauthIdentity])
                     }
 
                     if (Object.keys(this.config.providers).length > 0) {
@@ -530,22 +535,26 @@ class Auth {
                             return resolverAuthorizers
                         }
                     ])
-
-                    return Promise.resolve()
                 }
             )
 
-            .afterDatabaseSetup(async config => {
+            .boot(async config => {
                 if (this.config.rolesAndPermissions) {
                     await setup(config, [
                         this.resources.role,
                         this.resources.permission
                     ])
                 }
-            })
 
-            .beforeCoreRoutesSetup(async config => {
-                const { app, serverUrl, clientUrl, extendRoutes } = config
+                const {
+                    app,
+                    serverUrl,
+                    clientUrl,
+                    extendRoutes,
+                    graphQlQueries,
+                    routes,
+                    apiPath
+                } = config
 
                 extendRoutes(this.extendRoutes())
 
@@ -595,210 +604,186 @@ class Auth {
                     )
                 }
 
-                return {}
+                graphQlQueries.forEach(query => {
+                    if (query.config.resource) {
+                        const { path, internal } = query.config
+                        const {
+                            snakeCaseNamePlural: plural,
+                            snakeCaseName: singular,
+                            slug
+                        } = query.config.resource.data
+
+                        if (!internal) {
+                            return
+                        }
+
+                        if (
+                            [`insert_${plural}`, `insert_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(({ user }) =>
+                                user?.permissions?.includes(`insert:${slug}`)
+                            )
+                        }
+
+                        if (
+                            [`delete_${plural}`, `delete_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(({ user }) =>
+                                user?.permissions?.includes(`delete:${slug}`)
+                            )
+                        }
+
+                        if (
+                            [`update_${plural}`, `update_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(({ user }) =>
+                                user?.permissions?.includes(`update:${slug}`)
+                            )
+                        }
+
+                        if (path === plural) {
+                            return query.authorize(({ user }) =>
+                                user?.permissions?.includes(`fetch:${slug}`)
+                            )
+                        }
+
+                        if (path === singular) {
+                            return query.authorize(({ user }) =>
+                                user?.permissions?.includes(`show:${slug}`)
+                            )
+                        }
+                    }
+                })
+
+                routes.forEach(route => {
+                    route.middleware([
+                        async (request, response, next) => {
+                            await this.getAuthUserFromContext(request as any)
+
+                            return next()
+                        },
+                        async (request, response, next) => {
+                            await this.setAuthUserForPublicRoutes(
+                                request as any
+                            )
+
+                            return next()
+                        },
+                        async (request, response, next) => {
+                            await this.ensureAuthUserIsNotBlocked(
+                                request as any
+                            )
+
+                            return next()
+                        },
+                        async (request, response, next) => {
+                            const authorizers = await Promise.all(
+                                route.config.authorize.map(fn =>
+                                    fn(request as any)
+                                )
+                            )
+
+                            if (
+                                authorizers.filter(authorized => authorized)
+                                    .length !== route.config.authorize.length
+                            ) {
+                                throw request.forbiddenError('Unauthorized.')
+                            }
+
+                            next()
+                        }
+                    ])
+                    if (route.config.resource) {
+                        const { resource, path, type, internal } = route.config
+
+                        const { slugSingular, slugPlural } = resource.data
+
+                        route.extend({
+                            ...route.config.extend,
+                            docs: {
+                                ...route.config.extend?.docs,
+                                security: [
+                                    {
+                                        Bearer: []
+                                    }
+                                ]
+                            }
+                        })
+
+                        if (
+                            path === `/${apiPath}/${slugPlural}` &&
+                            type === 'POST' &&
+                            internal
+                        ) {
+                            return route.authorize(({ user }) =>
+                                user?.permissions?.includes(
+                                    `insert:${slugSingular}`
+                                )
+                            )
+                        }
+
+                        if (
+                            path === `/${apiPath}/${slugPlural}` &&
+                            type === 'GET' &&
+                            internal
+                        ) {
+                            return route.authorize(({ user }) =>
+                                user?.permissions?.includes(
+                                    `fetch:${slugSingular}`
+                                )
+                            )
+                        }
+
+                        if (
+                            path === `/${apiPath}/${slugPlural}/:id` &&
+                            type === 'GET' &&
+                            internal
+                        ) {
+                            return route.authorize(({ user }) =>
+                                user?.permissions?.includes(
+                                    `show:${slugSingular}`
+                                )
+                            )
+                        }
+
+                        if (
+                            [
+                                `/${apiPath}/${slugPlural}/:id`,
+                                `/${apiPath}/${slugPlural}`
+                            ].includes(path) &&
+                            ['PUT', 'PATCH'].includes(type) &&
+                            internal
+                        ) {
+                            return route.authorize(({ user }) =>
+                                user?.permissions?.includes(
+                                    `update:${slugSingular}`
+                                )
+                            )
+                        }
+
+                        if (
+                            [
+                                `/${apiPath}/${slugPlural}/:id`,
+                                `/${apiPath}/${slugPlural}`
+                            ].includes(path) &&
+                            type === 'DELETE' &&
+                            internal
+                        ) {
+                            return route.authorize(({ user }) =>
+                                user?.permissions!.includes(
+                                    `delete:${slugSingular}`
+                                )
+                            )
+                        }
+                    }
+                })
             })
-            .afterCoreRoutesSetup(
-                async ({ graphQlQueries, routes, apiPath, app }) => {
-                    graphQlQueries.forEach(query => {
-                        if (query.config.resource) {
-                            const { path, internal } = query.config
-                            const {
-                                snakeCaseNamePlural: plural,
-                                snakeCaseName: singular,
-                                slug
-                            } = query.config.resource.data
-
-                            if (!internal) {
-                                return
-                            }
-
-                            if (
-                                [
-                                    `insert_${plural}`,
-                                    `insert_${singular}`
-                                ].includes(path)
-                            ) {
-                                return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `insert:${slug}`
-                                    )
-                                )
-                            }
-
-                            if (
-                                [
-                                    `delete_${plural}`,
-                                    `delete_${singular}`
-                                ].includes(path)
-                            ) {
-                                return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `delete:${slug}`
-                                    )
-                                )
-                            }
-
-                            if (
-                                [
-                                    `update_${plural}`,
-                                    `update_${singular}`
-                                ].includes(path)
-                            ) {
-                                return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `update:${slug}`
-                                    )
-                                )
-                            }
-
-                            if (path === plural) {
-                                return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(`fetch:${slug}`)
-                                )
-                            }
-
-                            if (path === singular) {
-                                return query.authorize(({ user }) =>
-                                    user?.permissions?.includes(`show:${slug}`)
-                                )
-                            }
-                        }
-                    })
-
-                    routes.forEach(route => {
-                        route.middleware([
-                            async (request, response, next) => {
-                                await this.getAuthUserFromContext(
-                                    request as any
-                                )
-
-                                return next()
-                            },
-                            async (request, response, next) => {
-                                await this.setAuthUserForPublicRoutes(
-                                    request as any
-                                )
-
-                                return next()
-                            },
-                            async (request, response, next) => {
-                                await this.ensureAuthUserIsNotBlocked(
-                                    request as any
-                                )
-
-                                return next()
-                            },
-                            async (request, response, next) => {
-                                const authorizers = await Promise.all(
-                                    route.config.authorize.map(fn =>
-                                        fn(request as any)
-                                    )
-                                )
-
-                                if (
-                                    authorizers.filter(authorized => authorized)
-                                        .length !==
-                                    route.config.authorize.length
-                                ) {
-                                    throw request.forbiddenError(
-                                        'Unauthorized.'
-                                    )
-                                }
-
-                                next()
-                            }
-                        ])
-                        if (route.config.resource) {
-                            const {
-                                resource,
-                                path,
-                                type,
-                                internal
-                            } = route.config
-
-                            const { slugSingular, slugPlural } = resource.data
-
-                            route.extend({
-                                ...route.config.extend,
-                                docs: {
-                                    ...route.config.extend?.docs,
-                                    security: [
-                                        {
-                                            Bearer: []
-                                        }
-                                    ]
-                                }
-                            })
-
-                            if (
-                                path === `/${apiPath}/${slugPlural}` &&
-                                type === 'POST' &&
-                                internal
-                            ) {
-                                return route.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `insert:${slugSingular}`
-                                    )
-                                )
-                            }
-
-                            if (
-                                path === `/${apiPath}/${slugPlural}` &&
-                                type === 'GET' &&
-                                internal
-                            ) {
-                                return route.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `fetch:${slugSingular}`
-                                    )
-                                )
-                            }
-
-                            if (
-                                path === `/${apiPath}/${slugPlural}/:id` &&
-                                type === 'GET' &&
-                                internal
-                            ) {
-                                return route.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `show:${slugSingular}`
-                                    )
-                                )
-                            }
-
-                            if (
-                                [
-                                    `/${apiPath}/${slugPlural}/:id`,
-                                    `/${apiPath}/${slugPlural}`
-                                ].includes(path) &&
-                                ['PUT', 'PATCH'].includes(type) &&
-                                internal
-                            ) {
-                                return route.authorize(({ user }) =>
-                                    user?.permissions?.includes(
-                                        `update:${slugSingular}`
-                                    )
-                                )
-                            }
-
-                            if (
-                                [
-                                    `/${apiPath}/${slugPlural}/:id`,
-                                    `/${apiPath}/${slugPlural}`
-                                ].includes(path) &&
-                                type === 'DELETE' &&
-                                internal
-                            ) {
-                                return route.authorize(({ user }) =>
-                                    user?.permissions!.includes(
-                                        `delete:${slugSingular}`
-                                    )
-                                )
-                            }
-                        }
-                    })
-                }
-            )
     }
 
     private getRegistrationFieldsDocs() {
@@ -1271,7 +1256,9 @@ class Auth {
         const tokenName = this.resources.token.data.pascalCaseName
 
         const refreshToken =
-            ctx.req.cookies[this.config.refreshTokenCookieName] ||
+            (ctx.req.cookies
+                ? ctx.req.cookies[this.config.refreshTokenCookieName]
+                : undefined) ||
             (body
                 ? body.object
                     ? body.object.refresh_token

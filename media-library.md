@@ -1,0 +1,17 @@
+- Create a `Media` resource
+- Add the following fields to the resource:
+    - Unique UUID
+    - Parent ID, to mark this media as owned by another media. This will allow a single media to have multiple conversions / transformations
+    - File Size, to save the file size in KB
+    - File Name, to save the original name of the file
+    - Model ID, to save the related model id to this file
+    - Alt Text, nullable, to save the alt text for this file, used only for image media types
+    - Caption, nullable, to caption an image. 
+    - Ext, to save the file extension
+    - Mime, to save the file mime type
+    - Provider, to save the file upload provider
+    - Provider Meta, to save metadata for the media upload provider, for example, saving the media ID from cloudinary or dropbox
+
+- Associate the Media resource with different resources in the app.
+    - User `hasOne('Media')`, and the hasOne foreign key field is Model ID, and the relation name is `avatar`
+    - Post `hasMany('Media')`, and the hasMany foreign key field is Model ID, and the relation name is `sliders`

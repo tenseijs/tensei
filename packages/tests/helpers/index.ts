@@ -119,7 +119,7 @@ export const sortArrayById = (items: any[]) =>
 export let gql = (t: any) => t.toString()
 
 export const setupFakeMailer = ({ sendRaw, send }) =>
-    plugin('Mock mailer').setup(async ({ mailer }) => {
+    plugin('Mock mailer').register(async ({ mailer }) => {
         mailer.send = send
         mailer.sendRaw = sendRaw
     })

@@ -333,18 +333,8 @@ class Rest {
 
     plugin() {
         return plugin('Rest API')
-            .afterDatabaseSetup(
-                async ({ extendRoutes, resources, apiPath, app }) => {
-                    app.use(responseEnhancer())
-
-                    extendRoutes(
-                        this.extendRoutes(resources, (path: string) =>
-                            this.getApiPath(apiPath, path)
-                        )
-                    )
-                }
-            )
-            .setup(async ({ app, routes }) => {
+            .boot(async ({ extendRoutes, resources, apiPath, app }) => {
+                app.use(responseEnhancer())
                 app.use((request, _, next) => {
                     // @ts-ignore
                     request.req = request
@@ -352,6 +342,13 @@ class Rest {
                     return next()
                 })
 
+                extendRoutes(
+                    this.extendRoutes(resources, (path: string) =>
+                        this.getApiPath(apiPath, path)
+                    )
+                )
+            })
+            .register(async ({ app, routes }) => {
                 routes.forEach(route => {
                     ;(app as any)[route.config.type.toLowerCase()](
                         route.config.path,

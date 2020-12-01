@@ -2,6 +2,7 @@ require('dotenv').config()
 const { docs } = require('@tensei/docs')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
+const { media } = require('@tensei/media')
 const { graphql } = require('@tensei/graphql')
 const { tensei, plugin, route } = require('@tensei/core')
 const { RedisPubSub } = require('graphql-redis-subscriptions')
@@ -15,7 +16,6 @@ module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
     .clientUrl('https://google.com')
-    .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
     .routes([
         route('Get products')
@@ -68,9 +68,10 @@ module.exports = tensei()
                 },
             })
             .plugin(),
+        media().plugin(),
         rest().plugin(),
         docs().plugin(),
-        plugin('Custom Slug Validation').setup(({ indicative }) => {
+        plugin('Custom Slug Validation').register(({ indicative }) => {
             indicative.validator.extend('slug', {
                 async: false,
                 validate(data, field) {
@@ -84,7 +85,7 @@ module.exports = tensei()
     .databaseConfig({
         type: process.env.DATABASE_TYPE || 'mysql',
         dbName: process.env.DATABASE_NAME || 'mikrotensei',
-        debug: process.env.DEBUG || false,
+        debug: process.env.DEBUG === 'true' || false,
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',
     })

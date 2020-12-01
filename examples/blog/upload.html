@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axios upload</title>
+</head>
+<body>
+    <form action="" onsubmit="on_form_upload(event)">
+        <input type="file" name="files" id="files" multiple>
+
+        <button type='submit'>Submit</button>
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js" integrity="sha512-DZqqY3PiOvTP9HkjIWgjO6ouCbq+dxqWoJZ/Q+zPYNHmlnI2dQnbJ5bxAHpAMw+LXRm4D72EIRXzvcHQtE8/VQ==" crossorigin="anonymous"></script>
+    <script>
+        function on_form_upload(event) {
+            event.preventDefault()
+
+            const files = document.getElementById('files').files
+            console.log(files)
+        }
+    </script>
+</body>
+</html>

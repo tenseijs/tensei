@@ -28,6 +28,10 @@ export class RelationshipField extends Field {
 
         return this
     }
+
+    public foreignKey(foreignKey: string) {
+        return this
+    }
 }
 
 export default RelationshipField

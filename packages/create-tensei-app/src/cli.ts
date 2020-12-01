@@ -11,7 +11,7 @@ import {
     createProjectFolder,
     createProjectFile,
     hasYarnInstalled,
-    installProjectDependencies,
+    installProjectDependencies
 } from './utils/helpers'
 
 export const cli = async (program: Command) => {
@@ -31,7 +31,10 @@ export const cli = async (program: Command) => {
     const mikro_orm_db_host = program.dbhost
     const mikro_orm_db_username = program.dbusername
 
-    mikro_orm_db_name = database === 'sqlite' ? `${mikro_orm_db_name}.sqlite` : mikro_orm_db_name
+    mikro_orm_db_name =
+        database === 'sqlite'
+            ? `${mikro_orm_db_name}.sqlite`
+            : mikro_orm_db_name
 
     if (!getAvailableTemplates().includes(template)) {
         Signale.error(`The ${template} template does not exist.`)
