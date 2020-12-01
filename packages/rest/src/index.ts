@@ -49,8 +49,6 @@ class Rest {
                 depth: 20
             })
 
-            console.log(JSON.stringify(parsedQuery, null, 3), '--->>parsedQuery')
-
             findOptions.populate = parsedQuery
         }
 
@@ -84,13 +82,21 @@ class Rest {
             acc = {
                 ...acc,
                 [currVal.relation]: {
-                    ...fields
+                    name: currVal.relation,
+                    alias: currVal.relation,
+                    args: {},
+                    fieldsByTypeName: {
+                        ...fields
+                    }
                 }
             }
+
             if (currVal.populate) {
                 acc[currVal.relation] = {
                     ...acc[currVal.relation],
-                    ...this.transformToInfoObject(resources, currVal.populate)
+                    fieldsByTypeName: {
+                        ...this.transformToInfoObject(resources, currVal.populate)
+                    }
                 }
             }
             return acc
@@ -210,8 +216,14 @@ class Rest {
 
                         const populateValues = Object.values(findOptions.populate as any).map(item => Object.values(item as any))[0]
                         const res = this.transformToInfoObject(resources, populateValues)
+                        const fields = this.getModelFields(resources, modelName)
 
-                        console.log(JSON.stringify(res, null, 2), '====>>>Ress')
+                        const infoObj = {
+                            ...fields,
+                            ...res
+                        }
+
+                        console.log(JSON.stringify(infoObj, null, 5), '====>>>Ress')
 
                         const [entities, total] = await manager.findAndCount(
                             modelName,

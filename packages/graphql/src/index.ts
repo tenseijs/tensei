@@ -227,9 +227,8 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.snakeCaseName}(${this.getIdKey(config)}: ID!): ${
-            resource.data.snakeCaseName
-        }`
+  ${resource.data.snakeCaseName}(${this.getIdKey(config)}: ID!): ${resource.data.snakeCaseName
+            }`
     }
 
     getWhereQueryFieldType(field: FieldContract, config: PluginSetupConfig) {
@@ -270,17 +269,16 @@ class Graphql {
         return `
 input ${resource.data.snakeCaseName}_where_query {
 ${topLevelOperators.map(
-    operator =>
-        `${operator}: ${
-            operator === '_not'
-                ? `${resource.data.snakeCaseName}_where_query`
-                : `[${resource.data.snakeCaseName}_where_query]`
-        }`
-)}
+            operator =>
+                `${operator}: ${operator === '_not'
+                    ? `${resource.data.snakeCaseName}_where_query`
+                    : `[${resource.data.snakeCaseName}_where_query]`
+                }`
+        )}
 ${resource.data.fields.map(
-    field =>
-        `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
-)}
+            field =>
+                `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
+        )}
 }
 `
     }
@@ -305,72 +303,69 @@ ${resource.data.fields.map(
         resources.forEach(resource => {
             this.schemaString = `${this.schemaString}
 ${resource.data.fields
-    .filter(field => field.property.enum && !field.property.hidden)
-    .map(
-        field => `
-        enum ${resource.data.snakeCaseName}_${
-            field.snakeCaseName
-        }_enum {${field.property.items?.map(
-            option => `
+                    .filter(field => field.property.enum && !field.property.hidden)
+                    .map(
+                        field => `
+        enum ${resource.data.snakeCaseName}_${field.snakeCaseName
+                            }_enum {${field.property.items?.map(
+                                option => `
             ${option}`
-        )}
+                            )}
         }`
-    )}
+                    )}
 type ${resource.data.snakeCaseName} {${resource.data.fields
-                .filter(field => !field.property.hidden)
-                .map(field =>
-                    this.getGraphqlFieldDefinition(
-                        field,
-                        resource,
-                        resources,
-                        config
-                    )
-                )}
+                    .filter(field => !field.property.hidden)
+                    .map(field =>
+                        this.getGraphqlFieldDefinition(
+                            field,
+                            resource,
+                            resources,
+                            config
+                        )
+                    )}
    ${resource.data.fields
-       .filter(field =>
-           [ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(
-               field.relatedProperty.reference!
-           )
-       )
-       .map(
-           field =>
-               `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
-       )}
-}
-input create_${
-                resource.data.snakeCaseName
-            }_input {${resource.data.fields
-                .filter(
-                    field => !field.property.primary && !field.property.hidden
-                )
-                .map(field =>
-                    this.getGraphqlFieldDefinitionForCreateInput(
-                        field,
-                        resource,
-                        resources
+                    .filter(field =>
+                        [ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(
+                            field.relatedProperty.reference!
+                        )
                     )
-                )}
+                    .map(
+                        field =>
+                            `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
+                    )}
+}
+input create_${resource.data.snakeCaseName
+                }_input {${resource.data.fields
+                    .filter(
+                        field => !field.property.primary && !field.property.hidden
+                    )
+                    .map(field =>
+                        this.getGraphqlFieldDefinitionForCreateInput(
+                            field,
+                            resource,
+                            resources
+                        )
+                    )}
 }
 
-input update_${
-                resource.data.snakeCaseName
-            }_input {${resource.data.fields
-                .filter(
-                    field => !field.property.primary && !field.property.hidden
-                )
-                .map(field =>
-                    this.getGraphqlFieldDefinitionForCreateInput(
-                        field,
-                        resource,
-                        resources,
-                        true
+input update_${resource.data.snakeCaseName
+                }_input {${resource.data.fields
+                    .filter(
+                        field => !field.property.primary && !field.property.hidden
                     )
-                )}
+                    .map(field =>
+                        this.getGraphqlFieldDefinitionForCreateInput(
+                            field,
+                            resource,
+                            resources,
+                            true
+                        )
+                    )}
 }
 
 enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
-                resource
-            )}
+                        resource
+                    )}
 }
 
 ${this.getWhereQueryForResource(resource, config)}
@@ -396,40 +391,40 @@ ${this.getWhereQueryForResource(resource, config)}
             }
         )}
 ${resources.map(resource => {
-    return `${this.defineUpdateMutationForResource(resource, config)}`
-})}
+            return `${this.defineUpdateMutationForResource(resource, config)}`
+        })}
 ${resources.map(resource => {
-    return `${this.defineDeleteMutationForResource(resource, config)}`
-})}
+            return `${this.defineDeleteMutationForResource(resource, config)}`
+        })}
 }
 input string_where_query {
     ${filterOperators.map(operator => {
-        if (['_in', '_nin'].includes(operator)) {
-            return `${operator}: [String!]`
-        }
+            if (['_in', '_nin'].includes(operator)) {
+                return `${operator}: [String!]`
+            }
 
-        return `${operator}: String`
-    })}
+            return `${operator}: String`
+        })}
 }
 
 input integer_where_query {
     ${filterOperators.map(operator => {
-        if (['_in', '_nin'].includes(operator)) {
-            return `${operator}: [Int!]`
-        }
+            if (['_in', '_nin'].includes(operator)) {
+                return `${operator}: [Int!]`
+            }
 
-        return `${operator}: Int`
-    })}
+            return `${operator}: Int`
+        })}
 }
 
 input id_where_query {
     ${filterOperators.map(operator => {
-        if (['_in', '_nin'].includes(operator)) {
-            return `${operator}: [ID!]`
-        }
+            if (['_in', '_nin'].includes(operator)) {
+                return `${operator}: [ID!]`
+            }
 
-        return `${operator}: ID`
-    })}
+            return `${operator}: ID`
+        })}
 }
 `
 
@@ -452,14 +447,11 @@ input id_where_query {
     ) {
         return `update_${resource.data.snakeCaseName}(${this.getIdKey(
             config
-        )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${
-            resource.data.snakeCaseName
-        }!
-        update_${resource.data.snakeCaseNamePlural}(where: ${
-            resource.data.snakeCaseName
-        }_where_query!, object: update_${
-            resource.data.snakeCaseName
-        }_input!): [${resource.data.snakeCaseName}]!
+        )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName
+            }!
+        update_${resource.data.snakeCaseNamePlural}(where: ${resource.data.snakeCaseName
+            }_where_query!, object: update_${resource.data.snakeCaseName
+            }_input!): [${resource.data.snakeCaseName}]!
         `
     }
 
@@ -470,9 +462,8 @@ input id_where_query {
         return `delete_${resource.data.snakeCaseName}(${this.getIdKey(
             config
         )}: ID!): ${resource.data.snakeCaseName}
-        delete_${resource.data.snakeCaseNamePlural}(where: ${
-            resource.data.snakeCaseName
-        }_where_query): [${resource.data.snakeCaseName}]
+        delete_${resource.data.snakeCaseNamePlural}(where: ${resource.data.snakeCaseName
+            }_where_query): [${resource.data.snakeCaseName}]
         `
     }
 
@@ -741,10 +732,10 @@ input id_where_query {
                             manager,
                             relatedResource,
                             fieldTypes[
-                                Object.keys(
-                                    fieldNode[manyToOneSelection]
-                                        .fieldsByTypeName
-                                )[0]
+                            Object.keys(
+                                fieldNode[manyToOneSelection]
+                                    .fieldsByTypeName
+                            )[0]
                             ],
                             data.map(d => d[field.databaseField])
                         )
@@ -768,10 +759,10 @@ input id_where_query {
                             manager,
                             relatedResource,
                             fieldTypes[
-                                Object.keys(
-                                    fieldNode[manyToManySelection]
-                                        .fieldsByTypeName
-                                )[0]
+                            Object.keys(
+                                fieldNode[manyToManySelection]
+                                    .fieldsByTypeName
+                            )[0]
                             ],
                             data
                                 .map(d => d[field.databaseField])
@@ -797,10 +788,10 @@ input id_where_query {
                             manager,
                             relatedResource,
                             fieldTypes[
-                                Object.keys(
-                                    fieldNode[oneToManySelection]
-                                        .fieldsByTypeName
-                                )[0]
+                            Object.keys(
+                                fieldNode[oneToManySelection]
+                                    .fieldsByTypeName
+                            )[0]
                             ],
                             data
                                 .map(d => d[field.databaseField])
@@ -826,6 +817,8 @@ input id_where_query {
                             parseWhereArgumentsToWhereQuery(args.where),
                             getFindOptionsFromArgs(args)
                         )
+
+                        console.log(JSON.stringify(getParsedInfo(info), null, 3))
 
                         await populateFromResolvedNodes(
                             ctx.manager,
@@ -1114,13 +1107,13 @@ input id_where_query {
 
                     graphQlQueries.forEach(query => {
                         if (query.config.type === 'QUERY') {
-                            ;(middlewareHandlers.Query as any)[
+                            ; (middlewareHandlers.Query as any)[
                                 query.config.path
                             ] = mapArgsToBody
                         }
 
                         if (query.config.type === 'MUTATION') {
-                            ;(middlewareHandlers.Mutation as any)[
+                            ; (middlewareHandlers.Mutation as any)[
                                 query.config.path
                             ] = mapArgsToBody
                         }
