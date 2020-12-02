@@ -11,10 +11,6 @@ export const queries = (config: MediaLibraryPluginConfig) => [
         .path('upload_files')
         .mutation()
         .handle(async (_, args, ctx) => {
-            // processRequest(ctx.req, ctx.res)
-            //     .then((___) => {
-            //         console.log('________', ___)
-            //     })
             let files = ((await Promise.all(
                 args.object?.files
             )) as UploadFile[]).map(file => {
