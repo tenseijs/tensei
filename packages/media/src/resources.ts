@@ -1,12 +1,11 @@
 import {
-    resource,
     text,
-    bigInteger,
     json,
-    hasMany,
-    belongsTo,
     integer,
-    FieldContract
+    hasMany,
+    resource,
+    belongsTo,
+    bigInteger
 } from '@tensei/common'
 
 export const mediaResource = () =>
@@ -26,7 +25,7 @@ export const mediaResource = () =>
         text('Path').nullable().searchable(),
         text('Alt Text').nullable(),
         text('Disk').nullable(),
-        json('Disk Meta').nullable()
-        // hasMany('File', 'transformations').foreignKey('file_id'),
-        // belongsTo('File').nullable()
+        json('Disk Meta').nullable(),
+        hasMany('File', 'transformations'),
+        belongsTo('File').nullable()
     ])

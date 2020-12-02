@@ -418,7 +418,6 @@ export class Tensei implements TenseiContract {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
-                this.ctx.logger.error(error)
                 if (Array.isArray(error)) {
                     return response.status(422).json({
                         message: 'Validation failed.',

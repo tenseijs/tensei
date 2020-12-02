@@ -21,17 +21,16 @@ export const gistResource = () =>
         hasMany('File', 'attachments')
     ])
 
-export const setup = (plugins: PluginContract[] = [], reset = true) =>
+export const setup = (maxFileSize = 10000000) =>
     baseSetup(
         [
-            ...plugins,
             plugin('Add meeting resource').register(({ extendResources }) => {
                 extendResources([meetingResource(), gistResource()])
             }),
-            media().plugin(),
+            media().maxFiles(4).maxFileSize(maxFileSize).plugin(),
             graphql().plugin()
         ],
-        reset
+        true
     )
 
 export const getFileFixture = (file_name: string) =>

@@ -1,4 +1,5 @@
 import Crypto from 'crypto'
+import { processRequest } from 'graphql-upload'
 import { graphQlQuery } from '@tensei/common'
 
 import { mediaResource } from './resources'
@@ -10,6 +11,10 @@ export const queries = (config: MediaLibraryPluginConfig) => [
         .path('upload_files')
         .mutation()
         .handle(async (_, args, ctx) => {
+            // processRequest(ctx.req, ctx.res)
+            //     .then((___) => {
+            //         console.log('________', ___)
+            //     })
             let files = ((await Promise.all(
                 args.object?.files
             )) as UploadFile[]).map(file => {
@@ -37,7 +42,7 @@ export const queries = (config: MediaLibraryPluginConfig) => [
             await Promise.all(
                 files.map(file =>
                     ctx.storage
-                        .disk()
+                        .disk(config.disk)
                         .put(
                             `${file.storage_filename}`,
                             file.createReadStream()

@@ -1,5 +1,5 @@
-import { plugin, belongsTo } from '@tensei/common'
-import { ReferenceType } from '@mikro-orm/core'
+import { graphqlUploadExpress } from 'graphql-upload'
+import { plugin, belongsTo, hasMany } from '@tensei/common'
 
 import { queries } from './queries'
 import { typeDefs } from './type-defs'
@@ -8,7 +8,9 @@ import { MediaLibraryPluginConfig } from './types'
 
 class MediaLibrary {
     private config: MediaLibraryPluginConfig = {
-        disk: ''
+        disk: '',
+        maxFileSize: 10000000,
+        maxFiles: 10
     }
 
     disk(disk: string) {
@@ -17,10 +19,23 @@ class MediaLibrary {
         return this
     }
 
+    maxFileSize(max: number) {
+        this.config.maxFileSize = max
+
+        return this
+    }
+
+    maxFiles(max: number) {
+        this.config.maxFiles = max
+
+        return this
+    }
+
     plugin() {
         return plugin('Media Library').register(
             ({
                 gql,
+                app,
                 storageConfig,
                 extendResources,
                 extendGraphQlTypeDefs,
@@ -42,11 +57,11 @@ class MediaLibrary {
                             MediaResource.data.pascalCaseName
                     )
 
-                    fileFields.forEach(fileField => {
+                    if (fileFields.length) {
                         MediaResource.fields([
                             belongsTo(resource.data.name).nullable().hidden()
                         ])
-                    })
+                    }
                 })
 
                 extendResources([MediaResource])
@@ -54,9 +69,18 @@ class MediaLibrary {
                 extendGraphQlQueries(queries(this.config))
 
                 extendGraphQlTypeDefs([gql(typeDefs)])
+
+                app.use(
+                    graphqlUploadExpress({
+                        maxFiles: this.config.maxFiles,
+                        maxFileSize: this.config.maxFileSize
+                    })
+                )
             }
         )
     }
 }
+
+export const files = (databaseField?: string) => hasMany('File', databaseField)
 
 export const media = () => new MediaLibrary()

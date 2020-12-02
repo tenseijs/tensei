@@ -682,7 +682,8 @@ input id_where_query {
                         ...config,
                         pubsub: this.pubsub,
                         manager: currentCtx().orm?.em?.fork()
-                    })
+                    }),
+                    uploads: false
                 })
 
                 graphQlServer.applyMiddleware({
