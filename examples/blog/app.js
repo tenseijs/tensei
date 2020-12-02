@@ -59,6 +59,7 @@ module.exports = tensei()
                 secret: process.env.LINKEDIN_SECRET,
             })
             .plugin(),
+        media().plugin(),
         graphql()
             .subscriptions(new RedisPubSub())
             .middlewareOptions({
@@ -68,7 +69,6 @@ module.exports = tensei()
                 },
             })
             .plugin(),
-        media().plugin(),
         rest().plugin(),
         docs().plugin(),
         plugin('Custom Slug Validation').register(({ indicative }) => {

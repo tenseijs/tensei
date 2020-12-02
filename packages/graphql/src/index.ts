@@ -236,20 +236,27 @@ ${topLevelOperators.map(
                 : `[${resource.data.snakeCaseName}_where_query]`
         }`
 )}
-${resource.data.fields.map(
-    field =>
-        `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
-)}
-}
-input ${resource.data.snakeCaseName}_subscription_filter {
-    ${resource.data.fields.map(
+${resource
+    .getFetchApiExposedFields()
+    .map(
         field =>
             `${field.databaseField}: ${this.getWhereQueryFieldType(
                 field,
-                config,
-                true
+                config
             )}`
     )}
+}
+input ${resource.data.snakeCaseName}_subscription_filter {
+    ${resource
+        .getFetchApiExposedFields()
+        .map(
+            field =>
+                `${field.databaseField}: ${this.getWhereQueryFieldType(
+                    field,
+                    config,
+                    true
+                )}`
+        )}
 }
 `
     }

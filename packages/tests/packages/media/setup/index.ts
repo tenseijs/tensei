@@ -11,17 +11,24 @@ export * from '../../../helpers'
 export const meetingResource = () =>
     resource('Meeting').fields([
         text('Name').nullable(),
-        hasMany('File', 'screenshots').foreignKey('entity_id')
+        hasMany('File', 'screenshots'),
+        hasMany('File', 'archives')
+    ])
+
+export const gistResource = () =>
+    resource('Gist').fields([
+        text('Title').nullable(),
+        hasMany('File', 'attachments')
     ])
 
 export const setup = (plugins: PluginContract[] = [], reset = true) =>
     baseSetup(
         [
             ...plugins,
-            media().plugin(),
             plugin('Add meeting resource').register(({ extendResources }) => {
-                extendResources([meetingResource()])
+                extendResources([meetingResource(), gistResource()])
             }),
+            media().plugin(),
             graphql().plugin()
         ],
         reset

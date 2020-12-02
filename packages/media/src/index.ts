@@ -1,4 +1,5 @@
-import { plugin } from '@tensei/common'
+import { plugin, belongsTo } from '@tensei/common'
+import { ReferenceType } from '@mikro-orm/core'
 
 import { queries } from './queries'
 import { typeDefs } from './type-defs'
@@ -23,13 +24,32 @@ class MediaLibrary {
                 storageConfig,
                 extendResources,
                 extendGraphQlTypeDefs,
-                extendGraphQlQueries
+                extendGraphQlQueries,
+                currentCtx
             }) => {
                 if (!this.config.disk) {
                     this.config.disk = storageConfig.default!
                 }
 
-                extendResources([mediaResource()])
+                const MediaResource = mediaResource()
+
+                const { resources } = currentCtx()
+
+                resources.forEach(resource => {
+                    const fileFields = resource.data.fields.filter(
+                        f =>
+                            f.relatedProperty.type ===
+                            MediaResource.data.pascalCaseName
+                    )
+
+                    fileFields.forEach(fileField => {
+                        MediaResource.fields([
+                            belongsTo(resource.data.name).nullable().hidden()
+                        ])
+                    })
+                })
+
+                extendResources([MediaResource])
 
                 extendGraphQlQueries(queries(this.config))
 
