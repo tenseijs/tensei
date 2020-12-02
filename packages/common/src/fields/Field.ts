@@ -685,6 +685,11 @@ export class Field implements FieldContract {
      */
     public hidden<T extends FieldContract>(this: T): T {
         this.property.hidden = true
+        this.hideFromApi()
+        this.hideOnCreate()
+        this.hideOnDetail()
+        this.hideOnIndex()
+        this.hideOnUpdate()
 
         return this
     }

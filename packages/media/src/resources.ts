@@ -1,11 +1,11 @@
 import {
-    resource,
     text,
-    bigInteger,
     json,
+    integer,
     hasMany,
+    resource,
     belongsTo,
-    integer
+    bigInteger
 } from '@tensei/common'
 
 export const mediaResource = () =>
@@ -20,13 +20,12 @@ export const mediaResource = () =>
         text('Extension')
             .description('The file extension, for example psd, pdf, png')
             .searchable(),
-        text('Entity ID').nullable().searchable(),
         text('Mime Type').nullable().searchable(),
         text('Hash').searchable(),
         text('Path').nullable().searchable(),
         text('Alt Text').nullable(),
         text('Disk').nullable(),
         json('Disk Meta').nullable(),
-        hasMany('File', 'transformations').foreignKey('file_id'),
+        hasMany('File', 'transformations'),
         belongsTo('File').nullable()
     ])
