@@ -147,6 +147,7 @@ export class Tensei implements TenseiContract {
     private forceMiddleware() {
         this.app.use((request, response, next) => {
             request.req = request
+            request.res = response
 
             return next()
         })
@@ -236,9 +237,8 @@ export class Tensei implements TenseiContract {
 
         this.server.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
-                }`
+                `🚀 Access your server on ${this.ctx.serverUrl ||
+                    `http://127.0.0.1:${port}`}`
             )
         })
     }
@@ -281,7 +281,9 @@ export class Tensei implements TenseiContract {
             ) => {
                 this.graphQlTypeDefs(typeDefs)
             },
-            extendRoutes: (routes: RouteContract[]) => this.routes(routes),
+            extendRoutes: (routes: RouteContract[]) => {
+                this.routes(routes)
+            },
             currentCtx: () => this.ctx,
             storageDriver: this.storageDriver
         }
@@ -560,7 +562,9 @@ export class Tensei implements TenseiContract {
     }
 
     private mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
+        this.ctx.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }

@@ -27,7 +27,10 @@ export const setup = (maxFileSize = 10000000) =>
             plugin('Add meeting resource').register(({ extendResources }) => {
                 extendResources([meetingResource(), gistResource()])
             }),
-            media().maxFiles(4).maxFileSize(maxFileSize).plugin(),
+            media()
+                .maxFiles(4)
+                .maxFileSize(maxFileSize)
+                .plugin(),
             graphql().plugin()
         ],
         true

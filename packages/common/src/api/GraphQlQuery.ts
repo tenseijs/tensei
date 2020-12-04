@@ -11,6 +11,7 @@ export class GraphQlQuery implements GraphQlQueryContract {
         path: '',
         name: '',
         internal: false,
+        csrf: true,
         type: 'QUERY',
         middleware: [],
         snakeCaseName: '',
@@ -80,6 +81,12 @@ export class GraphQlQuery implements GraphQlQueryContract {
 
     filter(filter: GraphQlQueryConfig['filter']) {
         this.config.filter = filter
+
+        return this
+    }
+
+    noCsrf() {
+        this.config.csrf = false
 
         return this
     }

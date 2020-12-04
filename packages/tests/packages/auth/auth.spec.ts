@@ -17,7 +17,11 @@ test('Registers auth resources when plugin is registered', async () => {
 test('Can customize the name of the authenticator user', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().user('Customer').plugin()])
+    } = await setup([
+        auth()
+            .user('Customer')
+            .plugin()
+    ])
 
     expect(
         resources.find(resource => resource.data.name === 'Customer')
@@ -27,7 +31,11 @@ test('Can customize the name of the authenticator user', async () => {
 test('Enabling roles and permissions registers Role and permission resources', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().rolesAndPermissions().plugin()])
+    } = await setup([
+        auth()
+            .rolesAndPermissions()
+            .plugin()
+    ])
 
     expect(
         resources.filter(resource =>
@@ -134,8 +142,6 @@ test('Can enable email verification for auth', async () => {
                 register_customer(
                     object: { name: $name, email: $email, password: $password }
                 ) {
-                    access_token
-                    refresh_token
                     customer {
                         id
                         email
@@ -152,8 +158,6 @@ test('Can enable email verification for auth', async () => {
     })
 
     expect(response.status).toBe(200)
-    expect(response.body.data.register_customer.access_token).toBeDefined()
-    expect(response.body.data.register_customer.refresh_token).toBeDefined()
 
     const registeredCustomer: any = await em.findOne('Customer', {
         email: user.email
@@ -188,10 +192,7 @@ test('Can enable email verification for auth', async () => {
                     registeredCustomer.email_verification_token
             }
         })
-        .set(
-            'Authorization',
-            `Bearer ${response.body.data.register_customer.access_token}`
-        )
+        .set('Cookie', `${response.header['set-cookie'][0].split(';')[0]}`)
 
     expect(verify_email_response.body.data.confirm_email).toEqual({
         id: registeredCustomer.id.toString(),
@@ -208,12 +209,14 @@ test('Can request a password reset and reset password', async () => {
 
     const {
         ctx: {
-            orm: { em },
-            mailer
+            orm: { em }
         },
         app
     } = await setup([
-        auth().verifyEmails().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
         graphql().plugin(),
         setupFakeMailer(mailerMock)
     ])
@@ -277,8 +280,6 @@ test('Can request a password reset and reset password', async () => {
         query: gql`
             mutation login_student($email: String!, $password: String!) {
                 login_student(object: { email: $email, password: $password }) {
-                    access_token
-                    refresh_token
                     student {
                         id
                         email
@@ -294,13 +295,127 @@ test('Can request a password reset and reset password', async () => {
 
     expect(login_response.status).toBe(200)
     expect(login_response.body.data.login_student).toEqual({
-        access_token: expect.any(String),
-        refresh_token: expect.any(String),
         student: {
             id: user.id.toString(),
             email: user.email
         }
     })
+})
+
+test('Can login and stay authenticated with cookie based applications', async () => {
+    const {
+        ctx: {
+            orm: { em }
+        },
+        app
+    } = await setup([
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
+        graphql().plugin()
+    ])
+
+    const client = Supertest(app)
+
+    const user = em.create('Student', fakeUser())
+
+    await em.persistAndFlush(user)
+
+    const login_response = await client.post(`/graphql`).send({
+        query: gql`
+            mutation login_student($email: String!, $password: String!) {
+                login_student(object: { email: $email, password: $password }) {
+                    student {
+                        id
+                        email
+                    }
+                }
+            }
+        `,
+        variables: {
+            password: 'password',
+            email: user.email
+        }
+    })
+
+    const userEntity = (await em.findOne('Student', {
+        email: user.email
+    })) as any
+
+    expect(login_response.body).toEqual({
+        data: {
+            login_student: {
+                student: {
+                    id: userEntity.id.toString(),
+                    email: user.email
+                }
+            }
+        }
+    })
+
+    const authCookie = login_response.header['set-cookie'][0].split(';')[0]
+
+    // A logged in student can stay authenticated.
+    const authenticated_response = await client
+        .post(`/graphql`)
+        .send({
+            query: gql`
+                query authenticated_student {
+                    authenticated_student {
+                        id
+                        email
+                    }
+                }
+            `
+        })
+        .set('Cookie', authCookie)
+
+    expect(authenticated_response.body).toEqual({
+        data: {
+            authenticated_student: {
+                id: userEntity.id.toString(),
+                email: user.email
+            }
+        }
+    })
+
+    // Can logout a customer
+    const logout_response = await client
+        .post(`/graphql`)
+        .send({
+            query: gql`
+                mutation logout_student {
+                    logout_student
+                }
+            `
+        })
+        .set('Cookie', authCookie)
+
+    expect(logout_response.body).toEqual({
+        data: {
+            logout_student: true
+        }
+    })
+
+    // After logout, any further authenticated calls are Unauthorized
+    const authenticated_response_after_logout = await client
+        .post(`/graphql`)
+        .send({
+            query: gql`
+                query authenticated_student {
+                    authenticated_student {
+                        id
+                        email
+                    }
+                }
+            `
+        })
+        .set('Cookie', authCookie)
+
+    expect(authenticated_response_after_logout.body.errors[0].message).toBe(
+        'Unauthorized.'
+    )
 })
 
 test('access tokens and refresh tokens are generated correctly', async done => {
@@ -316,6 +431,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         auth()
             .verifyEmails()
             .user('Student')
+            .noCookies()
             .setup(({ user }) => {
                 user.fields([text('Name').nullable()])
             })
@@ -338,6 +454,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             mutation login_student($email: String!, $password: String!) {
                 login_student(object: { email: $email, password: $password }) {
                     access_token
+                    refresh_token
                     student {
                         id
                         email
@@ -353,9 +470,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
     const accessToken: string =
         login_response.body.data.login_student.access_token
-    const refreshToken: string = login_response.headers['set-cookie'][0]
-        .split(';')[0]
-        .split('=')[1]
+    const refreshToken: string =
+        login_response.body.data.login_student.refresh_token
 
     setTimeout(async () => {
         // Wait for the jwt to expire, then run a test, make sure its invalid and fails.
@@ -381,25 +497,27 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
         // Refresh the jwt with the valid refresh token. Expect to get a new, valid JWT
 
-        const refresh_token_response = await client
-            .post(`/graphql`)
-            .send({
-                query: gql`
-                    mutation refresh_token {
-                        refresh_token {
-                            access_token
-                            student {
-                                id
-                                email
-                            }
+        const refresh_token_response = await client.post(`/graphql`).send({
+            query: gql`
+                mutation refresh_token($refresh_token: String!) {
+                    refresh_token(object: { refresh_token: $refresh_token }) {
+                        access_token
+                        refresh_token
+                        student {
+                            id
+                            email
                         }
                     }
-                `
-            })
-            .set('Cookie', `___refresh__token=${refreshToken}`)
+                }
+            `,
+            variables: {
+                refresh_token: refreshToken
+            }
+        })
 
         expect(refresh_token_response.body.data.refresh_token).toEqual({
             access_token: expect.any(String),
+            refresh_token: expect.any(String),
             student: {
                 id: user.id.toString(),
                 email: user.email
@@ -441,18 +559,23 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .post(`/graphql`)
             .send({
                 query: gql`
-                    mutation refresh_token {
-                        refresh_token {
+                    mutation refresh_token($refresh_token: String!) {
+                        refresh_token(
+                            object: { refresh_token: $refresh_token }
+                        ) {
                             access_token
+                            refresh_token
                             student {
                                 id
                                 email
                             }
                         }
                     }
-                `
+                `,
+                variables: {
+                    refresh_token: refreshToken
+                }
             })
-            .set('Cookie', `___refresh__token=${refreshToken}`)
 
         expect(invalid_refresh_token_response.body.errors[0].message).toBe(
             'Invalid refresh token.'
@@ -512,7 +635,10 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         },
         app
     } = await setup([
-        auth().user('Customer').noCookies().plugin(),
+        auth()
+            .user('Customer')
+            .noCookies()
+            .plugin(),
         graphql().plugin()
     ])
 

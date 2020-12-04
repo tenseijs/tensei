@@ -16,6 +16,7 @@ module.exports = tensei()
     .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment])
     .clientUrl('https://google.com')
+    .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
     .routes([
         route('Get products')
@@ -39,7 +40,7 @@ module.exports = tensei()
             .verifyEmails()
             .teams()
             .apiPath('auth')
-            .noCookies()
+            // .noCookies()
             .rolesAndPermissions()
             .social('github', {
                 key: process.env.GITHUB_KEY,
@@ -60,27 +61,9 @@ module.exports = tensei()
             })
             .plugin(),
         media().plugin(),
-        graphql()
-            .subscriptions(new RedisPubSub())
-            .middlewareOptions({
-                cors: {
-                    credentials: true,
-                    origin: ['http://localhost:3001'],
-                },
-            })
-            .plugin(),
+        graphql().plugin(),
         rest().plugin(),
         docs().plugin(),
-        plugin('Custom Slug Validation').register(({ indicative }) => {
-            indicative.validator.extend('slug', {
-                async: false,
-                validate(data, field) {
-                    return data.original[field].match(
-                        /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-                    )
-                },
-            })
-        }),
     ])
     .databaseConfig({
         type: process.env.DATABASE_TYPE || 'mysql',
