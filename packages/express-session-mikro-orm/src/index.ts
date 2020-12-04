@@ -142,19 +142,18 @@ const StoreFactory = (Store: any) => {
                 expires = data.cookie.expires
             }
 
-            return this.orm.em
-                .findOne('Session', {
-                    session_id: sid
-                })
-                .then((session: any) => {
-                    this.orm.em.assign(session, {
+            return this.em
+                .nativeUpdate(
+                    'Session',
+                    {
+                        session_id: sid
+                    },
+                    {
                         expires
-                    })
-
-                    return this.orm.em.persistAndFlush(session)
-                })
+                    }
+                )
                 .then(() => callback(null, null))
-                .catch(error => callback(error, null))
+                .catch((error: any) => callback(error, null))
         }
         startExpiringSessions = () => {
             this.expirationInterval = setInterval(
