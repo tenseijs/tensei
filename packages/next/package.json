@@ -1,13 +1,12 @@
 {
     "name": "@tensei/next",
-    "version": "0.4.1",
+    "version": "0.4.3",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
     "files": [
         "build/"
     ],
-    "devDependencies": {},
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
         "build": "tsc --p tsconfig.json",

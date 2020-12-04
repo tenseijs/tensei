@@ -1,6 +1,6 @@
 {
     "name": "@tensei/common",
-    "version": "0.4.1",
+    "version": "0.4.3",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./typings/index.d.ts",
