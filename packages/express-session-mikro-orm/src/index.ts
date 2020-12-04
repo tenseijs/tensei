@@ -142,7 +142,7 @@ const StoreFactory = (Store: any) => {
                 expires = data.cookie.expires
             }
 
-            return this.em
+            return this.orm.em
                 .nativeUpdate(
                     'Session',
                     {
