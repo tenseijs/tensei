@@ -14,7 +14,6 @@ export class Route implements RouteContract {
     } = {
         path: '',
         name: '',
-        csrf: true,
         type: 'GET',
         internal: false,
         middleware: [],
@@ -97,12 +96,6 @@ export class Route implements RouteContract {
 
     internal() {
         this.config.internal = true
-
-        return this
-    }
-
-    noCsrf() {
-        this.config.csrf = false
 
         return this
     }

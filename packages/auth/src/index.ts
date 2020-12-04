@@ -151,18 +151,6 @@ class Auth {
         return this
     }
 
-    public tokenExpiresIn(tokenExpiresIn: number) {
-        this.config.tokensConfig.accessTokenExpiresIn = tokenExpiresIn
-
-        return this
-    }
-
-    public tokenSecretKey(secret: string) {
-        this.config.tokensConfig.secretKey = secret
-
-        return this
-    }
-
     public apiPath(path: string) {
         this.config.apiPath = path
 
@@ -1961,7 +1949,7 @@ class Auth {
     }
 
     private getRoleUserKey() {
-        return this.resources.role.data.snakeCaseName
+        return this.resources.role.data.snakeCaseNamePlural
     }
 
     private getPermissionUserKey() {

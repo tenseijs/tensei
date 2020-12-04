@@ -40,7 +40,6 @@ declare module '@tensei/common/config' {
         put(): this
         patch(): this
         delete(): this
-        noCsrf(): this
         internal(): this
         extend(extend: RouteExtendContract): this
         resource(resource: ResourceContract): this
@@ -76,7 +75,6 @@ declare module '@tensei/common/config' {
         config: GraphQlQueryConfig
         path(path: string): this
         query(): this
-        noCsrf(): this
         mutation(): this
         internal(): this
         subscription(): this
@@ -90,7 +88,6 @@ declare module '@tensei/common/config' {
     interface RouteConfig {
         path: string
         name: string
-        csrf: boolean
         internal: boolean
         type: EndpointTypes
         snakeCaseName: string
@@ -108,7 +105,6 @@ declare module '@tensei/common/config' {
     > {
         path: string
         name: string
-        csrf: boolean
         middleware: GraphQlQueryConfig['handler'][]
         internal: boolean
         snakeCaseName: string
