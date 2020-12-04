@@ -147,6 +147,7 @@ export class Tensei implements TenseiContract {
     private forceMiddleware() {
         this.app.use((request, response, next) => {
             request.req = request
+            request.res = response
 
             return next()
         })
@@ -281,7 +282,9 @@ export class Tensei implements TenseiContract {
             ) => {
                 this.graphQlTypeDefs(typeDefs)
             },
-            extendRoutes: (routes: RouteContract[]) => this.routes(routes),
+            extendRoutes: (routes: RouteContract[]) => {
+                this.routes(routes)
+            },
             currentCtx: () => this.ctx,
             storageDriver: this.storageDriver
         }

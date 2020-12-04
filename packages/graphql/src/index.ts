@@ -538,42 +538,29 @@ input id_where_query {
     }
 
     plugin() {
-        return plugin('GraphQl')
-            .register(config => {})
-            .boot(async config => {
-                const { extendGraphQlQueries, currentCtx, app } = config
+        return plugin('GraphQl').boot(async config => {
+            const { extendGraphQlQueries, currentCtx, app } = config
 
-                const exposedResources = currentCtx().resources.filter(
-                    resource => !resource.hiddenFromApi()
-                )
+            const exposedResources = currentCtx().resources.filter(
+                resource => !resource.hiddenFromApi()
+            )
 
-                this.setupResourceGraphqlTypes(exposedResources, config)
+            this.setupResourceGraphqlTypes(exposedResources, config)
 
-                extendGraphQlQueries(
-                    getResolvers(exposedResources, {
-                        subscriptionsEnabled: this.subscriptionsEnabled
-                    })
-                )
+            extendGraphQlQueries(
+                getResolvers(exposedResources, {
+                    subscriptionsEnabled: this.subscriptionsEnabled
+                })
+            )
 
-                const typeDefs = [
-                    gql(this.schemaString),
-                    ...currentCtx().graphQlTypeDefs
-                ]
+            const typeDefs = [
+                gql(this.schemaString),
+                ...currentCtx().graphQlTypeDefs
+            ]
 
-                currentCtx().graphQlMiddleware.unshift(graphQlQueries => {
-                    const middlewareHandlers: Resolvers = {
-                        Query: {},
-                        Mutation: {},
-                        Subscription: {}
-                    }
-
-                    const mapArgsToBody: GraphQlMiddleware = async (
-                        resolve,
-                        parent,
-                        args,
-                        context,
-                        info
-                    ) => {
+            currentCtx().graphQlMiddleware.unshift(
+                () => {
+                    return async (resolve, parent, args, context, info) => {
                         context.body = args
 
                         const result = await resolve(
@@ -585,25 +572,8 @@ input id_where_query {
 
                         return result
                     }
-
-                    graphQlQueries.forEach(query => {
-                        if (query.config.type === 'QUERY') {
-                            ;(middlewareHandlers.Query as any)[
-                                query.config.path
-                            ] = mapArgsToBody
-                        }
-
-                        if (query.config.type === 'MUTATION') {
-                            ;(middlewareHandlers.Mutation as any)[
-                                query.config.path
-                            ] = mapArgsToBody
-                        }
-                    })
-
-                    return middlewareHandlers
-                })
-
-                currentCtx().graphQlMiddleware.unshift(() => {
+                },
+                () => {
                     return async (resolve, parent, args, context, info) => {
                         context.manager = context.manager.fork()
 
@@ -616,9 +586,8 @@ input id_where_query {
 
                         return result
                     }
-                })
-
-                currentCtx().graphQlMiddleware.unshift(() => {
+                },
+                () => {
                     return async (resolve, parent, args, context, info) => {
                         context.authenticationError = (message?: string) =>
                             new AuthenticationError(
@@ -649,52 +618,52 @@ input id_where_query {
 
                         return result
                     }
-                })
-
-                const resolvers = {
-                    ...this.getResolversFromGraphqlQueries(
-                        currentCtx().graphQlQueries
-                    ),
-                    JSON: GraphQLJSON,
-                    JSONObject: GraphQLJSONObject
                 }
+            )
 
-                const schema = makeExecutableSchema({
-                    typeDefs,
-                    resolvers
-                })
+            const resolvers = {
+                ...this.getResolversFromGraphqlQueries(
+                    currentCtx().graphQlQueries
+                ),
+                JSON: GraphQLJSON,
+                JSONObject: GraphQLJSONObject
+            }
 
-                const graphQlServer = new ApolloServer({
-                    schema: applyMiddleware(
-                        schema,
-                        ...currentCtx().graphQlMiddleware.map(
-                            middlewareGenerator =>
-                                middlewareGenerator(
-                                    currentCtx().graphQlQueries,
-                                    typeDefs,
-                                    schema
-                                )
-                        )
-                    ),
-                    ...this.appolloConfig,
-                    context: ctx => ({
-                        ...ctx,
-                        ...config,
-                        pubsub: this.pubsub,
-                        manager: currentCtx().orm?.em?.fork()
-                    }),
-                    uploads: false
-                })
-
-                graphQlServer.applyMiddleware({
-                    app,
-                    ...this.getMiddlewareOptions
-                })
-
-                if (this.subscriptionsEnabled) {
-                    graphQlServer.installSubscriptionHandlers(config.server)
-                }
+            const schema = makeExecutableSchema({
+                typeDefs,
+                resolvers
             })
+
+            const graphQlServer = new ApolloServer({
+                schema: applyMiddleware(
+                    schema,
+                    ...currentCtx().graphQlMiddleware.map(middlewareGenerator =>
+                        middlewareGenerator(
+                            currentCtx().graphQlQueries,
+                            typeDefs,
+                            schema
+                        )
+                    )
+                ),
+                ...this.appolloConfig,
+                context: ctx => ({
+                    ...ctx,
+                    ...config,
+                    pubsub: this.pubsub,
+                    manager: currentCtx().orm?.em?.fork()
+                }),
+                uploads: false
+            })
+
+            graphQlServer.applyMiddleware({
+                app,
+                ...this.getMiddlewareOptions
+            })
+
+            if (this.subscriptionsEnabled) {
+                graphQlServer.installSubscriptionHandlers(config.server)
+            }
+        })
     }
 }
 
