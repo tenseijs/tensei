@@ -305,7 +305,7 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public databaseConfig(databaseConfig: DatabaseConfiguration) {
+    public db(databaseConfig: DatabaseConfiguration) {
         this.ctx.databaseConfig = databaseConfig
 
         return this

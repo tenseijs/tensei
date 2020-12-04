@@ -73,7 +73,7 @@ export const setup = async (plugins: PluginContract[] = [], reset = true) => {
     const instance = await tensei()
         .resources(resources)
         .plugins(plugins)
-        .databaseConfig(getDatabaseCredentials())
+        .db(getDatabaseCredentials())
         .boot()
 
     reset && (await cleanupDatabase(instance))

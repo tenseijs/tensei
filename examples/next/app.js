@@ -6,7 +6,7 @@ const { graphql } = require('@tensei/graphql')
 
 tensei()
     .plugins([auth().plugin(), next().plugin(), graphql().plugin()])
-    .databaseConfig({
+    .db({
         dbName: 'mikrotensei.sqlite',
         type: 'sqlite'
     })

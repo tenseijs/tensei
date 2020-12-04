@@ -10,7 +10,7 @@ tensei()
         {{ api_package }}()
             .plugin()
     ])
-    .databaseConfig({
+    .db({
         type: '{{ mikro_orm_database }}',
         dbName: '{{ mikro_orm_db_name }}',
         @if(mikro_orm_db_pass !== undefined)

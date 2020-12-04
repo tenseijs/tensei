@@ -65,7 +65,7 @@ module.exports = tensei()
         rest().plugin(),
         docs().plugin(),
     ])
-    .databaseConfig({
+    .db({
         type: process.env.DATABASE_TYPE || 'mysql',
         dbName: process.env.DATABASE_NAME || 'mikrotensei',
         debug: process.env.DEBUG === 'true' || false,
