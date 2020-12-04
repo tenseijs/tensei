@@ -38,7 +38,7 @@ declare module '@tensei/core' {
         callPluginHook(hook: SetupFunctions): Promise<this>
         dashboardPath(dashboardPath: string): this
         registerDatabase(): Promise<this>
-        databaseConfig(databaseConfig: DatabaseConfiguration): this
+        db(databaseConfig: DatabaseConfiguration): this
         apiPath(apiPath: string): this
         serverUrl(url: string): this
         clientUrl(url: string): this
@@ -99,7 +99,7 @@ declare module '@tensei/core' {
         sessionSecret(secret: string): this
         registerDatabase(): Promise<this>
         apiPath(apiPath: string): this
-        databaseConfig(databaseConfig: DatabaseConfiguration): this
+        db(databaseConfig: DatabaseConfiguration): this
         dashboards(dashboards: DashboardContract[]): this
         registerMiddleware(): void
         serverUrl(url: string): this

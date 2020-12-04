@@ -54,7 +54,8 @@ export const getDatabaseCredentials = () => {
     const databaseType = (process.env.DATABASE_TYPE || 'mysql') as any
 
     const config: DatabaseConfiguration = {
-        type: databaseType
+        type: databaseType,
+        forceUtcTimezone: true
     }
 
     if (databaseType === 'postgresql') {

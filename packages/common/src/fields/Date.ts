@@ -1,5 +1,4 @@
 import Field from './Field'
-import format from 'date-fns/format'
 
 export class DateField extends Field {
     /**
@@ -17,9 +16,9 @@ export class DateField extends Field {
      *
      * https://date-fns.org/v2.14.0/docs/format
      */
-    protected dateFormat: string = 'MM/dd/yyyy'
+    protected dateFormat: string = 'YYYY-MM-DD'
 
-    protected pickerFormat: string = 'MM/dd/yyyy'
+    protected pickerFormat: string = 'YYYY-MM-DD'
 
     /**
      *

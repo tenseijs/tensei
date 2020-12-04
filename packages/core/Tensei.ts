@@ -188,11 +188,11 @@ export class Tensei implements TenseiContract {
             return this
         }
 
-        this.setConfigOnResourceFields()
-
         this.forceMiddleware()
 
         await this.callPluginHook('register')
+
+        this.setConfigOnResourceFields()
 
         await this.registerDatabase()
 
@@ -338,41 +338,6 @@ export class Tensei implements TenseiContract {
         this.ctx.apiPath = apiPath
 
         return this
-    }
-
-    public getSessionPackage() {
-        if (['mongodb'].includes(this.ctx.databaseConfig.type)) {
-            return 'connect-mongo'
-        }
-
-        return 'connect-session-knex'
-    }
-
-    getSessionPackageConfig(Store: any) {
-        let storeArguments: any = {}
-
-        if (
-            ['mysql', 'pg', 'sqlite3', 'sqlite'].includes(
-                this.ctx.databaseConfig.type
-            )
-        ) {
-            storeArguments = {
-                knex: this.ctx.databaseClient
-            }
-        }
-
-        if (['mongodb'].includes(this.ctx.databaseConfig.type)) {
-            storeArguments = {
-                mongooseConnection: require('mongoose').connection
-            }
-        }
-
-        return {
-            secret: process.env.SESSION_SECRET || 'tensei-session-secret',
-            store: new Store(storeArguments),
-            resave: false,
-            saveUninitialized: false
-        }
     }
 
     public registerCoreRoutes() {}

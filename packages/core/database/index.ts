@@ -29,7 +29,7 @@ class Database {
             return [this.orm!, this.schemas]
         }
 
-        this.orm = await MikroORM.init(this.getMikroORMOptions())
+        this.orm = await MikroORM.init(this.getMikroORMOptions() as any)
 
         await new Migrator(this.orm!, this.schemas).init()
 
@@ -42,7 +42,7 @@ class Database {
         return {
             entities: [
                 ...this.generateEntitySchemas(),
-                ...(entities || []).map(_ => new EntitySchema(_))
+                ...(entities || []).map((_: any) => new EntitySchema(_))
             ],
             ...rest
         }

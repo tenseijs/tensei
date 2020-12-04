@@ -6,7 +6,7 @@ import {
     FieldProperty,
     SerializedField,
     FieldHookFunction,
-    AuthorizeFunction,
+    AuthorizeFunction
 } from '@tensei/common'
 
 export class Field implements FieldContract {

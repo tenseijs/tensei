@@ -8,6 +8,12 @@ export class DateTime extends DateField {
         this.property.columnTypes = ['datetime']
     }
 
+    public afterConfigSet() {
+        if (this.tenseiConfig?.databaseConfig.type === 'postgresql') {
+            this.property.columnTypes = ['timestamp without time zone']
+        }
+    }
+
     /**
      *
      * This is a short name for the frontend component that
