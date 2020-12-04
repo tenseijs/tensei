@@ -49,7 +49,10 @@ const StoreFactory = (Store: any) => {
                     this.options.tableName,
                     (table: any) => {
                         table.string('session_id').primary()
-                        table.datetime('expires').nullable().index()
+                        table
+                            .datetime('expires')
+                            .nullable()
+                            .index()
                         table.text('data').notNullable()
                     }
                 )

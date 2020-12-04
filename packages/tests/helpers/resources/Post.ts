@@ -72,7 +72,9 @@ export default resource('Post')
         textarea('Content')
             .rules('required', 'max:2000', 'min:12')
             .hideOnIndex(),
-        integer('Av. CPC').rules('required').hideOnDetail(),
+        integer('Av. CPC')
+            .rules('required')
+            .hideOnDetail(),
         select('Category')
             .options([
                 {
