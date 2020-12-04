@@ -2423,12 +2423,30 @@
     knex "0.21.12"
     sqlstring "2.3.2"
 
+<<<<<<< HEAD
 "@mikro-orm/mongodb@^4.3.0":
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-4.3.3.tgz#b757bd06f7ec83b3fbecad59cf45357828bb15c0"
   integrity sha512-mh9lQaCwgyloDzobnhGUAXsaLqXj2ElPCAyc9kklMh+oP4VtlW9cUk1t/ELCZvYPDgNMzCL9jA1ERK1wkWDxtA==
   dependencies:
     "@types/mongodb" "3.6.0"
+=======
+"@mikro-orm/knex@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/knex/-/knex-4.3.2.tgz#3807ce3239177577627e0b4912c1a8c7845c4007"
+  integrity sha512-2Xgu6mkfE1PFwIlcPajVA+f5qjgPctzcLDdf31UOIwkXslQ1RBAK2I0VWX0fmJweTqYlTqbOm5xa/Xv9FGr+5g==
+  dependencies:
+    fs-extra "9.0.1"
+    knex "0.21.12"
+    sqlstring "2.3.2"
+
+"@mikro-orm/mongodb@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-4.3.2.tgz#51b9447897daa49cae07f34013d5ca19254ab412"
+  integrity sha512-OV/vImmJtU52V7gNT+kbkkH4WqL6yxiHpli3nX/MnW8tqYSzE1PhNHEaSaWiHQO6YMBHb4lSlgTHLMlwNDDyeg==
+  dependencies:
+    "@types/mongodb" "3.5.34"
+>>>>>>> feat(mongo): begin implementing MongoDB support
     mongodb "3.6.3"
 
 "@mikro-orm/mysql-base@^4.3.3":
@@ -2438,12 +2456,27 @@
   dependencies:
     "@mikro-orm/knex" "^4.3.3"
 
+"@mikro-orm/mysql-base@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mysql-base/-/mysql-base-4.3.2.tgz#f1bddf3251544fdbb1cbac5218fe2ab5b06e574c"
+  integrity sha512-HybHO3Ey7RZ9CmYg6HZnaUQXK7LmUHmNzVMkyAhY2bxW5xiAG31txPU24RY1vb0TwtOwyEwe6/7Uz5yXWW8bWw==
+  dependencies:
+    "@mikro-orm/knex" "^4.3.2"
+
 "@mikro-orm/mysql@^4.3.0":
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/@mikro-orm/mysql/-/mysql-4.3.3.tgz#0871f65fe3f18ec3219432661a8b0a9ff5a8d188"
   integrity sha512-LL8vmGEZ8q2PpfC4V3E/XrHTsmSbsMPrv/TV1/W34E8y8tGC4RhVJp6mw3BSs+RVcMdzS8qEqhdbj/QW2jrbrQ==
   dependencies:
     "@mikro-orm/mysql-base" "^4.3.3"
+    mysql2 "2.2.5"
+
+"@mikro-orm/mysql@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mysql/-/mysql-4.3.2.tgz#87df235760a7bc17dd73ea2a2d6d75066743e633"
+  integrity sha512-4fMhNEmECv3LYRNsOH2GUoNp8cp7nnqfkzAXO/k+HjrxFkLbs75EBwnxgOsBG2CoERjidUWJHjK56jCraXBF1A==
+  dependencies:
+    "@mikro-orm/mysql-base" "^4.3.2"
     mysql2 "2.2.5"
 
 "@mikro-orm/postgresql@^4.3.0":
@@ -2454,12 +2487,37 @@
     "@mikro-orm/knex" "^4.3.3"
     pg "8.5.1"
 
+<<<<<<< HEAD
 "@mikro-orm/sqlite@^4.3.0", "@mikro-orm/sqlite@^4.3.2":
   version "4.3.3"
   resolved "https://registry.yarnpkg.com/@mikro-orm/sqlite/-/sqlite-4.3.3.tgz#25565eb5aa6ecefc8f6786d1eec98d71cb6f299f"
   integrity sha512-lQ5lEaLVNVLBIvDuCAhHPOe8dFt9Y/FnngKWsXhaTQTFN4RNaxhRr+xhcc/Tti9r6WQxlUQ9HlJB8LEMrc7CzA==
+=======
+"@mikro-orm/postgresql@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/postgresql/-/postgresql-4.3.2.tgz#c732999c4d4edfc2c782ccc8857b24259b02b408"
+  integrity sha512-W/Ch5gU8t7HwTJlwVsCGR2CziCcI3RzqQVMgvkDNzcqCjE7ThJ2WNf0kP/oBNYaWbtSgL9M7px2XpqKAqhDH2A==
+  dependencies:
+    "@mikro-orm/knex" "^4.3.2"
+    pg "8.5.1"
+
+"@mikro-orm/sqlite@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/sqlite/-/sqlite-4.3.0.tgz#5746f2a2020982f6a550f730c681fe4924542361"
+  integrity sha512-SAqj6tk5pPQxwBm9gAkiittMXBA+mNR2rXuVxvMArsyQ4m/SMLPZZq7erI3Q73tSwJ+zW2XzIslMaiVugl569A==
+>>>>>>> feat(mongo): begin implementing MongoDB support
   dependencies:
     "@mikro-orm/knex" "^4.3.3"
+    fs-extra "9.0.1"
+    sqlite3 "5.0.0"
+    sqlstring-sqlite "0.1.1"
+
+"@mikro-orm/sqlite@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/sqlite/-/sqlite-4.3.2.tgz#fd848b88b26a2c630a41f05539b366acc2168f1f"
+  integrity sha512-7hadCNMNaTfjW80MzMM/uP4a9MGmqN7Q1ggRRP+Wu1RMVobknHvCA8UpbLRM+0YBYSe3kIFgIkTYKDHPdBb3CQ==
+  dependencies:
+    "@mikro-orm/knex" "^4.3.2"
     fs-extra "9.0.1"
     sqlite3 "5.0.0"
     sqlstring-sqlite "0.1.1"
@@ -3338,10 +3396,17 @@
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-8.0.4.tgz#b840c2dce46bacf286e237bfb59a29e843399148"
   integrity sha512-M4BwiTJjHmLq6kjON7ZoI2JMlBvpY3BYSdiP6s/qCT3jb1s9/DeJF0JELpAxiVSIxXDzfNKe+r7yedMIoLbknQ==
 
+<<<<<<< HEAD
 "@types/mongodb@3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.6.0.tgz#7b8f7104a50b39d155f363d9572b0e51bcdaeae8"
   integrity sha512-5PGiTXS/tvvllyyD+LJt3bVyJixrY/ZIIJwsINnZorvJsN6gki4NH7Fhcep4MZF8HNCKNv2oWguysocS1jt9dw==
+=======
+"@types/mongodb@3.5.34":
+  version "3.5.34"
+  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.5.34.tgz#eaa04b9a85906129fb9aab2eb63079edcf802a98"
+  integrity sha512-73iy3+MiH+wxSM+hVA5jcW9ZTUaor2WKvM7hW+htOSgVb7E6/JBHOWaxj7rL1/vaxEBziKRr/VPecy3YAKqLuQ==
+>>>>>>> feat(mongo): begin implementing MongoDB support
   dependencies:
     "@types/bson" "*"
     "@types/node" "*"

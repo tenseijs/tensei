@@ -66,6 +66,8 @@ export const getDatabaseCredentials = () => {
         config.dbName = process.env.DATABASE_NAME || 'tensei'
         config.user = process.env.DATABASE_USER || 'root'
         config.password = process.env.DATABASE_PASSWORD || ''
+        // @ts-ignore
+        config.debug = true
     }
 
     return config

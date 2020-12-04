@@ -1593,7 +1593,7 @@ class Auth {
     }
 
     private getRolesAndPermissionsNames() {
-        return `${this.resources.role.data.snakeCaseNamePlural}.${this.resources.permission.data.snakeCaseName}`
+        return `${this.resources.role.data.snakeCaseNamePlural}.${this.resources.permission.data.snakeCaseNamePlural}`
     }
 
     private register = async (ctx: ApiContext) => {
@@ -1813,6 +1813,8 @@ class Auth {
         const { email, password, token } = await this.validate(
             body.object ? body.object : body
         )
+
+        console.log('@@@@', [this.getRolesAndPermissionsNames()])
 
         const user: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,

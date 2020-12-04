@@ -191,15 +191,39 @@ export const getResolvers = (
                                         {
                                             [resource.data
                                                 .snakeCaseNamePlural]: {
-                                                id: {
-                                                    $in: [item.id]
-                                                }
+                                                // id: {
+                                                // }
+                                                $in: [item.id.toString()]
                                             },
                                             ...parseWhereArgumentsToWhereQuery(
                                                 fieldNode[`${selection}__count`]
                                                     .args.where
                                             )
                                         }
+                                    )
+
+                                    console.log(
+                                        '**************',
+                                        field?.relatedProperty.type!,
+                                        `${field?.databaseField}__count`,
+                                        count,
+                                        JSON.stringify(
+                                            {
+                                                [resource.data
+                                                    .snakeCaseNamePlural]: {
+                                                    id: {
+                                                        $in: [item.id]
+                                                    }
+                                                },
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[
+                                                        `${selection}__count`
+                                                    ].args.where
+                                                )
+                                            },
+                                            null,
+                                            2
+                                        )
                                     )
 
                                     item[
@@ -342,6 +366,12 @@ export const getResolvers = (
                 .internal()
                 .resource(resource)
                 .handle(async (_, args, ctx, info) => {
+                    const l = await ctx.manager.find('Post', {}, {})
+
+                    await ctx.manager.populate(l, 'tags')
+                    console.log()
+
+                    return []
                     const data: any[] = await ctx.manager.find(
                         resource.data.pascalCaseName,
                         parseWhereArgumentsToWhereQuery(args.where),
