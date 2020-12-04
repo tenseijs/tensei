@@ -5,8 +5,6 @@ type ArrayTypes = 'string' | 'number' | 'decimal' | 'date'
 export class ArrayField extends Field {
     protected arrayOf: ArrayTypes = 'string'
 
-    public databaseFieldType = 'array'
-
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 

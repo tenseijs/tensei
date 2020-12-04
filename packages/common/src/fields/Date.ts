@@ -21,8 +21,6 @@ export class DateField extends Field {
 
     protected pickerFormat: string = 'MM/dd/yyyy'
 
-    public databaseFieldType: string = 'date'
-
     /**
      *
      * This is a short name for the frontend component that
@@ -48,15 +46,11 @@ export class DateField extends Field {
         return this
     }
 
-    /**
-     * When a new date string is initialized, it defaults the
-     * date to today's date.
-     */
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
         this.property.type = 'date'
-        this.property.columnTypes = ['datetime']
+        this.property.columnTypes = ['date']
     }
 
     /**

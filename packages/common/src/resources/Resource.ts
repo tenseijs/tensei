@@ -148,7 +148,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         groupSlug: 'resources',
         displayField: 'id',
         valueField: 'id',
-        noTimeStamps: false,
+        noTimestamps: false,
         camelCaseName: '',
         snakeCaseName: '',
         snakeCaseNamePlural: '',
@@ -321,8 +321,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public noTimeStamps() {
-        this.data.noTimeStamps = true
+    public noTimestamps() {
+        this.data.noTimestamps = true
         this.data.fields = this.data.fields.filter(
             field => !['Created At', 'Updated At'].includes(field.name)
         )

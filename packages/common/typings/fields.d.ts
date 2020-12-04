@@ -626,23 +626,12 @@ declare module '@tensei/common/fields' {
             authorizedToUpdate: AuthorizeFunction
             authorizedToDelete: AuthorizeFunction
         }
-        hooks: {
-            beforeCreate: FieldHookFunction
-            beforeUpdate: FieldHookFunction
-            afterCreate: FieldHookFunction
-            afterUpdate: FieldHookFunction
-        }
-        beforeCreate(hook: FieldHookFunction): this
-        beforeUpdate(hook: FieldHookFunction): this
-        afterCreate(hook: FieldHookFunction): this
-        afterUpdate(hook: FieldHookFunction): this
         /**
          *
          * The name of the field. Will be used to display table columns,
          * field labels etc
          */
         name: string
-        public databaseFieldType: string
         /**
          *
          * Define validation rules to be used to validate

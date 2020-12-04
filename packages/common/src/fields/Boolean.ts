@@ -2,8 +2,6 @@ import Field from './Field'
 import { BooleanFieldContract } from '@tensei/core'
 
 export class BooleanField extends Field implements BooleanFieldContract {
-    public databaseFieldType: string = 'boolean'
-
     public component = 'BooleanField'
 
     private booleanConfig = {

@@ -1,18 +1,13 @@
 import Pluralize from 'pluralize'
 import { snakeCase, camelCase, pascalCase } from 'change-case'
 import {
+    Config,
+    FieldContract,
+    FieldProperty,
+    SerializedField,
     FieldHookFunction,
     AuthorizeFunction,
-    FieldContract,
-    SerializedField,
-    Config,
-    ResourceContract,
-    FieldProperty
 } from '@tensei/common'
-
-interface Constructor<M> {
-    new (...args: any[]): M
-}
 
 export class Field implements FieldContract {
     public showHideField = {
