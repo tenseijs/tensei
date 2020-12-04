@@ -60,3 +60,5 @@ jobs:
         env:
           DATABASE_TYPE: sqlite
           DATABASE_NAME: tensei
+      - name: Run express-session-mikro-orm package tests
+        run: cd /home/runner/work/tensei/tensei/packages/express-session-mikro-orm && yarn test

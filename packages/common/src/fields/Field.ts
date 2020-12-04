@@ -108,44 +108,8 @@ export class Field implements FieldContract {
 
     public afterConfigSet() {}
 
-    public onUpdate(onUpdate: any) {
-        this.onFieldUpdate = onUpdate
-
-        return this
-    }
-
-    public beforeCreate(hook: FieldHookFunction) {
-        this.hooks = {
-            ...this.hooks,
-            beforeCreate: hook
-        }
-
-        return this
-    }
-
-    public beforeUpdate(hook: FieldHookFunction) {
-        this.hooks = {
-            ...this.hooks,
-            beforeUpdate: hook
-        }
-
-        return this
-    }
-
-    public afterCreate(hook: FieldHookFunction) {
-        this.hooks = {
-            ...this.hooks,
-            afterCreate: hook
-        }
-
-        return this
-    }
-
-    public afterUpdate(hook: FieldHookFunction) {
-        this.hooks = {
-            ...this.hooks,
-            afterUpdate: hook
-        }
+    public onUpdate<T extends FieldContract>(this: T, onCreate: () => any): T {
+        this.property.onUpdate = onCreate
 
         return this
     }
@@ -156,8 +120,6 @@ export class Field implements FieldContract {
      * field labels etc
      */
     public name: string
-
-    public databaseFieldType: string = ''
 
     /**
      *
@@ -497,7 +459,7 @@ export class Field implements FieldContract {
         return this
     }
 
-    public onCreate<T extends FieldContract>(this: T, onCreate: () => void): T {
+    public onCreate<T extends FieldContract>(this: T, onCreate: () => any): T {
         this.property.onCreate = onCreate
 
         return this
@@ -521,6 +483,12 @@ export class Field implements FieldContract {
      */
     public unsigned<T extends FieldContract>(this: T) {
         this.property.unsigned = true
+
+        return this
+    }
+
+    public shadow() {
+        this.property.persist = false
 
         return this
     }
@@ -753,7 +721,6 @@ export class Field implements FieldContract {
             camelCaseName: camelCase(this.name),
             pascalCaseName: this.pascalCaseName,
             updateRules: this.updateValidationRules,
-            databaseFieldType: this.databaseFieldType,
             creationRules: this.creationValidationRules,
             camelCaseNamePlural: this.camelCaseNamePlural,
             isRelationshipField: this.isRelationshipField,

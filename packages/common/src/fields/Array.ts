@@ -1,6 +1,6 @@
 import Field from './Field'
 
-type ArrayTypes = 'string' | 'number' | 'decimal' | 'date' | 'objectId'
+type ArrayTypes = 'string' | 'number' | 'decimal' | 'date'
 
 export class ArrayField extends Field {
     protected arrayOf: ArrayTypes = 'string'

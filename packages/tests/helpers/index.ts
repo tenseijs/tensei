@@ -23,6 +23,7 @@ export const fakeTag = () =>
         id?: string | number
         name: string
         description: string
+        priority: number
     })
 
 export const fakeUser = () => ({

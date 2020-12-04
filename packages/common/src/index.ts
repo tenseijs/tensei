@@ -15,6 +15,9 @@ export { boolean, BooleanField } from './fields/Boolean'
 export { timestamp, Timestamp } from './fields/Timestamp'
 export { bigInteger, BigInteger } from './fields/BigInteger'
 
+export { float, Float } from './fields/Float'
+export { double, Double } from './fields/Double'
+
 export { oneToOne, OneToOne, hasOne } from './fields/OneToOne'
 export { oneToMany, OneToMany, hasMany } from './fields/OneToMany'
 export { manyToOne, ManyToOne, belongsTo } from './fields/ManyToOne'

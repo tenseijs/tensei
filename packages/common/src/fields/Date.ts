@@ -23,8 +23,6 @@ export class DateField extends Field {
 
     public databaseFieldType: string = 'date'
 
-    protected shouldDefaultToNow: boolean = false
-
     /**
      *
      * This is a short name for the frontend component that
@@ -58,17 +56,16 @@ export class DateField extends Field {
         super(name, databaseField)
 
         this.property.type = 'date'
-
-        // this.default(format(new Date(), this.dateFormat))
+        this.property.columnTypes = ['datetime']
     }
 
     /**
      *
      * Set the date format to be used
-     * The date-fns library is used by
+     * The luxon library is used by
      * tensei
      *
-     * https://date-fns.org/v2.14.0/docs/format
+     * https://moment.github.io/luxon/docs/manual/formatting.html#table-of-tokens
      */
     public format(format: string) {
         this.dateFormat = format
@@ -77,7 +74,7 @@ export class DateField extends Field {
     }
 
     public defaultToNow() {
-        this.shouldDefaultToNow = true
+        this.property.defaultRaw = 'now'
 
         return this
     }
@@ -88,7 +85,6 @@ export class DateField extends Field {
 
             format: this.dateFormat,
             firstDayOfWeek: this.dayOfWeek,
-            defaultToNow: this.shouldDefaultToNow,
             pickerFormat: this.pickerFormat || this.dateFormat
         }
     }

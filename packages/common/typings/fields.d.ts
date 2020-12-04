@@ -111,7 +111,6 @@ declare module '@tensei/common/fields' {
         camelCaseName: string
         capsDatabasefieldName: string
         databaseField: string
-        databaseFieldType: string
         attributes: {
             [key: string]: string
         }
@@ -174,20 +173,11 @@ declare module '@tensei/common/fields' {
         }
         property: FieldProperty
         relatedProperty: FieldProperty
-        hooks: {
-            beforeCreate: FieldHookFunction
-            beforeUpdate: FieldHookFunction
-            afterCreate: FieldHookFunction
-            afterUpdate: FieldHookFunction
-        }
-        databaseFieldType: string
         afterConfigSet(): void
         isRelationshipField: boolean
-        onUpdate(hook: any): this
-        beforeCreate(hook: FieldHookFunction): this
-        beforeUpdate(hook: FieldHookFunction): this
-        afterCreate(hook: FieldHookFunction): this
-        afterUpdate(hook: FieldHookFunction): this
+        onUpdate(hook: () => any): this
+        onCreate(hook: () => any): this
+        shadow(): this
         /**
          *
          * The name of the field. Will be used to display table columns,
@@ -466,8 +456,6 @@ declare module '@tensei/common/fields' {
         databaseField?: string | undefined
     ) => NumberFieldContract
     interface IntegerContract extends NumberFieldContract {
-        isUnsigned: boolean
-        isForeign: boolean
         /**
          * Set the min value for this number field.
          * Will be the min on the number in
@@ -490,6 +478,18 @@ declare module '@tensei/common/fields' {
          */
         unsigned(): this
     }
+    interface FloatContract extends NumberFieldContract {}
+    const float: (
+        name: string,
+        databaseField?: string | undefined
+    ) => FloatContract
+
+    interface DoubleContract extends NumberFieldContract {}
+    const double: (
+        name: string,
+        databaseField?: string | undefined
+    ) => DoubleContract
+
     const integer: (
         name: string,
         databaseField?: string | undefined

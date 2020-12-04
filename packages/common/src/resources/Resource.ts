@@ -1,5 +1,7 @@
 import { id } from '../fields/ID'
 import { Action } from '../actions/Action'
+import { timestamp } from '../fields/Timestamp'
+
 import {
     Permission,
     ResourceData,
@@ -112,7 +114,22 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public data: ResourceDataWithFields = {
-        fields: [],
+        fields: [
+            id('ID'),
+            timestamp('Created At')
+                .defaultToNow()
+                .nullable()
+                .hideFromCreateApi()
+                .hideFromUpdateApi()
+                .hideOnCreate(),
+            timestamp('Updated At')
+                .defaultToNow()
+                .nullable()
+                .onUpdate(() => new Date())
+                .hideFromCreateApi()
+                .hideFromUpdateApi()
+                .hideOnCreate()
+        ],
         actions: [],
         table: '',
         name: '',
@@ -284,11 +301,16 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public fields(fields: FieldContract[]) {
-        if (this.data.fields.length) {
-            this.data.fields = [...this.data.fields, ...fields]
-        } else {
-            this.data.fields = [id('ID'), ...fields]
+        // Make sure there's only one primary key on the resource.
+        const customPrimaryField = fields.find(field => field.property.primary)
+
+        if (customPrimaryField) {
+            this.data.fields = this.data.fields.filter(
+                field => field.name === 'ID'
+            )
         }
+
+        this.data.fields = [...this.data.fields, ...fields]
 
         return this
     }
@@ -301,6 +323,9 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public noTimeStamps() {
         this.data.noTimeStamps = true
+        this.data.fields = this.data.fields.filter(
+            field => !['Created At', 'Updated At'].includes(field.name)
+        )
 
         return this
     }
