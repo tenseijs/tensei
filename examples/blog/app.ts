@@ -83,7 +83,7 @@ module.exports = tensei()
             })
         }),
     ])
-    .databaseConfig({
+    .db({
         type: (process.env.DATABASE_TYPE || 'mysql') as SupportedDatabases,
         dbName: process.env.DATABASE_NAME || 'mikrotensei',
         // @ts-ignore

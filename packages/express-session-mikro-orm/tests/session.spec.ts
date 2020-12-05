@@ -301,6 +301,8 @@ it('The SessionStore.touch() updates expires field when session is touched', don
                                     expect(error).to.be.null
                                     expect(value).to.be.null
 
+                                    orm.em.clear()
+
                                     orm.em
                                         .findOne('Session', {
                                             session_id: 3

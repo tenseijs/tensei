@@ -60,7 +60,7 @@ test('Can upload files using the graphql plugin', async () => {
 
     uploaded_files.forEach((file, index) => {
         expect(file.path).toEqual('/profiles/avatars/')
-        expect((files[index] as any).size).toEqual(file.size)
+        expect((files[index] as any).size.toString()).toEqual(file.size)
     })
 
     const meeting = orm.em.create('Meeting', {

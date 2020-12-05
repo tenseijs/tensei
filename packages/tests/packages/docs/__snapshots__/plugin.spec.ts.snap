@@ -12,7 +12,18 @@ Object {
   },
   "definitions": Object {
     "Comment": Object {
-      "properties": Object {},
+      "properties": Object {
+        "created_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "updated_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+      },
       "type": "object",
     },
     "CommentFetchResponse": Object {
@@ -76,7 +87,18 @@ Object {
       "type": "object",
     },
     "Post": Object {
-      "properties": Object {},
+      "properties": Object {
+        "created_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "updated_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+      },
       "type": "object",
     },
     "PostFetchResponse": Object {
@@ -175,7 +197,18 @@ Object {
       "type": "object",
     },
     "Reaction": Object {
-      "properties": Object {},
+      "properties": Object {
+        "created_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "updated_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+      },
       "type": "object",
     },
     "ReactionFetchResponse": Object {
@@ -207,7 +240,18 @@ Object {
       "type": "object",
     },
     "Tag": Object {
-      "properties": Object {},
+      "properties": Object {
+        "created_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "updated_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+      },
       "type": "object",
     },
     "TagFetchResponse": Object {
@@ -258,7 +302,18 @@ Object {
       "type": "object",
     },
     "User": Object {
-      "properties": Object {},
+      "properties": Object {
+        "created_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+        "updated_at": Object {
+          "description": "",
+          "format": "date",
+          "type": "string",
+        },
+      },
       "type": "object",
     },
     "UserFetchResponse": Object {

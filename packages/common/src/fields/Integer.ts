@@ -1,12 +1,6 @@
 import Number from './Number'
 
 export class Integer extends Number {
-    protected isUnsigned: boolean = false
-
-    public component: string = `${this.constructor.name}Field`
-
-    public isForeign: boolean = false
-
     /**
      * Set the min value for this number field.
      * Will be the min on the number in
@@ -35,26 +29,6 @@ export class Integer extends Number {
         }
 
         return this
-    }
-
-    public foreign() {
-        this.isForeign = true
-
-        return this
-    }
-
-    /**
-     *
-     * Add custom fields to the
-     * serialize method
-     */
-    public serialize() {
-        return {
-            ...super.serialize(),
-
-            isUnsigned: this.isUnsigned,
-            isForeign: this.isForeign
-        }
     }
 }
 

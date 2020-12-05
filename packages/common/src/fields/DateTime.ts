@@ -1,17 +1,17 @@
 import DateField from './Date'
 
 export class DateTime extends DateField {
-    /**
-     *
-     * This would match the knex method name
-     * on the create builder.
-     */
-    public databaseFieldType: string = 'datetime'
-
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
         this.property.type = 'date'
+        this.property.columnTypes = ['datetime']
+    }
+
+    public afterConfigSet() {
+        if (this.tenseiConfig?.databaseConfig.type === 'postgresql') {
+            this.property.columnTypes = ['timestamp without time zone']
+        }
     }
 
     /**

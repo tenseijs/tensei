@@ -1,19 +1,12 @@
 import Integer from './Integer'
 
 export class BigInteger extends Integer {
-    /**
-     *
-     * This would match the knex method name
-     * on the create builder.
-     */
-    public databaseFieldType: string = 'bigInteger'
+    constructor(name: string, databaseField?: string) {
+        super(name, databaseField)
 
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component: string = `${this.constructor.name}Field`
+        this.property.type = 'string'
+        this.property.columnTypes = ['bigint']
+    }
 }
 
 export const bigInteger = (name: string, databaseField?: string) =>

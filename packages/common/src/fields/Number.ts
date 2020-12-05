@@ -11,8 +11,8 @@ export class NumberField extends Text {
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
-        this.property.type = 'integer'
-        this.property.columnTypes = ['int4']
+        this.property.type = 'number'
+        this.property.columnTypes = ['int']
     }
 
     /**

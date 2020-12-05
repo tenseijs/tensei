@@ -5,14 +5,19 @@ declare module '@tensei/common/config' {
     import { EntityManager } from '@mikro-orm/core'
     import { IMiddleware } from 'graphql-middleware'
     import { sanitizer, validator } from 'indicative'
-    import { EventArgs, FlushEventArgs } from '@mikro-orm/core'
     import { ResourceContract } from '@tensei/common/resources'
     import { ExecutionParams } from 'subscriptions-transport-ws'
     import { DashboardContract } from '@tensei/common/dashboards'
-    import { MikroORM, ConnectionOptions } from '@mikro-orm/core'
     import { IResolvers, ITypedef, PubSub } from 'apollo-server-express'
     import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
     import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
+    import {
+        MikroORM,
+        ConnectionOptions,
+        EventArgs,
+        FlushEventArgs,
+        MikroORMOptions
+    } from '@mikro-orm/core'
     import {
         Storage,
         StorageManager,
@@ -250,9 +255,11 @@ declare module '@tensei/common/config' {
         type: InBuiltEndpoints
         handler: ExpressMiddleware
     }
-    type DatabaseConfiguration = ConnectionOptions & {
-        type: SupportedDatabases
-    }
+    type DatabaseConfiguration = Partial<
+        MikroORMOptions & {
+            type: SupportedDatabases
+        }
+    >
     type AdditionalEntities = {
         entities?: any[]
     }

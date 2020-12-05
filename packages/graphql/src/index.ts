@@ -19,8 +19,6 @@ import {
     ResourceContract,
     PluginSetupConfig,
     GraphQLPluginExtension,
-    Resolvers,
-    GraphQlMiddleware,
     GraphQlQueryContract
 } from '@tensei/common'
 import { ReferenceType } from '@mikro-orm/core'
@@ -50,6 +48,7 @@ class Graphql {
     private pubsub: PubSub | undefined
 
     schemaString: string = `
+    scalar Date
     scalar JSON
     scalar JSONObject
     `
@@ -69,11 +68,20 @@ class Graphql {
             FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
         }
 
-        if (['integer', 'bigInteger'].includes(field.property.type!)) {
+        if (
+            [
+                'integer',
+                'bigInteger',
+                'int',
+                'number',
+                'float',
+                'double'
+            ].includes(field.property.type!)
+        ) {
             FieldType = 'Int'
         }
 
-        if (field.databaseFieldType === 'boolean') {
+        if (field.property.type === 'boolean') {
             FieldType = 'Boolean'
         }
 
@@ -142,7 +150,7 @@ class Graphql {
         }
 
         if (field.property.type === 'Date') {
-            FieldType = 'String'
+            FieldType = 'Date'
         }
 
         if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
@@ -156,10 +164,7 @@ class Graphql {
             }
         }
 
-        if (
-            !field.serialize().isNullable ||
-            field.databaseFieldType === 'increments'
-        ) {
+        if (!field.serialize().isNullable || field.property.primary) {
             FieldType = `${FieldType}!`
         }
 

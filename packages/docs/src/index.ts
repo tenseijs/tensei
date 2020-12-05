@@ -218,7 +218,11 @@ class Docs {
 
                         resource.data.fields
                             .filter(
-                                f => !f.property.primary && !f.property.hidden
+                                f =>
+                                    !f.property.primary &&
+                                    !f.property.hidden &&
+                                    !f.showHideFieldFromApi.hideFromCreateApi &&
+                                    !f.showHideFieldFromApi.hideFromUpdateApi
                             )
                             .forEach(field => {
                                 inputProperties[

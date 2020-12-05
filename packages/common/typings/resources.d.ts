@@ -34,7 +34,7 @@ declare module '@tensei/common/resources' {
         description: string
         snakeCaseName: string
         snakeCaseNamePlural: string
-        noTimeStamps: boolean
+        noTimestamps: boolean
         pascalCaseName: string
         slugSingular: string
         slugPlural: string
@@ -117,7 +117,7 @@ declare module '@tensei/common/resources' {
         displayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this
-        noTimeStamps(): this
+        noTimestamps(): this
         perPageOptions(perPageOptions: number[]): this
         displayInNavigation(): this
         hideFromNavigation(): this
@@ -187,7 +187,7 @@ declare module '@tensei/common/resources' {
         displayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this
-        noTimeStamps(): this
+        noTimestamps(): this
         perPageOptions(perPageOptions: number[]): this
         displayInNavigation(): this
         hideFromNavigation(): this

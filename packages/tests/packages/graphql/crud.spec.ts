@@ -36,8 +36,9 @@ test('correctly generates insert_resource resolvers for all registered resources
     expect(response.body).toEqual({
         data: {
             insert_tag: {
+                ...tag,
                 id: expect.any(String),
-                ...tag
+                priority: tag.priority.toString()
             }
         }
     })
@@ -194,11 +195,13 @@ test('correctly generates insert_resources resolvers for all registered resource
             insert_tags: [
                 {
                     id: expect.any(String),
-                    ...tag
+                    ...tag,
+                    priority: tag.priority.toString()
                 },
                 {
                     id: expect.any(String),
-                    ...tag2
+                    ...tag2,
+                    priority: tag2.priority.toString()
                 }
             ]
         }

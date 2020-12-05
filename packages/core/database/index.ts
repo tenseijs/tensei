@@ -29,7 +29,7 @@ class Database {
             return [this.orm!, this.schemas]
         }
 
-        this.orm = await MikroORM.init(this.getMikroORMOptions())
+        this.orm = await MikroORM.init(this.getMikroORMOptions() as any)
 
         await new Migrator(this.orm!, this.schemas).init()
 
@@ -42,7 +42,7 @@ class Database {
         return {
             entities: [
                 ...this.generateEntitySchemas(),
-                ...(entities || []).map(_ => new EntitySchema(_))
+                ...(entities || []).map((_: any) => new EntitySchema(_))
             ],
             ...rest
         }
@@ -90,26 +90,6 @@ class Database {
                     }
                 }
             })
-
-            if (!resource.data.noTimeStamps) {
-                entityProperties.created_at = {
-                    reference: ReferenceType.SCALAR,
-                    defaultRaw: 'current_timestamp',
-                    name: 'created_at',
-                    type: 'Date',
-                    fieldNames: ['created_at'],
-                    columnTypes: ['timestamp']
-                }
-
-                entityProperties.updated_at = {
-                    reference: ReferenceType.SCALAR,
-                    defaultRaw: 'current_timestamp',
-                    name: 'updated_at',
-                    type: 'Date',
-                    fieldNames: ['updated_at'],
-                    columnTypes: ['timestamp']
-                }
-            }
 
             entityMeta.hooks.onInit = entityMeta.hooks.onInit = ['onInit']
 

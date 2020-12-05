@@ -23,6 +23,7 @@ export const fakeTag = () =>
         id?: string | number
         name: string
         description: string
+        priority: number
     })
 
 export const fakeUser = () => ({
@@ -53,7 +54,8 @@ export const getDatabaseCredentials = () => {
     const databaseType = (process.env.DATABASE_TYPE || 'mysql') as any
 
     const config: DatabaseConfiguration = {
-        type: databaseType
+        type: databaseType,
+        forceUtcTimezone: true
     }
 
     if (databaseType === 'postgresql') {
@@ -73,7 +75,7 @@ export const setup = async (plugins: PluginContract[] = [], reset = true) => {
     const instance = await tensei()
         .resources(resources)
         .plugins(plugins)
-        .databaseConfig(getDatabaseCredentials())
+        .db(getDatabaseCredentials())
         .boot()
 
     reset && (await cleanupDatabase(instance))

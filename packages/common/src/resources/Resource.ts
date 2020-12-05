@@ -1,5 +1,7 @@
 import { id } from '../fields/ID'
 import { Action } from '../actions/Action'
+import { timestamp } from '../fields/Timestamp'
+
 import {
     Permission,
     ResourceData,
@@ -112,7 +114,22 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public data: ResourceDataWithFields = {
-        fields: [],
+        fields: [
+            id('ID'),
+            timestamp('Created At')
+                .defaultToNow()
+                .nullable()
+                .hideFromCreateApi()
+                .hideFromUpdateApi()
+                .hideOnCreate(),
+            timestamp('Updated At')
+                .defaultToNow()
+                .nullable()
+                .onUpdate(() => new Date())
+                .hideFromCreateApi()
+                .hideFromUpdateApi()
+                .hideOnCreate()
+        ],
         actions: [],
         table: '',
         name: '',
@@ -131,7 +148,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         groupSlug: 'resources',
         displayField: 'id',
         valueField: 'id',
-        noTimeStamps: false,
+        noTimestamps: false,
         camelCaseName: '',
         snakeCaseName: '',
         snakeCaseNamePlural: '',
@@ -284,11 +301,16 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public fields(fields: FieldContract[]) {
-        if (this.data.fields.length) {
-            this.data.fields = [...this.data.fields, ...fields]
-        } else {
-            this.data.fields = [id('ID'), ...fields]
+        // Make sure there's only one primary key on the resource.
+        const customPrimaryField = fields.find(field => field.property.primary)
+
+        if (customPrimaryField) {
+            this.data.fields = this.data.fields.filter(
+                field => field.name === 'ID'
+            )
         }
+
+        this.data.fields = [...this.data.fields, ...fields]
 
         return this
     }
@@ -299,8 +321,11 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public noTimeStamps() {
-        this.data.noTimeStamps = true
+    public noTimestamps() {
+        this.data.noTimestamps = true
+        this.data.fields = this.data.fields.filter(
+            field => !['Created At', 'Updated At'].includes(field.name)
+        )
 
         return this
     }
