@@ -47,9 +47,7 @@ declare module '@tensei/common/plugins' {
         >(
             driverName: SupportedStorageDrivers,
             driverConfig: DriverConfig,
-            storageImplementation: StorageConstructor<
-                StorageDriverImplementation
-            >
+            storageImplementation: StorageConstructor<StorageDriverImplementation>
         ): void
         manager: EntityManager | null
         gql: (types: string | TemplateStringsArray) => DocumentNode

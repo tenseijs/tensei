@@ -59,9 +59,7 @@ class MediaLibrary {
 
                     if (fileFields.length) {
                         MediaResource.fields([
-                            belongsTo(resource.data.name)
-                                .nullable()
-                                .hidden()
+                            belongsTo(resource.data.name).nullable().hidden()
                         ])
                     }
                 })

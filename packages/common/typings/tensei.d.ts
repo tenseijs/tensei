@@ -73,9 +73,7 @@ declare module '@tensei/core' {
         >(
             driverName: SupportedStorageDrivers,
             driverConfig: DriverConfig,
-            storageImplementation: StorageConstructor<
-                StorageDriverImplementation
-            >
+            storageImplementation: StorageConstructor<StorageDriverImplementation>
         ): this
         defaultStorageDriver(driverName: string): this
     }
@@ -133,9 +131,7 @@ declare module '@tensei/core' {
         >(
             driverName: SupportedStorageDrivers,
             driverConfig: DriverConfig,
-            storageImplementation: StorageConstructor<
-                StorageDriverImplementation
-            >
+            storageImplementation: StorageConstructor<StorageDriverImplementation>
         ): this
         defaultStorageDriver(driverName: string): this
     }

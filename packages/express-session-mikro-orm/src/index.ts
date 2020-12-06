@@ -1,11 +1,13 @@
 import { MikroORM } from '@mikro-orm/core'
+import { SessionConfig } from './types'
 
-const StoreFactory = (Store: any) => {
+const StoreFactory = (Store: any, sessionConfig?: SessionConfig) => {
     const Parent = Store.Store ? Store.Store : Store
 
     return class SessionStore extends Parent {
         orm: MikroORM
         options: any
+        entityName: string = 'Session'
 
         constructor(options: any = {}) {
             super(options)
@@ -32,6 +34,10 @@ const StoreFactory = (Store: any) => {
             this.orm = options.orm
             this.syncDatabase()
             this.startExpiringSessions()
+
+            if (sessionConfig && sessionConfig.entityName) {
+                this.entityName = sessionConfig.entityName
+            }
         }
 
         syncDatabase = async () => {
@@ -49,10 +55,7 @@ const StoreFactory = (Store: any) => {
                     this.options.tableName,
                     (table: any) => {
                         table.string('session_id').primary()
-                        table
-                            .datetime('expires')
-                            .nullable()
-                            .index()
+                        table.datetime('expires').nullable().index()
                         table.text('data').notNullable()
                     }
                 )
@@ -61,7 +64,7 @@ const StoreFactory = (Store: any) => {
 
         get = (sid: string | number, callback: any) => {
             return this.orm.em
-                .findOne('Session', {
+                .findOne(this.entityName, {
                     session_id: sid
                 })
                 .then((value: any) => (value ? JSON.parse(value.data) : null))
@@ -70,7 +73,7 @@ const StoreFactory = (Store: any) => {
         }
         getAll = (callback: any) => {
             return this.orm.em
-                .find('Session', {})
+                .find(this.entityName, {})
                 .then(sessions =>
                     sessions.map((session: any) => session.toJSON())
                 )
@@ -90,7 +93,7 @@ const StoreFactory = (Store: any) => {
             }
 
             return this.orm.em
-                .findOne('Session', {
+                .findOne(this.entityName, {
                     session_id: sid
                 })
                 .then((session: any) => {
@@ -105,7 +108,7 @@ const StoreFactory = (Store: any) => {
                             .then(() => session)
                     }
 
-                    const newSession = this.orm.em.create('Session', {
+                    const newSession = this.orm.em.create(this.entityName, {
                         session_id: sid,
                         data: JSON.stringify(payload),
                         expires
@@ -120,7 +123,7 @@ const StoreFactory = (Store: any) => {
         }
         destroy = (sid: string | number, callback: any) => {
             return this.orm.em
-                .findOne('Session', {
+                .findOne(this.entityName, {
                     session_id: sid
                 })
                 .then(session => {
@@ -142,8 +145,9 @@ const StoreFactory = (Store: any) => {
                 expires = data.cookie.expires
             }
 
-            return this.orm.em.nativeUpdate(
-                    'Session',
+            return this.orm.em
+                .nativeUpdate(
+                    this.entityName,
                     {
                         session_id: sid
                     },
@@ -161,7 +165,7 @@ const StoreFactory = (Store: any) => {
             )
         }
         clearExpiredSessions = () => {
-            return this.orm.em.nativeDelete('Session', {
+            return this.orm.em.nativeDelete(this.entityName, {
                 expires: {
                     $lt: new Date()
                 }

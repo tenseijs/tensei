@@ -14,6 +14,7 @@ export class Route implements RouteContract {
     } = {
         path: '',
         name: '',
+        cms: false,
         type: 'GET',
         internal: false,
         middleware: [],
@@ -36,6 +37,12 @@ export class Route implements RouteContract {
 
     path(path: string) {
         this.config.path = path
+
+        return this
+    }
+
+    cms() {
+        this.config.cms = true
 
         return this
     }

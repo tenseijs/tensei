@@ -107,9 +107,7 @@ export const cleanupDatabase = async (instance: TenseiContract) => {
 }
 
 export const cleanupMongodbDatabase = async (instance: TenseiContract) => {
-    await ((instance.ctx.orm.em.getDriver() as unknown) as EntityManager<
-        MongoDriver
-    >)
+    await ((instance.ctx.orm.em.getDriver() as unknown) as EntityManager<MongoDriver>)
         .getConnection()
         .getDb()
         .dropDatabase()

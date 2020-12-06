@@ -41,6 +41,7 @@ declare module '@tensei/common/config' {
         }
         path(path: string): this
         get(): this
+        cms(): this
         post(): this
         put(): this
         patch(): this
@@ -93,6 +94,7 @@ declare module '@tensei/common/config' {
     interface RouteConfig {
         path: string
         name: string
+        cms: boolean
         internal: boolean
         type: EndpointTypes
         snakeCaseName: string
