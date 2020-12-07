@@ -16,10 +16,17 @@ declare global {
                 [key: string]: ResourceContract
             }
             mailer: Mail
-            admin?: User
-            appConfig: Config
+            currentCtx: () => Config
             scripts: Asset[]
             styles: Asset[]
+        }
+    }
+}
+
+declare module 'express-session' {
+    interface SessionData {
+        admin_user: {
+            id: number
         }
     }
 }

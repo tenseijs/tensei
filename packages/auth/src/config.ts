@@ -45,6 +45,7 @@ export interface AuthPluginConfig {
     fields: FieldContract[]
     profilePictures: boolean
     userResource: string
+    cms: boolean
     roleResource: string
     disableCookies: boolean
     permissionResource: string

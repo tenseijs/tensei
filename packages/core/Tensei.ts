@@ -1,5 +1,6 @@
 import Path from 'path'
 import { Signale } from 'signale'
+import { auth } from '@tensei/auth'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
@@ -32,6 +33,8 @@ import {
     GraphQlQueryContract,
     PluginSetupConfig
 } from '@tensei/core'
+
+import ClientController from './controllers/client.controller'
 
 export class Tensei implements TenseiContract {
     public app: Application = Express()
@@ -73,7 +76,7 @@ export class Tensei implements TenseiContract {
         resourcesMap: {},
         dashboardsMap: {},
         adminTable: 'administrators',
-        dashboardPath: 'admin',
+        dashboardPath: 'tensei',
         apiPath: 'api',
         middleware: [],
         orm: null,
@@ -84,13 +87,13 @@ export class Tensei implements TenseiContract {
         scripts: [
             {
                 name: 'tensei.js',
-                path: Path.resolve(__dirname, 'client', 'index.js')
+                path: Path.resolve(__dirname, 'public', 'app.js')
             }
         ],
         styles: [
             {
                 name: 'tensei.css',
-                path: Path.resolve(__dirname, 'client', 'index.css')
+                path: Path.resolve(__dirname, 'public', 'app.css')
             }
         ],
         logger: new Signale(),
@@ -198,6 +201,7 @@ export class Tensei implements TenseiContract {
 
         this.registerAssetsRoutes()
         this.registerMiddleware()
+        this.registerCoreRoutes()
 
         await this.callPluginHook('boot')
 
@@ -237,8 +241,9 @@ export class Tensei implements TenseiContract {
 
         this.server.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${this.ctx.serverUrl ||
-                    `http://127.0.0.1:${port}`}`
+                `🚀 Access your server on ${
+                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
+                }`
             )
         })
     }
@@ -340,7 +345,13 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public registerCoreRoutes() {}
+    public registerCoreRoutes() {
+        // The cms dashboard
+        this.app.get(
+            `/${this.ctx.dashboardPath}(/*)?`,
+            this.asyncHandler(ClientController.index)
+        )
+    }
 
     public registerMiddleware() {
         this.app.use(BodyParser.json())
@@ -369,6 +380,7 @@ export class Tensei implements TenseiContract {
                 request.dashboards = this.ctx.dashboardsMap
                 request.resources = this.ctx.resourcesMap
                 request.manager = this.ctx.orm!.em.fork()
+                request.currentCtx = () => this.ctx
                 request.mailer = this.ctx.mailer
                 request.config = this.ctx
 
@@ -521,15 +533,27 @@ export class Tensei implements TenseiContract {
     }
 
     public plugins(plugins: PluginContract[]) {
-        this.ctx.plugins = plugins
+        if (this.ctx.plugins.length) {
+            this.ctx.plugins = [...this.ctx.plugins, ...plugins]
+        } else {
+            this.ctx.plugins = [
+                ...plugins,
+                auth()
+                    .cms()
+                    .user('Admin User')
+                    .role('Admin Role')
+                    .permission('Admin Permission')
+                    .apiPath('admin/auth')
+                    .rolesAndPermissions()
+                    .plugin()
+            ]
+        }
 
         return this
     }
 
     private mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
+        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
 
         return this
     }

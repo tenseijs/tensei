@@ -12,7 +12,6 @@ const {
     belongsTo,
     belongsToMany,
 } = require('@tensei/core')
-const { trix } = require('@tensei/trix')
 
 module.exports = resource('Post')
     .displayInNavigation()
@@ -31,7 +30,7 @@ module.exports = resource('Post')
                 textarea('Reason for publishing')
                     .default('A short description of why you published.')
                     .rules('required', 'max:50'),
-                trix('Post content').rules('required', 'min:12'),
+                // trix('Post content').rules('required', 'min:12'),
             ])
             .showOnTableRow(),
         action('Archive')
@@ -64,7 +63,7 @@ module.exports = resource('Post')
             .hideOnIndex(),
         text('Slug').rules('required', 'slug').unique(),
         text('Description').rules('required').hideOnIndex(),
-        trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
+        // trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
         integer('Av. CPC').rules('required').hideOnDetail(),
         select('Category')
             .options([

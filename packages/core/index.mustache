@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Dashboard | Tensei CMS</title>
+    <title>Dashboard | Tensei</title>
     {{#styles}}
         <link media="all" href="/{{name}}" rel="stylesheet" />
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     {{/styles}}
 </head>
-<body class='antialiased font-sans'>
+<body class='antialiased font-sans text-gray-700'>
     <div id="app"></div>
+    <div id='modal-root'></div>
+    <div id='dropdown-root'></div>
 
     <script>
-        window.tenseiDefaultState = {
+        window.___tensei___ = {
+            ctx: '{{{ctx}}}',
             user: '{{{user}}}',
             resources: '{{{resources}}}',
-            appConfig: '{{{appConfig}}}',
             dashboards: '{{{dashboards}}}',
             shouldShowRegistrationScreen: '{{{shouldShowRegistrationScreen}}}'
         }

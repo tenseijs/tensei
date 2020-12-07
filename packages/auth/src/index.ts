@@ -56,6 +56,7 @@ class Auth {
     private config: AuthPluginConfig & {
         setupFn: AuthSetupFn
     } = {
+        cms: false,
         profilePictures: false,
         userResource: 'User',
         roleResource: 'Role',
@@ -96,6 +97,17 @@ class Auth {
         this.resources.permission = this.permissionResource()
         this.resources.teamInvite = this.teamInviteResource()
         this.resources.passwordReset = this.passwordResetResource()
+
+        if (this.config.cms) {
+            this.resources.user.hideFromApi()
+            this.resources.team.hideFromApi()
+            this.resources.role.hideFromApi()
+            this.resources.token.hideFromApi()
+            this.resources.permission.hideFromApi()
+            this.resources.teamInvite.hideFromApi()
+            this.resources.oauthIdentity.hideFromApi()
+            this.resources.passwordReset.hideFromApi()
+        }
 
         this.config.setupFn(this.resources)
     }
@@ -366,7 +378,7 @@ class Auth {
                     .hideOnUpdate()
                     .rules('required'),
                 belongsToMany(this.config.userResource),
-                belongsToMany(this.config.permissionResource)
+                belongsToMany(this.config.permissionResource).owner()
             ])
             .displayField('name')
             .group('Users & Permissions')
@@ -402,6 +414,7 @@ class Auth {
             .register(
                 ({
                     gql,
+                    currentCtx,
                     extendRoutes,
                     databaseConfig,
                     extendResources,
@@ -441,7 +454,13 @@ class Auth {
                     ) {
                         databaseConfig.entities = [
                             ...(databaseConfig.entities || []),
-                            require('express-session-mikro-orm').generateSessionEntity()
+                            require('express-session-mikro-orm').generateSessionEntity(
+                                {
+                                    entityName: `${this.resources.user.data.pascalCaseName}Session`,
+                                    tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
+                                    collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+                                }
+                            )
                         ]
                     }
 
@@ -449,87 +468,89 @@ class Auth {
                     extendGraphQlQueries(this.extendGraphQlQueries())
                     extendRoutes(this.extendRoutes())
 
-                    extendGraphQlMiddleware([
-                        graphQlQueries => {
-                            const resolverAuthorizers: Resolvers = {
-                                Query: {},
-                                Mutation: {}
-                            }
-
-                            const getAuthorizer = (
-                                query: GraphQlQueryContract
-                            ): GraphQlMiddleware => {
-                                return async (
-                                    resolve,
-                                    parent,
-                                    args,
-                                    context,
-                                    info
-                                ) => {
-                                    await this.getAuthUserFromContext(context)
-                                    await this.setAuthUserForPublicRoutes(
-                                        context
-                                    )
-                                    await this.ensureAuthUserIsNotBlocked(
-                                        context
-                                    )
-                                    await this.authorizeResolver(context, query)
-
-                                    const result = await resolve(
+                    if (! this.config.cms) {
+                        extendGraphQlMiddleware([
+                            graphQlQueries => {
+                                const resolverAuthorizers: Resolvers = {
+                                    Query: {},
+                                    Mutation: {}
+                                }
+    
+                                const getAuthorizer = (
+                                    query: GraphQlQueryContract
+                                ): GraphQlMiddleware => {
+                                    return async (
+                                        resolve,
                                         parent,
                                         args,
                                         context,
                                         info
-                                    )
-
-                                    return result
+                                    ) => {
+                                        await this.getAuthUserFromContext(context)
+                                        await this.setAuthUserForPublicRoutes(
+                                            context
+                                        )
+                                        await this.ensureAuthUserIsNotBlocked(
+                                            context
+                                        )
+                                        await this.authorizeResolver(context, query)
+    
+                                        const result = await resolve(
+                                            parent,
+                                            args,
+                                            context,
+                                            info
+                                        )
+    
+                                        return result
+                                    }
                                 }
+    
+                                graphQlQueries.forEach(query => {
+                                    if (query.config.type === 'QUERY') {
+                                        ;(resolverAuthorizers.Query as any)[
+                                            query.config.path
+                                        ] = getAuthorizer(query)
+                                    }
+    
+                                    if (query.config.type === 'MUTATION') {
+                                        ;(resolverAuthorizers.Mutation as any)[
+                                            query.config.path
+                                        ] = getAuthorizer(query)
+                                    }
+    
+                                    if (query.config.type === 'SUBSCRIPTION') {
+                                        query.middleware([
+                                            async (parent, args, ctx, info) => {
+                                                const authorizationToken =
+                                                    ctx.connection?.context
+                                                        ?.Authorization
+    
+                                                if (!authorizationToken) {
+                                                    return
+                                                }
+    
+                                                await this.populateContextFromToken(
+                                                    authorizationToken.split(
+                                                        ' '
+                                                    )[1],
+                                                    ctx
+                                                )
+                                            },
+                                            async (parent, args, ctx, info) =>
+                                                this.setAuthUserForPublicRoutes(
+                                                    ctx
+                                                ),
+                                            async (parent, args, ctx, info) =>
+                                                this.ensureAuthUserIsNotBlocked(ctx)
+                                        ])
+                                    }
+                                })
+    
+                                return resolverAuthorizers
                             }
-
-                            graphQlQueries.forEach(query => {
-                                if (query.config.type === 'QUERY') {
-                                    ;(resolverAuthorizers.Query as any)[
-                                        query.config.path
-                                    ] = getAuthorizer(query)
-                                }
-
-                                if (query.config.type === 'MUTATION') {
-                                    ;(resolverAuthorizers.Mutation as any)[
-                                        query.config.path
-                                    ] = getAuthorizer(query)
-                                }
-
-                                if (query.config.type === 'SUBSCRIPTION') {
-                                    query.middleware([
-                                        async (parent, args, ctx, info) => {
-                                            const authorizationToken =
-                                                ctx.connection?.context
-                                                    ?.Authorization
-
-                                            if (!authorizationToken) {
-                                                return
-                                            }
-
-                                            await this.populateContextFromToken(
-                                                authorizationToken.split(
-                                                    ' '
-                                                )[1],
-                                                ctx
-                                            )
-                                        },
-                                        async (parent, args, ctx, info) =>
-                                            this.setAuthUserForPublicRoutes(
-                                                ctx
-                                            ),
-                                        async (parent, args, ctx, info) =>
-                                            this.ensureAuthUserIsNotBlocked(ctx)
-                                    ])
-                                }
-                            })
-
-                            return resolverAuthorizers
-                        }
-                    ])
+                        ])
+                    }
                 }
             )
 
@@ -550,7 +571,11 @@ class Auth {
                     apiPath
                 } = config
 
-                const Store = ExpressSessionMikroORMStore(ExpressSession)
+                const Store = ExpressSessionMikroORMStore(ExpressSession, {
+                    entityName: `${this.resources.user.data.pascalCaseName}Session`,
+                    tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
+                    collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+                })
 
                 app.use(
                     ExpressSession({
@@ -1164,6 +1189,12 @@ class Auth {
     private extendGraphQlQueries() {
         const name = this.resources.user.data.snakeCaseName
 
+        if (this.config.cms) {
+            // THE CMS DASHBOARD DOES NOT CONSUME GRAPHQL
+
+            return []
+        }
+
         return [
             graphQlQuery(`Login ${name}`)
                 .path(`login_${name}`)
@@ -1193,12 +1224,12 @@ class Auth {
                 .path(`register_${name}`)
                 .mutation()
                 .handle(async (_, args, ctx, info) => this.register(ctx)),
-            graphQlQuery(`Request password reset`)
-                .path('request_password_reset')
+            graphQlQuery(`Request ${name} password reset`)
+                .path(`request_${name}_password_reset`)
                 .mutation()
                 .handle(async (_, args, ctx, info) => this.forgotPassword(ctx)),
-            graphQlQuery(`Reset password`)
-                .path('reset_password')
+            graphQlQuery(`Reset ${name} password`)
+                .path(`reset_${name}_password`)
                 .mutation()
                 .handle(async (_, args, ctx, info) => this.resetPassword(ctx)),
             graphQlQuery(
@@ -1211,14 +1242,14 @@ class Auth {
             ...(this.config.twoFactorAuth
                 ? [
                       graphQlQuery(`Enable Two Factor Auth`)
-                          .path('enable_two_factor_auth')
+                          .path(`enable_${name}_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.enableTwoFactorAuth(ctx)
                           )
                           .authorize(({ user }) => user && !user.public),
                       graphQlQuery('Confirm Enable Two Factor Auth')
-                          .path('confirm_enable_two_factor_auth')
+                          .path(`confirm_${name}_enable_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.confirmEnableTwoFactorAuth(ctx)
@@ -1226,7 +1257,7 @@ class Auth {
                           .authorize(({ user }) => user && !user.public),
 
                       graphQlQuery(`Disable Two Factor Auth`)
-                          .path('disable_two_factor_auth')
+                          .path(`disable_${name}_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.disableTwoFactorAuth(ctx)
@@ -1236,15 +1267,15 @@ class Auth {
                 : []),
             ...(this.config.verifyEmails
                 ? [
-                      graphQlQuery('Confirm Email')
-                          .path('confirm_email')
+                      graphQlQuery(`Confirm ${name} Email`)
+                          .path(`confirm_${name}_email`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.confirmEmail(ctx)
                           )
                           .authorize(({ user }) => user && !user.public),
-                      graphQlQuery('Resend Verification Email')
-                          .path('resend_verification_email')
+                      graphQlQuery(`Resend ${name} Verification Email`)
+                          .path(`resend_${name}_verification_email`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.resendVerificationEmail(ctx)
@@ -1254,13 +1285,13 @@ class Auth {
             ...(this.socialAuthEnabled()
                 ? [
                       graphQlQuery('Social auth login')
-                          .path('social_auth_login')
+                          .path(`${name}_social_auth_login`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.socialAuth(ctx, 'login')
                           ),
                       graphQlQuery('Social auth register')
-                          .path('social_auth_register')
+                          .path(`${name}_social_auth_register`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.socialAuth(ctx, 'register')
@@ -1270,7 +1301,7 @@ class Auth {
             ...(this.config.disableCookies
                 ? [
                       graphQlQuery('Refresh token')
-                          .path('refresh_token')
+                          .path(`refresh_${name}_token`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.handleRefreshTokens(ctx)
@@ -1392,6 +1423,10 @@ class Auth {
     private extendGraphQLTypeDefs(gql: any) {
         const snakeCaseName = this.resources.user.data.snakeCaseName
 
+        if (this.config.cms) {
+            return ``
+        }
+
         return gql`
         type register_${snakeCaseName}_response {
             ${
@@ -1424,11 +1459,11 @@ class Auth {
             password: String!
         }
 
-        input request_password_reset_input {
+        input request_${snakeCaseName}_password_reset_input {
             email: String!
         }
 
-        input reset_password_input {
+        input reset_${snakeCaseName}_password_input {
             email: String!
             """ The reset password token sent to ${snakeCaseName}'s email """
             token: String!
@@ -1438,17 +1473,17 @@ class Auth {
         ${
             this.config.twoFactorAuth
                 ? `
-        type enable_two_factor_auth_response {
+        type enable_${snakeCaseName}_two_factor_auth_response {
             """ The data url for the qr code. Display this in an <img /> tag to be scanned on the authenticator app """
             dataURL: String!
         }
 
-        input confirm_enable_two_factor_auth_input {
+        input confirm_enable_${snakeCaseName}_two_factor_auth_input {
             """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
             token: Int!
         }
 
-        input disable_two_factor_auth_input {
+        input disable_${snakeCaseName}_two_factor_auth_input {
             """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
             token: Int!
         }
@@ -1459,7 +1494,7 @@ class Auth {
         ${
             this.config.verifyEmails
                 ? `
-        input confirm_email_input {
+        input confirm_${snakeCaseName}_email_input {
             """ The email verification token sent to the ${snakeCaseName}'s email """
             email_verification_token: String!
         }
@@ -1470,12 +1505,12 @@ class Auth {
         ${
             this.socialAuthEnabled()
                 ? `
-        input social_auth_register_input {
+        input ${snakeCaseName}_social_auth_register_input {
             """ The temporal access token received in query parameter when user is redirected """
             access_token: String!
         }
 
-        input social_auth_login_input {
+        input ${snakeCaseName}_social_auth_login_input {
             """ The temporal access token received in query parameter when user is redirected """
             access_token: String!
         }
@@ -1490,7 +1525,7 @@ class Auth {
         ${
             this.config.disableCookies
                 ? `
-        input refresh_token_input {
+        input refresh_${snakeCaseName}_token_input {
             refresh_token: String
         }
         `
@@ -1507,37 +1542,37 @@ class Auth {
                     : ``
             }
             register_${snakeCaseName}(object: create_${snakeCaseName}_input!): register_${snakeCaseName}_response!
-            request_password_reset(object: request_password_reset_input!): Boolean!
-            reset_password(object: reset_password_input!): Boolean!
+            request_${snakeCaseName}_password_reset(object: request_${snakeCaseName}_password_reset_input!): Boolean!
+            reset_${snakeCaseName}_password(object: reset_${snakeCaseName}_password_input!): Boolean!
             ${
                 this.config.twoFactorAuth
                     ? `
-            enable_two_factor_auth: enable_two_factor_auth_response!
-            disable_two_factor_auth(object: disable_two_factor_auth_input!): ${snakeCaseName}!
-            confirm_enable_two_factor_auth(object: confirm_enable_two_factor_auth_input!): ${snakeCaseName}!
+            enable_${snakeCaseName}_two_factor_auth: enable_${snakeCaseName}_two_factor_auth_response!
+            disable_${snakeCaseName}_two_factor_auth(object: disable_${snakeCaseName}_two_factor_auth_input!): ${snakeCaseName}!
+            confirm_${snakeCaseName}_enable_two_factor_auth(object: confirm_enable_${snakeCaseName}_two_factor_auth_input!): ${snakeCaseName}!
             `
                     : ''
             }
             ${
                 this.config.verifyEmails
                     ? `
-            confirm_email(object: confirm_email_input!): ${snakeCaseName}!
-            resend_verification_email: Boolean
+            confirm_${snakeCaseName}_email(object: confirm_${snakeCaseName}_email_input!): ${snakeCaseName}!
+            resend_${snakeCaseName}_verification_email: Boolean
             `
                     : ''
             }
             ${
                 this.socialAuthEnabled()
                     ? `
-            social_auth_register(object: social_auth_register_input!): register_${snakeCaseName}_response!
-            social_auth_login(object: social_auth_login_input!): login_${snakeCaseName}_response!
+            ${snakeCaseName}_social_auth_register(object: ${snakeCaseName}_social_auth_register_input!): register_${snakeCaseName}_response!
+            ${snakeCaseName}_social_auth_login(object: ${snakeCaseName}_social_auth_login_input!): login_${snakeCaseName}_response!
             `
                     : ''
             }
             ${
                 this.config.disableCookies
                     ? `
-            refresh_token(object: refresh_token_input): login_${snakeCaseName}_response!
+            refresh_${snakeCaseName}_token(object: refresh_${snakeCaseName}_token_input): login_${snakeCaseName}_response!
             `
                     : ''
             }
@@ -1858,6 +1893,8 @@ class Auth {
         if (!this.config.rolesAndPermissions) {
             return
         }
+
+        console.log('___________________@')
 
         const publicRole: any = await manager.findOne(
             this.resources.role.data.pascalCaseName,
@@ -2299,6 +2336,12 @@ class Auth {
                     ? config.scope
                     : defaultProviderScopes(provider)
         }
+
+        return this
+    }
+
+    public cms() {
+        this.config.cms = true
 
         return this
     }

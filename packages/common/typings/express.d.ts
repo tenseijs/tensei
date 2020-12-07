@@ -22,7 +22,7 @@ declare global {
             }
             mailer: Mail
             config: Config
-            admin?: User
+            admin_user: User
             orm: MikroORM
             manager: EntityManager
             scripts: Asset[]

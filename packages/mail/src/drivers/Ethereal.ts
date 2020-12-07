@@ -75,7 +75,7 @@ class EtherealDriver implements DriverInterface {
                     return
                 }
                 this.setTransporter(account.user, account.pass)
-                resolve()
+                resolve(null)
             })
         })
     }
