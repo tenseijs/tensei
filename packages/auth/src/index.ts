@@ -58,6 +58,7 @@ class Auth {
     } = {
         cms: false,
         profilePictures: false,
+        disableAutoLoginAfterRegistration: false,
         userResource: 'User',
         roleResource: 'Role',
         disableCookies: false,
@@ -627,82 +628,84 @@ class Auth {
                     )
                 }
 
-                graphQlQueries.forEach(query => {
-                    if (query.config.resource) {
-                        const { path, internal } = query.config
-                        const {
-                            snakeCaseNamePlural: plural,
-                            snakeCaseName: singular,
-                            slug
-                        } = query.config.resource.data
-
-                        if (!internal) {
-                            return
-                        }
-
-                        if (
-                            [`insert_${plural}`, `insert_${singular}`].includes(
-                                path
-                            )
-                        ) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `insert:${slug}`
-                                    )
-                            )
-                        }
-
-                        if (
-                            [`delete_${plural}`, `delete_${singular}`].includes(
-                                path
-                            )
-                        ) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `delete:${slug}`
-                                    )
-                            )
-                        }
-
-                        if (
-                            [`update_${plural}`, `update_${singular}`].includes(
-                                path
-                            )
-                        ) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `update:${slug}`
-                                    )
-                            )
-                        }
-
-                        if (path === plural) {
-                            return query.authorize(
-                                ({ user }) =>
+                if (! this.config.cms) {
+                    graphQlQueries.forEach(query => {
+                        if (query.config.resource) {
+                            const { path, internal } = query.config
+                            const {
+                                snakeCaseNamePlural: plural,
+                                snakeCaseName: singular,
+                                slug
+                            } = query.config.resource.data
+    
+                            if (!internal) {
+                                return
+                            }
+    
+                            if (
+                                [`insert_${plural}`, `insert_${singular}`].includes(
+                                    path
+                                )
+                            ) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[this.getPermissionUserKey()]?.includes(
+                                            `insert:${slug}`
+                                        )
+                                )
+                            }
+    
+                            if (
+                                [`delete_${plural}`, `delete_${singular}`].includes(
+                                    path
+                                )
+                            ) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[this.getPermissionUserKey()]?.includes(
+                                            `delete:${slug}`
+                                        )
+                                )
+                            }
+    
+                            if (
+                                [`update_${plural}`, `update_${singular}`].includes(
+                                    path
+                                )
+                            ) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[this.getPermissionUserKey()]?.includes(
+                                            `update:${slug}`
+                                        )
+                                )
+                            }
+    
+                            if (path === plural) {
+                                return query.authorize(
+                                    ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
                                         `fetch:${slug}`
                                     )
-                            )
+                                )
+                            }
+    
+                            if (path === singular) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[this.getPermissionUserKey()]?.includes(
+                                            `show:${slug}`
+                                        )
+                                )
+                            }
                         }
-
-                        if (path === singular) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `show:${slug}`
-                                    )
-                            )
-                        }
-                    }
-                })
+                    })
+                }
 
                 routes.forEach(route => {
                     route.middleware([
@@ -1656,7 +1659,7 @@ class Auth {
 
         ctx.user = user
 
-        if (!this.config.disableCookies) {
+        if (!this.config.disableCookies && ! this.config.disableAutoLoginAfterRegistration) {
             ctx.req.session.user = {
                 id: user.id
             }
@@ -1670,9 +1673,7 @@ class Auth {
                 )
         }
 
-        const refreshToken = await this.generateRefreshToken(ctx)
-
-        return this.getUserPayload(ctx, refreshToken)
+        return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
     private resendVerificationEmail = async ({
@@ -1900,8 +1901,6 @@ class Auth {
         if (!this.config.rolesAndPermissions) {
             return
         }
-
-        console.log('___________________@')
 
         const publicRole: any = await manager.findOne(
             this.resources.role.data.pascalCaseName,
@@ -2275,6 +2274,10 @@ class Auth {
         ctx: GraphQLPluginContext,
         previousTokenExpiry?: string
     ): Promise<string> {
+        if (! this.config.disableCookies) {
+            return ''
+        }
+
         const plainTextToken = this.generateRandomToken(64)
 
         // Expire all existing refresh tokens for this customer.
@@ -2349,6 +2352,12 @@ class Auth {
 
     public cms() {
         this.config.cms = true
+
+        return this
+    }
+
+    public skipLoginAfterRegistration() {
+        this.config.disableAutoLoginAfterRegistration = true
 
         return this
     }

@@ -543,8 +543,8 @@ input id_where_query {
     }
 
     plugin() {
-        return plugin('GraphQl').boot(async config => {
-            const { extendGraphQlQueries, currentCtx, app } = config
+        return plugin('GraphQl').register(async config => {
+            const { extendGraphQlQueries, currentCtx, databaseConfig } = config
 
             const exposedResources = currentCtx().resources.filter(
                 resource => !resource.hiddenFromApi()
@@ -555,9 +555,12 @@ input id_where_query {
             extendGraphQlQueries(
                 getResolvers(exposedResources, {
                     subscriptionsEnabled: this.subscriptionsEnabled,
-                    database: config.orm!.config.get('type')
+                    database: databaseConfig.type!
                 })
             )
+
+        }).boot(async config => {
+            const { currentCtx, app } = config
 
             const typeDefs = [
                 gql(this.schemaString),
