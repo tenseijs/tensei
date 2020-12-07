@@ -44,6 +44,7 @@ import {
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
 import { setup } from './setup'
+import { ResourceContract } from '@tensei/common'
 
 type JwtPayload = {
     id: string
@@ -58,6 +59,7 @@ class Auth {
     } = {
         cms: false,
         profilePictures: false,
+        disableAutoLoginAfterRegistration: false,
         userResource: 'User',
         roleResource: 'Role',
         disableCookies: false,
@@ -627,82 +629,87 @@ class Auth {
                     )
                 }
 
-                graphQlQueries.forEach(query => {
-                    if (query.config.resource) {
-                        const { path, internal } = query.config
-                        const {
-                            snakeCaseNamePlural: plural,
-                            snakeCaseName: singular,
-                            slug
-                        } = query.config.resource.data
+                if (!this.config.cms) {
+                    graphQlQueries.forEach(query => {
+                        if (query.config.resource) {
+                            const { path, internal } = query.config
+                            const {
+                                snakeCaseNamePlural: plural,
+                                snakeCaseName: singular,
+                                slug
+                            } = query.config.resource.data
 
-                        if (!internal) {
-                            return
-                        }
+                            if (!internal) {
+                                return
+                            }
 
-                        if (
-                            [`insert_${plural}`, `insert_${singular}`].includes(
-                                path
-                            )
-                        ) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `insert:${slug}`
-                                    )
-                            )
-                        }
+                            if (
+                                [
+                                    `insert_${plural}`,
+                                    `insert_${singular}`
+                                ].includes(path)
+                            ) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[
+                                            this.getPermissionUserKey()
+                                        ]?.includes(`insert:${slug}`)
+                                )
+                            }
 
-                        if (
-                            [`delete_${plural}`, `delete_${singular}`].includes(
-                                path
-                            )
-                        ) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `delete:${slug}`
-                                    )
-                            )
-                        }
+                            if (
+                                [
+                                    `delete_${plural}`,
+                                    `delete_${singular}`
+                                ].includes(path)
+                            ) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[
+                                            this.getPermissionUserKey()
+                                        ]?.includes(`delete:${slug}`)
+                                )
+                            }
 
-                        if (
-                            [`update_${plural}`, `update_${singular}`].includes(
-                                path
-                            )
-                        ) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `update:${slug}`
-                                    )
-                            )
-                        }
+                            if (
+                                [
+                                    `update_${plural}`,
+                                    `update_${singular}`
+                                ].includes(path)
+                            ) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[
+                                            this.getPermissionUserKey()
+                                        ]?.includes(`update:${slug}`)
+                                )
+                            }
 
-                        if (path === plural) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `fetch:${slug}`
-                                    )
-                            )
-                        }
+                            if (path === plural) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[
+                                            this.getPermissionUserKey()
+                                        ]?.includes(`fetch:${slug}`)
+                                )
+                            }
 
-                        if (path === singular) {
-                            return query.authorize(
-                                ({ user }) =>
-                                    user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `show:${slug}`
-                                    )
-                            )
+                            if (path === singular) {
+                                return query.authorize(
+                                    ({ user }) =>
+                                        user &&
+                                        user[
+                                            this.getPermissionUserKey()
+                                        ]?.includes(`show:${slug}`)
+                                )
+                            }
                         }
-                    }
-                })
+                    })
+                }
 
                 routes.forEach(route => {
                     route.middleware([
@@ -1202,11 +1209,35 @@ class Auth {
             return []
         }
 
+        const resources: ResourceContract[] = Object.keys(this.resources).map(
+            key => (this.resources as any)[key]
+        )
+
         return [
             graphQlQuery(`Login ${name}`)
                 .path(`login_${name}`)
                 .mutation()
-                .handle(async (_, args, ctx, info) => this.login(ctx)),
+                .handle(async (_, args, ctx, info) => {
+                    const payload = await this.login(ctx)
+
+                    const { user } = ctx
+
+                    await Utils.graphql.populateFromResolvedNodes(
+                        resources,
+                        ctx.manager,
+                        ctx.databaseConfig.type!,
+                        this.resources.user,
+                        Utils.graphql.getParsedInfo(info)[name]?.[
+                            'fieldsByTypeName'
+                        ]?.[name],
+                        [user]
+                    )
+
+                    return {
+                        ...payload,
+                        customer: user
+                    }
+                }),
             ...(this.config.disableCookies
                 ? []
                 : [
@@ -1230,7 +1261,27 @@ class Auth {
             graphQlQuery(`Register ${name}`)
                 .path(`register_${name}`)
                 .mutation()
-                .handle(async (_, args, ctx, info) => this.register(ctx)),
+                .handle(async (_, args, ctx, info) => {
+                    const payload = await this.register(ctx)
+
+                    const { user } = ctx
+
+                    await Utils.graphql.populateFromResolvedNodes(
+                        resources,
+                        ctx.manager,
+                        ctx.databaseConfig.type!,
+                        this.resources.user,
+                        Utils.graphql.getParsedInfo(info)[name]?.[
+                            'fieldsByTypeName'
+                        ]?.[name],
+                        [user]
+                    )
+
+                    return {
+                        ...payload,
+                        customer: user
+                    }
+                }),
             graphQlQuery(`Request ${name} password reset`)
                 .path(`request_${name}_password_reset`)
                 .mutation()
@@ -1245,7 +1296,20 @@ class Auth {
                 .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
                 .query()
                 .authorize(({ user }) => user && !user.public)
-                .handle(async (_, args, ctx, info) => ctx.user),
+                .handle(async (_, args, ctx, info) => {
+                    const { user } = ctx
+
+                    await Utils.graphql.populateFromResolvedNodes(
+                        resources,
+                        ctx.manager,
+                        ctx.databaseConfig.type!,
+                        this.resources.user,
+                        Utils.graphql.getParsedInfo(info),
+                        [user]
+                    )
+
+                    return user
+                }),
             ...(this.config.twoFactorAuth
                 ? [
                       graphQlQuery(`Enable Two Factor Auth`)
@@ -1258,17 +1322,43 @@ class Auth {
                       graphQlQuery('Confirm Enable Two Factor Auth')
                           .path(`confirm_${name}_enable_two_factor_auth`)
                           .mutation()
-                          .handle(async (_, args, ctx, info) =>
-                              this.confirmEnableTwoFactorAuth(ctx)
-                          )
+                          .handle(async (_, args, ctx, info) => {
+                              await this.confirmEnableTwoFactorAuth(ctx)
+
+                              const { user } = ctx
+
+                              await Utils.graphql.populateFromResolvedNodes(
+                                  resources,
+                                  ctx.manager,
+                                  ctx.databaseConfig.type!,
+                                  this.resources.user,
+                                  Utils.graphql.getParsedInfo(info),
+                                  [user]
+                              )
+
+                              return user
+                          })
                           .authorize(({ user }) => user && !user.public),
 
                       graphQlQuery(`Disable Two Factor Auth`)
                           .path(`disable_${name}_two_factor_auth`)
                           .mutation()
-                          .handle(async (_, args, ctx, info) =>
-                              this.disableTwoFactorAuth(ctx)
-                          )
+                          .handle(async (_, args, ctx, info) => {
+                              await this.disableTwoFactorAuth(ctx)
+
+                              const { user } = ctx
+
+                              await Utils.graphql.populateFromResolvedNodes(
+                                  resources,
+                                  ctx.manager,
+                                  ctx.databaseConfig.type!,
+                                  this.resources.user,
+                                  Utils.graphql.getParsedInfo(info),
+                                  [user]
+                              )
+
+                              return user
+                          })
                           .authorize(({ user }) => user && !user.public)
                   ]
                 : []),
@@ -1277,9 +1367,22 @@ class Auth {
                       graphQlQuery(`Confirm ${name} Email`)
                           .path(`confirm_${name}_email`)
                           .mutation()
-                          .handle(async (_, args, ctx, info) =>
-                              this.confirmEmail(ctx)
-                          )
+                          .handle(async (_, args, ctx, info) => {
+                              await this.confirmEmail(ctx)
+
+                              const { user } = ctx
+
+                              await Utils.graphql.populateFromResolvedNodes(
+                                  resources,
+                                  ctx.manager,
+                                  ctx.databaseConfig.type!,
+                                  this.resources.user,
+                                  Utils.graphql.getParsedInfo(info),
+                                  [user]
+                              )
+
+                              return user
+                          })
                           .authorize(({ user }) => user && !user.public),
                       graphQlQuery(`Resend ${name} Verification Email`)
                           .path(`resend_${name}_verification_email`)
@@ -1294,15 +1397,41 @@ class Auth {
                       graphQlQuery('Social auth login')
                           .path(`${name}_social_auth_login`)
                           .mutation()
-                          .handle(async (_, args, ctx, info) =>
-                              this.socialAuth(ctx, 'login')
-                          ),
+                          .handle(async (_, args, ctx, info) => {
+                              await this.socialAuth(ctx, 'login')
+
+                              const { user } = ctx
+
+                              await Utils.graphql.populateFromResolvedNodes(
+                                  resources,
+                                  ctx.manager,
+                                  ctx.databaseConfig.type!,
+                                  this.resources.user,
+                                  Utils.graphql.getParsedInfo(info),
+                                  [user]
+                              )
+
+                              return user
+                          }),
                       graphQlQuery('Social auth register')
                           .path(`${name}_social_auth_register`)
                           .mutation()
-                          .handle(async (_, args, ctx, info) =>
-                              this.socialAuth(ctx, 'register')
-                          )
+                          .handle(async (_, args, ctx, info) => {
+                              await this.socialAuth(ctx, 'register')
+
+                              const { user } = ctx
+
+                              await Utils.graphql.populateFromResolvedNodes(
+                                  resources,
+                                  ctx.manager,
+                                  ctx.databaseConfig.type!,
+                                  this.resources.user,
+                                  Utils.graphql.getParsedInfo(info),
+                                  [user]
+                              )
+
+                              return user
+                          })
                   ]
                 : []),
             ...(this.config.disableCookies
@@ -1656,7 +1785,10 @@ class Auth {
 
         ctx.user = user
 
-        if (!this.config.disableCookies) {
+        if (
+            !this.config.disableCookies &&
+            !this.config.disableAutoLoginAfterRegistration
+        ) {
             ctx.req.session.user = {
                 id: user.id
             }
@@ -1670,9 +1802,7 @@ class Auth {
                 )
         }
 
-        const refreshToken = await this.generateRefreshToken(ctx)
-
-        return this.getUserPayload(ctx, refreshToken)
+        return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
     private resendVerificationEmail = async ({
@@ -1873,6 +2003,10 @@ class Auth {
             }
         }
 
+        if (this.config.rolesAndPermissions) {
+            await manager.populate([user], [this.getRolesAndPermissionsNames()])
+        }
+
         ctx.user = user
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
@@ -1900,8 +2034,6 @@ class Auth {
         if (!this.config.rolesAndPermissions) {
             return
         }
-
-        console.log('___________________@')
 
         const publicRole: any = await manager.findOne(
             this.resources.role.data.pascalCaseName,
@@ -2019,7 +2151,7 @@ class Auth {
         user,
         userInputError
     }: ApiContext) => {
-        if (user.two_factor_enabled) {
+        if (!user.two_factor_enabled) {
             throw userInputError(
                 `You do not have two factor authentication enabled.`
             )
@@ -2275,6 +2407,10 @@ class Auth {
         ctx: GraphQLPluginContext,
         previousTokenExpiry?: string
     ): Promise<string> {
+        if (!this.config.disableCookies) {
+            return ''
+        }
+
         const plainTextToken = this.generateRandomToken(64)
 
         // Expire all existing refresh tokens for this customer.
@@ -2349,6 +2485,12 @@ class Auth {
 
     public cms() {
         this.config.cms = true
+
+        return this
+    }
+
+    public skipLoginAfterRegistration() {
+        this.config.disableAutoLoginAfterRegistration = true
 
         return this
     }

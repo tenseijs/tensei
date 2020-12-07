@@ -75,6 +75,19 @@ declare module '@tensei/common/config' {
                 modelId?: string | number | undefined
             ) => Promise<[boolean, DataPayload | array[any]]>
         }
+        graphql: {
+            getFindOptionsFromArgs: (args: any) => any
+            getParsedInfo: (args: any) => any
+            parseWhereArgumentsToWhereQuery: (where: any) => any
+            populateFromResolvedNodes: (
+                resources: ResourceContract[],
+                manager: EntityManager,
+                database: keyof typeof Configuration.PLATFORMS,
+                resource: ResourceContract,
+                fieldNode: any,
+                data: any[]
+            ) => Promise<any[] | undefined>
+        }
     }
 
     interface GraphQlQueryContract {

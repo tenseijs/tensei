@@ -46,6 +46,7 @@ export interface AuthPluginConfig {
     profilePictures: boolean
     userResource: string
     cms: boolean
+    disableAutoLoginAfterRegistration: boolean
     roleResource: string
     disableCookies: boolean
     permissionResource: string

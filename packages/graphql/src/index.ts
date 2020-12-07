@@ -543,133 +543,144 @@ input id_where_query {
     }
 
     plugin() {
-        return plugin('GraphQl').boot(async config => {
-            const { extendGraphQlQueries, currentCtx, app } = config
+        return plugin('GraphQl')
+            .register(async config => {
+                const {
+                    extendGraphQlQueries,
+                    currentCtx,
+                    databaseConfig
+                } = config
 
-            const exposedResources = currentCtx().resources.filter(
-                resource => !resource.hiddenFromApi()
-            )
+                const exposedResources = currentCtx().resources.filter(
+                    resource => !resource.hiddenFromApi()
+                )
 
-            this.setupResourceGraphqlTypes(exposedResources, config)
+                this.setupResourceGraphqlTypes(exposedResources, config)
 
-            extendGraphQlQueries(
-                getResolvers(exposedResources, {
-                    subscriptionsEnabled: this.subscriptionsEnabled,
-                    database: config.orm!.config.get('type')
-                })
-            )
+                extendGraphQlQueries(
+                    getResolvers(exposedResources, {
+                        subscriptionsEnabled: this.subscriptionsEnabled,
+                        database: databaseConfig.type!
+                    })
+                )
+            })
+            .boot(async config => {
+                const { currentCtx, app } = config
 
-            const typeDefs = [
-                gql(this.schemaString),
-                ...currentCtx().graphQlTypeDefs
-            ]
+                const typeDefs = [
+                    gql(this.schemaString),
+                    ...currentCtx().graphQlTypeDefs
+                ]
 
-            currentCtx().graphQlMiddleware.unshift(
-                () => {
-                    return async (resolve, parent, args, context, info) => {
-                        context.body = args
+                currentCtx().graphQlMiddleware.unshift(
+                    () => {
+                        return async (resolve, parent, args, context, info) => {
+                            context.body = args
 
-                        const result = await resolve(
-                            parent,
-                            args,
-                            context,
-                            info
-                        )
-
-                        return result
-                    }
-                },
-                () => {
-                    return async (resolve, parent, args, context, info) => {
-                        context.manager = context.manager.fork()
-
-                        const result = await resolve(
-                            parent,
-                            args,
-                            context,
-                            info
-                        )
-
-                        return result
-                    }
-                },
-                () => {
-                    return async (resolve, parent, args, context, info) => {
-                        context.authenticationError = (message?: string) =>
-                            new AuthenticationError(
-                                message || 'Unauthenticated.'
+                            const result = await resolve(
+                                parent,
+                                args,
+                                context,
+                                info
                             )
 
-                        context.forbiddenError = (message?: string) =>
-                            new ForbiddenError(message || 'Forbidden.')
+                            return result
+                        }
+                    },
+                    () => {
+                        return async (resolve, parent, args, context, info) => {
+                            context.manager = context.manager.fork()
 
-                        context.validationError = (message?: string) =>
-                            new ValidationError(message || 'Validation failed.')
-
-                        context.userInputError = (
-                            message?: string,
-                            properties?: any
-                        ) =>
-                            new UserInputError(
-                                message || 'Invalid user input.',
-                                properties
+                            const result = await resolve(
+                                parent,
+                                args,
+                                context,
+                                info
                             )
 
-                        const result = await resolve(
-                            parent,
-                            args,
-                            context,
-                            info
-                        )
+                            return result
+                        }
+                    },
+                    () => {
+                        return async (resolve, parent, args, context, info) => {
+                            context.authenticationError = (message?: string) =>
+                                new AuthenticationError(
+                                    message || 'Unauthenticated.'
+                                )
 
-                        return result
+                            context.forbiddenError = (message?: string) =>
+                                new ForbiddenError(message || 'Forbidden.')
+
+                            context.validationError = (message?: string) =>
+                                new ValidationError(
+                                    message || 'Validation failed.'
+                                )
+
+                            context.userInputError = (
+                                message?: string,
+                                properties?: any
+                            ) =>
+                                new UserInputError(
+                                    message || 'Invalid user input.',
+                                    properties
+                                )
+
+                            const result = await resolve(
+                                parent,
+                                args,
+                                context,
+                                info
+                            )
+
+                            return result
+                        }
                     }
+                )
+
+                const resolvers = {
+                    ...this.getResolversFromGraphqlQueries(
+                        currentCtx().graphQlQueries
+                    ),
+                    JSON: GraphQLJSON,
+                    JSONObject: GraphQLJSONObject
                 }
-            )
 
-            const resolvers = {
-                ...this.getResolversFromGraphqlQueries(
-                    currentCtx().graphQlQueries
-                ),
-                JSON: GraphQLJSON,
-                JSONObject: GraphQLJSONObject
-            }
+                const schema = makeExecutableSchema({
+                    typeDefs,
+                    resolvers
+                })
 
-            const schema = makeExecutableSchema({
-                typeDefs,
-                resolvers
-            })
-
-            const graphQlServer = new ApolloServer({
-                schema: applyMiddleware(
-                    schema,
-                    ...currentCtx().graphQlMiddleware.map(middlewareGenerator =>
-                        middlewareGenerator(
-                            currentCtx().graphQlQueries,
-                            typeDefs,
-                            schema
+                const graphQlServer = new ApolloServer({
+                    schema: applyMiddleware(
+                        schema,
+                        ...currentCtx().graphQlMiddleware.map(
+                            middlewareGenerator =>
+                                middlewareGenerator(
+                                    currentCtx().graphQlQueries,
+                                    typeDefs,
+                                    schema
+                                )
                         )
-                    )
-                ),
-                ...this.appolloConfig,
-                context: ctx => ({
-                    ...ctx,
-                    ...config,
-                    pubsub: this.pubsub,
-                    manager: currentCtx().orm?.em?.fork()
-                }),
-                uploads: false
-            })
+                    ),
+                    ...this.appolloConfig,
+                    context: ctx => ({
+                        ...ctx,
+                        ...config,
+                        pubsub: this.pubsub,
+                        manager: currentCtx().orm?.em?.fork()
+                    }),
+                    uploads: false
+                })
 
-            graphQlServer.applyMiddleware({
-                app,
-                ...this.getMiddlewareOptions
-            })
+                graphQlServer.applyMiddleware({
+                    app,
+                    ...this.getMiddlewareOptions
+                })
 
-            if (this.subscriptionsEnabled) {
-                graphQlServer.installSubscriptionHandlers(config.server)
-            }
-        })
+                if (this.subscriptionsEnabled) {
+                    graphQlServer.installSubscriptionHandlers(config.server)
+                }
+            })
     }
 }
 
