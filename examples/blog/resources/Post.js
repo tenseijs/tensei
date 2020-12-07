@@ -106,7 +106,7 @@ module.exports = resource('Post')
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
-        belongsToMany('Tag').owner(),
+        belongsToMany('Tag'),
         hasMany('Comment'),
     ])
     .perPageOptions([25, 50, 100])
