@@ -167,7 +167,9 @@ test('Can enable email verification for auth', async () => {
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation confirm_customer_email($email_verification_token: String!) {
+                mutation confirm_customer_email(
+                    $email_verification_token: String!
+                ) {
                     confirm_customer_email(
                         object: {
                             email_verification_token: $email_verification_token
@@ -227,7 +229,9 @@ test('Can request a password reset and reset password', async () => {
         }
     })
 
-    expect(response.body).toEqual({ data: { request_student_password_reset: true } })
+    expect(response.body).toEqual({
+        data: { request_student_password_reset: true }
+    })
 
     const passwordReset: any = await em.findOne('PasswordReset', {
         email: user.email
@@ -486,7 +490,9 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         const refresh_token_response = await client.post(`/graphql`).send({
             query: gql`
                 mutation refresh_student_token($refresh_token: String!) {
-                    refresh_student_token(object: { refresh_token: $refresh_token }) {
+                    refresh_student_token(
+                        object: { refresh_token: $refresh_token }
+                    ) {
                         access_token
                         refresh_token
                         student {
@@ -655,7 +661,9 @@ test('if a refresh token is used twice (compromised), the user is automatically 
     const refresh_token_response = await client.post(`/graphql`).send({
         query: gql`
             mutation refresh_customer_token($refresh_token: String!) {
-                refresh_customer_token(object: { refresh_token: $refresh_token }) {
+                refresh_customer_token(
+                    object: { refresh_token: $refresh_token }
+                ) {
                     access_token
                     refresh_token
                     customer {
@@ -682,7 +690,9 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         .send({
             query: gql`
                 mutation refresh_customer_token($refresh_token: String!) {
-                    refresh_customer_token(object: { refresh_token: $refresh_token }) {
+                    refresh_customer_token(
+                        object: { refresh_token: $refresh_token }
+                    ) {
                         access_token
                         refresh_token
                         customer {

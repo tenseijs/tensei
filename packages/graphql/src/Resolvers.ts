@@ -1,6 +1,6 @@
 import { Utils } from '@tensei/common'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
-import { EntityManager, ReferenceType } from '@mikro-orm/core'
+import { EntityManager, ReferenceType, Configuration } from '@mikro-orm/core'
 import {
     GraphQlQueryContract,
     ResourceContract,
@@ -12,9 +12,11 @@ import {
 export const getResolvers = (
     resources: ResourceContract[],
     {
-        subscriptionsEnabled
+        subscriptionsEnabled,
+        database
     }: {
         subscriptionsEnabled: boolean
+        database: keyof typeof Configuration.PLATFORMS
     }
 ) => {
     const resolversList: GraphQlQueryContract[] = []
@@ -97,6 +99,22 @@ export const getResolvers = (
                             const field = relatedManyToManyFields.find(
                                 _ => _.databaseField === selection
                             )
+
+                            if (
+                                database === 'mongo' &&
+                                field?.relatedProperty.owner
+                            ) {
+                                const relatedResource = resources.find(
+                                    r =>
+                                        r.data.pascalCaseName ===
+                                        field.relatedProperty.type
+                                )
+                                const relatedField = relatedResource?.data.fields.find(
+                                    f =>
+                                        f.databaseField ===
+                                        field.relatedProperty?.inversedBy
+                                )
+                            }
 
                             if (
                                 !fieldNode[selection].args.where &&
@@ -184,17 +202,83 @@ export const getResolvers = (
                                 _ => _.databaseField === selection
                             )
 
+                            if (
+                                field?.relatedProperty.owner &&
+                                database === 'mongo'
+                            ) {
+                                const relatedResource = resources.find(
+                                    r =>
+                                        r.data.pascalCaseName ===
+                                        field.relatedProperty.type
+                                )
+                                const relatedField = relatedResource?.data.fields.find(
+                                    f =>
+                                        f.databaseField ===
+                                        field.relatedProperty?.inversedBy
+                                )
+                                // we'll run a separate type of query for the owner.
+                                // First we'll
+                                // @ts-ignore
+                                const counts = await manager.aggregate(
+                                    relatedField?.relatedProperty.type,
+                                    [
+                                        {
+                                            $match: {
+                                                _id: {
+                                                    $in: data.map(d => d._id)
+                                                },
+                                                ...parseWhereArgumentsToWhereQuery(
+                                                    fieldNode[
+                                                        `${selection}__count`
+                                                    ].args.where
+                                                )
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                [`${relatedField?.relatedProperty.mappedBy}__count`]: {
+                                                    $size: `$${relatedField?.relatedProperty.mappedBy}`
+                                                }
+                                            }
+                                        }
+                                    ]
+                                )
+
+                                data.map(item => {
+                                    item[
+                                        `${relatedField?.relatedProperty.mappedBy}__count`
+                                    ] =
+                                        (counts.find(
+                                            (count: any) =>
+                                                count._id.toString() ===
+                                                item._id.toString()
+                                        ) || {})[
+                                            `${relatedField?.relatedProperty.mappedBy}__count`
+                                        ] || null
+                                })
+
+                                return
+                            }
+
                             await Promise.all(
                                 data.map(async item => {
                                     const count = await manager.count(
                                         field?.relatedProperty.type!,
                                         {
-                                            [resource.data
-                                                .snakeCaseNamePlural]: {
-                                                id: {
-                                                    $in: [item.id]
-                                                }
-                                            },
+                                            [resource.data.snakeCaseNamePlural]:
+                                                database === 'mongo'
+                                                    ? {
+                                                          $in: [
+                                                              item.id.toString()
+                                                          ]
+                                                      }
+                                                    : {
+                                                          id: {
+                                                              $in: [
+                                                                  item.id.toString()
+                                                              ]
+                                                          }
+                                                      },
                                             ...parseWhereArgumentsToWhereQuery(
                                                 fieldNode[`${selection}__count`]
                                                     .args.where
