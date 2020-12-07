@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.4](https://github.com/tenseijs/tensei/compare/v0.4.3...v0.4.4) (2020-12-07)
+
+
+### Bug Fixes
+
+* **express-session-mikro-orm:** fix express mikro orm touch update ([db3f14d](https://github.com/tenseijs/tensei/commit/db3f14de74e43831813f55d0148ad27c16d22309))
+* **express-session-mikro-orm:** fix express session package touch() test ([cf37f7f](https://github.com/tenseijs/tensei/commit/cf37f7ff97a9b6e4e9682908fc490e6496201215))
+* **express-session-mikro-orm:** fix manager access ([5866b4a](https://github.com/tenseijs/tensei/commit/5866b4a696eec09869c2fca95e5248d024edeb53))
+
+
+### Features
+
+* **cms:** add cms dashboard ([8584bc1](https://github.com/tenseijs/tensei/commit/8584bc137f0cd6e69e807baf59689d37c371ab10))
+
+
+
+
+
 ## [0.4.3](https://github.com/tenseijs/tensei/compare/v0.4.2...v0.4.3) (2020-12-04)
 
 

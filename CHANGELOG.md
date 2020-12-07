@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.4](https://github.com/tenseijs/tensei/compare/v0.4.3...v0.4.4) (2020-12-07)
+
+
+### Bug Fixes
+
+* **auth:** fix auth package graphql authorizations ([bda423a](https://github.com/tenseijs/tensei/commit/bda423a30fecdf01c1dc9f086eee9fcbdbe3cc1c))
+* **auth:** populate roles and permissions for auth responses ([5266e8d](https://github.com/tenseijs/tensei/commit/5266e8d3b5165abeddb53ceea3cd1fc8e6b41c05))
+* **common:** fix build with common fields and resources ([bf71625](https://github.com/tenseijs/tensei/commit/bf71625de6ae25cb65fb114e939be562e450bad4))
+* **common:** fix datetime column error on postgres databases ([8420da4](https://github.com/tenseijs/tensei/commit/8420da4fe74b5196750847999506cc4c7751e8b4))
+* **express-session-mikro-orm:** fix express mikro orm touch update ([db3f14d](https://github.com/tenseijs/tensei/commit/db3f14de74e43831813f55d0148ad27c16d22309))
+* **express-session-mikro-orm:** fix express session package touch() test ([cf37f7f](https://github.com/tenseijs/tensei/commit/cf37f7ff97a9b6e4e9682908fc490e6496201215))
+* **express-session-mikro-orm:** fix manager access ([5866b4a](https://github.com/tenseijs/tensei/commit/5866b4a696eec09869c2fca95e5248d024edeb53))
+
+
+### Features
+
+* **cms:** add cms dashboard ([8584bc1](https://github.com/tenseijs/tensei/commit/8584bc137f0cd6e69e807baf59689d37c371ab10))
+* **core:** add basic support for mongodb ([b56ad38](https://github.com/tenseijs/tensei/commit/b56ad3806e3ac3b8e30c4285fa3c7640525a625a))
+* **mongo:** begin implementing MongoDB support ([90df47f](https://github.com/tenseijs/tensei/commit/90df47fb3382f1b718c5bc632c33932ee8dfa615))
+
+
+
+
+
 ## [0.4.3](https://github.com/tenseijs/tensei/compare/v0.4.2...v0.4.3) (2020-12-04)
 
 
