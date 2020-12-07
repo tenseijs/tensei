@@ -53,7 +53,7 @@ module.exports = tensei()
             .verifyEmails()
             .teams()
             .apiPath('auth')
-            // .noCookies()
+            .noCookies()
             .rolesAndPermissions()
             .social('github', {
                 key: process.env.GITHUB_KEY,
@@ -71,6 +71,15 @@ module.exports = tensei()
             .social('linkedin', {
                 key: process.env.LINKEDIN_KEY,
                 secret: process.env.LINKEDIN_SECRET,
+            })
+            .plugin(),
+        graphql()
+            .subscriptions(new RedisPubSub())
+            .middlewareOptions({
+                cors: {
+                    credentials: true,
+                    origin: ['http://localhost:3001'],
+                },
             })
             .plugin(),
         media().plugin(),

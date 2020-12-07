@@ -37,7 +37,7 @@ declare module '@tensei/common/config' {
 
     type EndpointTypes = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
-    interface RouteExtendContract extends Record<string, any> {}
+    interface RouteExtendContract extends Record<string, any> { }
 
     interface RouteContract {
         config: RouteConfig & {
@@ -167,7 +167,7 @@ declare module '@tensei/common/config' {
         userInputError: (message?: string, properties?: any) => unknown
     }
 
-    interface ApiContext extends GraphQLPluginContext {}
+    interface ApiContext extends GraphQLPluginContext { }
 
     enum noPagination {
         true = 'true',
@@ -207,7 +207,7 @@ declare module '@tensei/common/config' {
         noPagination?: 'true' | 'false'
     }
     interface StorageConstructor<T extends Storage = Storage> {
-        new (...args: any[]): T
+        new(...args: any[]): T
     }
 
     type SupportedStorageDrivers = 'local' | 's3' | any
@@ -333,9 +333,9 @@ declare module '@tensei/common/config' {
     }
     type Permission =
         | {
-              name: string
-              slug: string
-          }
+            name: string
+            slug: string
+        }
         | string
     interface DataPayload {
         [key: string]: any

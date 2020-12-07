@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import CircularJSON from 'circular-json'
 import qs from 'qs'
 import {
     FindOptions,
@@ -13,6 +14,7 @@ import {
     route,
     ResourceContract,
     RouteContract,
+    Utils,
     Field,
     FieldContract
 } from '@tensei/common'
@@ -38,7 +40,7 @@ class Rest {
             total,
             page:
                 findOptions.offset ||
-                (findOptions.offset === 0 && findOptions.limit)
+                    (findOptions.offset === 0 && findOptions.limit)
                     ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
                     : null,
             per_page: findOptions.limit ? findOptions.limit : null,
@@ -56,8 +58,14 @@ class Rest {
                 query.page >= 1 ? (query.page - 1) * findOptions.limit : 0
         }
 
-        if (query.populate) {
-            findOptions.populate = query.populate.split(',')
+        if (query.populateOptions) {
+            const strigifiedQuery = qs.stringify(query.populateOptions, { encode: false })
+            const parsedQuery = qs.parse(strigifiedQuery, {
+                arrayLimit: 100,
+                depth: 20
+            })
+
+            findOptions.populate = parsedQuery as any
         }
 
         if (query.fields) {
@@ -121,6 +129,79 @@ class Rest {
         return whereOptions
     }
 
+    public transformToInfoObject(resources: any, data: any) {
+        const res = data.reduce((acc: any, currVal: any) => {
+            const fields = this.getModelFields(resources, currVal.relation)
+
+            let args = {}
+            if (currVal.limit) {
+                args = {
+                    ...args,
+                    limit: currVal.limit
+                }
+            }
+
+            if (currVal.offset) {
+                args = {
+                    ...args,
+                    offset: currVal.offset
+                }
+            }
+
+            acc = {
+                ...acc,
+                [currVal.relation]: {
+                    name: currVal.relation,
+                    alias: currVal.relation,
+                    args: {
+                        ...args
+                    },
+                    fieldsByTypeName: {
+                        ...fields
+                    }
+                }
+            }
+
+            if (currVal.populate) {
+                acc[currVal.relation] = {
+                    ...acc[currVal.relation],
+                    fieldsByTypeName: {
+                        [currVal.relation]: {
+                            ...this.transformToInfoObject(
+                                resources,
+                                currVal.populate
+                            )
+                        }
+                    }
+                }
+            }
+            return acc
+        }, {})
+        return res
+    }
+
+    public getModelFields(resources: ResourceContract[], modelName: any) {
+        const fields = resources.find(resource => {
+            return resource.data.slugPlural === modelName
+        })?.data.fields
+
+        const result = fields
+            ?.filter(field => !field.relatedProperty.reference)
+            ?.reduce((acc: any, currVal: any) => {
+                acc = {
+                    ...acc,
+                    [currVal.databaseField]: {
+                        name: currVal.databaseField,
+                        alias: currVal.databaseField,
+                        args: {},
+                        fieldsByTypeName: {}
+                    }
+                }
+                return acc
+            }, {})
+        return result
+    }
+
     private extendRoutes(
         resources: ResourceContract[],
         getApiPath: (path: string) => string
@@ -146,7 +227,21 @@ class Rest {
                             summary: `Insert a single ${singular}.`
                         }
                     })
-                    .handle(async ({ manager, body }, response) => {
+                    .handle(async ({ manager, body, resources, userInputError }, response) => {
+                        const [passed, payload] = await Utils.validator(
+                            resource,
+                            manager,
+                            resources
+                        ).validate(body)
+
+
+
+                        if (!passed) {
+                            return userInputError('Validation failed.', {
+                                errors: payload
+                            })
+                        }
+
                         const entity = manager.create(modelName, body)
 
                         await manager.persistAndFlush(entity)
@@ -168,7 +263,7 @@ class Rest {
                             description: `This endpoint fetches all ${plural} that match an optional where query.`
                         }
                     })
-                    .handle(async ({ manager, query }, response) => {
+                    .handle(async ({ manager, query, config }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
                             query,
                             resource
@@ -177,14 +272,44 @@ class Rest {
                             query
                         )
 
-                        const [entities, total] = await manager.findAndCount(
+                        config.databaseConfig.type!
+
+                        const populateValues = Object.values(
+                            findOptions.populate as any
+                        ).map(item => Object.values(item as any))[0]
+
+                        const res = this.transformToInfoObject(
+                            resources,
+                            populateValues
+                        )
+
+                        const fields = this.getModelFields(resources, plural)
+
+                        const infoObj = {
+                            ...fields,
+                            ...res
+                        }
+
+                        const [
+                            entities,
+                            total
+                        ] = await manager.findAndCount(
                             modelName,
                             whereOptions,
-                            findOptions
+                            { ...findOptions, populate: [] }
+                        )
+
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            manager,
+                            config.databaseConfig.type!,
+                            resource,
+                            infoObj,
+                            entities
                         )
 
                         return response.formatter.ok(
-                            entities,
+                            JSON.parse(CircularJSON.stringify(entities)),
                             this.getPageMetaFromFindOptions(total, findOptions)
                         )
                     })
@@ -203,16 +328,46 @@ class Rest {
                         }
                     })
                     .path(getApiPath(`${plural}/:id`))
-                    .handle(async ({ manager, params, query }, response) => {
+                    .handle(async ({ manager, params, query, config }, response) => {
                         const findOptions = this.parseQueryToFindOptions(
                             query,
                             resource
                         )
 
+                        let populateValues
+                        let res = []
+
+                        if (findOptions.populate) {
+                            populateValues = Object.values(
+                                findOptions.populate as any
+                            ).map(item => Object.values(item as any))[0]
+
+                            res = this.transformToInfoObject(
+                                resources,
+                                populateValues
+                            )
+                        }
+
+                        const fields = this.getModelFields(resources, plural)
+
+                        const infoObj = {
+                            ...fields,
+                            ...res
+                        }
+
                         const entity = await manager.findOne(
                             modelName as EntityName<AnyEntity<any>>,
                             params.id as FilterQuery<AnyEntity<any>>,
-                            findOptions
+                            { ...findOptions, populate: [] }
+                        )
+
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            manager,
+                            config.databaseConfig.type!,
+                            resource,
+                            infoObj,
+                            [entity]
                         )
 
                         if (!entity) {
@@ -220,7 +375,9 @@ class Rest {
                                 `could not find ${modelName} with ID ${params.id}`
                             )
                         }
-                        return response.formatter.ok(entity)
+                        return response.formatter.ok(
+                            JSON.parse(CircularJSON.stringify(entity))
+                        )
                     })
             )
 
@@ -284,7 +441,22 @@ class Rest {
                     })
                     .path(getApiPath(`${plural}/:id`))
                     .handle(
-                        async ({ manager, params, body, query }, response) => {
+                        async (
+                            { manager, params, body, query, resources, userInputError },
+                            response
+                        ) => {
+                            const [passed, payload] = await Utils.validator(
+                                resource,
+                                manager,
+                                resources
+                            ).validate(body)
+
+                            if (!passed) {
+                                return userInputError('Validation failed.', {
+                                    errors: payload
+                                })
+                            }
+
                             const entity = manager.findOne(
                                 modelName as EntityName<AnyEntity<any>>,
                                 params.id as FilterQuery<AnyEntity<any>>,
@@ -345,25 +517,22 @@ class Rest {
     }
 
     plugin() {
-        return plugin('Rest API')
-            .boot(async ({ extendRoutes, resources, app }) => {
+        return plugin('Rest API').boot(
+            async ({
+                app,
+                resources,
+                currentCtx,
+                extendRoutes,
+            }) => {
                 app.use(responseEnhancer())
-                app.use((request, _, next) => {
-                    // @ts-ignore
-                    request.req = request
-
-                    return next()
-                })
 
                 extendRoutes(
                     this.extendRoutes(resources, (path: string) =>
                         this.getApiPath(path)
                     )
                 )
-            })
-            .register(async ({ app, routes }) => {
-                routes.forEach(route => {
-                    ;(app as any)[route.config.type.toLowerCase()](
+                currentCtx().routes.forEach(route => {
+                    ; (app as any)[route.config.type.toLowerCase()](
                         route.config.path,
                         ...route.config.middleware.map(fn => AsyncHandler(fn)),
                         AsyncHandler(
@@ -372,7 +541,8 @@ class Rest {
                         )
                     )
                 })
-            })
+            }
+        )
     }
 }
 

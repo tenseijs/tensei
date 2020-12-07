@@ -173,10 +173,12 @@ export class Tensei implements TenseiContract {
             })
 
             request.userInputError = (
-                message: string = 'Validation failed.'
+                message: string = 'Validation failed.',
+                properties: any
             ) => ({
                 status: 422,
-                message
+                message,
+                ...properties
             })
 
             return next()
@@ -241,8 +243,7 @@ export class Tensei implements TenseiContract {
 
         this.server.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
+                `🚀 Access your server on ${this.ctx.serverUrl || `http://127.0.0.1:${port}`
                 }`
             )
         })
@@ -252,7 +253,7 @@ export class Tensei implements TenseiContract {
         let gql: any = (text: string) => text
         try {
             gql = require('apollo-server-express').gql || gql
-        } catch (e) {}
+        } catch (e) { }
 
         return {
             app: this.app,

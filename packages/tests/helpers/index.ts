@@ -51,6 +51,7 @@ export const fakePost = () => ({
     id: undefined,
     title: Faker.lorem.sentence(),
     description: Faker.lorem.sentence(),
+    slug: Faker.lorem.sentence(),
     content: Faker.lorem.sentence(),
     av_cpc: Faker.random.number(),
     category: Faker.random.arrayElement([
@@ -77,9 +78,9 @@ export const getDatabaseCredentials = () => {
         config.user = process.env.DATABASE_USER || 'postgres'
         config.password = process.env.DATABASE_PASSWORD || 'postgres'
     } else {
-        config.dbName = process.env.DATABASE_NAME || 'tensei'
+        config.dbName = process.env.DATABASE_NAME || 'mikrotensei'
         config.user = process.env.DATABASE_USER || 'root'
-        config.password = process.env.DATABASE_PASSWORD || ''
+        config.password = process.env.DATABASE_PASSWORD || 'password'
     }
 
     return config
