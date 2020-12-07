@@ -554,7 +554,8 @@ input id_where_query {
 
             extendGraphQlQueries(
                 getResolvers(exposedResources, {
-                    subscriptionsEnabled: this.subscriptionsEnabled
+                    subscriptionsEnabled: this.subscriptionsEnabled,
+                    database: config.orm!.config.get('type')
                 })
             )
 

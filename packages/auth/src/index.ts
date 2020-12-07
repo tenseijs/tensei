@@ -468,14 +468,14 @@ class Auth {
                     extendGraphQlQueries(this.extendGraphQlQueries())
                     extendRoutes(this.extendRoutes())
 
-                    if (! this.config.cms) {
+                    if (!this.config.cms) {
                         extendGraphQlMiddleware([
                             graphQlQueries => {
                                 const resolverAuthorizers: Resolvers = {
                                     Query: {},
                                     Mutation: {}
                                 }
-    
+
                                 const getAuthorizer = (
                                     query: GraphQlQueryContract
                                 ): GraphQlMiddleware => {
@@ -486,50 +486,55 @@ class Auth {
                                         context,
                                         info
                                     ) => {
-                                        await this.getAuthUserFromContext(context)
+                                        await this.getAuthUserFromContext(
+                                            context
+                                        )
                                         await this.setAuthUserForPublicRoutes(
                                             context
                                         )
                                         await this.ensureAuthUserIsNotBlocked(
                                             context
                                         )
-                                        await this.authorizeResolver(context, query)
-    
+                                        await this.authorizeResolver(
+                                            context,
+                                            query
+                                        )
+
                                         const result = await resolve(
                                             parent,
                                             args,
                                             context,
                                             info
                                         )
-    
+
                                         return result
                                     }
                                 }
-    
+
                                 graphQlQueries.forEach(query => {
                                     if (query.config.type === 'QUERY') {
                                         ;(resolverAuthorizers.Query as any)[
                                             query.config.path
                                         ] = getAuthorizer(query)
                                     }
-    
+
                                     if (query.config.type === 'MUTATION') {
                                         ;(resolverAuthorizers.Mutation as any)[
                                             query.config.path
                                         ] = getAuthorizer(query)
                                     }
-    
+
                                     if (query.config.type === 'SUBSCRIPTION') {
                                         query.middleware([
                                             async (parent, args, ctx, info) => {
                                                 const authorizationToken =
                                                     ctx.connection?.context
                                                         ?.Authorization
-    
+
                                                 if (!authorizationToken) {
                                                     return
                                                 }
-    
+
                                                 await this.populateContextFromToken(
                                                     authorizationToken.split(
                                                         ' '
@@ -542,11 +547,13 @@ class Auth {
                                                     ctx
                                                 ),
                                             async (parent, args, ctx, info) =>
-                                                this.ensureAuthUserIsNotBlocked(ctx)
+                                                this.ensureAuthUserIsNotBlocked(
+                                                    ctx
+                                                )
                                         ])
                                     }
                                 })
-    
+
                                 return resolverAuthorizers
                             }
                         ])
@@ -1813,8 +1820,6 @@ class Auth {
         const { email, password, token } = await this.validate(
             body.object ? body.object : body
         )
-
-        console.log('@@@@', [this.getRolesAndPermissionsNames()])
 
         const user: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,
