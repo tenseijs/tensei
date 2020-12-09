@@ -24,11 +24,13 @@ declare module '@tensei/common/resources' {
         label: string
         groupSlug: string
         valueField: string
-        hideFromCreateApi: boolean
-        hideFromFetchApi: boolean
-        hideFromShowApi: boolean
-        hideFromUpdateApi: boolean
-        hideFromDeleteApi: boolean
+        hideOnInsertApi: boolean
+        hideOnFetchApi: boolean
+        hideOnUpdateApi: boolean
+        hideOnDeleteApi: boolean
+        hideOnInsertSubscription: boolean
+        hideOnUpdateSubscription: boolean
+        hideOnDeleteSubscription: boolean
         camelCaseName: string
         displayField: string
         description: string
@@ -87,18 +89,19 @@ declare module '@tensei/common/resources' {
             afterFlush: FlushHookFunction[]
         }
         data: ResourceDataWithFields
-        hideFromApi(): this
-        hiddenFromApi(): boolean
-        hideFromCreateApi(): this
-        hideFromUpdateApi(): this
-        hideFromDeleteApi(): this
-        hideFromFetchApi(): this
-        hideFromShowApi(): this
+        hideOnApi(): this
+        isHiddenOnApi(): boolean
+        hideOnInsertApi(): this
+        hideOnUpdateApi(): this
+        hideOnDeleteApi(): this
+        hideOnFetchApi(): this
+        showOnInsertSubscription(): this
+        showOnUpdateSubscription(): this
+        showOnDeleteSubscription(): this
         getPrimaryField(): FieldContract | undefined
         getCreateApiExposedFields(): FieldContract[]
         getUpdateApiExposedFields(): FieldContract[]
         getFetchApiExposedFields(): FieldContract[]
-        getShowApiExposedFields(): FieldContract[]
         extend(extend: ResourceExtendContract): this
         filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
@@ -159,17 +162,15 @@ declare module '@tensei/common/resources' {
             afterUpdate: HookFunction
         }
         data: ResourceDataWithFields
-        hideFromApi(): this
-        hiddenFromApi(): boolean
-        hideFromCreateApi(): this
-        hideFromUpdateApi(): this
-        hideFromDeleteApi(): this
-        hideFromFetchApi(): this
-        hideFromShowApi(): this
+        hideOnApi(): this
+        isHiddenOnApi(): boolean
+        hideOnInsertApi(): this
+        hideOnUpdateApi(): this
+        hideOnDeleteApi(): this
+        hideOnFetchApi(): this
         getCreateApiExposedFields(): FieldContract[]
         getUpdateApiExposedFields(): FieldContract[]
         getFetchApiExposedFields(): FieldContract[]
-        getShowApiExposedFields(): FieldContract[]
         filters(filters: FilterContract[]): this
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this

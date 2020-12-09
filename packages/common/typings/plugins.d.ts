@@ -11,7 +11,6 @@ declare module '@tensei/common/plugins' {
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
     import {
         Asset,
-        EndpointMiddleware,
         Config,
         Permission,
         SupportedStorageDrivers,
@@ -19,18 +18,13 @@ declare module '@tensei/common/plugins' {
         GraphQLPluginExtension,
         RouteContract,
         GraphQlQueryContract,
-        TensieContext
+        TensieContext,
+        RouteConfig
     } from '@tensei/common/config'
 
     type PluginSetupFunction = (
         config: PluginSetupConfig
     ) => void | Promise<void>
-
-    type ServerStartedPluginSetupFunction = (
-        config: PluginSetupConfig & {
-            server: Server
-        }
-    ) => void
 
     type SetupFunctions = 'boot' | 'register'
 
@@ -58,6 +52,11 @@ declare module '@tensei/common/plugins' {
         extendRoutes: (queries: RouteContract[]) => any
         extendResources: (resources: ResourceContract[]) => any
         currentCtx: () => Config
+        getQuery: (path: string) => GraphQlQueryContract | undefined
+        getRoute: (
+            type: RouteConfig['type'],
+            path: string
+        ) => RouteContract | undefined
     }
 
     export abstract class PluginContract {

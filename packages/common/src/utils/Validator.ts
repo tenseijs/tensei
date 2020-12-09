@@ -1,4 +1,5 @@
 import * as validator from 'indicative/validator'
+import * as sanitizer from 'indicative/sanitizer'
 import { EntityManager, ReferenceType } from '@mikro-orm/core'
 import { DataPayload, ResourceContract } from '@tensei/common'
 
@@ -32,6 +33,26 @@ export class Validator {
                 return count === 0
             }
         })
+    }
+
+    getSanitizationRules = () => {
+        const fields = this.resource.data.fields.filter(
+            field =>
+                field.showHideField.showOnCreation ||
+                field.showHideField.showOnUpdate
+        )
+
+        const rules: {
+            [key: string]: string
+        } = {}
+
+        fields.forEach(field => {
+            if (field.sanitizeRule) {
+                rules[field.databaseField] = field.sanitizeRule
+            }
+        })
+
+        return rules
     }
 
     getValidationRules = (creationRules = true) => {
@@ -137,7 +158,13 @@ export class Validator {
                 this.resource.data.validationMessages
             )
 
-            return [true, parsedPayload]
+            return [
+                true,
+                await sanitizer.sanitize(
+                    parsedPayload,
+                    this.getSanitizationRules()
+                )
+            ]
         } catch (errors) {
             return [false, errors]
         }

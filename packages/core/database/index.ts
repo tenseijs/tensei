@@ -248,7 +248,9 @@ class Database {
 
                 if (!relatedField.relatedProperty.owner) {
                     field.relatedProperty.owner = true
-                    field.relatedProperty.mappedBy = relatedField.databaseField
+
+                    relatedField.relatedProperty.inversedBy =
+                        field.databaseField
                 }
             }
         }

@@ -18,6 +18,18 @@ declare module '@tensei/common/fields' {
         new (...args: any[]): M
     }
 
+    type SanitizationRules =
+        | 'escape'
+        | 'lower_case'
+        | 'normalize_email'
+        | 'plural'
+        | 'singular'
+        | 'slug'
+        | 'strip_links'
+        | 'strip_tags'
+        | 'trim'
+        | 'uppercase'
+
     interface FieldProperty {
         name?: string
         entity?: () => any
@@ -157,12 +169,12 @@ declare module '@tensei/common/fields' {
              */
             showOnCreation: boolean
         }
+        sanitizeRule?: SanitizationRules
         showHideFieldFromApi: {
-            hideFromShowApi: boolean
-            hideFromCreateApi: boolean
-            hideFromUpdateApi: boolean
-            hideFromDeleteApi: boolean
-            hideFromFetchApi: boolean
+            hideOnInsertApi: boolean
+            hideOnUpdateApi: boolean
+            hideOnDeleteApi: boolean
+            hideOnFetchApi: boolean
         }
         tenseiConfig: Config | null
         authorizeCallbacks: {
@@ -327,13 +339,12 @@ declare module '@tensei/common/fields' {
          * update forms.
          */
         exceptOnForms(): this
-        hideFromApi(): this
-        hideFromCreateApi(): this
-        hideFromUpdateApi(): this
-        hideFromDeleteApi(): this
-        hideFromFetchApi(): this
-        hideFromShowApi(): this
-        hiddenFromApi(): boolean
+        hideOnApi(): this
+        hideOnInsertApi(): this
+        hideOnUpdateApi(): this
+        hideOnDeleteApi(): this
+        hideOnFetchApi(): this
+        isHiddenOnApi(): boolean
         /**
          *
          * Make this field sortable
@@ -397,6 +408,7 @@ declare module '@tensei/common/fields' {
          * @param this
          */
         rules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+        sanitize<T extends FieldContract>(this: T, rule: SanitizationRules): T
         /**
          * Set the validation rules to be used when
          * creating this field to the database
@@ -563,6 +575,10 @@ declare module '@tensei/common/fields' {
     const id: (name: string, databaseField?: string | undefined) => IDContract
     const belongsToMany: (name: string) => RelationshipField
     const hasMany: (
+        name: string,
+        databaseField?: string | undefined
+    ) => RelationshipField
+    const hasOne: (
         name: string,
         databaseField?: string | undefined
     ) => RelationshipField

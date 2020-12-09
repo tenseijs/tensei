@@ -93,7 +93,10 @@ class Graphql {
             FieldType = `${FieldType}!`
         }
 
-        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+        if (
+            field.relatedProperty.reference === ReferenceType.MANY_TO_ONE ||
+            field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+        ) {
             FieldType = `ID`
             FieldKey = field.databaseField
         }
@@ -153,7 +156,10 @@ class Graphql {
             FieldType = 'Date'
         }
 
-        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+        if (
+            field.relatedProperty.reference === ReferenceType.MANY_TO_ONE ||
+            field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+        ) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
@@ -203,7 +209,8 @@ class Graphql {
             [
                 ReferenceType.MANY_TO_MANY,
                 ReferenceType.ONE_TO_MANY,
-                ReferenceType.MANY_TO_ONE
+                ReferenceType.MANY_TO_ONE,
+                ReferenceType.ONE_TO_ONE
             ].includes(field.relatedProperty.reference!)
         ) {
             const relatedResource = config.resources.find(
@@ -298,7 +305,11 @@ ${resource.data.fields
         }`
     )}
 type ${resource.data.snakeCaseName} {${resource.data.fields
-                .filter(field => !field.property.hidden)
+                .filter(
+                    field =>
+                        !field.property.hidden &&
+                        !field.showHideFieldFromApi.hideOnFetchApi
+                )
                 .map(field =>
                     this.getGraphqlFieldDefinition(
                         field,
@@ -318,35 +329,53 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
                `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
        )}
 }
-input create_${
-                resource.data.snakeCaseName
-            }_input {${resource.data.fields
-                .filter(
-                    field => !field.property.primary && !field.property.hidden
-                )
-                .map(field =>
-                    this.getGraphqlFieldDefinitionForCreateInput(
-                        field,
-                        resource,
-                        resources
-                    )
-                )}
+${
+    !resource.data.hideOnInsertApi
+        ? `
+input insert_${
+              resource.data.snakeCaseName
+          }_input {${resource.data.fields
+              .filter(
+                  field =>
+                      !field.property.primary &&
+                      !field.property.hidden &&
+                      !field.showHideFieldFromApi.hideOnInsertApi
+              )
+              .map(field =>
+                  this.getGraphqlFieldDefinitionForCreateInput(
+                      field,
+                      resource,
+                      resources
+                  )
+              )}
+}
+`
+        : ''
 }
 
+${
+    !resource.data.hideOnUpdateApi
+        ? `
 input update_${
-                resource.data.snakeCaseName
-            }_input {${resource.data.fields
-                .filter(
-                    field => !field.property.primary && !field.property.hidden
-                )
-                .map(field =>
-                    this.getGraphqlFieldDefinitionForCreateInput(
-                        field,
-                        resource,
-                        resources,
-                        true
-                    )
-                )}
+              resource.data.snakeCaseName
+          }_input {${resource.data.fields
+              .filter(
+                  field =>
+                      !field.property.primary &&
+                      !field.property.hidden &&
+                      !field.showHideFieldFromApi.hideOnUpdateApi
+              )
+              .map(field =>
+                  this.getGraphqlFieldDefinitionForCreateInput(
+                      field,
+                      resource,
+                      resources,
+                      true
+                  )
+              )}
+}
+`
+        : ''
 }
 
 enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
@@ -358,43 +387,66 @@ ${this.getWhereQueryForResource(resource, config)}
 `
         })
 
-        this.schemaString = `${this.schemaString}type Query {${resources.map(
-            resource => {
+        this.schemaString = `${this.schemaString}type Query {${resources
+            .filter(r => !r.isHiddenOnApi() && !r.data.hideOnFetchApi)
+            .map(resource => {
                 return `${this.defineFetchSingleQueryForResource(
                     resource,
                     config
                 )}${this.defineFetchAllQueryForResource(resource, config)}`
-            }
-        )}
+            })}
 }
 `
-        this.schemaString = `${
-            this.schemaString
-        }type Subscription {${resources.map(
-            resource => `${defineCreateSubscriptionsForResource(resource)}`
-        )}
-${resources.map(
+
+        const createSubscriptions = resources.filter(
+            r => !r.data.hideOnInsertSubscription
+        )
+
+        const updateSubscriptions = resources.filter(
+            r => !r.data.hideOnUpdateSubscription
+        )
+
+        const deleteSubscriptions = resources.filter(
+            r => !r.data.hideOnDeleteSubscription
+        )
+
+        if (
+            createSubscriptions.length ||
+            updateSubscriptions.length ||
+            deleteSubscriptions.length
+        ) {
+            this.schemaString = `${
+                this.schemaString
+            }type Subscription {${createSubscriptions.map(
+                resource => `${defineCreateSubscriptionsForResource(resource)}`
+            )}
+${updateSubscriptions.map(
     resource => `${defineUpdateSubscriptionsForResource(resource)}`
 )}
-${resources.map(
+${deleteSubscriptions.map(
     resource => `${defineDeleteSubscriptionsForResource(resource)}`
 )}
 }`
+        }
 
-        this.schemaString = `${this.schemaString}type Mutation {${resources.map(
-            resource => {
+        this.schemaString = `${this.schemaString}type Mutation {${resources
+            .filter(r => !r.data.hideOnInsertApi)
+            .map(resource => {
                 return `${this.defineCreateMutationForResource(
                     resource,
                     config
                 )}`
-            }
-        )}
-${resources.map(resource => {
-    return `${this.defineUpdateMutationForResource(resource, config)}`
-})}
-${resources.map(resource => {
-    return `${this.defineDeleteMutationForResource(resource, config)}`
-})}
+            })}
+${resources
+    .filter(r => !r.data.hideOnUpdateApi)
+    .map(resource => {
+        return `${this.defineUpdateMutationForResource(resource, config)}`
+    })}
+${resources
+    .filter(r => !r.data.hideOnDeleteApi)
+    .map(resource => {
+        return `${this.defineDeleteMutationForResource(resource, config)}`
+    })}
 }
 input string_where_query {
     ${filterOperators.map(operator => {
@@ -435,8 +487,8 @@ input id_where_query {
         config: PluginSetupConfig
     ) {
         return `
-        insert_${resource.data.snakeCaseName}(object: create_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
-        insert_${resource.data.snakeCaseNamePlural}(objects: [create_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
+        insert_${resource.data.snakeCaseName}(object: insert_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
+        insert_${resource.data.snakeCaseNamePlural}(objects: [insert_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
     `
     }
 
@@ -502,8 +554,15 @@ input id_where_query {
     getResolversFromGraphqlQueries(queries: GraphQlQueryContract[]) {
         const resolvers: any = {
             Query: {},
-            Mutation: {},
-            Subscription: {}
+            Mutation: {}
+        }
+
+        const subscriptions = queries.filter(
+            q => q.config.type === 'SUBSCRIPTION'
+        )
+
+        if (subscriptions.length !== 0) {
+            resolvers.Subscription = {}
         }
 
         queries.forEach(query => {
@@ -552,10 +611,10 @@ input id_where_query {
                 } = config
 
                 const exposedResources = currentCtx().resources.filter(
-                    resource => !resource.hiddenFromApi()
+                    resource => !resource.isHiddenOnApi()
                 )
 
-                this.setupResourceGraphqlTypes(exposedResources, config)
+                this.setupResourceGraphqlTypes(currentCtx().resources, config)
 
                 extendGraphQlQueries(
                     getResolvers(exposedResources, {

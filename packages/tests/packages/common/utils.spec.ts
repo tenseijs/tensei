@@ -1,5 +1,6 @@
 import Faker from 'faker'
 import { Utils } from '@tensei/common'
+import { paramCase } from 'change-case'
 import { setup, fakePost, fakeUser } from './setup'
 
 test('correctly gets validation rules for a resource', async () => {
@@ -37,6 +38,36 @@ test('correctly gets validation rules for a resource', async () => {
         body: 'required',
         post: 'number'
     })
+})
+
+test('Sanitizes resource fields on create', async () => {
+    const {
+        ctx: {
+            orm: { em },
+            resourcesMap
+        }
+    } = await setup()
+    const validator = Utils.validator(resourcesMap['Comment'], em, resourcesMap)
+
+    expect(validator.getValidationRules()).toEqual({
+        title: 'required',
+        body: 'required',
+        post: 'number'
+    })
+
+    const validPayload = {
+        title: Faker.lorem.sentence(),
+        body: Faker.lorem.sentence(),
+        post: Faker.random.number()
+    }
+
+    expect(await validator.validate(validPayload)).toEqual([
+        true,
+        {
+            ...validPayload,
+            title: paramCase(validPayload.title)
+        }
+    ])
 })
 
 test('correctly validates data and throws error with validation rules', async () => {

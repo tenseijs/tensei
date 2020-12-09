@@ -1,6 +1,6 @@
 import { Utils } from '@tensei/common'
+import { Configuration } from '@mikro-orm/core'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
-import { EntityManager, ReferenceType, Configuration } from '@mikro-orm/core'
 import {
     GraphQlQueryContract,
     ResourceContract,
@@ -22,357 +22,385 @@ export const getResolvers = (
     const resolversList: GraphQlQueryContract[] = []
 
     resources.forEach(resource => {
-        resolversList.push(
-            graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
-                .path(resource.data.snakeCaseNamePlural)
-                .query()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data: any[] = await ctx.manager.find(
-                        resource.data.pascalCaseName,
-                        parseWhereArgumentsToWhereQuery(args.where),
-                        getFindOptionsFromArgs(args)
-                    )
+        !resource.isHiddenOnApi() &&
+            !resource.data.hideOnFetchApi &&
+            resolversList.push(
+                graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
+                    .path(resource.data.snakeCaseNamePlural)
+                    .query()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any[] = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where),
+                            getFindOptionsFromArgs(args)
+                        )
 
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        data
-                    )
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
 
-                    return data
-                })
-        )
+                        return data
+                    })
+            )
 
-        resolversList.push(
-            graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
-                .path(resource.data.snakeCaseName)
-                .query()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data: any = await ctx.manager.findOneOrFail(
-                        resource.data.pascalCaseName,
-                        {
-                            id: args.id
-                        }
-                    )
-
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        [data]
-                    )
-
-                    return data
-                })
-        )
-
-        resolversList.push(
-            graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
-                .path(`insert_${resource.data.snakeCaseName}`)
-                .mutation()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const [passed, payload] = await Utils.validator(
-                        resource,
-                        ctx.manager,
-                        ctx.resourcesMap
-                    ).validate(args.object)
-
-                    if (!passed) {
-                        throw ctx.userInputError('Validation failed.', {
-                            errors: payload
-                        })
-                    }
-
-                    const data = ctx.manager.create(
-                        resource.data.pascalCaseName,
-                        payload
-                    )
-
-                    await ctx.manager.persistAndFlush(data)
-
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        [data]
-                    )
-
-                    subscriptionsEnabled &&
-                        ctx.pubsub.publish(
-                            `${resource.data.snakeCaseName}_inserted`,
+        !resource.isHiddenOnApi() &&
+            !resource.data.hideOnFetchApi &&
+            resolversList.push(
+                graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
+                    .path(resource.data.snakeCaseName)
+                    .query()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager.findOneOrFail(
+                            resource.data.pascalCaseName,
                             {
-                                [`${resource.data.snakeCaseName}_inserted`]: data
+                                id: args.id
                             }
                         )
 
-                    return data
-                })
-        )
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
 
-        resolversList.push(
-            graphQlQuery(`Insert multiple ${resource.data.snakeCaseNamePlural}`)
-                .path(`insert_${resource.data.snakeCaseNamePlural}`)
-                .mutation()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data: any[] = args.objects.map((object: any) =>
-                        ctx.manager.create(resource.data.pascalCaseName, object)
-                    )
+                        return data
+                    })
+            )
 
-                    await ctx.manager.persistAndFlush(data)
+        !resource.isHiddenOnApi() &&
+            !resource.data.hideOnInsertApi &&
+            resolversList.push(
+                graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
+                    .path(`insert_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const [passed, payload] = await Utils.validator(
+                            resource,
+                            ctx.manager,
+                            ctx.resourcesMap
+                        ).validate(args.object)
 
-                    await ctx.manager.persistAndFlush(data)
+                        if (!passed) {
+                            throw ctx.userInputError('Validation failed.', {
+                                errors: payload
+                            })
+                        }
 
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        data
-                    )
+                        const data = ctx.manager.create(
+                            resource.data.pascalCaseName,
+                            payload
+                        )
 
-                    subscriptionsEnabled &&
-                        data.forEach(d => {
+                        await ctx.manager.persistAndFlush(data)
+
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        subscriptionsEnabled &&
                             ctx.pubsub.publish(
                                 `${resource.data.snakeCaseName}_inserted`,
                                 {
-                                    [`${resource.data.snakeCaseName}_inserted`]: d
+                                    [`${resource.data.snakeCaseName}_inserted`]: data
                                 }
                             )
-                        })
 
-                    return data
-                })
-        )
+                        return data
+                    })
+            )
 
-        resolversList.push(
-            graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
-                .path(`update_${resource.data.snakeCaseName}`)
-                .mutation()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data: any = await ctx.manager
-                        .getRepository<any>(resource.data.pascalCaseName)
-                        .findOneOrFail(args.id)
-
-                    const [passed, payload] = await Utils.validator(
-                        resource,
-                        ctx.manager,
-                        ctx.resourcesMap,
-                        args.id
-                    ).validate(args.object)
-
-                    if (!passed) {
-                        throw ctx.userInputError('Validation failed.', {
-                            errors: payload
-                        })
-                    }
-
-                    ctx.manager.assign(data, payload)
-
-                    await ctx.manager.persistAndFlush(data)
-
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        [data]
-                    )
-
-                    subscriptionsEnabled &&
-                        ctx.pubsub.publish(
-                            `${resource.data.snakeCaseName}_updated`,
-                            {
-                                [`${resource.data.snakeCaseName}_updated`]: data
-                            }
+        !resource.isHiddenOnApi() &&
+            !resource.data.hideOnInsertApi &&
+            resolversList.push(
+                graphQlQuery(
+                    `Insert multiple ${resource.data.snakeCaseNamePlural}`
+                )
+                    .path(`insert_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any[] = args.objects.map((object: any) =>
+                            ctx.manager.create(
+                                resource.data.pascalCaseName,
+                                object
+                            )
                         )
 
-                    return data
-                })
-        )
+                        await ctx.manager.persistAndFlush(data)
 
-        resolversList.push(
-            graphQlQuery(`Update multiple ${resource.data.snakeCaseNamePlural}`)
-                .path(`update_${resource.data.snakeCaseNamePlural}`)
-                .mutation()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data = await ctx.manager.find(
-                        resource.data.pascalCaseName,
-                        parseWhereArgumentsToWhereQuery(args.where)
-                    )
+                        await ctx.manager.persistAndFlush(data)
 
-                    const [passed, payload] = await Utils.validator(
-                        resource,
-                        ctx.manager,
-                        ctx.resourcesMap
-                    ).validate(args.object)
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
 
-                    if (!passed) {
-                        throw ctx.userInputError('Validation failed.', {
-                            errors: payload
-                        })
-                    }
+                        subscriptionsEnabled &&
+                            data.forEach(d => {
+                                ctx.pubsub.publish(
+                                    `${resource.data.snakeCaseName}_inserted`,
+                                    {
+                                        [`${resource.data.snakeCaseName}_inserted`]: d
+                                    }
+                                )
+                            })
 
-                    data.forEach(d => ctx.manager.assign(d, args.object))
+                        return data
+                    })
+            )
 
-                    await ctx.manager.persistAndFlush(data)
+        !resource.data.hideOnUpdateApi &&
+            !resource.isHiddenOnApi() &&
+            resolversList.push(
+                graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
+                    .path(`update_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager
+                            .getRepository<any>(resource.data.pascalCaseName)
+                            .findOneOrFail(args.id)
 
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        data
-                    )
+                        const [passed, payload] = await Utils.validator(
+                            resource,
+                            ctx.manager,
+                            ctx.resourcesMap,
+                            args.id
+                        ).validate(args.object, false)
 
-                    subscriptionsEnabled &&
-                        data.forEach(d => {
+                        if (!passed) {
+                            throw ctx.userInputError('Validation failed.', {
+                                errors: payload
+                            })
+                        }
+
+                        ctx.manager.assign(data, payload)
+
+                        await ctx.manager.persistAndFlush(data)
+
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        subscriptionsEnabled &&
                             ctx.pubsub.publish(
                                 `${resource.data.snakeCaseName}_updated`,
                                 {
-                                    [`${resource.data.snakeCaseName}_updated`]: d
+                                    [`${resource.data.snakeCaseName}_updated`]: data
                                 }
                             )
-                        })
 
-                    return data
-                })
-        )
+                        return data
+                    })
+            )
 
-        resolversList.push(
-            graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
-                .path(`delete_${resource.data.snakeCaseName}`)
-                .mutation()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data: any = await ctx.manager
-                        .getRepository<any>(resource.data.pascalCaseName)
-                        .findOneOrFail(args.id)
-
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        [data]
-                    )
-
-                    await ctx.manager.removeAndFlush(data)
-
-                    subscriptionsEnabled &&
-                        ctx.pubsub.publish(
-                            `${resource.data.snakeCaseName}_deleted`,
-                            {
-                                [`${resource.data.snakeCaseName}_deleted`]: data
-                            }
+        !resource.data.hideOnUpdateApi &&
+            !resource.isHiddenOnApi() &&
+            resolversList.push(
+                graphQlQuery(
+                    `Update multiple ${resource.data.snakeCaseNamePlural}`
+                )
+                    .path(`update_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where)
                         )
 
-                    return data
-                })
-        )
+                        const [passed, payload] = await Utils.validator(
+                            resource,
+                            ctx.manager,
+                            ctx.resourcesMap
+                        ).validate(args.object, false)
 
-        resolversList.push(
-            graphQlQuery(`Delete multiple ${resource.data.snakeCaseNamePlural}`)
-                .path(`delete_${resource.data.snakeCaseNamePlural}`)
-                .mutation()
-                .internal()
-                .resource(resource)
-                .handle(async (_, args, ctx, info) => {
-                    const data = await ctx.manager.find(
-                        resource.data.pascalCaseName,
-                        parseWhereArgumentsToWhereQuery(args.where)
-                    )
+                        if (!passed) {
+                            throw ctx.userInputError('Validation failed.', {
+                                errors: payload
+                            })
+                        }
 
-                    await Utils.graphql.populateFromResolvedNodes(
-                        resources,
-                        ctx.manager,
-                        ctx.databaseConfig.type!,
-                        resource,
-                        getParsedInfo(info),
-                        data
-                    )
+                        data.forEach(d => ctx.manager.assign(d, args.object))
 
-                    await ctx.manager.removeAndFlush(data)
+                        await ctx.manager.persistAndFlush(data)
 
-                    subscriptionsEnabled &&
-                        data.forEach(d => {
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
+
+                        subscriptionsEnabled &&
+                            data.forEach(d => {
+                                ctx.pubsub.publish(
+                                    `${resource.data.snakeCaseName}_updated`,
+                                    {
+                                        [`${resource.data.snakeCaseName}_updated`]: d
+                                    }
+                                )
+                            })
+
+                        return data
+                    })
+            )
+
+        !resource.data.hideOnDeleteApi &&
+            !resource.isHiddenOnApi() &&
+            resolversList.push(
+                graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
+                    .path(`delete_${resource.data.snakeCaseName}`)
+                    .mutation()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data: any = await ctx.manager
+                            .getRepository<any>(resource.data.pascalCaseName)
+                            .findOneOrFail(args.id)
+
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            [data]
+                        )
+
+                        await ctx.manager.removeAndFlush(data)
+
+                        subscriptionsEnabled &&
                             ctx.pubsub.publish(
                                 `${resource.data.snakeCaseName}_deleted`,
                                 {
-                                    [`${resource.data.snakeCaseName}_deleted`]: d
+                                    [`${resource.data.snakeCaseName}_deleted`]: data
                                 }
                             )
-                        })
 
-                    return data
-                })
-        )
+                        return data
+                    })
+            )
+
+        !resource.data.hideOnDeleteApi &&
+            !resource.isHiddenOnApi() &&
+            resolversList.push(
+                graphQlQuery(
+                    `Delete multiple ${resource.data.snakeCaseNamePlural}`
+                )
+                    .path(`delete_${resource.data.snakeCaseNamePlural}`)
+                    .mutation()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx, info) => {
+                        const data = await ctx.manager.find(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where)
+                        )
+
+                        await Utils.graphql.populateFromResolvedNodes(
+                            resources,
+                            ctx.manager,
+                            ctx.databaseConfig.type!,
+                            resource,
+                            getParsedInfo(info),
+                            data
+                        )
+
+                        await ctx.manager.removeAndFlush(data)
+
+                        subscriptionsEnabled &&
+                            data.forEach(d => {
+                                ctx.pubsub.publish(
+                                    `${resource.data.snakeCaseName}_deleted`,
+                                    {
+                                        [`${resource.data.snakeCaseName}_deleted`]: d
+                                    }
+                                )
+                            })
+
+                        return data
+                    })
+            )
 
         if (subscriptionsEnabled) {
-            resolversList.push(
-                graphQlQuery(
-                    `${resource.data.snakeCaseName} inserted subscription`
-                )
-                    .subscription()
-                    .path(`${resource.data.snakeCaseName}_inserted`)
-                    .resource(resource)
-                    .handle((_, args, ctx, info) =>
-                        ctx.pubsub.asyncIterator([
-                            `${resource.data.snakeCaseName}_inserted`
-                        ])
+            !resource.data.hideOnInsertSubscription &&
+                resolversList.push(
+                    graphQlQuery(
+                        `${resource.data.snakeCaseName} inserted subscription`
                     )
-            )
+                        .subscription()
+                        .path(`${resource.data.snakeCaseName}_inserted`)
+                        .resource(resource)
+                        .handle((_, args, ctx, info) =>
+                            ctx.pubsub.asyncIterator([
+                                `${resource.data.snakeCaseName}_inserted`
+                            ])
+                        )
+                )
 
-            resolversList.push(
-                graphQlQuery(
-                    `${resource.data.snakeCaseName} updated subscription`
-                )
-                    .subscription()
-                    .path(`${resource.data.snakeCaseName}_updated`)
-                    .resource(resource)
-                    .handle((_, args, ctx, info) =>
-                        ctx.pubsub.asyncIterator([
-                            `${resource.data.snakeCaseName}_updated`
-                        ])
+            !resource.data.hideOnUpdateSubscription &&
+                resolversList.push(
+                    graphQlQuery(
+                        `${resource.data.snakeCaseName} updated subscription`
                     )
-            )
+                        .subscription()
+                        .path(`${resource.data.snakeCaseName}_updated`)
+                        .resource(resource)
+                        .handle((_, args, ctx, info) =>
+                            ctx.pubsub.asyncIterator([
+                                `${resource.data.snakeCaseName}_updated`
+                            ])
+                        )
+                )
 
-            resolversList.push(
-                graphQlQuery(
-                    `${resource.data.snakeCaseName} deleted subscription`
-                )
-                    .subscription()
-                    .path(`${resource.data.snakeCaseName}_deleted`)
-                    .resource(resource)
-                    .handle((_, args, ctx, info) =>
-                        ctx.pubsub.asyncIterator([
-                            `${resource.data.snakeCaseName}_deleted`
-                        ])
+            !resource.data.hideOnDeleteSubscription &&
+                resolversList.push(
+                    graphQlQuery(
+                        `${resource.data.snakeCaseName} deleted subscription`
                     )
-            )
+                        .subscription()
+                        .path(`${resource.data.snakeCaseName}_deleted`)
+                        .resource(resource)
+                        .handle((_, args, ctx, info) =>
+                            ctx.pubsub.asyncIterator([
+                                `${resource.data.snakeCaseName}_deleted`
+                            ])
+                        )
+                )
         }
     })
 

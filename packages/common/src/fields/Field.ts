@@ -6,7 +6,8 @@ import {
     FieldProperty,
     SerializedField,
     FieldHookFunction,
-    AuthorizeFunction
+    AuthorizeFunction,
+    SanitizationRules
 } from '@tensei/common'
 
 export class Field implements FieldContract {
@@ -42,11 +43,10 @@ export class Field implements FieldContract {
     }
 
     public showHideFieldFromApi = {
-        hideFromShowApi: false,
-        hideFromCreateApi: false,
-        hideFromUpdateApi: false,
-        hideFromDeleteApi: false,
-        hideFromFetchApi: false
+        hideOnInsertApi: false,
+        hideOnUpdateApi: false,
+        hideOnDeleteApi: false,
+        hideOnFetchApi: false
     }
 
     public property: FieldProperty = {
@@ -122,6 +122,8 @@ export class Field implements FieldContract {
      * this field on forms
      */
     public validationRules: Array<string> = []
+
+    public sanitizeRules: Array<SanitizationRules> = []
 
     /**
      *
@@ -386,42 +388,35 @@ export class Field implements FieldContract {
         return this
     }
 
-    public hideFromApi() {
-        this.showHideFieldFromApi.hideFromCreateApi = true
-        this.showHideFieldFromApi.hideFromFetchApi = true
-        this.showHideFieldFromApi.hideFromShowApi = true
-        this.showHideFieldFromApi.hideFromDeleteApi = true
-        this.showHideFieldFromApi.hideFromUpdateApi = true
+    public hideOnApi() {
+        this.showHideFieldFromApi.hideOnInsertApi = true
+        this.showHideFieldFromApi.hideOnFetchApi = true
+        this.showHideFieldFromApi.hideOnDeleteApi = true
+        this.showHideFieldFromApi.hideOnUpdateApi = true
 
         return this
     }
 
-    public hideFromCreateApi() {
-        this.showHideFieldFromApi.hideFromCreateApi = true
+    public hideOnInsertApi() {
+        this.showHideFieldFromApi.hideOnInsertApi = true
 
         return this
     }
 
-    public hideFromUpdateApi() {
-        this.showHideFieldFromApi.hideFromUpdateApi = true
+    public hideOnUpdateApi() {
+        this.showHideFieldFromApi.hideOnUpdateApi = true
 
         return this
     }
 
-    public hideFromDeleteApi() {
-        this.showHideFieldFromApi.hideFromDeleteApi = true
+    public hideOnDeleteApi() {
+        this.showHideFieldFromApi.hideOnDeleteApi = true
 
         return this
     }
 
-    public hideFromFetchApi() {
-        this.showHideFieldFromApi.hideFromFetchApi = true
-
-        return this
-    }
-
-    public hideFromShowApi() {
-        this.showHideFieldFromApi.hideFromShowApi = true
+    public hideOnFetchApi() {
+        this.showHideFieldFromApi.hideOnFetchApi = true
 
         return this
     }
@@ -613,6 +608,21 @@ export class Field implements FieldContract {
     }
 
     /**
+     * Define a sanitization rule to be used when saving data for this field.
+     *
+     * @param this
+     * @param sanitize string
+     */
+    public sanitize<T extends FieldContract>(
+        this: T,
+        sanitizeRule: SanitizationRules
+    ): T {
+        this.sanitizeRule = sanitizeRule
+
+        return this
+    }
+
+    /**
      * Set the validation rules to be used when
      * creating this field to the database
      */
@@ -648,7 +658,7 @@ export class Field implements FieldContract {
      */
     public hidden<T extends FieldContract>(this: T): T {
         this.property.hidden = true
-        this.hideFromApi()
+        this.hideOnApi()
         this.hideOnCreate()
         this.hideOnDetail()
         this.hideOnIndex()
@@ -681,7 +691,7 @@ export class Field implements FieldContract {
         return this
     }
 
-    public hiddenFromApi() {
+    public isHiddenOnApi() {
         return (
             Object.values(this.showHideFieldFromApi).filter(shown => shown)
                 .length === 0 || !!this.property.hidden

@@ -18,6 +18,16 @@ Object {
           "format": "date",
           "type": "string",
         },
+        "title_hidden_from_insert_and_fetch_api": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
+        "title_hidden_from_update_and_fetch_api": Object {
+          "description": "",
+          "format": "string",
+          "type": "string",
+        },
         "updated_at": Object {
           "description": "",
           "format": "date",
@@ -62,6 +72,8 @@ Object {
         "id",
         "title",
         "body",
+        "title_hidden_from_insert_and_fetch_api",
+        "title_hidden_from_update_and_fetch_api",
         "post",
       ],
       "type": "object",

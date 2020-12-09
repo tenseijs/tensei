@@ -1,7 +1,14 @@
 import Faker from 'faker'
 import { EntityManager } from '@mikro-orm/core'
 import { MongoDriver } from '@mikro-orm/mongodb'
-import { Tag, Comment, User, Post, Reaction } from './resources'
+import {
+    Tag,
+    Comment,
+    User,
+    Post,
+    Reaction,
+    ReactionHiddenFromApi
+} from './resources'
 import {
     TenseiContract,
     plugin,
@@ -10,7 +17,14 @@ import {
     DatabaseConfiguration
 } from '@tensei/core'
 
-export const resources = [Tag, Comment, User, Post, Reaction]
+export const resources = [
+    Tag,
+    Comment,
+    User,
+    Post,
+    Reaction,
+    ReactionHiddenFromApi
+]
 
 let loggedDatabase = false
 
@@ -76,7 +90,7 @@ export const setup = async (plugins: PluginContract[] = [], reset = true) => {
         .resources(resources)
         .plugins(plugins)
         .db(getDatabaseCredentials())
-        .boot()
+        .start(() => {}, false)
 
     reset && (await cleanupDatabase(instance))
 

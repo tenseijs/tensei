@@ -10,7 +10,11 @@ declare module '@tensei/common/config' {
     import { DashboardContract } from '@tensei/common/dashboards'
     import { IResolvers, ITypedef, PubSub } from 'apollo-server-express'
     import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
-    import { PluginContract, PluginSetupConfig } from '@tensei/common/plugins'
+    import {
+        PluginContract,
+        PluginSetupConfig,
+        PluginSetupFunction
+    } from '@tensei/common/plugins'
     import {
         MikroORM,
         ConnectionOptions,
@@ -47,6 +51,7 @@ declare module '@tensei/common/config' {
         patch(): this
         delete(): this
         internal(): this
+        id(id: string): this
         extend(extend: RouteExtendContract): this
         resource(resource: ResourceContract): this
         middleware(middleware: RequestHandler[]): this
@@ -109,6 +114,7 @@ declare module '@tensei/common/config' {
         name: string
         cms: boolean
         internal: boolean
+        id: string
         type: EndpointTypes
         snakeCaseName: string
         paramCaseName: string
@@ -257,19 +263,9 @@ declare module '@tensei/common/config' {
         | 'mariadb'
         | 'postgresql'
         | 'sqlite'
-    type InBuiltEndpoints =
-        | 'show'
-        | 'index'
-        | 'create'
-        | 'update'
-        | 'delete'
-        | 'runAction'
-        | 'showRelation'
+
     type ExpressMiddleware = ErrorRequestHandler | RequestHandler
-    interface EndpointMiddleware {
-        type: InBuiltEndpoints
-        handler: ExpressMiddleware
-    }
+
     type DatabaseConfiguration = Partial<
         MikroORMOptions & {
             type: SupportedDatabases
@@ -303,6 +299,8 @@ declare module '@tensei/common/config' {
         clientUrl: string
         mailer: Mail
         storage: StorageManager
+        rootBoot: PluginSetupFunction
+        rootRegister: PluginSetupFunction
         storageConfig: StorageManagerConfig
         routes: RouteContract[]
         graphQlTypeDefs: (string | DocumentNode)[]
@@ -320,7 +318,6 @@ declare module '@tensei/common/config' {
         logger: Signale
         databaseConfig: DatabaseConfiguration & AdditionalEntities
         dashboardPath: string
-        apiPath: string
         adminTable: string
         resourcesMap: {
             [key: string]: ResourceContract
@@ -334,8 +331,6 @@ declare module '@tensei/common/config' {
             validator: typeof validator
             sanitizer: typeof sanitizer
         }
-
-        middleware: EndpointMiddleware[]
 
         graphQlExtensions: GraphQLPluginExtension[]
     }
