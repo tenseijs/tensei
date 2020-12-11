@@ -12,6 +12,7 @@ export class Route implements RouteContract {
     public config: RouteConfig & {
         extend: RouteExtendContract
     } = {
+        id: '',
         path: '',
         name: '',
         cms: false,
@@ -73,6 +74,12 @@ export class Route implements RouteContract {
 
     delete() {
         this.config.type = 'DELETE'
+
+        return this
+    }
+
+    id(id: string) {
+        this.config.id = id
 
         return this
     }

@@ -37,9 +37,7 @@ class Core {
         cache: new InMemoryCache()
     })
 
-    boot = () => {
-        console.log('@@booting')
-    }
+    boot = () => {}
 }
 
 window.Tensei = new Core()

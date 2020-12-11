@@ -4,12 +4,12 @@ import { auth } from '@tensei/auth'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
+import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
 import { mail, SupportedDrivers } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
 import { StorageManager, Storage } from '@slynova/flydrive'
-import Express, { Request, Application, NextFunction } from 'express'
 
 import {
     Asset,
@@ -18,9 +18,7 @@ import {
     PluginContract,
     ResourceContract,
     SetupFunctions,
-    InBuiltEndpoints,
     DashboardContract,
-    EndpointMiddleware,
     StorageConstructor,
     SupportedStorageDrivers
 } from '@tensei/common'
@@ -29,9 +27,9 @@ import {
     TenseiContract,
     DatabaseConfiguration,
     TensieContext,
-    MiddlewareGenerator,
     GraphQlQueryContract,
-    PluginSetupConfig
+    PluginSetupConfig,
+    PluginSetupFunction
 } from '@tensei/core'
 
 import ClientController from './controllers/client.controller'
@@ -64,6 +62,8 @@ export class Tensei implements TenseiContract {
         graphQlQueries: [],
         graphQlTypeDefs: [],
         graphQlMiddleware: [],
+        rootBoot: () => {},
+        rootRegister: () => {},
         storage: new StorageManager(this.defaultStorageConfig),
         storageConfig: this.defaultStorageConfig,
         mailer: mail().connection('ethereal'),
@@ -75,10 +75,7 @@ export class Tensei implements TenseiContract {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
-        adminTable: 'administrators',
         dashboardPath: 'tensei',
-        apiPath: 'api',
-        middleware: [],
         orm: null,
         databaseConfig: {
             type: 'sqlite',
@@ -102,7 +99,7 @@ export class Tensei implements TenseiContract {
             sanitizer
         },
         graphQlExtensions: [],
-        extendGraphQlMiddleware: (middleware: MiddlewareGenerator[]) => {
+        extendGraphQlMiddleware: (...middleware: any[]) => {
             this.ctx.graphQlMiddleware = [
                 ...this.ctx.graphQlMiddleware,
                 ...middleware
@@ -186,7 +183,7 @@ export class Tensei implements TenseiContract {
         })
     }
 
-    public async boot() {
+    private async bootApplication() {
         if (this.registeredApplication) {
             return this
         }
@@ -194,6 +191,8 @@ export class Tensei implements TenseiContract {
         this.forceMiddleware()
 
         await this.callPluginHook('register')
+
+        await this.ctx.rootRegister(this.getPluginArguments())
 
         this.setConfigOnResourceFields()
 
@@ -204,39 +203,40 @@ export class Tensei implements TenseiContract {
         this.registerCoreRoutes()
 
         await this.callPluginHook('boot')
+        await this.ctx.rootBoot(this.getPluginArguments())
 
         this.registerAsyncErrorHandler()
+
+        this.registeredApplication = true
 
         return this
     }
 
-    public async start(fn?: (ctx: Config) => any) {
+    public async start(fn?: (ctx: Config) => any, listen = true) {
         if (!this.registeredApplication) {
-            await this.boot()
+            await this.bootApplication()
         }
-
-        this.registeredApplication = true
 
         if (fn) {
             const callback = fn(this.ctx)
 
             if (callback instanceof Promise) {
                 fn(this.ctx).then(() => {
-                    this.listen()
+                    listen && this.listen()
                 })
             } else {
-                this.listen()
+                listen && this.listen()
             }
 
             return this
         }
 
-        this.listen()
+        listen && this.listen()
 
         return this
     }
 
-    private listen() {
+    public listen() {
         const port = process.env.PORT || 4500
 
         this.server.listen(port, () => {
@@ -290,11 +290,21 @@ export class Tensei implements TenseiContract {
                 this.routes(routes)
             },
             currentCtx: () => this.ctx,
-            storageDriver: this.storageDriver
+            storageDriver: this.storageDriver,
+            getQuery: this.getQuery,
+            getRoute: this.getRoute
         }
     }
 
-    public async callPluginHook(hook: SetupFunctions, payload?: any) {
+    private getQuery(path: string) {
+        return this.ctx.graphQlQueries.find(query => query.config.path === path)
+    }
+
+    private getRoute(id: string) {
+        return this.ctx.routes.find(route => route.config.id === id)
+    }
+
+    private async callPluginHook(hook: SetupFunctions, payload?: any) {
         for (let index = 0; index < this.ctx.plugins.length; index++) {
             const plugin = this.ctx.plugins[index]
 
@@ -316,10 +326,6 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public getDatabaseClient = () => {
-        return this.ctx.databaseClient
-    }
-
     private async bootDatabase() {
         const [orm, schemas] = await new Database(this.ctx).init()
 
@@ -327,7 +333,7 @@ export class Tensei implements TenseiContract {
         this.ctx.schemas = schemas
     }
 
-    public async registerDatabase() {
+    private async registerDatabase() {
         if (this.databaseBooted) {
             return this
         }
@@ -335,12 +341,6 @@ export class Tensei implements TenseiContract {
         await this.bootDatabase()
 
         this.databaseBooted = true
-
-        return this
-    }
-
-    public apiPath(apiPath: string) {
-        this.ctx.apiPath = apiPath
 
         return this
     }
@@ -597,10 +597,20 @@ export class Tensei implements TenseiContract {
 
         return this
     }
+
+    public boot(boot: PluginSetupFunction) {
+        this.ctx.rootBoot = boot
+
+        return this
+    }
+
+    public register(setup: PluginSetupFunction) {
+        this.ctx.rootRegister = setup
+
+        return this
+    }
 }
 
-export const tensei = () => {
-    return new Tensei()
-}
+export const tensei = () => new Tensei()
 
 export default Tensei

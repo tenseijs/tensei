@@ -115,20 +115,26 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public data: ResourceDataWithFields = {
         fields: [
-            id('ID'),
+            id('ID').sortable().searchable(),
             timestamp('Created At')
                 .defaultToNow()
                 .nullable()
-                .hideFromCreateApi()
-                .hideFromUpdateApi()
+                .sortable()
+                .searchable()
+                .hideOnInsertApi()
+                .hideOnUpdateApi()
+                .hideOnUpdate()
                 .hideOnCreate(),
             timestamp('Updated At')
                 .defaultToNow()
                 .nullable()
+                .sortable()
+                .searchable()
                 .onUpdate(() => new Date())
-                .hideFromCreateApi()
-                .hideFromUpdateApi()
+                .hideOnInsertApi()
+                .hideOnUpdateApi()
                 .hideOnCreate()
+                .hideOnUpdate()
         ],
         actions: [],
         table: '',
@@ -138,11 +144,13 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         filters: [],
         extend: {},
         description: '',
-        hideFromCreateApi: false,
-        hideFromFetchApi: false,
-        hideFromDeleteApi: false,
-        hideFromShowApi: false,
-        hideFromUpdateApi: false,
+        hideOnInsertApi: false,
+        hideOnFetchApi: false,
+        hideOnDeleteApi: false,
+        hideOnUpdateApi: false,
+        hideOnInsertSubscription: true,
+        hideOnUpdateSubscription: true,
+        hideOnDeleteSubscription: true,
         permissions: [],
         group: 'Resources',
         groupSlug: 'resources',
@@ -170,42 +178,53 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public hideFromApi() {
-        this.data.hideFromCreateApi = true
-        this.data.hideFromFetchApi = true
-        this.data.hideFromShowApi = true
-        this.data.hideFromDeleteApi = true
-        this.data.hideFromUpdateApi = true
+    public hideOnApi() {
+        this.data.hideOnInsertApi = true
+        this.data.hideOnFetchApi = true
+        this.data.hideOnDeleteApi = true
+        this.data.hideOnUpdateApi = true
 
         return this
     }
 
-    public hideFromCreateApi() {
-        this.data.hideFromCreateApi = true
+    public showOnInsertSubscription() {
+        this.data.hideOnInsertSubscription = false
 
         return this
     }
 
-    public hideFromUpdateApi() {
-        this.data.hideFromUpdateApi = true
+    public showOnUpdateSubscription() {
+        this.data.hideOnUpdateSubscription = false
 
         return this
     }
 
-    public hideFromDeleteApi() {
-        this.data.hideFromDeleteApi = true
+    public showOnDeleteSubscription() {
+        this.data.hideOnDeleteSubscription = false
 
         return this
     }
 
-    public hideFromFetchApi() {
-        this.data.hideFromFetchApi = true
+    public hideOnInsertApi() {
+        this.data.hideOnInsertApi = true
 
         return this
     }
 
-    public hideFromShowApi() {
-        this.data.hideFromShowApi = true
+    public hideOnUpdateApi() {
+        this.data.hideOnUpdateApi = true
+
+        return this
+    }
+
+    public hideOnDeleteApi() {
+        this.data.hideOnDeleteApi = true
+
+        return this
+    }
+
+    public hideOnFetchApi() {
+        this.data.hideOnFetchApi = true
 
         return this
     }
@@ -452,7 +471,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public getCreateApiExposedFields() {
         return this.data.fields.filter(
-            f => !f.showHideFieldFromApi.hideFromCreateApi
+            f => !f.showHideFieldFromApi.hideOnInsertApi
         )
     }
 
@@ -462,29 +481,22 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public getUpdateApiExposedFields() {
         return this.data.fields.filter(
-            f => !f.showHideFieldFromApi.hideFromUpdateApi
+            f => !f.showHideFieldFromApi.hideOnUpdateApi
         )
     }
 
     public getFetchApiExposedFields() {
         return this.data.fields.filter(
-            f => !f.showHideFieldFromApi.hideFromFetchApi
+            f => !f.showHideFieldFromApi.hideOnFetchApi
         )
     }
 
-    public getShowApiExposedFields() {
-        return this.data.fields.filter(
-            f => !f.showHideFieldFromApi.hideFromShowApi
-        )
-    }
-
-    public hiddenFromApi() {
+    public isHiddenOnApi() {
         return (
-            this.data.hideFromCreateApi &&
-            this.data.hideFromDeleteApi &&
-            this.data.hideFromFetchApi &&
-            this.data.hideFromShowApi &&
-            this.data.hideFromUpdateApi
+            this.data.hideOnInsertApi &&
+            this.data.hideOnDeleteApi &&
+            this.data.hideOnFetchApi &&
+            this.data.hideOnUpdateApi
         )
     }
 }

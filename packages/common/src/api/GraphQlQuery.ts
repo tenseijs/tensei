@@ -3,7 +3,8 @@ import {
     AuthorizeFunction,
     GraphQlQueryConfig,
     GraphQlQueryContract,
-    ResourceContract
+    ResourceContract,
+    GraphQlMiddleware
 } from '@tensei/common'
 
 export class GraphQlQuery implements GraphQlQueryContract {
@@ -66,7 +67,7 @@ export class GraphQlQuery implements GraphQlQueryContract {
         return this
     }
 
-    middleware(middleware: GraphQlQueryConfig['handler'][]) {
+    middleware(...middleware: GraphQlMiddleware[]) {
         this.config.middleware = [...this.config.middleware, ...middleware]
 
         return this

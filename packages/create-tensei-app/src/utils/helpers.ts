@@ -38,7 +38,6 @@ export const projectDirectoryExists = (project: string) =>
     Fs.existsSync(Path.resolve(process.cwd(), project))
 
 export const createProjectFolder = (project: string) =>
-    (console.log(Path.resolve(process.cwd(), project)) as any) ||
     Fs.mkdirSync(Path.resolve(process.cwd(), project))
 
 export const createProjectFile = (

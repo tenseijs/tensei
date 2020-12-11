@@ -18,8 +18,16 @@ import {
 } from '@tensei/common'
 
 class Rest {
-    private getApiPath = (apiPath: string, path: string) => {
-        return `/${apiPath}/${path}`
+    private getApiPath = (path: string) => {
+        return `/${this.path}/${path}`
+    }
+
+    private path: string = ''
+
+    basePath(path: string) {
+        this.path = path
+
+        return this
     }
 
     private getPageMetaFromFindOptions(
@@ -125,12 +133,12 @@ class Rest {
                 slugPlural: plural,
                 pascalCaseName: modelName
             } = resource.data
-            const fields = resource.data.fields.filter(f => !f.property.primary)
 
             routes.push(
                 route(`Insert ${singular}`)
                     .post()
                     .internal()
+                    .id(`insert_${singular}`)
                     .resource(resource)
                     .path(getApiPath(plural))
                     .extend({
@@ -151,6 +159,7 @@ class Rest {
                 route(`Fetch multiple ${plural}`)
                     .get()
                     .internal()
+                    .id(`fetch_${plural}`)
                     .resource(resource)
                     .path(getApiPath(plural))
                     .extend({
@@ -185,6 +194,7 @@ class Rest {
                 route(`Fetch single ${singular}`)
                     .get()
                     .internal()
+                    .id(`show_${singular}`)
                     .resource(resource)
                     .extend({
                         docs: {
@@ -217,6 +227,7 @@ class Rest {
             routes.push(
                 route(`Fetch ${singular} relations`)
                     .get()
+                    .id(`fetch_${singular}_relations`)
                     .internal()
                     .resource(resource)
                     .extend({
@@ -263,6 +274,7 @@ class Rest {
                 route(`Update single ${singular}`)
                     .patch()
                     .internal()
+                    .id(`update_${singular}`)
                     .resource(resource)
                     .extend({
                         docs: {
@@ -298,6 +310,7 @@ class Rest {
                 route(`Delete single ${singular}`)
                     .delete()
                     .internal()
+                    .id(`delete_${singular}`)
                     .resource(resource)
                     .path(getApiPath(`${plural}/:id`))
                     .extend({
@@ -333,7 +346,7 @@ class Rest {
 
     plugin() {
         return plugin('Rest API')
-            .boot(async ({ extendRoutes, resources, apiPath, app }) => {
+            .boot(async ({ extendRoutes, resources, app }) => {
                 app.use(responseEnhancer())
                 app.use((request, _, next) => {
                     // @ts-ignore
@@ -344,7 +357,7 @@ class Rest {
 
                 extendRoutes(
                     this.extendRoutes(resources, (path: string) =>
-                        this.getApiPath(apiPath, path)
+                        this.getApiPath(path)
                     )
                 )
             })

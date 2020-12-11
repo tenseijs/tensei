@@ -101,14 +101,14 @@ class Auth {
         this.resources.passwordReset = this.passwordResetResource()
 
         if (this.config.cms) {
-            this.resources.user.hideFromApi()
-            this.resources.team.hideFromApi()
-            this.resources.role.hideFromApi()
-            this.resources.token.hideFromApi()
-            this.resources.permission.hideFromApi()
-            this.resources.teamInvite.hideFromApi()
-            this.resources.oauthIdentity.hideFromApi()
-            this.resources.passwordReset.hideFromApi()
+            this.resources.user.hideOnApi()
+            this.resources.team.hideOnApi()
+            this.resources.role.hideOnApi()
+            this.resources.token.hideOnApi()
+            this.resources.permission.hideOnApi()
+            this.resources.teamInvite.hideOnApi()
+            this.resources.oauthIdentity.hideOnApi()
+            this.resources.passwordReset.hideOnApi()
         }
 
         this.config.setupFn(this.resources)
@@ -306,27 +306,29 @@ class Auth {
     }
 
     private tokenResource() {
-        return resource('Token').fields([
-            text('Token').notNullable().hidden().searchable().unique(),
-            text('Name').searchable().nullable(),
-            select('Type')
-                .options([
-                    {
-                        label: 'Refresh Token',
-                        value: 'REFRESH'
-                    },
-                    {
-                        label: 'API Token',
-                        value: 'API'
-                    }
-                ])
-                .searchable()
-                .nullable(),
-            dateTime('Last Used At').nullable(),
-            dateTime('Compromised At').nullable(),
-            dateTime('Expires At').hidden(),
-            belongsTo(this.config.userResource).nullable()
-        ])
+        return resource('Token')
+            .fields([
+                text('Token').notNullable().hidden().searchable().unique(),
+                text('Name').searchable().nullable(),
+                select('Type')
+                    .options([
+                        {
+                            label: 'Refresh Token',
+                            value: 'REFRESH'
+                        },
+                        {
+                            label: 'API Token',
+                            value: 'API'
+                        }
+                    ])
+                    .searchable()
+                    .nullable(),
+                dateTime('Last Used At').nullable(),
+                dateTime('Compromised At').nullable(),
+                dateTime('Expires At').hidden(),
+                belongsTo(this.config.userResource).nullable()
+            ])
+            .hideOnApi()
     }
 
     private teamResource() {
@@ -341,13 +343,15 @@ class Auth {
     }
 
     private teamInviteResource() {
-        return resource('Team Invite').fields([
-            text('Email'),
-            text('Role'),
-            text('Token').unique().rules('required'),
-            belongsTo(this.resources.team.data.name),
-            belongsTo(this.config.userResource)
-        ])
+        return resource('Team Invite')
+            .fields([
+                text('Email'),
+                text('Role'),
+                text('Token').unique().rules('required'),
+                belongsTo(this.resources.team.data.name),
+                belongsTo(this.config.userResource)
+            ])
+            .hideOnFetchApi()
     }
 
     private permissionResource() {
@@ -362,6 +366,8 @@ class Auth {
                 belongsToMany(this.config.roleResource)
             ])
             .displayField('name')
+            .hideOnDeleteApi()
+            .hideOnUpdateApi()
             .group('Users & Permissions')
     }
 
@@ -394,7 +400,7 @@ class Auth {
                 text('Token').unique().notNullable().hidden(),
                 dateTime('Expires At')
             ])
-            .hideFromApi()
+            .hideOnApi()
     }
 
     private oauthResource() {
@@ -402,13 +408,14 @@ class Auth {
             .hideFromNavigation()
             .fields([
                 belongsTo(this.config.userResource).nullable(),
-                textarea('Access Token').hidden().hideFromApi(),
+                textarea('Access Token').hidden().hideOnApi(),
                 text('Email').hidden(),
                 textarea('Temporal Token').nullable().hidden(),
-                json('Payload').hidden().hideFromApi(),
+                json('Payload').hidden().hideOnApi(),
                 text('Provider').rules('required'),
                 text('Provider User ID').hidden()
             ])
+            .hideOnApi()
     }
 
     public plugin() {
@@ -421,8 +428,7 @@ class Auth {
                     databaseConfig,
                     extendResources,
                     extendGraphQlTypeDefs,
-                    extendGraphQlQueries,
-                    extendGraphQlMiddleware
+                    extendGraphQlQueries
                 }) => {
                     this.refreshResources()
 
@@ -469,97 +475,6 @@ class Auth {
                     extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
                     extendGraphQlQueries(this.extendGraphQlQueries())
                     extendRoutes(this.extendRoutes())
-
-                    if (!this.config.cms) {
-                        extendGraphQlMiddleware([
-                            graphQlQueries => {
-                                const resolverAuthorizers: Resolvers = {
-                                    Query: {},
-                                    Mutation: {}
-                                }
-
-                                const getAuthorizer = (
-                                    query: GraphQlQueryContract
-                                ): GraphQlMiddleware => {
-                                    return async (
-                                        resolve,
-                                        parent,
-                                        args,
-                                        context,
-                                        info
-                                    ) => {
-                                        await this.getAuthUserFromContext(
-                                            context
-                                        )
-                                        await this.setAuthUserForPublicRoutes(
-                                            context
-                                        )
-                                        await this.ensureAuthUserIsNotBlocked(
-                                            context
-                                        )
-                                        await this.authorizeResolver(
-                                            context,
-                                            query
-                                        )
-
-                                        const result = await resolve(
-                                            parent,
-                                            args,
-                                            context,
-                                            info
-                                        )
-
-                                        return result
-                                    }
-                                }
-
-                                graphQlQueries.forEach(query => {
-                                    if (query.config.type === 'QUERY') {
-                                        ;(resolverAuthorizers.Query as any)[
-                                            query.config.path
-                                        ] = getAuthorizer(query)
-                                    }
-
-                                    if (query.config.type === 'MUTATION') {
-                                        ;(resolverAuthorizers.Mutation as any)[
-                                            query.config.path
-                                        ] = getAuthorizer(query)
-                                    }
-
-                                    if (query.config.type === 'SUBSCRIPTION') {
-                                        query.middleware([
-                                            async (parent, args, ctx, info) => {
-                                                const authorizationToken =
-                                                    ctx.connection?.context
-                                                        ?.Authorization
-
-                                                if (!authorizationToken) {
-                                                    return
-                                                }
-
-                                                await this.populateContextFromToken(
-                                                    authorizationToken.split(
-                                                        ' '
-                                                    )[1],
-                                                    ctx
-                                                )
-                                            },
-                                            async (parent, args, ctx, info) =>
-                                                this.setAuthUserForPublicRoutes(
-                                                    ctx
-                                                ),
-                                            async (parent, args, ctx, info) =>
-                                                this.ensureAuthUserIsNotBlocked(
-                                                    ctx
-                                                )
-                                        ])
-                                    }
-                                })
-
-                                return resolverAuthorizers
-                            }
-                        ])
-                    }
                 }
             )
 
@@ -571,14 +486,7 @@ class Auth {
                     ])
                 }
 
-                const {
-                    app,
-                    serverUrl,
-                    clientUrl,
-                    graphQlQueries,
-                    routes,
-                    apiPath
-                } = config
+                const { app, serverUrl, clientUrl, currentCtx, routes } = config
 
                 const Store = ExpressSessionMikroORMStore(ExpressSession, {
                     entityName: `${this.resources.user.data.pascalCaseName}Session`,
@@ -630,7 +538,18 @@ class Auth {
                 }
 
                 if (!this.config.cms) {
-                    graphQlQueries.forEach(query => {
+                    currentCtx().graphQlQueries.forEach(query => {
+                        query.middleware(
+                            async (resolve, parent, args, context, info) => {
+                                await this.getAuthUserFromContext(context)
+
+                                await this.ensureAuthUserIsNotBlocked(context)
+
+                                await this.ensureAuthUserIsNotBlocked(context)
+
+                                return resolve(parent, args, context, info)
+                            }
+                        )
                         if (query.config.resource) {
                             const { path, internal } = query.config
                             const {
@@ -750,7 +669,7 @@ class Auth {
                         }
                     ])
                     if (route.config.resource) {
-                        const { resource, path, type, internal } = route.config
+                        const { resource, id } = route.config
 
                         const { slugSingular, slugPlural } = resource.data
 
@@ -767,9 +686,8 @@ class Auth {
                         })
 
                         if (
-                            path === `/${apiPath}/${slugPlural}` &&
-                            type === 'POST' &&
-                            internal
+                            id === `insert_${slugPlural}` ||
+                            id === `insert_${slugSingular}`
                         ) {
                             return route.authorize(
                                 ({ user }) =>
@@ -780,11 +698,7 @@ class Auth {
                             )
                         }
 
-                        if (
-                            path === `/${apiPath}/${slugPlural}` &&
-                            type === 'GET' &&
-                            internal
-                        ) {
+                        if (id === `fetch_${slugPlural}`) {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
@@ -794,11 +708,7 @@ class Auth {
                             )
                         }
 
-                        if (
-                            path === `/${apiPath}/${slugPlural}/:id` &&
-                            type === 'GET' &&
-                            internal
-                        ) {
+                        if (id === `show_${slugSingular}`) {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
@@ -809,12 +719,8 @@ class Auth {
                         }
 
                         if (
-                            [
-                                `/${apiPath}/${slugPlural}/:id`,
-                                `/${apiPath}/${slugPlural}`
-                            ].includes(path) &&
-                            ['PUT', 'PATCH'].includes(type) &&
-                            internal
+                            id === `update_${slugSingular}` ||
+                            id === `update_${slugPlural}`
                         ) {
                             return route.authorize(
                                 ({ user }) =>
@@ -826,12 +732,8 @@ class Auth {
                         }
 
                         if (
-                            [
-                                `/${apiPath}/${slugPlural}/:id`,
-                                `/${apiPath}/${slugPlural}`
-                            ].includes(path) &&
-                            type === 'DELETE' &&
-                            internal
+                            id === `delete_${slugSingular}` ||
+                            id === `delete_${slugPlural}`
                         ) {
                             return route.authorize(
                                 ({ user }) =>
@@ -1235,7 +1137,7 @@ class Auth {
 
                     return {
                         ...payload,
-                        customer: user
+                        [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
             ...(this.config.disableCookies
@@ -1279,7 +1181,7 @@ class Auth {
 
                     return {
                         ...payload,
-                        customer: user
+                        [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
             graphQlQuery(`Request ${name} password reset`)
@@ -1654,7 +1556,7 @@ class Auth {
                 : ''
         }
 
-        extend input create_${snakeCaseName}_input {
+        extend input insert_${snakeCaseName}_input {
             password: String!
         }
 
@@ -1677,7 +1579,7 @@ class Auth {
             `
                     : ``
             }
-            register_${snakeCaseName}(object: create_${snakeCaseName}_input!): register_${snakeCaseName}_response!
+            register_${snakeCaseName}(object: insert_${snakeCaseName}_input!): register_${snakeCaseName}_response!
             request_${snakeCaseName}_password_reset(object: request_${snakeCaseName}_password_reset_input!): Boolean!
             reset_${snakeCaseName}_password(object: reset_${snakeCaseName}_password_input!): Boolean!
             ${
@@ -2413,7 +2315,7 @@ class Auth {
 
         const plainTextToken = this.generateRandomToken(64)
 
-        // Expire all existing refresh tokens for this customer.
+        // Expire all existing refresh tokens for this user.
         await ctx.manager.nativeUpdate(
             this.resources.token.data.pascalCaseName,
             {

@@ -2,31 +2,31 @@ import { applyMiddleware } from 'graphql-middleware'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
 import {
     gql,
-    ApolloServer,
-    Config as ApolloConfig,
-    makeExecutableSchema,
-    AuthenticationError,
-    ForbiddenError,
-    ValidationError,
-    UserInputError,
-    GetMiddlewareOptions,
     PubSub,
-    withFilter
+    withFilter,
+    ApolloServer,
+    ForbiddenError,
+    UserInputError,
+    ValidationError,
+    AuthenticationError,
+    makeExecutableSchema,
+    GetMiddlewareOptions,
+    Config as ApolloConfig
 } from 'apollo-server-express'
 import {
     plugin,
     FieldContract,
     ResourceContract,
     PluginSetupConfig,
-    GraphQLPluginExtension,
-    GraphQlQueryContract
+    GraphQlQueryContract,
+    GraphQLPluginExtension
 } from '@tensei/common'
 import { ReferenceType } from '@mikro-orm/core'
 
 import {
-    topLevelOperators,
-    filterOperators,
     getResolvers,
+    filterOperators,
+    topLevelOperators,
     authorizeResolver
 } from './Resolvers'
 
@@ -93,7 +93,10 @@ class Graphql {
             FieldType = `${FieldType}!`
         }
 
-        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+        if (
+            field.relatedProperty.reference === ReferenceType.MANY_TO_ONE ||
+            field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+        ) {
             FieldType = `ID`
             FieldKey = field.databaseField
         }
@@ -145,7 +148,7 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `[${relatedResource.data.snakeCaseName}]`
-                FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
+                FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query, order_by: ${relatedResource.data.snakeCaseName}_query_order)`
             }
         }
 
@@ -153,7 +156,10 @@ class Graphql {
             FieldType = 'Date'
         }
 
-        if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
+        if (
+            field.relatedProperty.reference === ReferenceType.MANY_TO_ONE ||
+            field.relatedProperty.reference === ReferenceType.ONE_TO_ONE
+        ) {
             const relatedResource = resources.find(
                 resource => resource.data.name === field.name
             )
@@ -177,7 +183,15 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]`
+  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query, order_by: ${resource.data.snakeCaseName}_query_order): [${resource.data.snakeCaseName}]`
+    }
+
+    private defineFetchAllCountQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `
+  ${resource.data.snakeCaseNamePlural}__count(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): Int!`
     }
 
     private defineFetchSingleQueryForResource(
@@ -203,7 +217,8 @@ class Graphql {
             [
                 ReferenceType.MANY_TO_MANY,
                 ReferenceType.ONE_TO_MANY,
-                ReferenceType.MANY_TO_ONE
+                ReferenceType.MANY_TO_ONE,
+                ReferenceType.ONE_TO_ONE
             ].includes(field.relatedProperty.reference!)
         ) {
             const relatedResource = config.resources.find(
@@ -225,6 +240,30 @@ class Graphql {
         }
 
         return 'string_where_query'
+    }
+
+    getOrderByQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `
+input ${resource.data.snakeCaseName}_query_order {
+    ${resource
+        .getFetchApiExposedFields()
+        .filter(f => !f.relatedProperty.reference && f.isSortable)
+        .map(field => `${field.databaseField}: query_order`)}
+    
+    ${resource
+        .getFetchApiExposedFields()
+        .filter(f => f.relatedProperty.reference && f.isSortable)
+        .map(field => {
+            const relatedResource =
+                config.resourcesMap[field.relatedProperty.type!]
+
+            return `${field.databaseField}: ${relatedResource.data.snakeCaseName}_query_order`
+        })}
+}        
+`
     }
 
     getWhereQueryForResource(
@@ -298,7 +337,11 @@ ${resource.data.fields
         }`
     )}
 type ${resource.data.snakeCaseName} {${resource.data.fields
-                .filter(field => !field.property.hidden)
+                .filter(
+                    field =>
+                        !field.property.hidden &&
+                        !field.showHideFieldFromApi.hideOnFetchApi
+                )
                 .map(field =>
                     this.getGraphqlFieldDefinition(
                         field,
@@ -318,83 +361,134 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
                `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
        )}
 }
-input create_${
-                resource.data.snakeCaseName
-            }_input {${resource.data.fields
-                .filter(
-                    field => !field.property.primary && !field.property.hidden
-                )
-                .map(field =>
-                    this.getGraphqlFieldDefinitionForCreateInput(
-                        field,
-                        resource,
-                        resources
-                    )
-                )}
+${
+    !resource.data.hideOnInsertApi
+        ? `
+input insert_${
+              resource.data.snakeCaseName
+          }_input {${resource.data.fields
+              .filter(
+                  field =>
+                      !field.property.primary &&
+                      !field.property.hidden &&
+                      !field.showHideFieldFromApi.hideOnInsertApi
+              )
+              .map(field =>
+                  this.getGraphqlFieldDefinitionForCreateInput(
+                      field,
+                      resource,
+                      resources
+                  )
+              )}
+}
+`
+        : ''
 }
 
+${
+    !resource.data.hideOnUpdateApi
+        ? `
 input update_${
-                resource.data.snakeCaseName
-            }_input {${resource.data.fields
-                .filter(
-                    field => !field.property.primary && !field.property.hidden
-                )
-                .map(field =>
-                    this.getGraphqlFieldDefinitionForCreateInput(
-                        field,
-                        resource,
-                        resources,
-                        true
-                    )
-                )}
+              resource.data.snakeCaseName
+          }_input {${resource.data.fields
+              .filter(
+                  field =>
+                      !field.property.primary &&
+                      !field.property.hidden &&
+                      !field.showHideFieldFromApi.hideOnUpdateApi
+              )
+              .map(field =>
+                  this.getGraphqlFieldDefinitionForCreateInput(
+                      field,
+                      resource,
+                      resources,
+                      true
+                  )
+              )}
 }
-
-enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
-                resource
-            )}
+`
+        : ''
 }
 
 ${this.getWhereQueryForResource(resource, config)}
+${this.getOrderByQueryForResource(resource, config)}
 `
         })
 
-        this.schemaString = `${this.schemaString}type Query {${resources.map(
-            resource => {
+        this.schemaString = `${this.schemaString}type Query {${resources
+            .filter(r => !r.isHiddenOnApi() && !r.data.hideOnFetchApi)
+            .map(resource => {
                 return `${this.defineFetchSingleQueryForResource(
                     resource,
                     config
-                )}${this.defineFetchAllQueryForResource(resource, config)}`
-            }
-        )}
+                )}${this.defineFetchAllQueryForResource(
+                    resource,
+                    config
+                )}${this.defineFetchAllCountQueryForResource(resource, config)}`
+            })}
 }
 `
-        this.schemaString = `${
-            this.schemaString
-        }type Subscription {${resources.map(
-            resource => `${defineCreateSubscriptionsForResource(resource)}`
-        )}
-${resources.map(
+        this.schemaString = `${this.schemaString}
+
+        enum query_order {
+            asc
+            asc_nulls_last
+            asc_nulls_first
+            desc
+            desc_nulls_last
+            desc_nulls_first
+        }                
+`
+
+        const createSubscriptions = resources.filter(
+            r => !r.data.hideOnInsertSubscription
+        )
+
+        const updateSubscriptions = resources.filter(
+            r => !r.data.hideOnUpdateSubscription
+        )
+
+        const deleteSubscriptions = resources.filter(
+            r => !r.data.hideOnDeleteSubscription
+        )
+
+        if (
+            createSubscriptions.length ||
+            updateSubscriptions.length ||
+            deleteSubscriptions.length
+        ) {
+            this.schemaString = `${
+                this.schemaString
+            }type Subscription {${createSubscriptions.map(
+                resource => `${defineCreateSubscriptionsForResource(resource)}`
+            )}
+${updateSubscriptions.map(
     resource => `${defineUpdateSubscriptionsForResource(resource)}`
 )}
-${resources.map(
+${deleteSubscriptions.map(
     resource => `${defineDeleteSubscriptionsForResource(resource)}`
 )}
 }`
+        }
 
-        this.schemaString = `${this.schemaString}type Mutation {${resources.map(
-            resource => {
+        this.schemaString = `${this.schemaString}type Mutation {${resources
+            .filter(r => !r.data.hideOnInsertApi)
+            .map(resource => {
                 return `${this.defineCreateMutationForResource(
                     resource,
                     config
                 )}`
-            }
-        )}
-${resources.map(resource => {
-    return `${this.defineUpdateMutationForResource(resource, config)}`
-})}
-${resources.map(resource => {
-    return `${this.defineDeleteMutationForResource(resource, config)}`
-})}
+            })}
+${resources
+    .filter(r => !r.data.hideOnUpdateApi)
+    .map(resource => {
+        return `${this.defineUpdateMutationForResource(resource, config)}`
+    })}
+${resources
+    .filter(r => !r.data.hideOnDeleteApi)
+    .map(resource => {
+        return `${this.defineDeleteMutationForResource(resource, config)}`
+    })}
 }
 input string_where_query {
     ${filterOperators.map(operator => {
@@ -435,8 +529,8 @@ input id_where_query {
         config: PluginSetupConfig
     ) {
         return `
-        insert_${resource.data.snakeCaseName}(object: create_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
-        insert_${resource.data.snakeCaseNamePlural}(objects: [create_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
+        insert_${resource.data.snakeCaseName}(object: insert_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
+        insert_${resource.data.snakeCaseNamePlural}(objects: [insert_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
     `
     }
 
@@ -502,8 +596,15 @@ input id_where_query {
     getResolversFromGraphqlQueries(queries: GraphQlQueryContract[]) {
         const resolvers: any = {
             Query: {},
-            Mutation: {},
-            Subscription: {}
+            Mutation: {}
+        }
+
+        const subscriptions = queries.filter(
+            q => q.config.type === 'SUBSCRIPTION'
+        )
+
+        if (subscriptions.length !== 0) {
+            resolvers.Subscription = {}
         }
 
         queries.forEach(query => {
@@ -524,7 +625,7 @@ input id_where_query {
                         info: any
                     ) => {
                         for (const middleware of query.config.middleware) {
-                            await middleware(_, args, ctx, info)
+                            // await middleware(_, args, ctx, info)
                         }
 
                         await authorizeResolver(ctx, query)
@@ -552,10 +653,10 @@ input id_where_query {
                 } = config
 
                 const exposedResources = currentCtx().resources.filter(
-                    resource => !resource.hiddenFromApi()
+                    resource => !resource.isHiddenOnApi()
                 )
 
-                this.setupResourceGraphqlTypes(exposedResources, config)
+                this.setupResourceGraphqlTypes(currentCtx().resources, config)
 
                 extendGraphQlQueries(
                     getResolvers(exposedResources, {
@@ -565,75 +666,49 @@ input id_where_query {
                 )
             })
             .boot(async config => {
-                const { currentCtx, app } = config
+                const { currentCtx, app, graphQlMiddleware } = config
 
                 const typeDefs = [
                     gql(this.schemaString),
                     ...currentCtx().graphQlTypeDefs
                 ]
 
-                currentCtx().graphQlMiddleware.unshift(
-                    () => {
-                        return async (resolve, parent, args, context, info) => {
-                            context.body = args
+                graphQlMiddleware.unshift(
+                    async (resolve, parent, args, context, info) => {
+                        // set body to equal args
+                        context.body = args
 
-                            const result = await resolve(
-                                parent,
-                                args,
-                                context,
-                                info
+                        // fork new manager instance for this request
+                        context.manager = context.manager.fork()
+
+                        context.authenticationError = (message?: string) =>
+                            new AuthenticationError(
+                                message || 'Unauthenticated.'
                             )
 
-                            return result
-                        }
-                    },
-                    () => {
-                        return async (resolve, parent, args, context, info) => {
-                            context.manager = context.manager.fork()
+                        context.forbiddenError = (message?: string) =>
+                            new ForbiddenError(message || 'Forbidden.')
 
-                            const result = await resolve(
-                                parent,
-                                args,
-                                context,
-                                info
+                        context.validationError = (message?: string) =>
+                            new ValidationError(message || 'Validation failed.')
+
+                        context.userInputError = (
+                            message?: string,
+                            properties?: any
+                        ) =>
+                            new UserInputError(
+                                message || 'Invalid user input.',
+                                properties
                             )
 
-                            return result
-                        }
-                    },
-                    () => {
-                        return async (resolve, parent, args, context, info) => {
-                            context.authenticationError = (message?: string) =>
-                                new AuthenticationError(
-                                    message || 'Unauthenticated.'
-                                )
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
 
-                            context.forbiddenError = (message?: string) =>
-                                new ForbiddenError(message || 'Forbidden.')
-
-                            context.validationError = (message?: string) =>
-                                new ValidationError(
-                                    message || 'Validation failed.'
-                                )
-
-                            context.userInputError = (
-                                message?: string,
-                                properties?: any
-                            ) =>
-                                new UserInputError(
-                                    message || 'Invalid user input.',
-                                    properties
-                                )
-
-                            const result = await resolve(
-                                parent,
-                                args,
-                                context,
-                                info
-                            )
-
-                            return result
-                        }
+                        return result
                     }
                 )
 
@@ -650,17 +725,54 @@ input id_where_query {
                     resolvers
                 })
 
+                // Add authorizer middleware to all graphql queries
+                currentCtx().graphQlQueries.forEach(query => {
+                    query.middleware(
+                        async (resolve, parent, args, ctx, info) => {
+                            await authorizeResolver(ctx, query)
+
+                            return resolve(parent, args, ctx, info)
+                        }
+                    )
+                })
+
+                const querySpecificMiddleware = currentCtx()
+                    .graphQlQueries.map(query => {
+                        if (query.config.middleware.length > 0) {
+                            return query.config.middleware
+                                .map(middleware => {
+                                    if (query.config.type === 'QUERY') {
+                                        return {
+                                            Query: {
+                                                [query.config.path]: middleware
+                                            }
+                                        }
+                                    }
+
+                                    if (query.config.type === 'MUTATION') {
+                                        return {
+                                            Mutation: {
+                                                [query.config.path]: middleware
+                                            }
+                                        }
+                                    }
+
+                                    return undefined as any
+                                })
+                                .filter(Boolean)
+                        }
+
+                        return []
+                    })
+                    .reduce((acc, middleware) => [...acc, ...middleware], [])
+
                 const graphQlServer = new ApolloServer({
                     schema: applyMiddleware(
                         schema,
-                        ...currentCtx().graphQlMiddleware.map(
-                            middlewareGenerator =>
-                                middlewareGenerator(
-                                    currentCtx().graphQlQueries,
-                                    typeDefs,
-                                    schema
-                                )
-                        )
+                        // Register global middleware by spreading them to the applyMiddleware method.
+                        ...currentCtx().graphQlMiddleware,
+                        // Register query specific middleware by mapping through all registered queries, and generating the middleware for it.
+                        ...querySpecificMiddleware
                     ),
                     ...this.appolloConfig,
                     context: ctx => ({

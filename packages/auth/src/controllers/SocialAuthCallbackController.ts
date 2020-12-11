@@ -93,7 +93,7 @@ class SocialAuthCallbackController {
 
                 return redirect(null, temporal_token)
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 return redirect(
                     `Something went wrong saving the oauth identity.`
                 )

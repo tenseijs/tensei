@@ -1,4 +1,11 @@
-const { text, textarea, resource, belongsTo, filter } = require('@tensei/core')
+const {
+    text,
+    textarea,
+    resource,
+    belongsTo,
+    filter,
+    hasOne,
+} = require('@tensei/core')
 
 module.exports = resource('Comment')
     .fields([
@@ -6,6 +13,7 @@ module.exports = resource('Comment')
         textarea('Body').rules('required').hideOnIndex(),
         textarea('Reply').rules('required', 'max:255').hideOnIndex(),
         belongsTo('Post'),
+        hasOne('Editor'),
     ])
     .filters([
         filter('Comments on Post')

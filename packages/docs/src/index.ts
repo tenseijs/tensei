@@ -203,13 +203,13 @@ class Docs {
                 }
 
                 resources
-                    .filter(r => !r.hiddenFromApi())
+                    .filter(r => !r.isHiddenOnApi())
                     .forEach(resource => {
                         const properties: any = {}
                         const inputProperties: any = {}
 
                         resource.data.fields
-                            .filter(f => !f.hiddenFromApi())
+                            .filter(f => !f.isHiddenOnApi())
                             .forEach(field => {
                                 properties[
                                     field.databaseField
@@ -221,8 +221,8 @@ class Docs {
                                 f =>
                                     !f.property.primary &&
                                     !f.property.hidden &&
-                                    !f.showHideFieldFromApi.hideFromCreateApi &&
-                                    !f.showHideFieldFromApi.hideFromUpdateApi
+                                    !f.showHideFieldFromApi.hideOnInsertApi &&
+                                    !f.showHideFieldFromApi.hideOnUpdateApi
                             )
                             .forEach(field => {
                                 inputProperties[

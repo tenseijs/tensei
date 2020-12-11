@@ -1,5 +1,5 @@
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
-import { ResourceContract, FilterOperators } from '@tensei/common'
+import { ResourceContract, FilterOperators, oneToOne } from '@tensei/common'
 import { EntityManager, ReferenceType, Configuration } from '@mikro-orm/core'
 
 export const filterOperators: FilterOperators[] = [
@@ -130,6 +130,11 @@ export const populateFromResolvedNodes = async (
         ).filter((selection: string) =>
             relatedOneToManyDatabaseFieldNames.includes(selection)
         )
+        const oneToOneSelections = Object.keys(
+            fieldNode
+        ).filter((selection: string) =>
+            relatedOneToOneDatabaseFieldNames.includes(selection)
+        )
 
         await Promise.all([
             Promise.all(
@@ -231,6 +236,11 @@ export const populateFromResolvedNodes = async (
                             })
                         )
                     })()
+                )
+            ),
+            Promise.all(
+                oneToOneSelections.map((selection: string) =>
+                    manager.populate(data, selection)
                 )
             ),
             Promise.all(
@@ -382,6 +392,33 @@ export const populateFromResolvedNodes = async (
                     fieldTypes[
                         Object.keys(
                             fieldNode[manyToOneSelection].fieldsByTypeName
+                        )[0]
+                    ],
+                    data.map(d => d[field.databaseField])
+                )
+            }
+        }
+
+        for (const oneToOneSelection of oneToOneSelections) {
+            const fieldTypes = fieldNode[oneToOneSelection].fieldsByTypeName
+
+            if (Object.keys(fieldTypes).length > 0) {
+                const field = relatedOneToOneFields.find(
+                    f => f.databaseField === oneToOneSelection
+                )!
+
+                const relatedResource = resources.find(
+                    r => r.data.name === field.relatedProperty.type
+                )!
+
+                await populateFromResolvedNodes(
+                    resources,
+                    manager,
+                    database,
+                    relatedResource,
+                    fieldTypes[
+                        Object.keys(
+                            fieldNode[oneToOneSelection].fieldsByTypeName
                         )[0]
                     ],
                     data.map(d => d[field.databaseField])

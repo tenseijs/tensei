@@ -11,6 +11,8 @@ class ClientController {
     public async index(request: Express.Request, response: Express.Response) {
         let shouldShowRegistrationScreen = true
 
+        // TODO: Check if a super-admin is already registered.
+
         response.send(
             Mustache.render(indexFileContent, {
                 styles: request.styles,
