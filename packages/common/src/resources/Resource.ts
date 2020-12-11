@@ -115,10 +115,12 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public data: ResourceDataWithFields = {
         fields: [
-            id('ID'),
+            id('ID').sortable().searchable(),
             timestamp('Created At')
                 .defaultToNow()
                 .nullable()
+                .sortable()
+                .searchable()
                 .hideOnInsertApi()
                 .hideOnUpdateApi()
                 .hideOnUpdate()
@@ -126,6 +128,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
             timestamp('Updated At')
                 .defaultToNow()
                 .nullable()
+                .sortable()
+                .searchable()
                 .onUpdate(() => new Date())
                 .hideOnInsertApi()
                 .hideOnUpdateApi()

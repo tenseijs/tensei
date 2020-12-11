@@ -1,22 +1,11 @@
-import { PluginSetupFunction } from '@tensei/common'
-
 declare module '@tensei/core' {
-    import { DocumentNode } from 'graphql'
-    import { SupportedDrivers } from '@tensei/mail'
-    import { ConnectionOptions } from '@mikro-orm/core'
-    import { StorageManager, Storage } from '@slynova/flydrive'
-    import Express, { Application, Request } from 'express'
+    import { Application } from 'express'
     import {
         Config,
         PluginContract,
-        SetupFunctions,
-        ManagerContract,
         ResourceContract,
-        PluginSetupConfig,
+        PluginSetupFunction,
         DashboardContract,
-        StorageConstructor,
-        SupportedDatabases,
-        SupportedStorageDrivers,
         DatabaseConfiguration,
         RouteContract,
         GraphQlQueryContract,
@@ -31,6 +20,8 @@ declare module '@tensei/core' {
         register(register: PluginSetupFunction): this
         listen(): void
         routes(routes: RouteContract[]): this
+        graphQlQueries(routes: GraphQlQueryContract[]): this
+        graphQlTypeDefs(defs: TensieContext['graphQlTypeDefs']): this
         db(databaseConfig: DatabaseConfiguration): this
         serverUrl(url: string): this
         clientUrl(url: string): this
@@ -47,6 +38,8 @@ declare module '@tensei/core' {
         register(register: PluginSetupFunction): this
         listen(): void
         routes(routes: RouteContract[]): this
+        graphQlQueries(routes: GraphQlQueryContract[]): this
+        graphQlTypeDefs(defs: TensieContext['graphQlTypeDefs']): this
         db(databaseConfig: DatabaseConfiguration): this
         serverUrl(url: string): this
         clientUrl(url: string): this

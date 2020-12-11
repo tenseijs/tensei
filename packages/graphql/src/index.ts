@@ -2,31 +2,31 @@ import { applyMiddleware } from 'graphql-middleware'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
 import {
     gql,
-    ApolloServer,
-    Config as ApolloConfig,
-    makeExecutableSchema,
-    AuthenticationError,
-    ForbiddenError,
-    ValidationError,
-    UserInputError,
-    GetMiddlewareOptions,
     PubSub,
-    withFilter
+    withFilter,
+    ApolloServer,
+    ForbiddenError,
+    UserInputError,
+    ValidationError,
+    AuthenticationError,
+    makeExecutableSchema,
+    GetMiddlewareOptions,
+    Config as ApolloConfig
 } from 'apollo-server-express'
 import {
     plugin,
     FieldContract,
     ResourceContract,
     PluginSetupConfig,
-    GraphQLPluginExtension,
-    GraphQlQueryContract
+    GraphQlQueryContract,
+    GraphQLPluginExtension
 } from '@tensei/common'
 import { ReferenceType } from '@mikro-orm/core'
 
 import {
-    topLevelOperators,
-    filterOperators,
     getResolvers,
+    filterOperators,
+    topLevelOperators,
     authorizeResolver
 } from './Resolvers'
 
@@ -148,7 +148,7 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `[${relatedResource.data.snakeCaseName}]`
-                FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query)`
+                FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query, order_by: ${relatedResource.data.snakeCaseName}_query_order)`
             }
         }
 
@@ -183,7 +183,15 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): [${resource.data.snakeCaseName}]`
+  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query, order_by: ${resource.data.snakeCaseName}_query_order): [${resource.data.snakeCaseName}]`
+    }
+
+    private defineFetchAllCountQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `
+  ${resource.data.snakeCaseNamePlural}__count(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): Int!`
     }
 
     private defineFetchSingleQueryForResource(
@@ -232,6 +240,30 @@ class Graphql {
         }
 
         return 'string_where_query'
+    }
+
+    getOrderByQueryForResource(
+        resource: ResourceContract,
+        config: PluginSetupConfig
+    ) {
+        return `
+input ${resource.data.snakeCaseName}_query_order {
+    ${resource
+        .getFetchApiExposedFields()
+        .filter(f => !f.relatedProperty.reference && f.isSortable)
+        .map(field => `${field.databaseField}: query_order`)}
+    
+    ${resource
+        .getFetchApiExposedFields()
+        .filter(f => f.relatedProperty.reference && f.isSortable)
+        .map(field => {
+            const relatedResource =
+                config.resourcesMap[field.relatedProperty.type!]
+
+            return `${field.databaseField}: ${relatedResource.data.snakeCaseName}_query_order`
+        })}
+}        
+`
     }
 
     getWhereQueryForResource(
@@ -378,12 +410,8 @@ input update_${
         : ''
 }
 
-enum ${resource.data.snakeCaseName}_fields_enum {${this.getFieldsTypeDefinition(
-                resource
-            )}
-}
-
 ${this.getWhereQueryForResource(resource, config)}
+${this.getOrderByQueryForResource(resource, config)}
 `
         })
 
@@ -393,9 +421,23 @@ ${this.getWhereQueryForResource(resource, config)}
                 return `${this.defineFetchSingleQueryForResource(
                     resource,
                     config
-                )}${this.defineFetchAllQueryForResource(resource, config)}`
+                )}${this.defineFetchAllQueryForResource(
+                    resource,
+                    config
+                )}${this.defineFetchAllCountQueryForResource(resource, config)}`
             })}
 }
+`
+        this.schemaString = `${this.schemaString}
+
+        enum query_order {
+            asc
+            asc_nulls_last
+            asc_nulls_first
+            desc
+            desc_nulls_last
+            desc_nulls_first
+        }                
 `
 
         const createSubscriptions = resources.filter(
@@ -583,7 +625,7 @@ input id_where_query {
                         info: any
                     ) => {
                         for (const middleware of query.config.middleware) {
-                            await middleware(_, args, ctx, info)
+                            // await middleware(_, args, ctx, info)
                         }
 
                         await authorizeResolver(ctx, query)
@@ -624,75 +666,49 @@ input id_where_query {
                 )
             })
             .boot(async config => {
-                const { currentCtx, app } = config
+                const { currentCtx, app, graphQlMiddleware } = config
 
                 const typeDefs = [
                     gql(this.schemaString),
                     ...currentCtx().graphQlTypeDefs
                 ]
 
-                currentCtx().graphQlMiddleware.unshift(
-                    () => {
-                        return async (resolve, parent, args, context, info) => {
-                            context.body = args
+                graphQlMiddleware.unshift(
+                    async (resolve, parent, args, context, info) => {
+                        // set body to equal args
+                        context.body = args
 
-                            const result = await resolve(
-                                parent,
-                                args,
-                                context,
-                                info
+                        // fork new manager instance for this request
+                        context.manager = context.manager.fork()
+
+                        context.authenticationError = (message?: string) =>
+                            new AuthenticationError(
+                                message || 'Unauthenticated.'
                             )
 
-                            return result
-                        }
-                    },
-                    () => {
-                        return async (resolve, parent, args, context, info) => {
-                            context.manager = context.manager.fork()
+                        context.forbiddenError = (message?: string) =>
+                            new ForbiddenError(message || 'Forbidden.')
 
-                            const result = await resolve(
-                                parent,
-                                args,
-                                context,
-                                info
+                        context.validationError = (message?: string) =>
+                            new ValidationError(message || 'Validation failed.')
+
+                        context.userInputError = (
+                            message?: string,
+                            properties?: any
+                        ) =>
+                            new UserInputError(
+                                message || 'Invalid user input.',
+                                properties
                             )
 
-                            return result
-                        }
-                    },
-                    () => {
-                        return async (resolve, parent, args, context, info) => {
-                            context.authenticationError = (message?: string) =>
-                                new AuthenticationError(
-                                    message || 'Unauthenticated.'
-                                )
+                        const result = await resolve(
+                            parent,
+                            args,
+                            context,
+                            info
+                        )
 
-                            context.forbiddenError = (message?: string) =>
-                                new ForbiddenError(message || 'Forbidden.')
-
-                            context.validationError = (message?: string) =>
-                                new ValidationError(
-                                    message || 'Validation failed.'
-                                )
-
-                            context.userInputError = (
-                                message?: string,
-                                properties?: any
-                            ) =>
-                                new UserInputError(
-                                    message || 'Invalid user input.',
-                                    properties
-                                )
-
-                            const result = await resolve(
-                                parent,
-                                args,
-                                context,
-                                info
-                            )
-
-                            return result
-                        }
+                        return result
                     }
                 )
 
@@ -709,17 +725,54 @@ input id_where_query {
                     resolvers
                 })
 
+                // Add authorizer middleware to all graphql queries
+                currentCtx().graphQlQueries.forEach(query => {
+                    query.middleware(
+                        async (resolve, parent, args, ctx, info) => {
+                            await authorizeResolver(ctx, query)
+
+                            return resolve(parent, args, ctx, info)
+                        }
+                    )
+                })
+
+                const querySpecificMiddleware = currentCtx()
+                    .graphQlQueries.map(query => {
+                        if (query.config.middleware.length > 0) {
+                            return query.config.middleware
+                                .map(middleware => {
+                                    if (query.config.type === 'QUERY') {
+                                        return {
+                                            Query: {
+                                                [query.config.path]: middleware
+                                            }
+                                        }
+                                    }
+
+                                    if (query.config.type === 'MUTATION') {
+                                        return {
+                                            Mutation: {
+                                                [query.config.path]: middleware
+                                            }
+                                        }
+                                    }
+
+                                    return undefined as any
+                                })
+                                .filter(Boolean)
+                        }
+
+                        return []
+                    })
+                    .reduce((acc, middleware) => [...acc, ...middleware], [])
+
                 const graphQlServer = new ApolloServer({
                     schema: applyMiddleware(
                         schema,
-                        ...currentCtx().graphQlMiddleware.map(
-                            middlewareGenerator =>
-                                middlewareGenerator(
-                                    currentCtx().graphQlQueries,
-                                    typeDefs,
-                                    schema
-                                )
-                        )
+                        // Register global middleware by spreading them to the applyMiddleware method.
+                        ...currentCtx().graphQlMiddleware,
+                        // Register query specific middleware by mapping through all registered queries, and generating the middleware for it.
+                        ...querySpecificMiddleware
                     ),
                     ...this.appolloConfig,
                     context: ctx => ({

@@ -37,7 +37,8 @@ export const parseTemplateFiles = (
 export const projectDirectoryExists = (project: string) =>
     Fs.existsSync(Path.resolve(process.cwd(), project))
 
-export const createProjectFolder = (project: string) => Fs.mkdirSync(Path.resolve(process.cwd(), project))
+export const createProjectFolder = (project: string) =>
+    Fs.mkdirSync(Path.resolve(process.cwd(), project))
 
 export const createProjectFile = (
     project: string,

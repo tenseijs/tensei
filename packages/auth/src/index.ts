@@ -428,8 +428,7 @@ class Auth {
                     databaseConfig,
                     extendResources,
                     extendGraphQlTypeDefs,
-                    extendGraphQlQueries,
-                    extendGraphQlMiddleware
+                    extendGraphQlQueries
                 }) => {
                     this.refreshResources()
 
@@ -476,97 +475,6 @@ class Auth {
                     extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
                     extendGraphQlQueries(this.extendGraphQlQueries())
                     extendRoutes(this.extendRoutes())
-
-                    if (!this.config.cms) {
-                        extendGraphQlMiddleware([
-                            graphQlQueries => {
-                                const resolverAuthorizers: Resolvers = {
-                                    Query: {},
-                                    Mutation: {}
-                                }
-
-                                const getAuthorizer = (
-                                    query: GraphQlQueryContract
-                                ): GraphQlMiddleware => {
-                                    return async (
-                                        resolve,
-                                        parent,
-                                        args,
-                                        context,
-                                        info
-                                    ) => {
-                                        await this.getAuthUserFromContext(
-                                            context
-                                        )
-                                        await this.setAuthUserForPublicRoutes(
-                                            context
-                                        )
-                                        await this.ensureAuthUserIsNotBlocked(
-                                            context
-                                        )
-                                        await this.authorizeResolver(
-                                            context,
-                                            query
-                                        )
-
-                                        const result = await resolve(
-                                            parent,
-                                            args,
-                                            context,
-                                            info
-                                        )
-
-                                        return result
-                                    }
-                                }
-
-                                graphQlQueries.forEach(query => {
-                                    if (query.config.type === 'QUERY') {
-                                        ;(resolverAuthorizers.Query as any)[
-                                            query.config.path
-                                        ] = getAuthorizer(query)
-                                    }
-
-                                    if (query.config.type === 'MUTATION') {
-                                        ;(resolverAuthorizers.Mutation as any)[
-                                            query.config.path
-                                        ] = getAuthorizer(query)
-                                    }
-
-                                    if (query.config.type === 'SUBSCRIPTION') {
-                                        query.middleware([
-                                            async (parent, args, ctx, info) => {
-                                                const authorizationToken =
-                                                    ctx.connection?.context
-                                                        ?.Authorization
-
-                                                if (!authorizationToken) {
-                                                    return
-                                                }
-
-                                                await this.populateContextFromToken(
-                                                    authorizationToken.split(
-                                                        ' '
-                                                    )[1],
-                                                    ctx
-                                                )
-                                            },
-                                            async (parent, args, ctx, info) =>
-                                                this.setAuthUserForPublicRoutes(
-                                                    ctx
-                                                ),
-                                            async (parent, args, ctx, info) =>
-                                                this.ensureAuthUserIsNotBlocked(
-                                                    ctx
-                                                )
-                                        ])
-                                    }
-                                })
-
-                                return resolverAuthorizers
-                            }
-                        ])
-                    }
                 }
             )
 
@@ -578,13 +486,7 @@ class Auth {
                     ])
                 }
 
-                const {
-                    app,
-                    serverUrl,
-                    clientUrl,
-                    graphQlQueries,
-                    routes
-                } = config
+                const { app, serverUrl, clientUrl, currentCtx, routes } = config
 
                 const Store = ExpressSessionMikroORMStore(ExpressSession, {
                     entityName: `${this.resources.user.data.pascalCaseName}Session`,
@@ -636,7 +538,18 @@ class Auth {
                 }
 
                 if (!this.config.cms) {
-                    graphQlQueries.forEach(query => {
+                    currentCtx().graphQlQueries.forEach(query => {
+                        query.middleware(
+                            async (resolve, parent, args, context, info) => {
+                                await this.getAuthUserFromContext(context)
+
+                                await this.ensureAuthUserIsNotBlocked(context)
+
+                                await this.ensureAuthUserIsNotBlocked(context)
+
+                                return resolve(parent, args, context, info)
+                            }
+                        )
                         if (query.config.resource) {
                             const { path, internal } = query.config
                             const {

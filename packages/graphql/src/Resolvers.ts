@@ -53,6 +53,25 @@ export const getResolvers = (
         !resource.isHiddenOnApi() &&
             !resource.data.hideOnFetchApi &&
             resolversList.push(
+                graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural} count`)
+                    .path(`${resource.data.snakeCaseNamePlural}__count`)
+                    .query()
+                    .internal()
+                    .resource(resource)
+                    .handle(async (_, args, ctx) => {
+                        const count = await ctx.manager.count(
+                            resource.data.pascalCaseName,
+                            parseWhereArgumentsToWhereQuery(args.where),
+                            getFindOptionsFromArgs(args)
+                        )
+
+                        return count
+                    })
+            )
+
+        !resource.isHiddenOnApi() &&
+            !resource.data.hideOnFetchApi &&
+            resolversList.push(
                 graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
                     .path(resource.data.snakeCaseName)
                     .query()
@@ -422,7 +441,11 @@ export const getFindOptionsFromArgs = (args: any) => {
         findOptions.limit = args.offset
     }
 
-    return findOptions
+    if (args.order_by) {
+        findOptions.orderBy = args.order_by
+    }
+
+    return JSON.parse(JSON.stringify(findOptions))
 }
 
 const getParsedInfo = (ql: any) => {

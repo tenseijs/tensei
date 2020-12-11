@@ -18,6 +18,19 @@ module.exports = tensei()
     .clientUrl('https://google.com')
     .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
+    .graphQlTypeDefs([
+        `
+        type aggregate_comments {
+            count: Int!
+            average: Int!
+        }
+
+        extend type Query {
+            aggregate_comments: aggregate_comments
+        }
+    `,
+    ])
+    .graphQlQueries([])
     .routes([
         route('Get products')
             .get()

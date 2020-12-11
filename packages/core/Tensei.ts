@@ -4,12 +4,12 @@ import { auth } from '@tensei/auth'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
+import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
 import { mail, SupportedDrivers } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
 import { StorageManager, Storage } from '@slynova/flydrive'
-import Express, { Request, Application, NextFunction } from 'express'
 
 import {
     Asset,
@@ -27,10 +27,8 @@ import {
     TenseiContract,
     DatabaseConfiguration,
     TensieContext,
-    MiddlewareGenerator,
     GraphQlQueryContract,
     PluginSetupConfig,
-    RouteConfig,
     PluginSetupFunction
 } from '@tensei/core'
 
@@ -77,7 +75,6 @@ export class Tensei implements TenseiContract {
         dashboards: [],
         resourcesMap: {},
         dashboardsMap: {},
-        adminTable: 'administrators',
         dashboardPath: 'tensei',
         orm: null,
         databaseConfig: {
@@ -102,7 +99,7 @@ export class Tensei implements TenseiContract {
             sanitizer
         },
         graphQlExtensions: [],
-        extendGraphQlMiddleware: (middleware: MiddlewareGenerator[]) => {
+        extendGraphQlMiddleware: (...middleware: any[]) => {
             this.ctx.graphQlMiddleware = [
                 ...this.ctx.graphQlMiddleware,
                 ...middleware
@@ -129,7 +126,7 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    private graphQlQueries(graphQlQueries: GraphQlQueryContract[]) {
+    public graphQlQueries(graphQlQueries: GraphQlQueryContract[]) {
         this.ctx.graphQlQueries = [
             ...this.ctx.graphQlQueries,
             ...graphQlQueries
@@ -138,7 +135,7 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    private graphQlTypeDefs(graphQlTypeDefs: TensieContext['graphQlTypeDefs']) {
+    public graphQlTypeDefs(graphQlTypeDefs: TensieContext['graphQlTypeDefs']) {
         this.ctx.graphQlTypeDefs = [
             ...this.ctx.graphQlTypeDefs,
             ...graphQlTypeDefs
@@ -303,10 +300,8 @@ export class Tensei implements TenseiContract {
         return this.ctx.graphQlQueries.find(query => query.config.path === path)
     }
 
-    private getRoute(type: RouteConfig['type'], path: string) {
-        return this.ctx.routes.find(
-            route => route.config.path === path && route.config.type === type
-        )
+    private getRoute(id: string) {
+        return this.ctx.routes.find(route => route.config.id === id)
     }
 
     private async callPluginHook(hook: SetupFunctions, payload?: any) {

@@ -3,12 +3,12 @@ declare module '@tensei/common/config' {
     import { Mail } from '@tensei/mail'
     import { Request, Response } from 'express'
     import { EntityManager } from '@mikro-orm/core'
-    import { IMiddleware } from 'graphql-middleware'
     import { sanitizer, validator } from 'indicative'
     import { ResourceContract } from '@tensei/common/resources'
     import { ExecutionParams } from 'subscriptions-transport-ws'
     import { DashboardContract } from '@tensei/common/dashboards'
     import { IResolvers, ITypedef, PubSub } from 'apollo-server-express'
+    import { IMiddleware, IMiddlewareGenerator } from 'graphql-middleware'
     import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
     import {
         PluginContract,
@@ -106,7 +106,7 @@ declare module '@tensei/common/config' {
         authorize(authorize: AuthorizeFunction): this
         filter(filter: GraphQlQueryConfig['filter']): this
         handle(handler: GraphQlQueryConfig['handler']): this
-        middleware(middleware: GraphQlQueryConfig['handler'][]): this
+        middleware(...middleware: GraphQlMiddleware[]): this
     }
 
     interface RouteConfig {
@@ -126,12 +126,12 @@ declare module '@tensei/common/config' {
 
     interface GraphQlQueryConfig<
         TSource = any,
-        TArgs = DataPayload,
-        TContext = ApiContext
+        TContext = ApiContext,
+        TArgs = DataPayload
     > {
         path: string
         name: string
-        middleware: GraphQlQueryConfig['handler'][]
+        middleware: GraphQlMiddleware<TSource, TContext, Targs>[]
         internal: boolean
         snakeCaseName: string
         paramCaseName: string
@@ -274,24 +274,14 @@ declare module '@tensei/common/config' {
     type AdditionalEntities = {
         entities?: any[]
     }
-    type Resolvers<TSource = any, TContext = GraphQLPluginContext> = IResolvers<
+    type Resolvers<TSource = any, TContext = ApiContext> = IResolvers<
         TSource,
         TContext
     >
-    type GraphQlMiddleware<
-        TSource = any,
-        TContext = GraphQLPluginContext,
-        TArgs = any
-    > = IMiddleware<TSource, TContext, TArgs>
-    type MiddlewareGenerator<
-        TSource = any,
-        TContext = GraphQLPluginContext,
-        TArgs = any
-    > = (
-        graphQlQueries: GraphQlQueryContract[],
-        typeDefs: ITypedef[],
-        schema: GraphQLSchema
-    ) => IMiddleware<TSource, TContext, TArgs>
+    type GraphQlMiddleware<TSource = any, TContext = ApiContext, TArgs = any> =
+        | IMiddleware<TSource, TContext, TArgs>
+        | IMiddlewareGenerator<TSource, TContext, TArgs>
+
     export interface Config {
         databaseClient: any
         schemas: any
@@ -305,9 +295,13 @@ declare module '@tensei/common/config' {
         routes: RouteContract[]
         graphQlTypeDefs: (string | DocumentNode)[]
         graphQlQueries: GraphQlQueryContract[]
-        graphQlMiddleware: MiddlewareGenerator[]
-        extendGraphQlMiddleware(
-            middlewareGenerators: MiddlewareGenerator[]
+        graphQlMiddleware: GraphQlMiddleware[]
+        extendGraphQlMiddleware<
+            TSource = any,
+            TContext = ApiContext,
+            TArgs = any
+        >(
+            ...middleware: GraphQlMiddleware<TSource, TContext, TArgs>[]
         ): void
         plugins: PluginContract[]
         dashboards: DashboardContract[]
@@ -318,7 +312,6 @@ declare module '@tensei/common/config' {
         logger: Signale
         databaseConfig: DatabaseConfiguration & AdditionalEntities
         dashboardPath: string
-        adminTable: string
         resourcesMap: {
             [key: string]: ResourceContract
         }

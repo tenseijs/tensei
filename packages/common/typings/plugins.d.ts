@@ -53,10 +53,7 @@ declare module '@tensei/common/plugins' {
         extendResources: (resources: ResourceContract[]) => any
         currentCtx: () => Config
         getQuery: (path: string) => GraphQlQueryContract | undefined
-        getRoute: (
-            type: RouteConfig['type'],
-            path: string
-        ) => RouteContract | undefined
+        getRoute: (id: string) => RouteContract | undefined
     }
 
     export abstract class PluginContract {

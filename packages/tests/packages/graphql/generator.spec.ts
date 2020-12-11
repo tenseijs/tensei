@@ -141,14 +141,19 @@ test('Generates fetch queries only for resources exposed to fetch api', async ()
         [
             'tag',
             'tags',
+            'tags__count',
             'comment',
             'comments',
+            'comments__count',
             'user',
             'users',
+            'users__count',
             'post',
             'posts',
+            'posts__count',
             'reaction',
             'reactions',
+            'reactions__count',
             'reaction_hidden_from_api',
             'reaction_hidden_from_apis'
         ].filter(
