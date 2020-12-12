@@ -1,5 +1,5 @@
 import Supertest from 'supertest'
-import { setup, fakeUser, fakePost, resources } from './setup'
+import { setup, fakeUser, fakePost } from './setup'
 
 test('Generates types only for resources not hidden from API', async () => {
     const { app } = await setup()
@@ -7,8 +7,8 @@ test('Generates types only for resources not hidden from API', async () => {
     const client = Supertest(app)
 
     const responses = await Promise.all([
-        client.post('/comments'),
-        client.post('/reaction-hidden-from-apis')
+        client.post('/api/comments'),
+        client.post('/api/reaction-hidden-from-apis')
     ])
 
     expect(responses.map(r => r.status)).toEqual([422, 404])
@@ -20,8 +20,8 @@ test('Only resources exposed to API have fetch_resources endpoints', async () =>
     const client = Supertest(app)
 
     const responses = await Promise.all([
-        client.get('/comments'),
-        client.get('/reaction-hidden-from-apis')
+        client.get('/api/comments'),
+        client.get('/api/reaction-hidden-from-apis')
     ])
 
     expect(responses.map(r => r.status)).toEqual([200, 404])
@@ -59,7 +59,7 @@ test('Only resources exposed to DELETE API have delete_resources endpoints', asy
     }>('Post', { title: postPayload.title })
 
     const { status: deletePostStatus } = await client.delete(
-        `/posts/${post.id}`
+        `/api/posts/${post.id}`
     )
 
     await orm.em.removeAndFlush(post)
@@ -68,8 +68,8 @@ test('Only resources exposed to DELETE API have delete_resources endpoints', asy
         { status: deleteUserStatus, body },
         { status: deleteReactionStatus }
     ] = await Promise.all([
-        client.delete(`/users/${user.id}`),
-        client.delete(`/reaction-hidden-from-apis/1`)
+        client.delete(`/api/users/${user.id}`),
+        client.delete(`/api/reaction-hidden-from-apis/1`)
     ])
 
     orm.em.clear()
@@ -124,16 +124,16 @@ test('Only resources exposed to PUT AND PATCH API have update_resources endpoint
     }>('Post', { title: postPayload.title })
 
     const { status: updatePostStatus } = await client
-        .patch(`/posts/${post.id}`)
+        .patch(`/api/posts/${post.id}`)
         .send({})
 
     const [
         { status: updateUserStatus },
         { status: updateReactionStatus }
     ] = await Promise.all([
-        client.patch(`/users/${user.id}`).send(fakeUser()),
+        client.patch(`/api/users/${user.id}`).send(fakeUser()),
         client
-            .patch(`/reaction-hidden-from-apis/${reaction.id}`)
+            .patch(`/api/reaction-hidden-from-apis/${reaction.id}`)
             .send({ like: false })
     ])
 
