@@ -1,5 +1,5 @@
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
-import { ResourceContract, FilterOperators, oneToOne } from '@tensei/common'
+import { ResourceContract, FilterOperators } from '@tensei/common'
 import { EntityManager, ReferenceType, Configuration } from '@mikro-orm/core'
 
 export const filterOperators: FilterOperators[] = [

@@ -652,17 +652,18 @@ input id_where_query {
                     databaseConfig
                 } = config
 
-                const exposedResources = currentCtx().resources.filter(
-                    resource => !resource.isHiddenOnApi()
-                )
-
                 this.setupResourceGraphqlTypes(currentCtx().resources, config)
 
                 extendGraphQlQueries(
-                    getResolvers(exposedResources, {
-                        subscriptionsEnabled: this.subscriptionsEnabled,
-                        database: databaseConfig.type!
-                    })
+                    getResolvers(
+                        currentCtx().resources.filter(
+                            resource => !resource.isHiddenOnApi()
+                        ),
+                        {
+                            subscriptionsEnabled: this.subscriptionsEnabled,
+                            database: databaseConfig.type!
+                        }
+                    )
                 )
             })
             .boot(async config => {

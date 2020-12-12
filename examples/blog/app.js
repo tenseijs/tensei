@@ -11,25 +11,14 @@ const Post = require('./resources/Post')
 const User = require('./resources/User')
 const Editor = require('./resources/Editor')
 const Comment = require('./resources/Comment')
+const Reaction = require('./resources/Reaction')
 
 module.exports = tensei()
     .dashboardPath('tensei')
-    .resources([Tag, Post, User, Comment, Editor])
+    .resources([Tag, Post, User, Comment, Editor, Reaction])
     .clientUrl('https://google.com')
     .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
-    .graphQlTypeDefs([
-        `
-        type aggregate_comments {
-            count: Int!
-            average: Int!
-        }
-
-        extend type Query {
-            aggregate_comments: aggregate_comments
-        }
-    `,
-    ])
     .graphQlQueries([])
     .routes([
         route('Get products')
@@ -73,8 +62,8 @@ module.exports = tensei()
                 secret: process.env.LINKEDIN_SECRET,
             })
             .plugin(),
+        media().plugin(),
         graphql()
-            .subscriptions(new RedisPubSub())
             .middlewareOptions({
                 cors: {
                     credentials: true,
@@ -82,8 +71,6 @@ module.exports = tensei()
                 },
             })
             .plugin(),
-        media().plugin(),
-        graphql().plugin(),
         rest().plugin(),
         docs().plugin(),
     ])

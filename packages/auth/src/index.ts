@@ -635,37 +635,15 @@ class Auth {
                         async (request, response, next) => {
                             await this.getAuthUserFromContext(request as any)
 
-                            return next()
-                        },
-                        async (request, response, next) => {
                             await this.setAuthUserForPublicRoutes(
                                 request as any
                             )
 
-                            return next()
-                        },
-                        async (request, response, next) => {
                             await this.ensureAuthUserIsNotBlocked(
                                 request as any
                             )
 
                             return next()
-                        },
-                        async (request, response, next) => {
-                            const authorizers = await Promise.all(
-                                route.config.authorize.map(fn =>
-                                    fn(request as any)
-                                )
-                            )
-
-                            if (
-                                authorizers.filter(authorized => authorized)
-                                    .length !== route.config.authorize.length
-                            ) {
-                                throw request.forbiddenError('Unauthorized.')
-                            }
-
-                            next()
                         }
                     ])
                     if (route.config.resource) {

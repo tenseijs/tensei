@@ -80,7 +80,7 @@ export const getDatabaseCredentials = () => {
     } else {
         config.dbName = process.env.DATABASE_NAME || 'mikrotensei'
         config.user = process.env.DATABASE_USER || 'root'
-        config.password = process.env.DATABASE_PASSWORD || 'password'
+        config.password = process.env.DATABASE_PASSWORD || ''
     }
 
     return config
