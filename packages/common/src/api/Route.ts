@@ -37,7 +37,7 @@ export class Route implements RouteContract {
     }
 
     path(path: string) {
-        this.config.path = path
+        this.config.path = path.startsWith('/') ? path.substring(1) : path
 
         return this
     }

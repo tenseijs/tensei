@@ -5,6 +5,7 @@ const {
     belongsTo,
     filter,
     hasOne,
+    hasMany,
 } = require('@tensei/core')
 
 module.exports = resource('Comment')
@@ -14,6 +15,7 @@ module.exports = resource('Comment')
         textarea('Reply').rules('required', 'max:255').hideOnIndex(),
         belongsTo('Post'),
         hasOne('Editor'),
+        hasMany('Reaction'),
     ])
     .filters([
         filter('Comments on Post')

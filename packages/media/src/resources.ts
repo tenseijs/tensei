@@ -8,8 +8,8 @@ import {
     bigInteger
 } from '@tensei/common'
 
-export const mediaResource = () =>
-    resource('File')
+export const mediaResource = (name: string) =>
+    resource(name)
         .fields([
             bigInteger('Size')
                 .description('The file size in Kb')

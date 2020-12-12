@@ -58,15 +58,18 @@ export const queries = (config: MediaLibraryPluginConfig) => [
             }))
 
             const fileEntities = files.map(file =>
-                ctx.manager.create(mediaResource().data.pascalCaseName, {
-                    size: file.size,
-                    hash: file.hash,
-                    path: file.path,
-                    disk: config.disk,
-                    mime_type: file.mimetype,
-                    extension: file.extension,
-                    original_filename: file.filename
-                })
+                ctx.manager.create(
+                    mediaResource(config.mediaResourceName).data.pascalCaseName,
+                    {
+                        size: file.size,
+                        hash: file.hash,
+                        path: file.path,
+                        disk: config.disk,
+                        mime_type: file.mimetype,
+                        extension: file.extension,
+                        original_filename: file.filename
+                    }
+                )
             )
 
             await ctx.manager.persistAndFlush(fileEntities)

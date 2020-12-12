@@ -14,4 +14,5 @@ export interface MediaLibraryPluginConfig {
     disk: string
     maxFiles: number
     maxFileSize: number
+    mediaResourceName: string
 }

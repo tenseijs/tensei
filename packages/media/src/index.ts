@@ -9,8 +9,9 @@ import { MediaLibraryPluginConfig } from './types'
 class MediaLibrary {
     private config: MediaLibraryPluginConfig = {
         disk: '',
+        maxFiles: 10,
         maxFileSize: 10000000,
-        maxFiles: 10
+        mediaResourceName: 'File'
     }
 
     disk(disk: string) {
@@ -34,19 +35,20 @@ class MediaLibrary {
     plugin() {
         return plugin('Media Library').register(
             ({
-                gql,
                 app,
+                currentCtx,
                 storageConfig,
                 extendResources,
                 extendGraphQlTypeDefs,
-                extendGraphQlQueries,
-                currentCtx
+                extendGraphQlQueries
             }) => {
                 if (!this.config.disk) {
                     this.config.disk = storageConfig.default!
                 }
 
-                const MediaResource = mediaResource()
+                const MediaResource = mediaResource(
+                    this.config.mediaResourceName
+                )
 
                 const { resources } = currentCtx()
 
@@ -68,7 +70,12 @@ class MediaLibrary {
 
                 extendGraphQlQueries(queries(this.config))
 
-                extendGraphQlTypeDefs([gql(typeDefs)])
+                extendGraphQlTypeDefs([
+                    typeDefs(
+                        MediaResource.data.snakeCaseName,
+                        MediaResource.data.snakeCaseNamePlural
+                    )
+                ])
 
                 app.use(
                     graphqlUploadExpress({

@@ -173,10 +173,12 @@ export class Tensei implements TenseiContract {
             })
 
             request.userInputError = (
-                message: string = 'Validation failed.'
+                message: string = 'Validation failed.',
+                properties: any
             ) => ({
                 status: 422,
-                message
+                message,
+                ...properties
             })
 
             return next()
@@ -397,29 +399,15 @@ export class Tensei implements TenseiContract {
                 response: Express.Response,
                 next: Express.NextFunction
             ) => {
-                if (Array.isArray(error)) {
-                    return response.status(422).json({
-                        message: 'Validation failed.',
-                        errors: error
-                    })
+                const payload: any = {
+                    message: error.message || 'Internal server error.'
                 }
 
-                if (error.status === 404) {
-                    return response.status(404).json({
-                        message: error.message
-                    })
+                if (error.errors) {
+                    payload.errors = error.errors
                 }
 
-                if (error.status) {
-                    return response.status(error.status).json({
-                        message: error.message || 'Internal server error.'
-                    })
-                }
-
-                response.status(500).json({
-                    message: 'Internal server error.',
-                    error
-                })
+                return response.status(error.status || 500).json(payload)
             }
         )
     }

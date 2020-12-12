@@ -432,7 +432,7 @@ Object {
     "license": Object {},
   },
   "paths": Object {
-    "/admin/auth/login": Object {
+    "admin/auth/login": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -478,7 +478,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/me": Object {
+    "admin/auth/me": Object {
       "get": Object {
         "consumes": Array [
           "application/json",
@@ -503,7 +503,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/passwords/email": Object {
+    "admin/auth/passwords/email": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -544,7 +544,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/passwords/reset": Object {
+    "admin/auth/passwords/reset": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -589,7 +589,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/refresh-token": Object {
+    "admin/auth/refresh-token": Object {
       "delete": Object {
         "consumes": Array [
           "application/json",
@@ -641,7 +641,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/register": Object {
+    "admin/auth/register": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -687,7 +687,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/social/login": Object {
+    "admin/auth/social/login": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -708,7 +708,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/social/register": Object {
+    "admin/auth/social/register": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -729,7 +729,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/two-factor/disable": Object {
+    "admin/auth/two-factor/disable": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -749,7 +749,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/two-factor/enable": Object {
+    "admin/auth/two-factor/enable": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -769,7 +769,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/two-factor/enable/confirm": Object {
+    "admin/auth/two-factor/enable/confirm": Object {
       "post": Object {
         "consumes": Array [
           "application/json",
@@ -790,7 +790,7 @@ Object {
         ],
       },
     },
-    "/admin/auth/verification/resend": Object {
+    "admin/auth/verification/resend": Object {
       "post": Object {
         "consumes": Array [
           "application/json",

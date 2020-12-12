@@ -1,3 +1,4 @@
+import { Cascade } from '@mikro-orm/core'
 import { text, resource, hasMany } from '@tensei/common'
 
 export default resource('User')
@@ -19,7 +20,7 @@ export default resource('User')
             .hideOnDetail()
             .rules('required', 'min:8', 'max:24')
             .notNullable(),
-        hasMany('Post')
+        hasMany('Post').cascades([Cascade.MERGE])
     ])
     .displayField('full_name')
     .perPageOptions([2, 5, 10])

@@ -51,7 +51,7 @@ test('Generates a new object definition for all resources exposed to the API', a
 })
 
 test('Adds new route definitions to API documentation', async () => {
-    const path = '/accessories/query'
+    const path = 'accessories/query'
 
     const { app } = await setup([
         plugin('New route').boot(async ({ extendRoutes }) => {
