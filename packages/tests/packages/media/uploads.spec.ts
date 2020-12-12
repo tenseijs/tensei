@@ -5,7 +5,7 @@ test('Can upload files using the graphql plugin', async () => {
     const {
         app,
         ctx: { storage, orm }
-    } = await setup()
+    } = await setup(1000000000, 6)
 
     const client = Supertest(app)
 
@@ -31,7 +31,7 @@ test('Can upload files using the graphql plugin', async () => {
             JSON.stringify({
                 query,
                 variables: {
-                    files: [null, null, null],
+                    files: [null, null, null, null, null],
                     path: '/profiles/avatars'
                 }
             })
@@ -41,16 +41,20 @@ test('Can upload files using the graphql plugin', async () => {
             JSON.stringify({
                 file_0: ['variables.files.0'],
                 file_1: ['variables.files.1'],
-                file_2: ['variables.files.2']
+                file_2: ['variables.files.2'],
+                file_3: ['variables.files.3'],
+                file_4: ['variables.files.4']
             })
         )
         .attach('file_0', getFileFixture('pdf.pdf'))
         .attach('file_1', getFileFixture('png.png'))
         .attach('file_2', getFileFixture('zip.zip'))
+        .attach('file_3', getFileFixture('pdf.pdf'))
+        .attach('file_4', getFileFixture('png.png'))
 
     const uploaded_files = response.body.data.upload_files
 
-    expect(uploaded_files).toHaveLength(3)
+    expect(uploaded_files).toHaveLength(5)
 
     const files = await Promise.all(
         uploaded_files.map((file: any) =>
@@ -65,30 +69,37 @@ test('Can upload files using the graphql plugin', async () => {
 
     const meeting = orm.em.create('Meeting', {
         name: 'Meeting 1',
-        screenshots: [uploaded_files[0].id, uploaded_files[1].id]
+        banner: uploaded_files[0].id,
+        screenshots: [uploaded_files[1].id, uploaded_files[2].id]
     })
 
     const gist = orm.em.create('Gist', {
         name: 'Gist 1',
-        attachments: [uploaded_files[2].id]
+        attachments: [uploaded_files[3].id]
     })
 
-    await orm.em.persistAndFlush([gist, meeting])
+    const editor = orm.em.create('Editor', {
+        name: 'Moderator Captain',
+        avatar: [uploaded_files[4].id]
+    })
 
+    await orm.em.persistAndFlush([gist, meeting, editor])
+
+    await orm.em.populate(editor, ['avatar'])
     await orm.em.populate(gist, ['attachments'])
-    await orm.em.populate(meeting, ['screenshots'])
+    await orm.em.populate(meeting, ['screenshots', 'banner'])
 
-    expect(meeting.screenshots[0].id.toString()).toEqual(uploaded_files[0].id)
-    expect(meeting.screenshots[1].id.toString()).toEqual(uploaded_files[1].id)
+    expect((meeting.banner as any).id.toString()).toEqual(uploaded_files[0].id)
+    expect(meeting.screenshots[0].id.toString()).toEqual(uploaded_files[1].id)
+    expect(meeting.screenshots[1].id.toString()).toEqual(uploaded_files[2].id)
 
-    expect(gist.attachments[0].id.toString()).toEqual(uploaded_files[2].id)
+    expect(gist.attachments[0].id.toString()).toEqual(uploaded_files[3].id)
+
+    expect((editor.avatar as any).id.toString()).toEqual(uploaded_files[4].id)
 })
 
 test('Cannot upload more than max files', async () => {
-    const {
-        app,
-        ctx: { storage, orm }
-    } = await setup()
+    const { app } = await setup()
 
     const client = Supertest(app)
 
@@ -187,4 +198,25 @@ test('Cannot upload files larger than max file size', async () => {
     expect(response.body.errors[0].extensions.exception.message).toEqual(
         `File truncated as it exceeds the ${maxFileSize} byte size limit.`
     )
+})
+
+test('Can upload files using the rest plugin', async () => {
+    const {
+        app,
+        ctx: {
+            orm: { em }
+        }
+    } = await setup(100000000, 48)
+
+    const response = await Supertest(app)
+        .post('/files?preset=beans')
+        .set('Content-Type', 'multipart/form-data')
+        .attach('files', getFileFixture('pdf.pdf'))
+        .attach('files', getFileFixture('png.png'))
+        .attach('files', getFileFixture('zip.zip'))
+        .attach('files', getFileFixture('pdf.pdf'))
+        .attach('files', getFileFixture('png.png'))
+
+    expect(response.status).toBe(201)
+    expect(response.body.data).toHaveLength(5)
 })

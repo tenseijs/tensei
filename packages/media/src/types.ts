@@ -10,9 +10,13 @@ export interface UploadFile {
     createReadStream: () => Fs.ReadStream
 }
 
+export interface Transformation {}
+
 export interface MediaLibraryPluginConfig {
     disk: string
+    path: string
     maxFiles: number
     maxFileSize: number
-    mediaResourceName: string
+    maxFieldSize: number
+    transformations: Transformation[]
 }

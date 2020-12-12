@@ -385,6 +385,7 @@ export class Tensei implements TenseiContract {
                 request.currentCtx = () => this.ctx
                 request.mailer = this.ctx.mailer
                 request.config = this.ctx
+                request.storage = this.ctx.storage
 
                 next()
             }
