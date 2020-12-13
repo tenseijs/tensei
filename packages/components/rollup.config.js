@@ -10,7 +10,13 @@ export default {
 
         'src/Button/index.ts',
         'src/Select/index.ts',
-        'src/SearchInput/index.ts'
+        'src/SearchInput/index.ts',
+        'src/SearchInput/index.ts',
+        'src/TextInput/index.ts',
+        'src/List/index.ts',
+        'src/Typography/index.ts',
+        'src/Typography/Heading.tsx',
+        'src/Typography/Paragraph.tsx'
     ],
     output: {
         dir: 'lib',

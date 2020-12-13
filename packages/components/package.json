@@ -34,6 +34,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@headlessui/react": "^0.2.0"
+        "@headlessui/react": "^0.2.0",
+        "@types/classnames": "^2.2.11",
+        "classnames": "^2.2.6"
     }
 }

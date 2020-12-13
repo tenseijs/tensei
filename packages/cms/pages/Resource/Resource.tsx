@@ -115,7 +115,7 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                 <div className="flex flex-col">
                     <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                            <div className="shadow-sm overflow-hidden border-b border-tensei-gray-800 sm:rounded-sm">
+                            <div className="shadow-sm overflow-hidden border-b border-tensei-gray-800 sm:rounded-lg">
                                 <Table
                                     columns={[
                                         {
@@ -220,7 +220,7 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                     </div>
 
                     <nav className="flex items-center">
-                        <button className="mr-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-sm">
+                        <button className="mr-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
                             <svg
                                 className="fill-current"
                                 width={10}
@@ -235,25 +235,25 @@ const Resource: React.FC<ResourceProps> = ({}) => {
 
                         <a
                             href=""
-                            className="rounded-sm px-3 py-1 mr-2 font-semibold bg-tensei-primary text-white focus:outline-none border border-transparent focus:ring-offset-2 focus:ring-2 focus:ring-tensei-primary"
+                            className="rounded-lg px-3 py-1 mr-2 font-semibold bg-tensei-primary text-white focus:outline-none border border-transparent focus:ring-offset-2 focus:ring-2 focus:ring-tensei-primary"
                         >
                             1
                         </a>
 
                         <a
                             href="#"
-                            className="px-3 py-1 bg-transparent mr-2 rounded-sm focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary"
+                            className="px-3 py-1 bg-transparent mr-2 rounded-lg focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary"
                         >
                             2
                         </a>
                         <a
                             href="#"
-                            className="px-3 py-1 bg-transparent rounded-sm focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary"
+                            className="px-3 py-1 bg-transparent rounded-lg focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary"
                         >
                             3
                         </a>
 
-                        <button className="ml-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-sm">
+                        <button className="ml-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
                             <svg
                                 className="fill-current transform rotate-180"
                                 width={10}

@@ -3,6 +3,8 @@ import { Transition, Menu } from '@tensei/components'
 
 import Nav from '../components/Nav'
 import Resource from './Resource'
+import ResourceDetail from './ShowResource'
+import CreateResource from './CreateResource'
 
 export interface DashboardProps {}
 
@@ -178,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                 >
                                                     <Menu.Items
                                                         static
-                                                        className="absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-sm shadow-sm outline-none"
+                                                        className="absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-sm outline-none"
                                                     >
                                                         <div className="px-4 py-3">
                                                             <p className="text-sm leading-5">
@@ -243,7 +245,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                         <div className="py-6">
                             <div className="max-w-full mx-auto px-4 sm:px-6 md:px-8">
                                 {/* Replace with your content */}
-                                <Resource />
+                                <CreateResource />
                                 {/* /End replace */}
                             </div>
                         </div>

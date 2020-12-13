@@ -11177,6 +11177,68 @@ function previouslyCompared(a, b) {
 
 /***/ }),
 
+/***/ "../../node_modules/classnames/index.js":
+/*!*************************************************************************!*\
+  !*** /Users/bahdcoder/Projects/tensei/node_modules/classnames/index.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2017 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg) && arg.length) {
+				var inner = classNames.apply(null, arg);
+				if (inner) {
+					classes.push(inner);
+				}
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if ( true && module.exports) {
+		classNames.default = classNames;
+		module.exports = classNames;
+	} else if (true) {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	} else {}
+}());
+
+
+/***/ }),
+
 /***/ "../../node_modules/fast-json-stable-stringify/index.js":
 /*!*****************************************************************************************!*\
   !*** /Users/bahdcoder/Projects/tensei/node_modules/fast-json-stable-stringify/index.js ***!
@@ -63975,6 +64037,42 @@ var Button = function Button(_ref) {
 
 /***/ }),
 
+/***/ "../components/lib/List/StackedList.js":
+/*!*********************************************!*\
+  !*** ../components/lib/List/StackedList.js ***!
+  \*********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var StackedList = function StackedList(_ref) {
+  var fields = _ref.fields;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, fields.map(function (field, index) {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      key: field.inputName,
+      className: classnames__WEBPACK_IMPORTED_MODULE_1___default()('w-full flex items-center flex-wrap px-6 py-3', {
+        'border-t border-tensei-gray-300': index !== 0
+      })
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "w-1/4 capitalize"
+    }, "some text"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "w-3/4"
+    }, "some more text"));
+  }));
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (StackedList);
+
+/***/ }),
+
 /***/ "../components/lib/Modal/ConfirmModal.js":
 /*!***********************************************!*\
   !*** ../components/lib/Modal/ConfirmModal.js ***!
@@ -64111,7 +64209,7 @@ var Modal = function Modal(_ref) {
       role: "dialog",
       "aria-modal": "true",
       "aria-labelledby": "modal-headline",
-      className: "inline-block align-bottom bg-white rounded-sm px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
+      className: "inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
     }, children);
   })))), el);
 };
@@ -64149,7 +64247,7 @@ var SearchInput = function SearchInput(_ref) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
     id: name,
     name: name,
-    className: "rounded-sm block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none focus:placeholder-gray-700 focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary sm:text-sm",
+    className: "rounded-lg block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none focus:placeholder-gray-700 focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary sm:text-sm",
     placeholder: "Search",
     type: "search"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -64194,7 +64292,7 @@ var Select = function Select(_ref) {
   }, label) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("select", {
     id: id || name,
     name: name || id,
-    className: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary  sm:text-sm rounded-sm"
+    className: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary  sm:text-sm rounded-lg"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("option", null, "5 / page"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("option", null, "10 / page"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("option", null, "50 / page")));
 };
 
@@ -64322,11 +64420,112 @@ var Table = function Table(_ref) {
 
 /***/ }),
 
+/***/ "../components/lib/TextInput/TextInput.js":
+/*!************************************************!*\
+  !*** ../components/lib/TextInput/TextInput.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+var TextInput = function TextInput(_ref) {
+  var _ref$className = _ref.className,
+      className = _ref$className === void 0 ? '' : _ref$className,
+      label = _ref.label,
+      name = _ref.name,
+      id = _ref.id,
+      addonAfter = _ref.addonAfter,
+      hiddenLabel = _ref.hiddenLabel;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    className: className
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", {
+    htmlFor: name,
+    className: hiddenLabel ? 'sr-only' : ''
+  }, label), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+    id: id,
+    name: name,
+    className: "rounded-sm block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none focus:placeholder-gray-700 focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary sm:text-sm",
+    placeholder: "Search",
+    type: "search"
+  }), addonAfter ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    className: "absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+  }, addonAfter) : null));
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (TextInput);
+
+/***/ }),
+
+/***/ "../components/lib/Typography/Heading.js":
+/*!***********************************************!*\
+  !*** ../components/lib/Typography/Heading.js ***!
+  \***********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var Heading = function Heading(_ref) {
+  var children = _ref.children,
+      as = _ref.as,
+      className = _ref.className;
+  var Element = as;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Element, {
+    className: classnames__WEBPACK_IMPORTED_MODULE_1___default()(className, 'font-bold text-xl tracking-wide')
+  }, children);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (Heading);
+
+/***/ }),
+
+/***/ "../components/lib/Typography/Paragraph.js":
+/*!*************************************************!*\
+  !*** ../components/lib/Typography/Paragraph.js ***!
+  \*************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! classnames */ "../../node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+var Paragraph = function Paragraph(_ref) {
+  var children = _ref.children,
+      className = _ref.className;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", {
+    className: classnames__WEBPACK_IMPORTED_MODULE_1___default()(className, 'text-base')
+  }, children);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (Paragraph);
+
+/***/ }),
+
 /***/ "../components/lib/index.js":
 /*!**********************************!*\
   !*** ../components/lib/index.js ***!
   \**********************************/
-/*! exports provided: Table, Select, Button, SearchInput, Listbox, Menu, Switch, Transition, Modal, ConfirmModal */
+/*! exports provided: Table, Select, Button, SearchInput, StackedList, Listbox, Menu, Switch, Transition, Modal, ConfirmModal, Heading, Paragraph, TextInput */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -64343,20 +64542,36 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _SearchInput_SearchInput_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./SearchInput/SearchInput.js */ "../components/lib/SearchInput/SearchInput.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "SearchInput", function() { return _SearchInput_SearchInput_js__WEBPACK_IMPORTED_MODULE_3__["default"]; });
 
-/* harmony import */ var _headlessui_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @headlessui/react */ "../../node_modules/@headlessui/react/dist/headlessui.esm.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Listbox", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_4__["Listbox"]; });
+/* harmony import */ var _List_StackedList_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./List/StackedList.js */ "../components/lib/List/StackedList.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "StackedList", function() { return _List_StackedList_js__WEBPACK_IMPORTED_MODULE_4__["default"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Menu", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_4__["Menu"]; });
+/* harmony import */ var _headlessui_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @headlessui/react */ "../../node_modules/@headlessui/react/dist/headlessui.esm.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Listbox", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_5__["Listbox"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Switch", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_4__["Switch"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Menu", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_5__["Menu"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Transition", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_4__["Transition"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Switch", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_5__["Switch"]; });
 
-/* harmony import */ var _Modal_Modal_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Modal/Modal.js */ "../components/lib/Modal/Modal.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Modal", function() { return _Modal_Modal_js__WEBPACK_IMPORTED_MODULE_5__["default"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Transition", function() { return _headlessui_react__WEBPACK_IMPORTED_MODULE_5__["Transition"]; });
 
-/* harmony import */ var _Modal_ConfirmModal_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Modal/ConfirmModal.js */ "../components/lib/Modal/ConfirmModal.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ConfirmModal", function() { return _Modal_ConfirmModal_js__WEBPACK_IMPORTED_MODULE_6__["default"]; });
+/* harmony import */ var _Modal_Modal_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Modal/Modal.js */ "../components/lib/Modal/Modal.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Modal", function() { return _Modal_Modal_js__WEBPACK_IMPORTED_MODULE_6__["default"]; });
+
+/* harmony import */ var _Modal_ConfirmModal_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Modal/ConfirmModal.js */ "../components/lib/Modal/ConfirmModal.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ConfirmModal", function() { return _Modal_ConfirmModal_js__WEBPACK_IMPORTED_MODULE_7__["default"]; });
+
+/* harmony import */ var _Typography_Heading_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Typography/Heading.js */ "../components/lib/Typography/Heading.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Heading", function() { return _Typography_Heading_js__WEBPACK_IMPORTED_MODULE_8__["default"]; });
+
+/* harmony import */ var _Typography_Paragraph_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Typography/Paragraph.js */ "../components/lib/Typography/Paragraph.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Paragraph", function() { return _Typography_Paragraph_js__WEBPACK_IMPORTED_MODULE_9__["default"]; });
+
+/* harmony import */ var _TextInput_TextInput_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./TextInput/TextInput.js */ "../components/lib/TextInput/TextInput.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TextInput", function() { return _TextInput_TextInput_js__WEBPACK_IMPORTED_MODULE_10__["default"]; });
+
+
+
+
 
 
 
@@ -64390,75 +64605,6 @@ var Dashboard_1 = __importDefault(__webpack_require__(/*! ./pages/Dashboard */ "
 react_dom_1.default.render(react_1.default.createElement(client_1.ApolloProvider, { client: window.Tensei.client },
     react_1.default.createElement(react_router_dom_1.BrowserRouter, null,
         react_1.default.createElement(Dashboard_1.default, null))), document.querySelector('#app'));
-
-
-/***/ }),
-
-/***/ "./components/Actions/Actions.tsx":
-/*!****************************************!*\
-  !*** ./components/Actions/Actions.tsx ***!
-  \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = __importDefault(__webpack_require__(/*! react */ "../../node_modules/react/index.js"));
-var components_1 = __webpack_require__(/*! @tensei/components */ "../components/lib/index.js");
-var Actions = function (_a) {
-    return (react_1.default.createElement("div", { className: "relative inline-block" },
-        react_1.default.createElement(components_1.Menu, null, function (_a) {
-            var open = _a.open;
-            return (react_1.default.createElement(react_1.default.Fragment, null,
-                react_1.default.createElement(components_1.Menu.Button, { className: "flex mr-4 items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full" },
-                    react_1.default.createElement("span", { className: "sr-only" }, "Actions"),
-                    react_1.default.createElement("svg", { width: 14, height: 14, className: "fill-current text-tensei-gray-700", viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-                        react_1.default.createElement("path", { d: "M2.16667 10.1668C3.36328 10.1668 4.33333 9.19678 4.33333 8.00016C4.33333 6.80355 3.36328 5.8335 2.16667 5.8335C0.97005 5.8335 0 6.80355 0 8.00016C0 9.19678 0.97005 10.1668 2.16667 10.1668Z" }),
-                        react_1.default.createElement("path", { d: "M8.00004 10.1668C9.19666 10.1668 10.1667 9.19678 10.1667 8.00016C10.1667 6.80355 9.19666 5.8335 8.00004 5.8335C6.80342 5.8335 5.83337 6.80355 5.83337 8.00016C5.83337 9.19678 6.80342 10.1668 8.00004 10.1668Z" }),
-                        react_1.default.createElement("path", { d: "M13.8333 10.1668C15.0299 10.1668 16 9.19678 16 8.00016C16 6.80355 15.0299 5.8335 13.8333 5.8335C12.6367 5.8335 11.6666 6.80355 11.6666 8.00016C11.6666 9.19678 12.6367 10.1668 13.8333 10.1668Z" }))),
-                react_1.default.createElement(components_1.Transition, { show: open, enter: "transition ease-out duration-100", enterFrom: "transform opacity-0 scale-95", enterTo: "transform opacity-100 scale-100", leave: "transition ease-in duration-75", leaveFrom: "transform opacity-100 scale-100", leaveTo: "transform opacity-0 scale-95" },
-                    react_1.default.createElement(components_1.Menu.Items, { static: true, className: "z-50 absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-sm shadow-sm outline-none" },
-                        react_1.default.createElement("div", { className: "py-1" },
-                            react_1.default.createElement(components_1.Menu.Item, null, function (_a) {
-                                var active = _a.active;
-                                return (react_1.default.createElement("a", { href: "#account-settings", className: (active
-                                        ? 'bg-gray-100 text-gray-900'
-                                        : 'text-gray-700') + " flex justify-between w-full px-4 py-2 text-sm leading-5 text-left" }, "Account settings"));
-                            })),
-                        react_1.default.createElement("div", { className: "py-1" },
-                            react_1.default.createElement(components_1.Menu.Item, null, function (_a) {
-                                var active = _a.active;
-                                return (react_1.default.createElement("a", { href: "#sign-out", className: (active
-                                        ? 'bg-gray-100 text-gray-900'
-                                        : 'text-gray-700') + " flex justify-between w-full px-4 py-2 text-sm leading-5 text-left" }, "Sign out"));
-                            }))))));
-        })));
-};
-exports.default = Actions;
-
-
-/***/ }),
-
-/***/ "./components/Actions/index.ts":
-/*!*************************************!*\
-  !*** ./components/Actions/index.ts ***!
-  \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = void 0;
-var Actions_1 = __webpack_require__(/*! ./Actions */ "./components/Actions/Actions.tsx");
-Object.defineProperty(exports, "default", { enumerable: true, get: function () { return __importDefault(Actions_1).default; } });
 
 
 /***/ }),
@@ -64577,6 +64723,76 @@ window.Tensei = new Core();
 
 /***/ }),
 
+/***/ "./pages/CreateResource/CreateResource.tsx":
+/*!*************************************************!*\
+  !*** ./pages/CreateResource/CreateResource.tsx ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var react_1 = __importStar(__webpack_require__(/*! react */ "../../node_modules/react/index.js"));
+var components_1 = __webpack_require__(/*! @tensei/components */ "../components/lib/index.js");
+var CreateResource = function (_a) {
+    return (react_1.default.createElement(react_1.Fragment, null,
+        react_1.default.createElement("header", { className: "flex flex-wrap items-center justify-between" },
+            react_1.default.createElement(components_1.Heading, { as: "h1", className: "text-tensei-darkest" }, "Update Tag"),
+            react_1.default.createElement("div", { className: "flex w-2/4 justify-end" },
+                react_1.default.createElement(components_1.Button, { clear: true, className: "bg-tensei-gray-300 border-tensei-gray-300" }, "Delete"),
+                react_1.default.createElement(components_1.Button, { primary: true, className: "ml-7" }, "Update"))),
+        react_1.default.createElement("div", { className: "grid grid-cols-3 gap-4" },
+            react_1.default.createElement("div", { className: "col-span-2 flex flex-col flex-wrap mt-10 bg-white rounded-lg p-12" },
+                react_1.default.createElement(components_1.Paragraph, { className: "tensei-gray-700" }, "Put in information about the new"),
+                react_1.default.createElement("div", { className: "w-full md:w-2/3 mt-10" },
+                    react_1.default.createElement(components_1.TextInput, { label: "Title" }))),
+            react_1.default.createElement("div", { className: "bg-white rounded-lg p-12 mt-10" }, "5"))));
+};
+exports.default = CreateResource;
+
+
+/***/ }),
+
+/***/ "./pages/CreateResource/index.ts":
+/*!***************************************!*\
+  !*** ./pages/CreateResource/index.ts ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = void 0;
+var CreateResource_1 = __webpack_require__(/*! ./CreateResource */ "./pages/CreateResource/CreateResource.tsx");
+Object.defineProperty(exports, "default", { enumerable: true, get: function () { return __importDefault(CreateResource_1).default; } });
+
+
+/***/ }),
+
 /***/ "./pages/Dashboard.tsx":
 /*!*****************************!*\
   !*** ./pages/Dashboard.tsx ***!
@@ -64612,7 +64828,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = __importStar(__webpack_require__(/*! react */ "../../node_modules/react/index.js"));
 var components_1 = __webpack_require__(/*! @tensei/components */ "../components/lib/index.js");
 var Nav_1 = __importDefault(__webpack_require__(/*! ../components/Nav */ "./components/Nav/index.ts"));
-var Resource_1 = __importDefault(__webpack_require__(/*! ./Resource */ "./pages/Resource/index.ts"));
+var CreateResource_1 = __importDefault(__webpack_require__(/*! ./CreateResource */ "./pages/CreateResource/index.ts"));
 var Dashboard = function () {
     var _a = react_1.useState(false), offCanvasOpen = _a[0], setOffCanvasOpen = _a[1];
     return (react_1.default.createElement(react_1.default.Fragment, null,
@@ -64664,7 +64880,7 @@ var Dashboard = function () {
                                                 react_1.default.createElement("span", { className: "sr-only" }, "Open user menu"),
                                                 react_1.default.createElement("img", { className: "h-10 w-10 rounded-full", src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80", alt: "" }))),
                                         react_1.default.createElement(components_1.Transition, { show: open, enter: "transition ease-out duration-100", enterFrom: "transform opacity-0 scale-95", enterTo: "transform opacity-100 scale-100", leave: "transition ease-in duration-75", leaveFrom: "transform opacity-100 scale-100", leaveTo: "transform opacity-0 scale-95" },
-                                            react_1.default.createElement(components_1.Menu.Items, { static: true, className: "absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-sm shadow-sm outline-none" },
+                                            react_1.default.createElement(components_1.Menu.Items, { static: true, className: "absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-sm outline-none" },
                                                 react_1.default.createElement("div", { className: "px-4 py-3" },
                                                     react_1.default.createElement("p", { className: "text-sm leading-5" }, "Signed in as"),
                                                     react_1.default.createElement("p", { className: "text-sm font-medium leading-5 text-gray-900 truncate" }, "tom@example.com")),
@@ -64686,162 +64902,9 @@ var Dashboard = function () {
                 react_1.default.createElement("main", { className: "flex-1 relative overflow-y-auto focus:outline-none", tabIndex: 0 },
                     react_1.default.createElement("div", { className: "py-6" },
                         react_1.default.createElement("div", { className: "max-w-full mx-auto px-4 sm:px-6 md:px-8" },
-                            react_1.default.createElement(Resource_1.default, null))))))));
+                            react_1.default.createElement(CreateResource_1.default, null))))))));
 };
 exports.default = Dashboard;
-
-
-/***/ }),
-
-/***/ "./pages/Resource/Resource.tsx":
-/*!*************************************!*\
-  !*** ./pages/Resource/Resource.tsx ***!
-  \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = __importStar(__webpack_require__(/*! react */ "../../node_modules/react/index.js"));
-var components_1 = __webpack_require__(/*! @tensei/components */ "../components/lib/index.js");
-var Actions_1 = __importDefault(__webpack_require__(/*! ../../components/Actions */ "./components/Actions/index.ts"));
-var Resource = function (_a) {
-    var _b = react_1.useState(null), deleting = _b[0], setDeleting = _b[1];
-    return (react_1.default.createElement(react_1.default.Fragment, null,
-        react_1.default.createElement(components_1.ConfirmModal, { open: !!deleting, setOpen: function () { return setDeleting(null); }, title: "Delete Account?", description: "Are you sure you want to delete this account? This action cannot be reversed." }),
-        react_1.default.createElement("div", { className: "flex flex-wrap justify-between items-center w-full" },
-            react_1.default.createElement("div", { className: "flex flex-wrap w-full md:w-auto" },
-                react_1.default.createElement(components_1.SearchInput, { className: "md:mr-5 w-full mb-3 md:mb-0 md:w-96" }),
-                react_1.default.createElement(components_1.Button, { clear: true },
-                    react_1.default.createElement("span", { className: "flex items-center px-3 text-tensei-gray-700" },
-                        "Filter",
-                        react_1.default.createElement("svg", { width: 16, height: 14, className: "ml-4 text-tensei-gray-700 ", viewBox: "0 0 16 14", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-                            react_1.default.createElement("rect", { x: 9, y: 1, width: 7, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { x: 9, y: 1, width: 7, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { y: 6, width: 9, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { y: 1, width: 5, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { x: 11, y: 6, width: 5, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { y: 11, width: 4, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { x: 6, y: 11, width: 10, height: 2, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { x: 7, width: 2, height: 4, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { x: 11, y: 5, width: 2, height: 4, fill: "currentColor" }),
-                            react_1.default.createElement("rect", { x: 6, y: 10, width: 2, height: 4, fill: "currentColor" }))))),
-            react_1.default.createElement(components_1.Button, { primary: true }, "Add Resource")),
-        react_1.default.createElement("div", { className: "mt-8" },
-            react_1.default.createElement("div", { className: "flex flex-col" },
-                react_1.default.createElement("div", { className: "-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8" },
-                    react_1.default.createElement("div", { className: "py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8" },
-                        react_1.default.createElement("div", { className: "shadow-sm overflow-hidden border-b border-tensei-gray-800 sm:rounded-sm" },
-                            react_1.default.createElement(components_1.Table, { columns: [
-                                    {
-                                        title: 'Name',
-                                        field: 'name',
-                                        sorter: false
-                                    },
-                                    {
-                                        title: 'Title',
-                                        field: 'title'
-                                    },
-                                    {
-                                        title: 'Email',
-                                        field: 'email'
-                                    },
-                                    {
-                                        title: 'Role',
-                                        field: 'role'
-                                    },
-                                    {
-                                        title: (react_1.default.createElement("span", { className: "sr-only" }, "Actions")),
-                                        field: 'actions',
-                                        className: 'relative px-6 py-3',
-                                        render: function (value, row) { return (react_1.default.createElement("div", { className: "flex items-center" },
-                                            react_1.default.createElement(Actions_1.default, null),
-                                            react_1.default.createElement("button", { className: "flex mr-4 items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full" },
-                                                react_1.default.createElement("span", { className: "sr-only" }, "Edit"),
-                                                react_1.default.createElement("svg", { className: "fill-current text-tensei-gray-700", width: 14, height: 14, viewBox: "0 0 14 14", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-                                                    react_1.default.createElement("path", { d: "M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" }))),
-                                            react_1.default.createElement("button", { onClick: function () {
-                                                    return setDeleting(row);
-                                                }, className: "flex items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full" },
-                                                react_1.default.createElement("span", { className: "sr-only" }, "Delete"),
-                                                react_1.default.createElement("svg", { width: 14, height: 14, className: "fill-current text-tensei-gray-700", viewBox: "0 0 12 14", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-                                                    react_1.default.createElement("path", { d: "M1.5 12.25C1.5 13.075 2.175 13.75 3 13.75H9C9.825 13.75 10.5 13.075 10.5 12.25V3.25H1.5V12.25ZM11.25 1H8.625L7.875 0.25H4.125L3.375 1H0.75V2.5H11.25V1Z" }))))); }
-                                    }
-                                ], rows: Array.from(Array(5).keys()).map(function (n) { return ({
-                                    id: n.toString(),
-                                    name: 'Kati Frantz',
-                                    title: 'Product manager',
-                                    email: 'tom@example.com',
-                                    role: 'Manager'
-                                }); }), selection: {
-                                    onChange: console.log
-                                } }))))),
-            react_1.default.createElement("div", { className: "mt-6 flex items-center justify-between" },
-                react_1.default.createElement(components_1.Select, null),
-                react_1.default.createElement("div", { className: "hidden sm:block" },
-                    react_1.default.createElement("p", { className: "text-sm" },
-                        "Showing",
-                        react_1.default.createElement("span", { className: "font-medium mx-1" }, "1"),
-                        "to",
-                        react_1.default.createElement("span", { className: "font-medium mx-1" }, "10"),
-                        "of",
-                        react_1.default.createElement("span", { className: "font-medium mx-1" }, "20"),
-                        "results")),
-                react_1.default.createElement("nav", { className: "flex items-center" },
-                    react_1.default.createElement("button", { className: "mr-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-sm" },
-                        react_1.default.createElement("svg", { className: "fill-current", width: 10, height: 10, viewBox: "0 0 6 10", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-                            react_1.default.createElement("path", { d: "M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" }))),
-                    react_1.default.createElement("a", { href: "", className: "rounded-sm px-3 py-1 mr-2 font-semibold bg-tensei-primary text-white focus:outline-none border border-transparent focus:ring-offset-2 focus:ring-2 focus:ring-tensei-primary" }, "1"),
-                    react_1.default.createElement("a", { href: "#", className: "px-3 py-1 bg-transparent mr-2 rounded-sm focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary" }, "2"),
-                    react_1.default.createElement("a", { href: "#", className: "px-3 py-1 bg-transparent rounded-sm focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary" }, "3"),
-                    react_1.default.createElement("button", { className: "ml-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-sm" },
-                        react_1.default.createElement("svg", { className: "fill-current transform rotate-180", width: 10, height: 10, viewBox: "0 0 6 10", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-                            react_1.default.createElement("path", { d: "M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" }))))))));
-};
-exports.default = Resource;
-
-
-/***/ }),
-
-/***/ "./pages/Resource/index.ts":
-/*!*********************************!*\
-  !*** ./pages/Resource/index.ts ***!
-  \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = void 0;
-var Resource_1 = __webpack_require__(/*! ./Resource */ "./pages/Resource/Resource.tsx");
-Object.defineProperty(exports, "default", { enumerable: true, get: function () { return __importDefault(Resource_1).default; } });
 
 
 /***/ }),
