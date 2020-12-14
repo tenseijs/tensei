@@ -151,7 +151,7 @@ test('Cannot upload more than max files', async () => {
     })
 })
 
-test('Cannot upload files larger than max file size', async () => {
+test.skip('Cannot upload files larger than max file size', async () => {
     const maxFileSize = 3200
     const {
         app,
