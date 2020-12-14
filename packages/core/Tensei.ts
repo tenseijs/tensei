@@ -1,6 +1,5 @@
 import Path from 'path'
 import { Signale } from 'signale'
-import { auth } from '@tensei/auth'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
@@ -59,6 +58,7 @@ export class Tensei implements TenseiContract {
     public ctx: Config = {
         schemas: [],
         routes: [],
+        name: process.env.APP_NAME || 'Tensei',
         graphQlQueries: [],
         graphQlTypeDefs: [],
         graphQlMiddleware: [],
@@ -238,14 +238,19 @@ export class Tensei implements TenseiContract {
         return this
     }
 
+    public name(name: string) {
+        this.ctx.name = name
+
+        return this
+    }
+
     public listen() {
         const port = process.env.PORT || 4500
 
         this.server.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
-                }`
+                `🚀 Access your server on ${this.ctx.serverUrl ||
+                    `http://127.0.0.1:${port}`}`
             )
         })
     }
@@ -385,6 +390,7 @@ export class Tensei implements TenseiContract {
                 request.currentCtx = () => this.ctx
                 request.mailer = this.ctx.mailer
                 request.config = this.ctx
+                request.storage = this.ctx.storage
 
                 next()
             }
@@ -526,14 +532,6 @@ export class Tensei implements TenseiContract {
         } else {
             this.ctx.plugins = [
                 ...plugins,
-                auth()
-                    .cms()
-                    .user('Admin User')
-                    .role('Admin Role')
-                    .permission('Admin Permission')
-                    .apiPath('admin/auth')
-                    .rolesAndPermissions()
-                    .plugin()
             ]
         }
 
@@ -541,7 +539,9 @@ export class Tensei implements TenseiContract {
     }
 
     private mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
+        this.ctx.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }

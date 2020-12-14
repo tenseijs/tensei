@@ -1,6 +1,8 @@
+import { snakeCase } from 'change-case'
 import { graphqlUploadExpress } from 'graphql-upload'
-import { plugin, belongsTo, hasMany } from '@tensei/common'
+import { plugin, belongsTo, hasMany, hasOne } from '@tensei/common'
 
+import { routes } from './routes'
 import { queries } from './queries'
 import { typeDefs } from './type-defs'
 import { mediaResource } from './resources'
@@ -10,8 +12,10 @@ class MediaLibrary {
     private config: MediaLibraryPluginConfig = {
         disk: '',
         maxFiles: 10,
+        path: 'files',
+        maxFieldSize: 1000000, // 1 MB
         maxFileSize: 10000000,
-        mediaResourceName: 'File'
+        transformations: []
     }
 
     disk(disk: string) {
@@ -32,11 +36,18 @@ class MediaLibrary {
         return this
     }
 
+    path(path: string) {
+        this.config.path = path.startsWith('/') ? path.substring(1) : path
+
+        return this
+    }
+
     plugin() {
         return plugin('Media Library').register(
             ({
                 app,
                 currentCtx,
+                extendRoutes,
                 storageConfig,
                 extendResources,
                 extendGraphQlTypeDefs,
@@ -46,9 +57,7 @@ class MediaLibrary {
                     this.config.disk = storageConfig.default!
                 }
 
-                const MediaResource = mediaResource(
-                    this.config.mediaResourceName
-                )
+                const MediaResource = mediaResource()
 
                 const { resources } = currentCtx()
 
@@ -61,7 +70,9 @@ class MediaLibrary {
 
                     if (fileFields.length) {
                         MediaResource.fields([
-                            belongsTo(resource.data.name).nullable().hidden()
+                            belongsTo(resource.data.name)
+                                .nullable()
+                                .hidden()
                         ])
                     }
                 })
@@ -70,6 +81,8 @@ class MediaLibrary {
 
                 extendGraphQlQueries(queries(this.config))
 
+                extendRoutes(routes(this.config))
+
                 extendGraphQlTypeDefs([
                     typeDefs(
                         MediaResource.data.snakeCaseName,
@@ -77,17 +90,24 @@ class MediaLibrary {
                     )
                 ])
 
-                app.use(
-                    graphqlUploadExpress({
+                app.use((request, response, next) => {
+                    if (request.path === `/${this.config.path}`) {
+                        return next()
+                    }
+
+                    return graphqlUploadExpress({
                         maxFiles: this.config.maxFiles,
                         maxFileSize: this.config.maxFileSize
-                    })
-                )
+                    })(request, response, next)
+                })
             }
         )
     }
 }
 
-export const files = (databaseField?: string) => hasMany('File', databaseField)
+export const files = (databaseField?: string) =>
+    hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
+export const file = (databaseField?: string) =>
+    hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
 
 export const media = () => new MediaLibrary()

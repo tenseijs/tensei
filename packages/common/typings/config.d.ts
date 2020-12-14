@@ -285,6 +285,7 @@ declare module '@tensei/common/config' {
     export interface Config {
         databaseClient: any
         schemas: any
+        name: string
         serverUrl: string
         clientUrl: string
         mailer: Mail

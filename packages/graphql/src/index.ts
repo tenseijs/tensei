@@ -1,5 +1,6 @@
 import { applyMiddleware } from 'graphql-middleware'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
+import expressPlayground from 'graphql-playground-middleware-express'
 import {
     gql,
     PubSub,
@@ -11,7 +12,8 @@ import {
     AuthenticationError,
     makeExecutableSchema,
     GetMiddlewareOptions,
-    Config as ApolloConfig
+    Config as ApolloConfig,
+    defaultPlaygroundOptions
 } from 'apollo-server-express'
 import {
     plugin,
@@ -39,8 +41,6 @@ import {
 type OmittedApolloConfig = Omit<ApolloConfig, 'typeDefs' | 'resolvers'>
 
 class Graphql {
-    private pluginExtensions: GraphQLPluginExtension[] = []
-
     private appolloConfig: OmittedApolloConfig = {}
 
     private getMiddlewareOptions: GetMiddlewareOptions = {}
@@ -107,6 +107,10 @@ class Graphql {
         ) {
             FieldType = `[ID]`
             FieldKey = field.databaseField
+        }
+
+        if (field.property.type === 'Date') {
+            FieldType = 'Date'
         }
 
         return `
@@ -568,12 +572,6 @@ input id_where_query {
         return 'id'
     }
 
-    extensions(extensions: GraphQLPluginExtension[]) {
-        this.pluginExtensions = extensions
-
-        return this
-    }
-
     subscriptions(pubsub?: PubSub) {
         this.pubsub = pubsub || new PubSub()
         this.subscriptionsEnabled = true
@@ -782,8 +780,35 @@ input id_where_query {
                         pubsub: this.pubsub,
                         manager: currentCtx().orm?.em?.fork()
                     }),
-                    uploads: false
+                    uploads: false,
+                    playground: false
                 })
+
+                const playgroundEndpoint = `/${
+                    this.getMiddlewareOptions.path || 'graphql'
+                }`
+
+                app.get(
+                    `/${this.getMiddlewareOptions.path || 'graphql'}`,
+                    (request, response, next) =>
+                        expressPlayground({
+                            endpoint: `${playgroundEndpoint}?headers=${encodeURIComponent(
+                                JSON.stringify({
+                                    // @ts-ignore
+                                    'x-xsrf-token': request.csrfToken
+                                        // @ts-ignore
+                                        ? request.csrfToken()
+                                        : undefined
+                                })
+                            )}`,
+                            settings: {
+                                ...defaultPlaygroundOptions.settings,
+                                'request.credentials': 'same-origin',
+                                'editor.fontFamily':
+                                    "'Dank Mono', 'Operator Mono', 'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace"
+                            } as any
+                        })(request, response, next)
+                )
 
                 graphQlServer.applyMiddleware({
                     app,

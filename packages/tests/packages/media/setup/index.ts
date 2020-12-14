@@ -1,8 +1,9 @@
 import Fs from 'fs'
 import Path from 'path'
+import { rest } from '@tensei/rest'
 import { media } from '@tensei/media'
 import { graphql } from '@tensei/graphql'
-import { PluginContract, resource, hasMany, text, plugin } from '@tensei/core'
+import { resource, hasMany, text, plugin, hasOne } from '@tensei/core'
 
 import { setup as baseSetup } from '../../../helpers'
 
@@ -12,7 +13,14 @@ export const meetingResource = () =>
     resource('Meeting').fields([
         text('Name').nullable(),
         hasMany('File', 'screenshots'),
-        hasMany('File', 'archives')
+        hasMany('File', 'archives'),
+        hasOne('File', 'banner').nullable()
+    ])
+
+export const editorResource = () =>
+    resource('Editor').fields([
+        text('Name').nullable(),
+        hasOne('File', 'avatar').nullable()
     ])
 
 export const gistResource = () =>
@@ -21,14 +29,22 @@ export const gistResource = () =>
         hasMany('File', 'attachments')
     ])
 
-export const setup = (maxFileSize = 10000000) =>
+export const setup = (maxFileSize = 10000000, maxFiles = 4) =>
     baseSetup(
         [
             plugin('Add meeting resource').register(({ extendResources }) => {
-                extendResources([meetingResource(), gistResource()])
+                extendResources([
+                    meetingResource(),
+                    gistResource(),
+                    editorResource()
+                ])
             }),
-            media().maxFiles(4).maxFileSize(maxFileSize).plugin(),
-            graphql().plugin()
+            media()
+                .maxFiles(maxFiles)
+                .maxFileSize(maxFileSize)
+                .plugin(),
+            graphql().plugin(),
+            rest().plugin()
         ],
         true
     )

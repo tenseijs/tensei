@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import CircularJSON from 'circular-json'
 import {
     FindOptions,
@@ -14,7 +14,8 @@ import {
     Utils,
     plugin,
     RouteContract,
-    ResourceContract
+    ResourceContract,
+    ApiContext
 } from '@tensei/common'
 
 import {
@@ -606,6 +607,22 @@ class Rest {
         return routes
     }
 
+    private authorizeResolver = async (
+        ctx: ApiContext,
+        query: RouteContract
+    ) => {
+        const authorized = await Promise.all(
+            query.config.authorize.map(fn => fn(ctx))
+        )
+
+        if (
+            authorized.filter(result => result).length !==
+            query.config.authorize.length
+        ) {
+            throw ctx.forbiddenError('Unauthorized.')
+        }
+    }
+
     plugin() {
         return plugin('Rest API')
             .register(({ app, resources, extendRoutes }) => {
@@ -625,7 +642,22 @@ class Rest {
 
                     ;(app as any)[route.config.type.toLowerCase()](
                         path,
+
                         ...route.config.middleware.map(fn => AsyncHandler(fn)),
+                        AsyncHandler(
+                            async (
+                                request: Request,
+                                response: Response,
+                                next: NextFunction
+                            ) => {
+                                await this.authorizeResolver(
+                                    request as any,
+                                    route
+                                )
+
+                                return next()
+                            }
+                        ),
                         AsyncHandler(
                             async (request: Request, response: Response) =>
                                 route.config.handler(request, response)

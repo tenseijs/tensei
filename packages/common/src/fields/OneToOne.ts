@@ -18,6 +18,7 @@ export class OneToOne extends RelationshipField {
 
 export const oneToOne = (name: string, databaseField?: string) =>
     new OneToOne(name, databaseField)
+
 export const hasOne = oneToOne
 
 export default oneToOne

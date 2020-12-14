@@ -16,6 +16,7 @@ declare global {
                 [key: string]: ResourceContract
             }
             mailer: Mail
+            storage: Config['storage']
             currentCtx: () => Config
             scripts: Asset[]
             styles: Asset[]

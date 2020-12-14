@@ -5,7 +5,6 @@ import Request from 'request'
 import Random from 'randomstring'
 import { RequestHandler } from 'express'
 import purestConfig from '@purest/providers'
-import { TensieContext, PluginSetupConfig } from '@tensei/common'
 import AsyncHandler from 'express-async-handler'
 import {
     AuthPluginConfig,

@@ -8,8 +8,8 @@ import {
     bigInteger
 } from '@tensei/common'
 
-export const mediaResource = (name: string) =>
-    resource(name)
+export const mediaResource = () =>
+    resource('File')
         .fields([
             bigInteger('Size')
                 .description('The file size in Kb')
@@ -17,13 +17,19 @@ export const mediaResource = (name: string) =>
                 .searchable(),
             integer('Width').nullable(),
             integer('Height').nullable(),
-            text('Original Filename').nullable().searchable(),
+            text('Original Filename')
+                .nullable()
+                .searchable(),
             text('Extension')
                 .description('The file extension, for example psd, pdf, png')
                 .searchable(),
-            text('Mime Type').nullable().searchable(),
+            text('Mime Type')
+                .nullable()
+                .searchable(),
             text('Hash').searchable(),
-            text('Path').nullable().searchable(),
+            text('Path')
+                .nullable()
+                .searchable(),
             text('Alt Text').nullable(),
             text('Disk').nullable(),
             json('Disk Meta').nullable(),
@@ -31,4 +37,5 @@ export const mediaResource = (name: string) =>
             belongsTo('File').nullable()
         ])
         .hideFromNavigation()
-        .hideOnApi()
+        .hideOnInsertApi()
+        .hideOnUpdateApi()
