@@ -17,7 +17,11 @@ test('Registers auth resources when plugin is registered', async () => {
 test('Can customize the name of the authenticator user', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().user('Customer').plugin()])
+    } = await setup([
+        auth()
+            .user('Customer')
+            .plugin()
+    ])
 
     expect(
         resources.find(resource => resource.data.name === 'Customer')
@@ -27,7 +31,11 @@ test('Can customize the name of the authenticator user', async () => {
 test('Enabling roles and permissions registers Role and permission resources', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().rolesAndPermissions().plugin()])
+    } = await setup([
+        auth()
+            .rolesAndPermissions()
+            .plugin()
+    ])
 
     expect(
         resources.filter(resource =>
@@ -207,7 +215,10 @@ test('Can request a password reset and reset password', async () => {
         },
         app
     } = await setup([
-        auth().verifyEmails().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
         graphql().plugin(),
         setupFakeMailer(mailerMock)
     ])
@@ -302,7 +313,10 @@ test('Can login and stay authenticated with cookie based applications', async ()
         },
         app
     } = await setup([
-        auth().verifyEmails().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
         graphql().plugin()
     ])
 
@@ -627,7 +641,10 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         },
         app
     } = await setup([
-        auth().user('Customer').noCookies().plugin(),
+        auth()
+            .user('Customer')
+            .noCookies()
+            .plugin(),
         graphql().plugin()
     ])
 

@@ -45,6 +45,7 @@ import SocialAuthCallbackController from './controllers/SocialAuthCallbackContro
 
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
+import { createCsurfToken, checkCsurfToken } from './csrf'
 
 type JwtPayload = {
     id: string
@@ -58,7 +59,9 @@ class Auth {
         setupFn: AuthSetupFn
     } = {
         cms: false,
+        jwtEnabled: false,
         profilePictures: false,
+        csrfEnabled: true,
         disableAutoLoginAfterRegistration: false,
         userResource: 'User',
         roleResource: 'Role',
@@ -69,11 +72,13 @@ class Auth {
         apiPath: 'auth',
         setupFn: () => this,
         tokensConfig: {
-            accessTokenExpiresIn: 60 * 60,
+            accessTokenExpiresIn: 60 * 20, // twenty minutes
             secretKey: process.env.JWT_SECRET || 'auth-secret-key',
-            refreshTokenExpiresIn: 60 * 60 * 24 * 7
+            refreshTokenExpiresIn: 60 * 60 * 24 * 30 * 6 // 6 months
         },
-        cookieOptions: {},
+        cookieOptions: {
+            secure: process.env.NODE_ENV === 'production'
+        },
         refreshTokenCookieName: '___refresh__token',
         teams: false,
         teamFields: [],
@@ -122,6 +127,25 @@ class Auth {
 
     public noCookies() {
         this.config.disableCookies = true
+
+        return this
+    }
+
+    public jwt() {
+        this.config.jwtEnabled = true
+
+        return this
+    }
+
+    private useTokens() {
+        return (
+            this.config.jwtEnabled ||
+            (this.config.disableCookies && !this.config.jwtEnabled)
+        )
+    }
+
+    public csrf(csrfEnabled = false) {
+        this.config.csrfEnabled = csrfEnabled
 
         return this
     }
@@ -221,7 +245,11 @@ class Auth {
         if (Object.keys(this.config.providers).length === 0) {
             passwordField = passwordField.notNullable()
         } else {
-            socialFields = [hasMany(this.resources.oauthIdentity.data.name)]
+            socialFields = [
+                hasMany(this.resources.oauthIdentity.data.name)
+                    .hideOnInsertApi()
+                    .hideOnUpdateApi()
+            ]
             passwordField = passwordField.nullable()
         }
 
@@ -239,11 +267,16 @@ class Auth {
                     })
                     .creationRules('required')
                     .onlyOnForms()
+                    .hideOnUpdateApi()
                     .hideOnUpdate(),
-                dateTime('Blocked At').nullable(),
+                dateTime('Blocked At').nullable().hideOnApi(),
                 ...socialFields,
                 ...(this.config.rolesAndPermissions
-                    ? [belongsToMany(this.config.roleResource)]
+                    ? [
+                          belongsToMany(
+                              this.config.roleResource
+                          ).hideOnInsertApi()
+                      ]
                     : []),
                 ...(this.config.twoFactorAuth
                     ? [
@@ -252,9 +285,11 @@ class Auth {
                               .hideOnUpdate()
                               .hideOnIndex()
                               .hideOnDetail()
+                              .hideOnApi()
                               .nullable(),
                           text('Two Factor Secret')
                               .hidden()
+                              .hideOnApi()
                               .hideOnIndex()
                               .hideOnCreate()
                               .hideOnUpdate()
@@ -268,10 +303,13 @@ class Auth {
                           dateTime('Email Verified At')
                               .hideOnIndex()
                               .hideOnDetail()
+                              .hideOnInsertApi()
+                              .hideOnUpdateApi()
                               .nullable(),
                           text('Email Verification Token')
                               .hidden()
                               .nullable()
+                              .hideOnApi()
                               .hideOnCreate()
                               .hideOnIndex()
                               .hideOnUpdate()
@@ -279,6 +317,8 @@ class Auth {
                       ]
                     : [])
             ])
+            .hideOnUpdateApi()
+            .hideOnFetchApi()
             .beforeCreate(async ({ entity, em }) => {
                 const payload: DataPayload = {
                     password: entity.password
@@ -409,13 +449,35 @@ class Auth {
             .fields([
                 belongsTo(this.config.userResource).nullable(),
                 textarea('Access Token').hidden().hideOnApi(),
-                text('Email').hidden(),
-                textarea('Temporal Token').nullable().hidden(),
+                text('Email').hidden().hideOnApi(),
+                textarea('Temporal Token').nullable().hidden().hideOnApi(),
                 json('Payload').hidden().hideOnApi(),
                 text('Provider').rules('required'),
-                text('Provider User ID').hidden()
+                text('Provider User ID').hidden().hideOnApi()
             ])
             .hideOnApi()
+    }
+
+    private forceRemoveInsertUserQueries(queries: GraphQlQueryContract[]) {
+        const insert_user_index = queries.findIndex(
+            q =>
+                q.config.path ===
+                `insert_${this.resources.user.data.snakeCaseName}`
+        )
+
+        if (insert_user_index !== -1) {
+            queries.splice(insert_user_index, 1)
+        }
+
+        const insert_users_index = queries.findIndex(
+            q =>
+                q.config.path ===
+                `insert_${this.resources.user.data.snakeCaseNamePlural}`
+        )
+
+        if (insert_users_index !== -1) {
+            queries.splice(insert_users_index, 1)
+        }
     }
 
     public plugin() {
@@ -423,7 +485,6 @@ class Auth {
             .register(
                 ({
                     gql,
-                    currentCtx,
                     extendRoutes,
                     databaseConfig,
                     extendResources,
@@ -494,6 +555,8 @@ class Auth {
                     collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
                 })
 
+                this.forceRemoveInsertUserQueries(config.graphQlQueries)
+
                 app.use(
                     ExpressSession({
                         store: new Store({
@@ -506,6 +569,29 @@ class Auth {
                             process.env.SESSION_SECRET || '__sessions__secret__'
                     })
                 )
+
+                if (!this.useTokens() && this.config.csrfEnabled) {
+                    app.use((request, response, next) => {
+                        const query = request.body?.query
+                            ?.replace(/(\r\n|\n|\r)/gm, '')
+                            ?.replace(/\s/g, '')
+
+                        const queryAccepted =
+                            query === '{csrf_token}' ||
+                            (query?.startsWith('query') &&
+                                query?.endsWith('{csrf_token}'))
+
+                        if (
+                            request.method === 'POST' &&
+                            typeof query === 'string' &&
+                            queryAccepted
+                        ) {
+                            return createCsurfToken()(request, response, next)
+                        }
+
+                        return checkCsurfToken()(request, response, next)
+                    })
+                }
 
                 if (this.socialAuthEnabled()) {
                     const grant = require('grant')
@@ -908,53 +994,61 @@ class Auth {
                         await this.resetPassword(request as any)
                     )
                 ),
-            route(`Enable Two Factor Auth`)
-                .path(this.getApiPath('two-factor/enable'))
-                .post()
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Enable two factor authentication for an existing ${name}.`
-                    }
-                })
-                .authorize(({ user }) => user && !user.public)
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.enableTwoFactorAuth(request as any)
-                    )
-                ),
-            route(`Confirm Enable Two Factor Auth`)
-                .path(this.getApiPath('two-factor/enable/confirm'))
-                .post()
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Confirm enable two factor authentication for an existing ${name}.`,
-                        description: `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
-                    }
-                })
-                .authorize(({ user }) => user && !user.public)
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.enableTwoFactorAuth(request as any)
-                    )
-                ),
-            route(`Disable Two Factor Auth`)
-                .path(this.getApiPath('two-factor/disable'))
-                .post()
-                .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Disable two factor authentication for an existing ${name}.`
-                    }
-                })
-                .authorize(({ user }) => !!user)
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.disableTwoFactorAuth(request as any)
-                    )
-                ),
+            ...(this.config.twoFactorAuth
+                ? [
+                      route(`Enable Two Factor Auth`)
+                          .path(this.getApiPath('two-factor/enable'))
+                          .post()
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Enable two factor authentication for an existing ${name}.`
+                              }
+                          })
+                          .authorize(({ user }) => user && !user.public)
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.enableTwoFactorAuth(request as any)
+                              )
+                          ),
+                      route(`Confirm Enable Two Factor Auth`)
+                          .path(this.getApiPath('two-factor/confirm'))
+                          .post()
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Confirm enable two factor authentication for an existing ${name}.`,
+                                  description: `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
+                              }
+                          })
+                          .authorize(({ user }) => user && !user.public)
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.confirmEnableTwoFactorAuth(
+                                      request as any
+                                  )
+                              )
+                          ),
+                      route(`Disable Two Factor Auth`)
+                          .path(this.getApiPath('two-factor/disable'))
+                          .post()
+                          .authorize(({ user }) => user && !user.public)
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Disable two factor authentication for an existing ${name}.`
+                              }
+                          })
+                          .authorize(({ user }) => !!user)
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.disableTwoFactorAuth(
+                                      request as any
+                                  )
+                              )
+                          )
+                  ]
+                : []),
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
                 .get()
@@ -971,51 +1065,78 @@ class Auth {
                     }
                 })
                 .handle(async ({ user }, { formatter: { ok } }) => ok(user)),
-            route(`Resend Verification email`)
-                .path(this.getApiPath('verification/resend'))
-                .post()
-                .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Resend verification email to ${name} email.`
-                    }
-                })
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.resendVerificationEmail(request as any)
-                    )
-                ),
-            route(`Social Auth Login`)
-                .path(this.getApiPath('social/login'))
-                .post()
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Login a ${name} via a social provider.`,
-                        description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                    }
-                })
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.socialAuth(request as any, 'login')
-                    )
-                ),
-            route(`Social Auth Register`)
-                .path(this.getApiPath('social/register'))
-                .post()
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Register a ${name} via a social provider.`,
-                        description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                    }
-                })
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.socialAuth(request as any, 'register')
-                    )
-                ),
+            ...(this.config.verifyEmails
+                ? [
+                      route(`Resend Verification email`)
+                          .path(this.getApiPath('emails/verification/resend'))
+                          .post()
+                          .authorize(({ user }) => user && !user.public)
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Resend verification email to ${name} email.`
+                              }
+                          })
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.resendVerificationEmail(
+                                      request as any
+                                  )
+                              )
+                          ),
+                      route(`Confirm ${name} email`)
+                          .path(this.getApiPath('emails/verification/confirm'))
+                          .post()
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Confirm ${name} email with email verification token.`
+                              }
+                          })
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.confirmEmail(request as any)
+                              )
+                          )
+                  ]
+                : []),
+            ...(this.socialAuthEnabled()
+                ? [
+                      route(`Social Auth Login`)
+                          .path(this.getApiPath('social/login'))
+                          .post()
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Login a ${name} via a social provider.`,
+                                  description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                              }
+                          })
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.socialAuth(request as any, 'login')
+                              )
+                          ),
+                      route(`Social Auth Register`)
+                          .path(this.getApiPath('social/register'))
+                          .post()
+                          .extend({
+                              docs: {
+                                  ...extend,
+                                  summary: `Register a ${name} via a social provider.`,
+                                  description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                              }
+                          })
+                          .handle(async (request, response) =>
+                              response.formatter.ok(
+                                  await this.socialAuth(
+                                      request as any,
+                                      'register'
+                                  )
+                              )
+                          )
+                  ]
+                : []),
             route('Refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .post()
@@ -1070,12 +1191,29 @@ class Auth {
                     response.formatter.ok(
                         await this.removeRefreshTokens(request as any)
                     )
-                )
+                ),
+            ...(this.config.csrfEnabled && !this.useTokens()
+                ? [
+                      route('Get CSRF Token')
+                          .path(this.getApiPath('csrf'))
+                          .handle(async (request, response) => {
+                              response.cookie(
+                                  'x-csrf-token',
+                                  request.csrfToken()
+                              )
+
+                              return response.formatter.noContent([])
+                          })
+                  ]
+                : [])
         ]
     }
 
     cookieOptions(cookieOptions: AuthPluginConfig['cookieOptions']) {
-        this.config.cookieOptions = cookieOptions
+        this.config.cookieOptions = {
+            ...this.config.cookieOptions,
+            ...cookieOptions
+        }
 
         return this
     }
@@ -1118,7 +1256,7 @@ class Auth {
                         [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
-            ...(this.config.disableCookies
+            ...(this.useTokens()
                 ? []
                 : [
                       graphQlQuery(`Logout ${name}`)
@@ -1314,7 +1452,7 @@ class Auth {
                           })
                   ]
                 : []),
-            ...(this.config.disableCookies
+            ...(this.useTokens()
                 ? [
                       graphQlQuery('Refresh token')
                           .path(`refresh_${name}_token`)
@@ -1322,6 +1460,21 @@ class Auth {
                           .handle(async (_, args, ctx, info) =>
                               this.handleRefreshTokens(ctx)
                           )
+                  ]
+                : []),
+            ...(this.config.csrfEnabled && !this.useTokens()
+                ? [
+                      graphQlQuery('Get CSRF Token')
+                          .path(`csrf_token`)
+                          .query()
+                          .handle(async (_, args, ctx, info) => {
+                              ctx.res.cookie(
+                                  'x-csrf-token',
+                                  ctx.req.csrfToken()
+                              )
+
+                              return true
+                          })
                   ]
                 : [])
         ]
@@ -1424,7 +1577,7 @@ class Auth {
             [this.resources.user.data.snakeCaseName]: ctx.user
         }
 
-        if (this.config.disableCookies) {
+        if (this.useTokens()) {
             userPayload.access_token = this.generateJwt({
                 id: ctx.user.id
             })
@@ -1446,7 +1599,7 @@ class Auth {
         return gql`
         type register_${snakeCaseName}_response {
             ${
-                this.config.disableCookies
+                this.useTokens()
                     ? `
                 access_token: String!
                 refresh_token: String
@@ -1459,7 +1612,7 @@ class Auth {
 
         type login_${snakeCaseName}_response {
             ${
-                this.config.disableCookies
+                this.useTokens()
                     ? `
                 access_token: String!
                 refresh_token: String
@@ -1539,7 +1692,7 @@ class Auth {
         }
 
         ${
-            this.config.disableCookies
+            this.useTokens()
                 ? `
         input refresh_${snakeCaseName}_token_input {
             refresh_token: String
@@ -1586,7 +1739,7 @@ class Auth {
                     : ''
             }
             ${
-                this.config.disableCookies
+                this.useTokens()
                     ? `
             refresh_${snakeCaseName}_token(object: refresh_${snakeCaseName}_token_input): login_${snakeCaseName}_response!
             `
@@ -1596,6 +1749,13 @@ class Auth {
 
         extend type Query {
             authenticated_${snakeCaseName}: ${snakeCaseName}!
+            ${
+                this.config.csrfEnabled && !this.useTokens()
+                    ? `
+            csrf_token: Boolean!
+            `
+                    : ''
+            }
         }
     `
     }
@@ -1892,22 +2052,6 @@ class Auth {
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
-    public authorizeResolver = async (
-        ctx: GraphQLPluginContext,
-        query: GraphQlQueryContract
-    ) => {
-        const authorized = await Promise.all(
-            query.config.authorize.map(fn => fn(ctx))
-        )
-
-        if (
-            authorized.filter(result => result).length !==
-            query.config.authorize.length
-        ) {
-            throw ctx.forbiddenError('Unauthorized.')
-        }
-    }
-
     public setAuthUserForPublicRoutes = async (ctx: GraphQLPluginContext) => {
         const { manager, user } = ctx
 
@@ -2100,7 +2244,7 @@ class Auth {
         const Qr = require('qrcode')
         const Speakeasy = require('speakeasy')
 
-        const { base32, otpauth_url } = Speakeasy.generateSecret()
+        const { base32, ascii } = Speakeasy.generateSecret()
 
         manager.assign(user, {
             two_factor_secret: base32,
@@ -2111,7 +2255,11 @@ class Auth {
 
         return new Promise((resolve, reject) =>
             Qr.toDataURL(
-                otpauth_url,
+                Speakeasy.otpauthURL({
+                    secret: ascii,
+                    label: user.email,
+                    issuer: process.env.APP_NAME || 'Tensei'
+                }),
                 (error: null | Error, dataURL: string) => {
                     if (error) {
                         reject({

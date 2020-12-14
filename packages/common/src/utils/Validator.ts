@@ -79,15 +79,7 @@ export class Validator {
             ).join('|')
 
             if (field.relatedProperty.reference) {
-                const relatedResource = this.resourcesMap[
-                    field.relatedProperty.type!
-                ]
-
-                const primaryFieldType =
-                    relatedResource.getPrimaryField()!.property.type ===
-                    'number'
-                        ? 'number'
-                        : 'string'
+                const primaryFieldType = 'string'
 
                 if (
                     [

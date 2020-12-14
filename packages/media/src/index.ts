@@ -70,7 +70,9 @@ class MediaLibrary {
 
                     if (fileFields.length) {
                         MediaResource.fields([
-                            belongsTo(resource.data.name).nullable().hidden()
+                            belongsTo(resource.data.name)
+                                .nullable()
+                                .hidden()
                         ])
                     }
                 })
@@ -103,7 +105,9 @@ class MediaLibrary {
     }
 }
 
-export const files = (databaseField?: string) => hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
-export const file = (databaseField?: string) => hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
+export const files = (databaseField?: string) =>
+    hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
+export const file = (databaseField?: string) =>
+    hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
 
 export const media = () => new MediaLibrary()

@@ -42,7 +42,6 @@ module.exports = tensei()
             .verifyEmails()
             .teams()
             .apiPath('auth')
-            .noCookies()
             .rolesAndPermissions()
             .social('github', {
                 key: process.env.GITHUB_KEY,

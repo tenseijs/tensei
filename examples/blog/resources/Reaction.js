@@ -1,3 +1,4 @@
+const { file, files } = require('@tensei/media')
 const { select, resource, belongsTo } = require('@tensei/core')
 
 module.exports = resource('Reaction').fields([
@@ -7,5 +8,7 @@ module.exports = resource('Reaction').fields([
             { label: 'Downvote', value: 'downvote' },
         ])
         .nullable(),
+    file('Icon'),
+    files('OS Specific Icons'),
     belongsTo('Comment'),
 ])

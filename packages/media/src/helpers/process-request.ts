@@ -191,8 +191,10 @@ export const handle = async (
 ) => {
     let files = ((await Promise.all(ctx.body?.files)) as UploadFile[]).map(
         file => {
-            const [, extension] = file.filename.split('.')
-            const hash = Crypto.randomBytes(72).toString('hex')
+            const split = file.filename.split('.')
+            const extension = split[split.length - 1]
+
+            const hash = Crypto.randomBytes(36).toString('hex')
 
             let file_path: string = ctx.body.path || '/'
 

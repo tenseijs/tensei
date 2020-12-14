@@ -59,6 +59,7 @@ export class Tensei implements TenseiContract {
     public ctx: Config = {
         schemas: [],
         routes: [],
+        name: process.env.APP_NAME || 'Tensei',
         graphQlQueries: [],
         graphQlTypeDefs: [],
         graphQlMiddleware: [],
@@ -238,14 +239,19 @@ export class Tensei implements TenseiContract {
         return this
     }
 
+    public name(name: string) {
+        this.ctx.name = name
+
+        return this
+    }
+
     public listen() {
         const port = process.env.PORT || 4500
 
         this.server.listen(port, () => {
             this.ctx.logger.success(
-                `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
-                }`
+                `🚀 Access your server on ${this.ctx.serverUrl ||
+                    `http://127.0.0.1:${port}`}`
             )
         })
     }
@@ -542,7 +548,9 @@ export class Tensei implements TenseiContract {
     }
 
     private mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail().connection(driverName).config(mailConfig)
+        this.ctx.mailer = mail()
+            .connection(driverName)
+            .config(mailConfig)
 
         return this
     }
