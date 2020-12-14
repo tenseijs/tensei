@@ -732,7 +732,7 @@ class Auth {
                             return next()
                         }
                     ])
-                    if (route.config.resource) {
+                    if (route.config.resource && ! this.config.cms) {
                         const { resource, id } = route.config
 
                         const { slugSingular, slugPlural } = resource.data
@@ -825,6 +825,10 @@ class Auth {
 
         const extend = {
             tags: ['Auth']
+        }
+
+        if (this.config.cms) {
+            return []
         }
 
         return [

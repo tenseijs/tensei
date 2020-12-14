@@ -32,6 +32,12 @@ export class ID extends Field implements IDContract {
         this.exceptOnForms()
     }
 
+    public afterConfigSet() {
+        if (this.tenseiConfig?.databaseConfig.type === 'mongo') {
+            this.property.type = 'string'
+        }
+    }
+
     /**
      * Create a new instance of the field
      * requires constructor parameters

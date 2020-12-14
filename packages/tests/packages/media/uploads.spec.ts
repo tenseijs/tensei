@@ -155,7 +155,6 @@ test('Cannot upload files larger than max file size', async () => {
     const maxFileSize = 3200
     const {
         app,
-        ctx: { storage, orm }
     } = await setup(maxFileSize)
 
     const client = Supertest(app)

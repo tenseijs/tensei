@@ -1,6 +1,5 @@
 import Path from 'path'
 import { Signale } from 'signale'
-import { auth } from '@tensei/auth'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
@@ -533,14 +532,6 @@ export class Tensei implements TenseiContract {
         } else {
             this.ctx.plugins = [
                 ...plugins,
-                auth()
-                    .cms()
-                    .user('Admin User')
-                    .role('Admin Role')
-                    .permission('Admin Permission')
-                    .apiPath('admin/auth')
-                    .rolesAndPermissions()
-                    .plugin()
             ]
         }
 

@@ -120,6 +120,7 @@ test('Can enable email verification for auth', async () => {
         auth()
             .user('Customer')
             .verifyEmails()
+            .csrf(false)
             .setup(({ user }) => {
                 user.fields([text('Name')])
             })
@@ -217,6 +218,7 @@ test('Can request a password reset and reset password', async () => {
     } = await setup([
         auth()
             .verifyEmails()
+            .csrf(false)
             .user('Student')
             .plugin(),
         graphql().plugin(),
@@ -315,6 +317,7 @@ test('Can login and stay authenticated with cookie based applications', async ()
     } = await setup([
         auth()
             .verifyEmails()
+            .csrf(false)
             .user('Student')
             .plugin(),
         graphql().plugin()
