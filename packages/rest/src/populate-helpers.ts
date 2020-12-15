@@ -45,7 +45,12 @@ export const parseQueryToFindOptions = (
     }
 
     if (query.populate) {
-        findOptions.populate = query.populate.split(',')
+        if (typeof query.populate === 'object') {
+            const stringifiedQuery = qs.stringify(query.populate, { encodeValuesOnly: true })
+            findOptions.populate = qs.parse(stringifiedQuery, { arrayLimit: 100, depth: 15 })
+        } else {
+            findOptions.populate = query.populate.split(',')
+        }
     }
 
     if (query.fields) {
@@ -64,13 +69,13 @@ export const parseQueryToFindOptions = (
         sorters.forEach(([field, direction]) => {
             findOptions.orderBy = field.includes('.')
                 ? {
-                      ...findOptions.orderBy,
-                      ...parseSortFromStringToObject(field, direction)
-                  }
+                    ...findOptions.orderBy,
+                    ...parseSortFromStringToObject(field, direction)
+                }
                 : {
-                      ...findOptions.orderBy,
-                      [field]: direction
-                  }
+                    ...findOptions.orderBy,
+                    [field]: direction
+                }
         })
     }
 
@@ -175,12 +180,12 @@ export const transformToInfoObject = (resources: any, data: any) => {
             }
         }
 
-        if (currVal.populate) {
+        if (currVal.deep_populate) {
             acc[currVal.relation] = {
                 ...acc[currVal.relation],
                 fieldsByTypeName: {
                     [currVal.relation]: {
-                        ...transformToInfoObject(resources, currVal.populate)
+                        ...transformToInfoObject(resources, currVal.deep_populate)
                     }
                 }
             }
