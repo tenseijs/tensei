@@ -1777,7 +1777,7 @@ class Auth {
     }
 
     private register = async (ctx: ApiContext) => {
-        const { manager, mailer, body } = ctx
+        const { manager, body } = ctx
 
         const validator = Utils.validator(
             this.resources.user,
@@ -1839,11 +1839,7 @@ class Auth {
         }
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
-            mailer
-                .to(user.email)
-                .sendRaw(
-                    `Please verify your email using this link: ${user.email_verification_token}`
-                )
+            
         }
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
@@ -1852,7 +1848,6 @@ class Auth {
     private resendVerificationEmail = async ({
         manager,
         user,
-        mailer
     }: ApiContext) => {
         if (!user.email_verification_token) {
             return false
@@ -1863,10 +1858,6 @@ class Auth {
         })
 
         await manager.persistAndFlush(user)
-
-        mailer.to(user.email).sendRaw(`
-            Please verify your email using this link: ${user.email_verification_token}
-        `)
 
         return true
     }
@@ -2342,10 +2333,6 @@ class Auth {
         }
 
         await manager.flush()
-
-        mailer
-            .to(email, existingUser.name)
-            .sendRaw(`Some raw message to send with the token ${token}`)
 
         return true
     }
