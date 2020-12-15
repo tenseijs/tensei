@@ -1,0 +1,8 @@
+build
+README.md
+docs
+*.md
+*.html
+config.json
+.eslintrc.json
+package.json

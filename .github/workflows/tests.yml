@@ -60,5 +60,9 @@ jobs:
         env:
           DATABASE_TYPE: sqlite
           DATABASE_NAME: tensei
+      - name: Run package tests on mongodb database
+        run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
       - name: Run express-session-mikro-orm package tests
         run: cd /home/runner/work/tensei/tensei/packages/express-session-mikro-orm && yarn test
+      - name: Run @tensei/mail package tests
+        run: cd /home/runner/work/tensei/tensei/packages/mail && yarn test

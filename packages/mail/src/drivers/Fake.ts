@@ -12,30 +12,34 @@
 import nodemailer from 'nodemailer'
 import {
 	MessageNode,
-	SmtpMailResponse,
-	SmtpDriverContract,
-	SmtpConfig,
+	TrapCallback,
+	FakeDriverContract,
+	FakeMailResponse,
 } from '@tensei/mail'
 
 /**
  * Smtp driver to send email using smtp
  */
-export class SmtpDriver implements SmtpDriverContract {
+export class FakeDriver implements FakeDriverContract {
 	private transporter: any
 
-	constructor(config: SmtpConfig) {
-		this.transporter = nodemailer.createTransport(config as any)
+	constructor(private listener: TrapCallback) {
+		this.transporter = nodemailer.createTransport({
+			jsonTransport: true,
+		})
 	}
 
 	/**
 	 * Send message
 	 */
-	public async send(message: MessageNode): Promise<SmtpMailResponse> {
+	public async send(message: MessageNode): Promise<FakeMailResponse> {
 		if (!this.transporter) {
 			throw new Error('Driver transport has been closed and cannot be used for sending emails')
 		}
 
-		return this.transporter.sendMail(message)
+		const listenerResponse = this.listener(message)
+		const response = await this.transporter.sendMail(message)
+		return { ...response, ...listenerResponse }
 	}
 
 	/**

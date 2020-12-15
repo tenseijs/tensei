@@ -1,12 +1,12 @@
 import Path from 'path'
-import { Signale } from 'signale'
+import pino from 'pino'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
 import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
-import { mail, SupportedDrivers } from '@tensei/mail'
+import { mail, MailConfig } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
 import { StorageManager, Storage } from '@slynova/flydrive'
 
@@ -55,6 +55,15 @@ export class Tensei implements TenseiContract {
         }
     }
 
+    private mailerConfig: MailConfig = {
+        mailers: {
+            ethereal: {
+                driver: 'ethereal'
+            }
+        },
+        mailer: 'ethereal' as never,
+    }
+
     public ctx: Config = {
         schemas: [],
         routes: [],
@@ -64,9 +73,10 @@ export class Tensei implements TenseiContract {
         graphQlMiddleware: [],
         rootBoot: () => {},
         rootRegister: () => {},
+        viewsPath: Path.resolve(process.cwd(), 'views'),
         storage: new StorageManager(this.defaultStorageConfig),
         storageConfig: this.defaultStorageConfig,
-        mailer: mail().connection('ethereal'),
+        mailer: mail(this.mailerConfig),
         databaseClient: null,
         serverUrl: '',
         clientUrl: '',
@@ -93,7 +103,9 @@ export class Tensei implements TenseiContract {
                 path: Path.resolve(__dirname, 'public', 'app.css')
             }
         ],
-        logger: new Signale(),
+        logger: pino({
+            prettyPrint: process.env.NODE_ENV !== 'production'
+        }),
         indicative: {
             validator,
             sanitizer
@@ -122,6 +134,12 @@ export class Tensei implements TenseiContract {
 
     public routes(routes: RouteContract[]) {
         this.ctx.routes = [...this.ctx.routes, ...routes]
+
+        return this
+    }
+
+    public viewsPath(path: string) {
+        this.ctx.viewsPath = path
 
         return this
     }
@@ -248,7 +266,7 @@ export class Tensei implements TenseiContract {
         const port = process.env.PORT || 4500
 
         this.server.listen(port, () => {
-            this.ctx.logger.success(
+            this.ctx.logger.info(
                 `🚀 Access your server on ${this.ctx.serverUrl ||
                     `http://127.0.0.1:${port}`}`
             )
@@ -534,14 +552,6 @@ export class Tensei implements TenseiContract {
                 ...plugins,
             ]
         }
-
-        return this
-    }
-
-    private mail(driverName: SupportedDrivers, mailConfig = {}) {
-        this.ctx.mailer = mail()
-            .connection(driverName)
-            .config(mailConfig)
 
         return this
     }
