@@ -153,9 +153,7 @@ test('Cannot upload more than max files', async () => {
 
 test.skip('Cannot upload files larger than max file size', async () => {
     const maxFileSize = 3200
-    const {
-        app,
-    } = await setup(maxFileSize)
+    const { app } = await setup(maxFileSize)
 
     const client = Supertest(app)
 

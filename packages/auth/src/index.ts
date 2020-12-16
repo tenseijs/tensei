@@ -732,7 +732,7 @@ class Auth {
                             return next()
                         }
                     ])
-                    if (route.config.resource && ! this.config.cms) {
+                    if (route.config.resource && !this.config.cms) {
                         const { resource, id } = route.config
 
                         const { slugSingular, slugPlural } = resource.data
@@ -1839,16 +1839,22 @@ class Auth {
         }
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
-            
+            console.log(
+                // @ts-ignore
+                await ctx.mailer.use('mailtrap').send(message => {
+                    message
+                        .to('katifrantzvalliembiyekeh@gmail.com')
+                        .from('bahdcoder@gmail.com')
+                        .htmlView('users/register', ctx.user)
+                        .subject('Welcome to Tensei')
+                })
+            )
         }
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
-    private resendVerificationEmail = async ({
-        manager,
-        user,
-    }: ApiContext) => {
+    private resendVerificationEmail = async ({ manager, user }: ApiContext) => {
         if (!user.email_verification_token) {
             return false
         }

@@ -12,6 +12,7 @@ declare module '@tensei/mail' {
 	import { SES } from 'aws-sdk'
 	import { Readable } from 'stream'
 	import { ManagerContract } from '@poppinss/manager'
+	import { PluginContract, Config } from '@tensei/common'
 
 	/*
   |--------------------------------------------------------------------------
@@ -692,7 +693,37 @@ declare module '@tensei/mail' {
 		): BaseMailerContract<Mailer>
 	}
 	const Mail: MailManagerContract
-	export const mail: (config: MailConfig) => MailManagerContract
+	export const mail: (config: MailConfig, logger: Config['logger']) => MailManagerContract
 	export default Mail
 
+	class SesPlugin {
+		config: Omit<SesConfig, 'driver'> & {
+			driver: string;
+		};
+		constructor(name: string);
+		key(key: string): this;
+		secret(secret: string): this;
+		region(region: string): this;
+		noSsl(): this;
+		apiVersion(version: string): this;
+		plugin(): PluginContract;
+	}
+	export const ses: (name: string) => SesPlugin;
+
+	class SmtpPlugin {
+		config: Omit<SmtpConfig, 'driver'> & {
+			driver: string;
+		}
+		constructor(name: string)
+		secure(): this
+		host(host: string): this
+		auth(auth: SmtpOauth2 | SmtpSimpleAuth): this
+		user(user: string): string
+		pass(pass: string): string
+		port(port: string | number): this
+		configure(config: Partial<SmtpConfig>): this
+		plugin(): PluginContract
+	}
+
+	export const smtp: (name: string) => SmtpPlugin;
 }

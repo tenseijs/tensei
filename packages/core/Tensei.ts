@@ -6,7 +6,7 @@ import { createServer, Server } from 'http'
 import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
 import { validator, sanitizer } from 'indicative'
-import { mail, MailConfig } from '@tensei/mail'
+import { mail, MailConfig, MailManagerContract } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
 import { StorageManager, Storage } from '@slynova/flydrive'
 
@@ -19,7 +19,8 @@ import {
     SetupFunctions,
     DashboardContract,
     StorageConstructor,
-    SupportedStorageDrivers
+    SupportedStorageDrivers,
+    ExtendMailCallback
 } from '@tensei/common'
 import Database from './database'
 import {
@@ -30,6 +31,8 @@ import {
     PluginSetupConfig,
     PluginSetupFunction
 } from '@tensei/core'
+
+import { MailDriverContract } from '@tensei/mail'
 
 import ClientController from './controllers/client.controller'
 
@@ -61,65 +64,70 @@ export class Tensei implements TenseiContract {
                 driver: 'ethereal'
             }
         },
-        mailer: 'ethereal' as never,
+        mailer: 'ethereal' as never
     }
 
-    public ctx: Config = {
-        schemas: [],
-        routes: [],
-        name: process.env.APP_NAME || 'Tensei',
-        graphQlQueries: [],
-        graphQlTypeDefs: [],
-        graphQlMiddleware: [],
-        rootBoot: () => {},
-        rootRegister: () => {},
-        viewsPath: Path.resolve(process.cwd(), 'views'),
-        storage: new StorageManager(this.defaultStorageConfig),
-        storageConfig: this.defaultStorageConfig,
-        mailer: mail(this.mailerConfig),
-        databaseClient: null,
-        serverUrl: '',
-        clientUrl: '',
-        resources: [],
-        plugins: [],
-        dashboards: [],
-        resourcesMap: {},
-        dashboardsMap: {},
-        dashboardPath: 'tensei',
-        orm: null,
-        databaseConfig: {
-            type: 'sqlite',
-            entities: []
-        },
-        scripts: [
-            {
-                name: 'tensei.js',
-                path: Path.resolve(__dirname, 'public', 'app.js')
+    public ctx: Config
+
+    public constructor() {
+        this.ctx = {
+            schemas: [],
+            routes: [],
+            name: process.env.APP_NAME || 'Tensei',
+            graphQlQueries: [],
+            graphQlTypeDefs: [],
+            graphQlMiddleware: [],
+            rootBoot: () => {},
+            rootRegister: () => {},
+            viewsPath: Path.resolve(process.cwd(), 'emails'),
+            storage: new StorageManager(this.defaultStorageConfig),
+            storageConfig: this.defaultStorageConfig,
+            databaseClient: null,
+            serverUrl: '',
+            clientUrl: '',
+            resources: [],
+            plugins: [],
+            dashboards: [],
+            resourcesMap: {},
+            dashboardsMap: {},
+            dashboardPath: 'tensei',
+            orm: null,
+            databaseConfig: {
+                type: 'sqlite',
+                entities: []
+            },
+            scripts: [
+                {
+                    name: 'tensei.js',
+                    path: Path.resolve(__dirname, 'public', 'app.js')
+                }
+            ],
+            styles: [
+                {
+                    name: 'tensei.css',
+                    path: Path.resolve(__dirname, 'public', 'app.css')
+                }
+            ],
+            logger: pino({
+                prettyPrint: process.env.NODE_ENV !== 'production'
+            }),
+            indicative: {
+                validator,
+                sanitizer
+            },
+            graphQlExtensions: [],
+            extendGraphQlMiddleware: (...middleware: any[]) => {
+                this.ctx.graphQlMiddleware = [
+                    ...this.ctx.graphQlMiddleware,
+                    ...middleware
+                ]
+            },
+            extendResources: (resources: ResourceContract[]) => {
+                this.resources(resources)
             }
-        ],
-        styles: [
-            {
-                name: 'tensei.css',
-                path: Path.resolve(__dirname, 'public', 'app.css')
-            }
-        ],
-        logger: pino({
-            prettyPrint: process.env.NODE_ENV !== 'production'
-        }),
-        indicative: {
-            validator,
-            sanitizer
-        },
-        graphQlExtensions: [],
-        extendGraphQlMiddleware: (...middleware: any[]) => {
-            this.ctx.graphQlMiddleware = [
-                ...this.ctx.graphQlMiddleware,
-                ...middleware
-            ]
-        },
-        extendResources: (resources: ResourceContract[]) => {
-            this.resources(resources)
-        }
+        } as any
+
+        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger)
     }
 
     public setConfigOnResourceFields() {
@@ -317,8 +325,30 @@ export class Tensei implements TenseiContract {
             currentCtx: () => this.ctx,
             storageDriver: this.storageDriver,
             getQuery: this.getQuery,
-            getRoute: this.getRoute
+            getRoute: this.getRoute,
+            extendMailer: this.extendMailer.bind(this)
         }
+    }
+
+    private extendMailer(
+        name: string,
+        driver: ExtendMailCallback,
+        config?: MailConfig['mailers']
+    ) {
+        this.mailerConfig = {
+            ...this.mailerConfig,
+            mailers: {
+                ...this.mailerConfig.mailers,
+                [name]: {
+                    ...(config || {}),
+                    driver: name
+                }
+            }
+        }
+
+        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger)
+
+        this.ctx.mailer.extend(name, driver)
     }
 
     private getQuery(path: string) {
@@ -548,9 +578,7 @@ export class Tensei implements TenseiContract {
         if (this.ctx.plugins.length) {
             this.ctx.plugins = [...this.ctx.plugins, ...plugins]
         } else {
-            this.ctx.plugins = [
-                ...plugins,
-            ]
+            this.ctx.plugins = [...plugins]
         }
 
         return this

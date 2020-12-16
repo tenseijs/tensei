@@ -221,15 +221,6 @@ export class MailManager
 	}
 
 	/**
-	 * Creates an instance of `ses` driver by lazy loading. This method
-	 * is invoked internally when a new driver instance is required
-	 */
-	protected createSes(_: string, config: any) {
-		const { SesDriver } = require('../Drivers/Ses')
-		return new SesDriver(config)
-	}
-
-	/**
 	 * Creates an instance of `mailgun` driver by lazy loading. This method
 	 * is invoked internally when a new driver instance is required
 	 */

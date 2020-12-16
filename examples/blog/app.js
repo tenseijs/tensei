@@ -1,10 +1,10 @@
 require('dotenv').config()
-const { docs } = require('@tensei/docs')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { media } = require('@tensei/media')
 const { graphql } = require('@tensei/graphql')
 const { tensei, route } = require('@tensei/core')
+const { ses, smtp } = require('@tensei/mail')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -20,6 +20,9 @@ module.exports = tensei()
     .serverUrl('http://localhost:5000')
     .defaultStorageDriver('local')
     .graphQlQueries([])
+    .register(({ mailer }) => {
+        mailer.use('ethereal')
+    })
     .routes([
         route('Get products')
             .get()
@@ -71,7 +74,17 @@ module.exports = tensei()
             })
             .plugin(),
         rest().plugin(),
-        docs().plugin(),
+        ses('transactional')
+            .region('us-east-1')
+            .key('AKIAYCA6IR7CT27KWF7T')
+            .secret('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')
+            .plugin(),
+        smtp('mailtrap')
+            .host('smtp.mailtrap.io')
+            .user('df3db2ece4f0e4')
+            .pass('b0adaac4573cd9')
+            .port(2525)
+            .plugin(),
     ])
     .db({
         type: process.env.DATABASE_TYPE || 'mysql',
