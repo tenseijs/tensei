@@ -20,7 +20,7 @@ import {
 	SparkPostDriverContract,
 } from '@tensei/mail'
 
-import { SparkPostTransport } from '../transports-xo/SparkPost'
+import { SparkPostTransport } from '../transports/SparkPost'
 
 /**
  * Ses driver to send email using ses

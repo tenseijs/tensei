@@ -14,7 +14,7 @@ import { Config } from '@tensei/common'
 import { SparkPostConfig } from '@tensei/mail'
 
 import { ObjectBuilder } from '../utils'
-import { EmailTransportException } from '../exceptions-xo/EmailTransportException'
+import { EmailTransportException } from '../exceptions/EmailTransportException'
 
 /**
  * Sparkpost transport for node mailer. Uses the `/message.mime` to send MIME

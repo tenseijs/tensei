@@ -45,12 +45,7 @@ export const parseQueryToFindOptions = (
     }
 
     if (query.populate) {
-        if (typeof query.populate === 'object') {
-            const stringifiedQuery = qs.stringify(query.populate, { encodeValuesOnly: true })
-            findOptions.populate = qs.parse(stringifiedQuery, { arrayLimit: 100, depth: 15 })
-        } else {
-            findOptions.populate = query.populate.split(',')
-        }
+        findOptions.populate = query.populate.split(',')
     }
 
     if (query.fields) {
