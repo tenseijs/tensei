@@ -1,128 +1,88 @@
-'use strict'
-
 /*
- * adonis-mail
+ * @adonisjs/mail
  *
  * (c) Harminder Virk <virk@adonisjs.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+/// <reference path="../../types/mail.ts" />
+
 import nodemailer from 'nodemailer'
-import { DriverInterface } from '../config'
+import { Config } from '@tensei/common'
+import {
+	MessageNode,
+	SmtpMailResponse,
+	SmtpDriverContract,
+} from '@tensei/mail'
 
 /**
- * Ethereal driver is used to run test emails
- *
- * @class EtherealDriver
- * @constructor
+ * Smtp driver to send email using smtp
  */
-class EtherealDriver implements DriverInterface {
-    private transporter: any = null
-    private log: any = null
-    /**
-     * This method is called by mail manager automatically
-     * and passes the config object
-     *
-     * @method setConfig
-     *
-     * @param  {Object}  config
-     */
-    setConfig(config: any) {
-        if (config.user && config.pass) {
-            this.setTransporter(config.user, config.pass)
-        } else {
-            this.transporter = null
-        }
+export class EtherealDriver implements SmtpDriverContract {
+    private transporter: any
+    
+    constructor(public config: any, public logger: Config['logger']) {}
 
-        this.log =
-            typeof config.log === 'function'
-                ? config.log
-                : function(messageUrl: string) {
-                      console.log(messageUrl)
-                  }
+    /**
+	 * Creates and returns an ethereal email account. Node mailer internally
+	 * ensures only a single email account is created and hence we don't
+	 * have to worry about caching credentials.
+	 */
+	private getEtherealAccount(): Promise<any> {
+		return new Promise((resolve, reject) => {
+			nodemailer.createTestAccount((error: Error|null, account: any) => {
+				if (error) {
+					reject(error)
+				} else {
+					resolve(account)
+				}
+			})
+		})
     }
-
+    
     /**
-     * Initiate transporter
-     *
-     * @method setTransporter
-     *
-     * @param  {String}       user
-     * @param  {String}       pass
-     */
-    setTransporter(user: string, pass: string) {
+	 * Creates an instance of `smtp` driver by lazy loading. This method
+	 * is invoked internally when a new driver instance is required
+	 */
+	protected createTransport(account: any) {
         this.transporter = nodemailer.createTransport({
             host: 'smtp.ethereal.email',
             port: 587,
             secure: false,
-            auth: { user, pass }
+            auth: {
+                user: account.user,
+                pass: account.pass
+            }
         })
+	}
+
+	/**
+	 * Send message
+	 */
+	public async send(message: MessageNode): Promise<SmtpMailResponse> {
+        const account = await this.getEtherealAccount()
+
+        this.createTransport(account)
+
+        const mail = await this.transporter.sendMail(message)
+    
+        this.logger.info(
+            nodemailer.getTestMessageUrl(await this.transporter.sendMail(message)) as string
+        )
+
+		return mail
     }
 
-    /**
-     * Creates a new transporter on fly
-     *
-     * @method createTransporter
-     *
-     * @return {String}
-     */
-    createTransporter() {
-        return new Promise((resolve, reject) => {
-            nodemailer.createTestAccount((error, account) => {
-                if (error) {
-                    reject(error)
-                    return
-                }
-                this.setTransporter(account.user, account.pass)
-                resolve(null)
-            })
-        })
-    }
-
-    /**
-     * Sends email
-     *
-     * @method sendEmail
-     *
-     * @param  {Object}  message
-     *
-     * @return {Object}
-     */
-    sendEmail(message: any) {
-        return new Promise((resolve, reject) => {
-            this.transporter.sendMail(message, (error: any, result: any) => {
-                if (error) {
-                    reject(error)
-                } else {
-                    resolve(result)
-                }
-            })
-        })
-    }
-
-    /**
-     * Send a message via message object
-     *
-     * @method send
-     * @async
-     *
-     * @param  {Object} message
-     *
-     * @return {Object}
-     *
-     * @throws {Error} If promise rejects
-     */
-    async send(message: any) {
-        if (!this.transporter) {
-            await this.createTransporter()
+	/**
+	 * Close transporter connection, helpful when using connections pool
+	 */
+	public async close() {
+        if (this.transporter) {
+            this.transporter.close()
         }
 
-        const mail = await this.sendEmail(message)
-        this.log(nodemailer.getTestMessageUrl(mail as any))
-
-        return mail
-    }
+		this.transporter = null
+	}
 }
-
-export default EtherealDriver

@@ -8,6 +8,7 @@
         "@mikro-orm/mysql": "^4.3.0",
         "@mikro-orm/postgresql": "^4.3.0",
         "@slynova/flydrive-s3": "^1.0.3",
+        "aws-sdk": "^2.811.0",
         "dotenv": "^8.2.0",
         "faker": "^4.1.0",
         "graphql-redis-subscriptions": "^2.3.1",

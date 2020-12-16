@@ -796,8 +796,8 @@ input id_where_query {
                                 JSON.stringify({
                                     // @ts-ignore
                                     'x-xsrf-token': request.csrfToken
-                                        // @ts-ignore
-                                        ? request.csrfToken()
+                                        ? // @ts-ignore
+                                          request.csrfToken()
                                         : undefined
                                 })
                             )}`,

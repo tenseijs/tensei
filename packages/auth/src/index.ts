@@ -732,7 +732,7 @@ class Auth {
                             return next()
                         }
                     ])
-                    if (route.config.resource && ! this.config.cms) {
+                    if (route.config.resource && !this.config.cms) {
                         const { resource, id } = route.config
 
                         const { slugSingular, slugPlural } = resource.data
@@ -1777,7 +1777,7 @@ class Auth {
     }
 
     private register = async (ctx: ApiContext) => {
-        const { manager, mailer, body } = ctx
+        const { manager, body } = ctx
 
         const validator = Utils.validator(
             this.resources.user,
@@ -1839,21 +1839,22 @@ class Auth {
         }
 
         if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
-            mailer
-                .to(user.email)
-                .sendRaw(
-                    `Please verify your email using this link: ${user.email_verification_token}`
-                )
+            console.log(
+                // @ts-ignore
+                await ctx.mailer.use('mailtrap').send(message => {
+                    message
+                        .to('katifrantzvalliembiyekeh@gmail.com')
+                        .from('bahdcoder@gmail.com')
+                        .htmlView('users/register', ctx.user)
+                        .subject('Welcome to Tensei')
+                })
+            )
         }
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
-    private resendVerificationEmail = async ({
-        manager,
-        user,
-        mailer
-    }: ApiContext) => {
+    private resendVerificationEmail = async ({ manager, user }: ApiContext) => {
         if (!user.email_verification_token) {
             return false
         }
@@ -1863,10 +1864,6 @@ class Auth {
         })
 
         await manager.persistAndFlush(user)
-
-        mailer.to(user.email).sendRaw(`
-            Please verify your email using this link: ${user.email_verification_token}
-        `)
 
         return true
     }
@@ -2342,10 +2339,6 @@ class Auth {
         }
 
         await manager.flush()
-
-        mailer
-            .to(email, existingUser.name)
-            .sendRaw(`Some raw message to send with the token ${token}`)
 
         return true
     }

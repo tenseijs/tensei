@@ -62,7 +62,7 @@ test('Sanitizes resource fields on create', async () => {
     const validPayload = {
         title: Faker.lorem.sentence(),
         body: Faker.lorem.sentence(),
-        post: isMongo ? Faker.random.word() :Faker.random.number()
+        post: isMongo ? Faker.random.word() : Faker.random.number()
     }
 
     expect(await validator.validate(validPayload)).toEqual([
@@ -76,10 +76,7 @@ test('Sanitizes resource fields on create', async () => {
 
 test('correctly validates data and throws error with validation rules', async () => {
     const {
-        ctx: {
-            orm,
-            resourcesMap
-        }
+        ctx: { orm, resourcesMap }
     } = await setup()
     const { em } = orm
     const validator = Utils.validator(resourcesMap['Post'], em, resourcesMap)
@@ -108,32 +105,37 @@ test('correctly validates data and throws error with validation rules', async ()
         something_not_supposed_to_be_here: 'something_not_supposed_to_be_here'
     }
 
-    const tags_validations = orm.config.get('type') === 'mongo' ? [
-        {
-            message: 'string validation failed on tags.0',
-            validation: 'string',
-            field: 'tags.0'
-          },
-          {
-            message: 'string validation failed on tags.1',
-            validation: 'string',
-            field: 'tags.1'
-          },
-          {
-            message: 'string validation failed on tags.2',
-            validation: 'string',
-            field: 'tags.2'
-          },
-          {
-            message: 'string validation failed on tags.3',
-            validation: 'string',
-            field: 'tags.3'
-          }
-    ] : [{
-        field: 'tags.4',
-        message: 'number validation failed on tags.4',
-        validation: 'number'
-    }]
+    const tags_validations =
+        orm.config.get('type') === 'mongo'
+            ? [
+                  {
+                      message: 'string validation failed on tags.0',
+                      validation: 'string',
+                      field: 'tags.0'
+                  },
+                  {
+                      message: 'string validation failed on tags.1',
+                      validation: 'string',
+                      field: 'tags.1'
+                  },
+                  {
+                      message: 'string validation failed on tags.2',
+                      validation: 'string',
+                      field: 'tags.2'
+                  },
+                  {
+                      message: 'string validation failed on tags.3',
+                      validation: 'string',
+                      field: 'tags.3'
+                  }
+              ]
+            : [
+                  {
+                      field: 'tags.4',
+                      message: 'number validation failed on tags.4',
+                      validation: 'number'
+                  }
+              ]
 
     expect(await validator.validate(payload)).toEqual([
         false,

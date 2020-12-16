@@ -1,12 +1,12 @@
 declare module '@tensei/common/config' {
-    import { Signale } from 'signale'
-    import { Mail } from '@tensei/mail'
+    import { Logger } from 'pino'
     import { Request, Response } from 'express'
     import { EntityManager } from '@mikro-orm/core'
     import { sanitizer, validator } from 'indicative'
     import { ResourceContract } from '@tensei/common/resources'
     import { ExecutionParams } from 'subscriptions-transport-ws'
     import { DashboardContract } from '@tensei/common/dashboards'
+    import { MailConfig, MailManagerContract } from '@tensei/mail'
     import { IResolvers, ITypedef, PubSub } from 'apollo-server-express'
     import { IMiddleware, IMiddlewareGenerator } from 'graphql-middleware'
     import { DocumentNode, GraphQLSchema, GraphQLResolveInfo } from 'graphql'
@@ -38,6 +38,10 @@ declare module '@tensei/common/config' {
     type EndpointTypes = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
     interface RouteExtendContract extends Record<string, any> {}
+
+    interface LoggerContract {
+        trace: any
+    }
 
     interface RouteContract {
         config: RouteConfig & {
@@ -288,7 +292,8 @@ declare module '@tensei/common/config' {
         name: string
         serverUrl: string
         clientUrl: string
-        mailer: Mail
+        viewsPath: string
+        mailer: MailManagerContract
         storage: StorageManager
         rootBoot: PluginSetupFunction
         rootRegister: PluginSetupFunction
@@ -310,7 +315,7 @@ declare module '@tensei/common/config' {
         scripts: Asset[]
         styles: Asset[]
         orm: MikroORM | null
-        logger: Signale
+        logger: Logger
         databaseConfig: DatabaseConfiguration & AdditionalEntities
         dashboardPath: string
         resourcesMap: {

@@ -37,6 +37,7 @@
         "@tensei/common": "^0.4.4",
         "@tensei/mail": "^0.4.4",
         "@types/cookie-parser": "^1.4.2",
+        "@types/pino": "^6.3.4",
         "@types/signale": "^1.4.1",
         "body-parser": "^1.19.0",
         "change-case": "^4.1.1",
@@ -49,6 +50,8 @@
         "graphql-middleware": "^4.0.2",
         "indicative": "^7.4.4",
         "mustache": "^4.0.1",
+        "pino": "^6.8.0",
+        "pino-pretty": "^4.3.0",
         "pluralize": "^8.0.0",
         "signale": "^1.4.0"
     },

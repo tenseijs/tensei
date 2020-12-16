@@ -25,6 +25,7 @@ declare module '@tensei/core' {
         db(databaseConfig: DatabaseConfiguration): this
         serverUrl(url: string): this
         clientUrl(url: string): this
+        viewsPath(path: string): this
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this
@@ -43,6 +44,7 @@ declare module '@tensei/core' {
         db(databaseConfig: DatabaseConfiguration): this
         serverUrl(url: string): this
         clientUrl(url: string): this
+        viewsPath(path: string): this
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this

@@ -8,6 +8,7 @@ declare module '@tensei/common/plugins' {
     import { DocumentNode } from 'graphql'
     import { Server } from 'http'
     import { EntityManager } from '@mikro-orm/core'
+    import { MailDriverContract } from '@tensei/mail'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
     import {
         Asset,
@@ -54,7 +55,18 @@ declare module '@tensei/common/plugins' {
         currentCtx: () => Config
         getQuery: (path: string) => GraphQlQueryContract | undefined
         getRoute: (id: string) => RouteContract | undefined
+        extendMailer: (
+            name: string,
+            driver: ExtendMailCallback,
+            config: any
+        ) => void
     }
+
+    export type ExtendMailCallback = (
+        manager: MailManagerContract,
+        name: string,
+        config: MailConfig['mailers']
+    ) => MailDriverContract
 
     export abstract class PluginContract {
         name: string
