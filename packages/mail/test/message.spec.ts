@@ -8,7 +8,7 @@
  */
 
 import test from 'japa'
-import { Message } from '../src/Message'
+import { Message } from '../src/message'
 
 test.group('Message', () => {
 	test('add from address', (assert) => {

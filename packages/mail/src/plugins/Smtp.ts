@@ -1,5 +1,5 @@
 import { plugin } from '@tensei/common'
-import { SmtpDriver } from '../Drivers/Smtp'
+import { SmtpDriver } from '../drivers/Smtp'
 
 import { SmtpConfig, SmtpOauth2, SmtpSimpleAuth } from '@tensei/mail'
 

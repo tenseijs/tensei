@@ -1,5 +1,5 @@
 import { plugin } from '@tensei/common'
-import { SesDriver } from '../Drivers/Ses'
+import { SesDriver } from '../drivers/Ses'
 
 import { SesConfig } from '@tensei/mail'
 

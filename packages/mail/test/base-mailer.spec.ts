@@ -11,7 +11,7 @@ import test from 'japa'
 import { MessageContract, BaseMailer as BaseMailerContract } from '@tensei/mail'
 
 import { Message } from '../src/message'
-import { MailManager } from '../src/mail/MailManager'
+import { MailManager } from '../src/MailManager'
 import { BaseMailer as BaseMailerClass } from '../src/base-mailer'
 
 const BaseMailer = (BaseMailerClass as unknown) as typeof BaseMailerContract

@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-/// <reference path="../../types/mail.ts" />
+/// <reference path="../types/mail.ts" />
 
 import Path from 'path'
 import fastq from 'fastq'
@@ -30,8 +30,8 @@ import {
 } from '@tensei/mail'
 
 import { Mailer } from './Mailer'
-import { BaseMailer } from '../base-mailer'
-import { prettyPrint } from '../Helpers/prettyPrint'
+import { BaseMailer } from './base-mailer'
+import { prettyPrint } from './Helpers/prettyPrint'
 
 import { Config } from '@tensei/common'
 /**

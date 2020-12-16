@@ -12,8 +12,8 @@ import test from 'japa'
 import dotenv from 'dotenv'
 import { join } from 'path'
 
-import { Message } from '../src/Message'
-import { MailgunDriver } from '../src/Drivers/Mailgun'
+import { Message } from '../src/message'
+import { MailgunDriver } from '../src/drivers/Mailgun'
 
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 

@@ -16,10 +16,10 @@ import {
 	MailDriverContract,
 } from '@tensei/mail'
 
-import { Mailer } from '../src/mail/Mailer'
+import { Mailer } from '../src/Mailer'
 import { SesDriver } from '../src/drivers/Ses'
 import { SmtpDriver } from '../src/drivers/Smtp'
-import { MailManager } from '../src/mail/MailManager'
+import { MailManager } from '../src/MailManager'
 import { MailgunDriver } from '../src/drivers/Mailgun'
 import { SparkPostDriver } from '../src/drivers/Sparkpost'
 
