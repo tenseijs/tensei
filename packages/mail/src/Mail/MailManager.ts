@@ -30,7 +30,7 @@ import {
 } from '@tensei/mail'
 
 import { Mailer } from './Mailer'
-import { BaseMailer } from '../BaseMailer'
+import { BaseMailer } from '../base-mailer'
 import { prettyPrint } from '../Helpers/prettyPrint'
 
 import { Config } from '@tensei/common'
