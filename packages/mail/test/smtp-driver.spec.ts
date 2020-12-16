@@ -11,7 +11,7 @@ import test from 'japa'
 import dotenv from 'dotenv'
 import { join } from 'path'
 
-import { Message } from '../src/message'
+import { Message } from '../src/Message'
 import { SmtpDriver } from '../src/drivers/Smtp'
 
 test.group('Smtp Driver', (group) => {

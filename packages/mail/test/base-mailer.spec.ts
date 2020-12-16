@@ -10,7 +10,7 @@
 import test from 'japa'
 import { MessageContract, BaseMailer as BaseMailerContract } from '@tensei/mail'
 
-import { Message } from '../src/message'
+import { Message } from '../src/Message'
 import { MailManager } from '../src/MailManager'
 import { BaseMailer as BaseMailerClass } from '../src/base-mailer'
 
@@ -60,7 +60,7 @@ test.group('BaseMailer', (group) => {
 					driver: 'smtp',
 				},
 				transactional: {
-					driver: 'ses',
+					driver: 'ethereal',
 				},
 			},
 		}

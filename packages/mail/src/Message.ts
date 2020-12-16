@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-/// <reference path="../../types/mail.ts" />
+/// <reference path="../types/mail.ts" />
 
 import { Readable } from 'stream'
 import {

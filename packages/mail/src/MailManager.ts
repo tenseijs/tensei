@@ -207,7 +207,7 @@ export class MailManager
 	 * is invoked internally when a new driver instance is required
 	 */
 	protected createSmtp(_: string, config: any) {
-		const { SmtpDriver } = require('../Drivers/Smtp')
+		const { SmtpDriver } = require('./drivers/Smtp')
 		return new SmtpDriver(config)
 	}
 
@@ -216,7 +216,7 @@ export class MailManager
 	 * is invoked internally when a new driver instance is required
 	 */
 	protected createEthereal(_: string, config: any) {
-		const { EtherealDriver } = require('../Drivers/Ethereal')
+		const { EtherealDriver } = require('./drivers/Ethereal')
 		return new EtherealDriver(config, this.logger)
 	}
 
@@ -225,7 +225,7 @@ export class MailManager
 	 * is invoked internally when a new driver instance is required
 	 */
 	protected createMailgun(_: string, config: any) {
-		const { MailgunDriver } = require('../Drivers/Mailgun')
+		const { MailgunDriver } = require('./drivers/Mailgun')
 		return new MailgunDriver(config, this.logger)
 	}
 
@@ -234,7 +234,7 @@ export class MailManager
 	 * is invoked internally when a new driver instance is required
 	 */
 	protected createSparkpost(_: string, config: any) {
-		const { SparkPostDriver } = require('../Drivers/SparkPost')
+		const { SparkPostDriver } = require('./drivers/SparkPost')
 		return new SparkPostDriver(config, this.logger)
 	}
 
@@ -251,7 +251,7 @@ export class MailManager
 	 * away as well
 	 */
 	public trap(callback: TrapCallback) {
-		const { FakeDriver } = require('../Drivers/Fake')
+		const { FakeDriver } = require('./drivers/Fake')
 		this.fakeMailer = new Mailer('fake' as any, this, false, new FakeDriver(callback))
 	}
 

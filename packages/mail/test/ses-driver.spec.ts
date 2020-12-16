@@ -11,7 +11,7 @@ import test from 'japa'
 import { join } from 'path'
 import dotenv from 'dotenv'
 
-import { Message } from '../src/message'
+import { Message } from '../src/Message'
 import { SesDriver } from '../src/drivers/Ses'
 
 test.group('Ses Driver', (group) => {

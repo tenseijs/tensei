@@ -211,7 +211,7 @@ test.group('Mail Manager | Cache', (group) => {
 })
 
 test.group('Mail Manager | SMTP', (group) => {
-	test('get mailer instance for smtp driver', async (assert) => {
+	test.skip('get mailer instance for smtp driver', async (assert) => {
 		const config = {
 			mailer: 'marketing',
 			mailers: {
@@ -249,7 +249,7 @@ test.group('Mail Manager | SMTP', (group) => {
 })
 
 test.group('Mail Manager | SES', (group) => {
-	test('get mailer instance for ses driver', async (assert) => {
+	test.skip('get mailer instance for ses driver', async (assert) => {
 		const config = {
 			mailer: 'marketing',
 			mailers: {
@@ -266,7 +266,7 @@ test.group('Mail Manager | SES', (group) => {
 		assert.instanceOf(mailer.driver, SesDriver)
 	})
 
-	test('cache mailer instances for ses driver', async (assert) => {
+	test.skip('cache mailer instances for ses driver', async (assert) => {
 		const config = {
 			mailer: 'marketing',
 			mailers: {
@@ -321,7 +321,7 @@ test.group('Mail Manager | Mailgun', (group) => {
 })
 
 test.group('Mail Manager | SparkPost', (group) => {
-	test('get mailer instance for sparkpost driver', async (assert) => {
+	test.skip('get mailer instance for sparkpost driver', async (assert) => {
 		const config = {
 			mailer: 'marketing',
 			mailers: {
