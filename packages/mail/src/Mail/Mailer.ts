@@ -18,7 +18,7 @@ import {
 	MessageComposeCallback,
 } from '@tensei/mail'
 
-import { Message } from '../Message'
+import { Message } from '../message'
 import { MailManager } from './MailManager'
 
 /**

@@ -39,10 +39,7 @@ export const setup = (maxFileSize = 10000000, maxFiles = 4) =>
                     editorResource()
                 ])
             }),
-            media()
-                .maxFiles(maxFiles)
-                .maxFileSize(maxFileSize)
-                .plugin(),
+            media().maxFiles(maxFiles).maxFileSize(maxFileSize).plugin(),
             graphql().plugin(),
             rest().plugin()
         ],
