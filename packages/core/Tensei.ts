@@ -275,8 +275,9 @@ export class Tensei implements TenseiContract {
 
         this.server.listen(port, () => {
             this.ctx.logger.info(
-                `🚀 Access your server on ${this.ctx.serverUrl ||
-                    `http://127.0.0.1:${port}`}`
+                `🚀 Access your server on ${
+                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
+                }`
             )
         })
     }

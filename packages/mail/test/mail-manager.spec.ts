@@ -16,12 +16,12 @@ import {
 	MailDriverContract,
 } from '@tensei/mail'
 
-import { Mailer } from '../src/Mail/Mailer'
-import { SesDriver } from '../src/Drivers/Ses'
-import { SmtpDriver } from '../src/Drivers/Smtp'
-import { MailManager } from '../src/Mail/MailManager'
-import { MailgunDriver } from '../src/Drivers/Mailgun'
-import { SparkPostDriver } from '../src/Drivers/SparkPost'
+import { Mailer } from '../src/mail/Mailer'
+import { SesDriver } from '../src/drivers/Ses'
+import { SmtpDriver } from '../src/drivers/Smtp'
+import { MailManager } from '../src/mail/MailManager'
+import { MailgunDriver } from '../src/drivers/Mailgun'
+import { SparkPostDriver } from '../src/drivers/Sparkpost'
 
 test.group('Mail Manager', (group) => {
 	test('return driver for a given mapping', async (assert) => {

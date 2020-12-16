@@ -11,8 +11,8 @@ import test from 'japa'
 import dotenv from 'dotenv'
 import { join } from 'path'
 
-import { Message } from '../src/Message'
-import { SparkPostDriver } from '../src/Drivers/SparkPost'
+import { Message } from '../src/message'
+import { SparkPostDriver } from '../src/drivers/Sparkpost'
 
 test.group('SparkPost Driver', (group) => {
 	group.before(() => {

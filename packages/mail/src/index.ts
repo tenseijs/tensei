@@ -1,6 +1,6 @@
 import { Config } from '@tensei/common'
 import { MailConfig } from '@tensei/mail'
-import { MailManager } from './Mail/MailManager'
+import { MailManager } from './mail/MailManager'
 
 export { ses } from './plugins/Ses'
 export { smtp } from './plugins/Smtp'

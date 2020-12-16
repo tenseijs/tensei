@@ -20,7 +20,7 @@ import {
 	MailgunDriverContract,
 } from '@tensei/mail'
 
-import { MailgunTransport } from '../Transports/Mailgun'
+import { MailgunTransport } from '../transports/Mailgun'
 
 /**
  * Ses driver to send email using ses

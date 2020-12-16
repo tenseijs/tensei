@@ -13,7 +13,7 @@ import { Config } from '@tensei/common'
 import { MailgunConfig } from '@tensei/mail'
 
 import { ObjectBuilder } from '../utils'
-import { EmailTransportException } from '../Exceptions/EmailTransportException'
+import { EmailTransportException } from '../exceptions/EmailTransportException'
 
 /**
  * Mailgun transport for node mailer. Uses the `/message.mime` to send MIME
