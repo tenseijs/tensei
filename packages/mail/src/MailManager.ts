@@ -31,7 +31,7 @@ import {
 
 import { Mailer } from './Mailer'
 import { BaseMailer } from './base-mailer'
-import { prettyPrint } from './Helpers/prettyPrint'
+import { prettyPrint } from './helpers-xo/prettyPrint'
 
 import { Config } from '@tensei/common'
 /**
