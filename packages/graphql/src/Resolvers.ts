@@ -143,6 +143,11 @@ export const getResolvers = (
                                 }
                             )
 
+                        ctx.emitter.emit(
+                            `${resource.data.snakeCaseName}::inserted`,
+                            data
+                        )
+
                         return data
                     })
             )
@@ -187,6 +192,11 @@ export const getResolvers = (
                                     }
                                 )
                             })
+
+                        ctx.emitter.emit(
+                            `${resource.data.snakeCaseNamePlural}::inserted`,
+                            data
+                        )
 
                         return data
                     })
@@ -238,6 +248,11 @@ export const getResolvers = (
                                     [`${resource.data.snakeCaseName}_updated`]: data
                                 }
                             )
+
+                        ctx.emitter.emit(
+                            `${resource.data.snakeCaseName}::updated`,
+                            data
+                        )
 
                         return data
                     })
@@ -294,6 +309,11 @@ export const getResolvers = (
                                 )
                             })
 
+                        ctx.emitter.emit(
+                            `${resource.data.snakeCaseNamePlural}::updated`,
+                            data
+                        )
+
                         return data
                     })
             )
@@ -329,6 +349,11 @@ export const getResolvers = (
                                     [`${resource.data.snakeCaseName}_deleted`]: data
                                 }
                             )
+
+                        ctx.emitter.emit(
+                            `${resource.data.snakeCaseName}::deleted`,
+                            data
+                        )
 
                         return data
                     })
@@ -370,6 +395,11 @@ export const getResolvers = (
                                     }
                                 )
                             })
+
+                        ctx.emitter.emit(
+                            `${resource.data.snakeCaseNamePlural}::deleted`,
+                            data
+                        )
 
                         return data
                     })

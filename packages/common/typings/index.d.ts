@@ -7,3 +7,4 @@
 /// <reference path="filters.d.ts" />
 /// <reference path="express.d.ts" />
 /// <reference path="dashboards.d.ts" />
+/// <reference path="events.d.ts" />

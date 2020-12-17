@@ -12,6 +12,7 @@ declare global {
             mailer: Mail
             storage: Config['storage']
             currentCtx: () => Config
+            emitter: Config['emitter']
             scripts: Asset[]
             styles: Asset[]
         }

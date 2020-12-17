@@ -1,10 +1,10 @@
 require('dotenv').config()
-const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { media } = require('@tensei/media')
-const { graphql } = require('@tensei/graphql')
-const { tensei, route } = require('@tensei/core')
 const { ses, smtp } = require('@tensei/mail')
+const { graphql } = require('@tensei/graphql')
+const { auth, USER_EVENTS } = require('@tensei/auth')
+const { tensei, route, event } = require('@tensei/core')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -14,15 +14,12 @@ const Comment = require('./resources/Comment')
 const Reaction = require('./resources/Reaction')
 
 module.exports = tensei()
-    .dashboardPath('tensei')
+    // .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment, Editor, Reaction])
     .clientUrl('https://google.com')
     .serverUrl('http://localhost:5000')
-    .defaultStorageDriver('local')
+    // .defaultStorageDriver('local')
     .graphQlQueries([])
-    .register(({ mailer }) => {
-        mailer.use('ethereal')
-    })
     .routes([
         route('Get products')
             .get()
@@ -93,3 +90,11 @@ module.exports = tensei()
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',
     })
+    .events([
+        event(USER_EVENTS.REGISTERED).listen(async ({ payload }) => {
+            console.log(
+                '#################',
+                await ctx.orm.em.count('Customer', {})
+            )
+        }),
+    ])

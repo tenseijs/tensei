@@ -9,7 +9,9 @@ declare module '@tensei/core' {
         DatabaseConfiguration,
         RouteContract,
         GraphQlQueryContract,
-        TensieContext
+        TensieContext,
+        EventContract,
+        DataPayload
     } from '@tensei/common'
 
     export interface TenseiContract {
@@ -23,6 +25,7 @@ declare module '@tensei/core' {
         graphQlQueries(routes: GraphQlQueryContract[]): this
         graphQlTypeDefs(defs: TensieContext['graphQlTypeDefs']): this
         db(databaseConfig: DatabaseConfiguration): this
+        events(events: EventContract<DataPayload>[]): this
         serverUrl(url: string): this
         clientUrl(url: string): this
         viewsPath(path: string): this
@@ -42,6 +45,7 @@ declare module '@tensei/core' {
         graphQlQueries(routes: GraphQlQueryContract[]): this
         graphQlTypeDefs(defs: TensieContext['graphQlTypeDefs']): this
         db(databaseConfig: DatabaseConfiguration): this
+        events(events: EventContract<DataPayload>[]): this
         serverUrl(url: string): this
         clientUrl(url: string): this
         viewsPath(path: string): this

@@ -119,6 +119,11 @@ class Rest {
                                     findOptions.populate || []
                                 )
 
+                                config.emitter.emit(
+                                    `${singular}::inserted`,
+                                    entity
+                                )
+
                                 return response.formatter.created(entity)
                             }
                         )
@@ -424,6 +429,11 @@ class Rest {
 
                                 await manager.persistAndFlush(entity)
 
+                                config.emitter.emit(
+                                    `${singular}::updated`,
+                                    entity
+                                )
+
                                 return response.formatter.ok(entity)
                             }
                         )
@@ -445,7 +455,10 @@ class Rest {
                             }
                         })
                         .handle(
-                            async ({ manager, params, query }, response) => {
+                            async (
+                                { manager, params, query, config },
+                                response
+                            ) => {
                                 const modelRepository = manager.getRepository(
                                     modelName as EntityName<AnyEntity<any>>
                                 )
@@ -462,6 +475,12 @@ class Rest {
                                 }
 
                                 await modelRepository.removeAndFlush(entity)
+
+                                config.emitter.emit(
+                                    `${singular}::deleted`,
+                                    entity
+                                )
+
                                 return response.formatter.ok(entity)
                             }
                         )

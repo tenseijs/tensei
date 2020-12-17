@@ -108,3 +108,12 @@ export const defaultProviderScopes = (
         twitter: [],
         linkedin: ['r_liteprofile', 'r_emailaddress']
     }[provider])
+
+export const USER_EVENTS = {
+    REGISTERED: 'user::registered',
+    LOGGED_IN: 'user::logged::in',
+    FORGOT_PASSWORD: 'user::forgot::password',
+    RESET_PASSWORD: 'user::reset::password',
+    VERIFIED_EMAIL: 'user::verified::email',
+    RESENT_VERIFICATION_EMAIL: 'user::reset::verification::email'
+}

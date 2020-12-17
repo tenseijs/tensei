@@ -1,5 +1,6 @@
 import Path from 'path'
 import pino from 'pino'
+import Emittery from 'emittery'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
@@ -20,7 +21,9 @@ import {
     DashboardContract,
     StorageConstructor,
     SupportedStorageDrivers,
-    ExtendMailCallback
+    ExtendMailCallback,
+    EventContract,
+    DataPayload
 } from '@tensei/common'
 import Database from './database'
 import {
@@ -31,8 +34,6 @@ import {
     PluginSetupConfig,
     PluginSetupFunction
 } from '@tensei/core'
-
-import { MailDriverContract } from '@tensei/mail'
 
 import ClientController from './controllers/client.controller'
 
@@ -73,6 +74,8 @@ export class Tensei implements TenseiContract {
         this.ctx = {
             schemas: [],
             routes: [],
+            events: {},
+            emitter: new Emittery(),
             name: process.env.APP_NAME || 'Tensei',
             graphQlQueries: [],
             graphQlTypeDefs: [],
@@ -233,11 +236,32 @@ export class Tensei implements TenseiContract {
         await this.callPluginHook('boot')
         await this.ctx.rootBoot(this.getPluginArguments())
 
+        this.registerEmitteryListeners()
+
         this.registerAsyncErrorHandler()
 
         this.registeredApplication = true
 
         return this
+    }
+
+    private registerEmitteryListeners() {
+        Object.keys(this.ctx.events).forEach(eventName => {
+            const event = this.ctx.events[eventName]
+
+            event.config.listeners.forEach(listener => {
+                this.ctx.emitter.on(eventName as any, listener)
+            })
+        })
+
+        const originalEmit = this.ctx.emitter.emit.bind(this.ctx.emitter)
+
+        this.ctx.emitter.emit = async (eventName: string, data: any) => {
+            return originalEmit(eventName, {
+                payload: data,
+                ctx: this.ctx
+            })
+        }
     }
 
     public async start(fn?: (ctx: Config) => any, listen = true) {
@@ -324,10 +348,11 @@ export class Tensei implements TenseiContract {
                 this.routes(routes)
             },
             currentCtx: () => this.ctx,
-            storageDriver: this.storageDriver,
-            getQuery: this.getQuery,
-            getRoute: this.getRoute,
-            extendMailer: this.extendMailer.bind(this)
+            storageDriver: this.storageDriver.bind(this),
+            getQuery: this.getQuery.bind(this),
+            getRoute: this.getRoute.bind(this),
+            extendMailer: this.extendMailer.bind(this),
+            extendEvents: this.events.bind(this)
         }
     }
 
@@ -440,6 +465,7 @@ export class Tensei implements TenseiContract {
                 request.mailer = this.ctx.mailer
                 request.config = this.ctx
                 request.storage = this.ctx.storage
+                request.emitter = this.ctx.emitter
 
                 next()
             }
@@ -638,6 +664,22 @@ export class Tensei implements TenseiContract {
 
         return this
     }
+
+    public events(events: EventContract<DataPayload>[]) {
+        events.forEach(event => {
+            const eventExists = this.ctx.events[event.config.name]
+
+            if (eventExists) {
+                event.config.listeners.concat(eventExists.config.listeners)
+            }
+
+            this.ctx.events[event.config.name] = event
+        })
+
+        return this
+    }
+
+    private emit(name: string) {}
 }
 
 export const tensei = () => new Tensei()

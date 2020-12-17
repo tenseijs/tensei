@@ -35,4 +35,5 @@ export { valueMetric, ValueMetrics } from './metrics/Value'
 
 export { Utils } from './utils'
 export { route, Route } from './api/Route'
+export { event, Event } from './events/event'
 export { graphQlQuery, GraphQlQuery } from './api/GraphQlQuery'

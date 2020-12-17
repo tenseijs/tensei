@@ -20,7 +20,9 @@ declare module '@tensei/common/plugins' {
         RouteContract,
         GraphQlQueryContract,
         TensieContext,
-        RouteConfig
+        RouteConfig,
+        EventContract,
+        DataPayload
     } from '@tensei/common/config'
 
     type PluginSetupFunction = (
@@ -60,6 +62,7 @@ declare module '@tensei/common/plugins' {
             driver: ExtendMailCallback,
             config: any
         ) => void
+        extendEvents: (events: EventContract<DataPayload>) => void
     }
 
     export type ExtendMailCallback = (

@@ -4,6 +4,8 @@ import { setup, fakeTag, sortArrayById, fakePost, fakeUser, gql } from './setup'
 test('correctly generates insert_resource resolvers for all registered resources', async () => {
     const instance = await setup()
 
+    jest.spyOn(instance.ctx.emitter, 'emit')
+
     const client = Supertest(instance.app)
 
     const tag = fakeTag()
@@ -42,6 +44,12 @@ test('correctly generates insert_resource resolvers for all registered resources
             }
         }
     })
+
+    // TODO: find a way to expect the exact payload here
+    expect(instance.ctx.emitter.emit).toHaveBeenCalledWith(
+        'tag::inserted',
+        expect.anything()
+    )
 })
 
 test('correctly validates all insert queries for a resource', async () => {
@@ -213,10 +221,12 @@ test('correctly generates insert_resources resolvers for all registered resource
 test('correctly generates update_resource resolvers for all registered resources', async () => {
     const {
         app,
-        ctx: { orm }
+        ctx: { orm, emitter }
     } = await setup()
 
     const client = Supertest(app)
+
+    jest.spyOn(emitter, 'emit')
 
     let [tag, updateTag] = [fakeTag(), fakeTag()].map(t =>
         orm.em.create('Tag', t)
@@ -258,15 +268,19 @@ test('correctly generates update_resource resolvers for all registered resources
             }
         }
     })
+
+    expect(emitter.emit).toHaveBeenCalledWith('tag::updated', expect.anything())
 })
 
 test('correctly generates update_resources resolvers for all registered resources', async () => {
     const {
         app,
-        ctx: { orm }
+        ctx: { orm, emitter }
     } = await setup()
 
     const client = Supertest(app)
+
+    jest.spyOn(emitter, 'emit')
 
     let [tag, tag2, updateTag] = [fakeTag(), fakeTag(), fakeTag()].map(t =>
         orm.em.create('Tag', t)
@@ -315,15 +329,22 @@ test('correctly generates update_resources resolvers for all registered resource
             }
         ].sort()
     )
+
+    expect(emitter.emit).toHaveBeenCalledWith(
+        'tags::updated',
+        expect.anything()
+    )
 })
 
 test('correctly generates delete_resource resolvers for all registered resources', async () => {
     const {
         app,
-        ctx: { orm }
+        ctx: { orm, emitter }
     } = await setup()
 
     const client = Supertest(app)
+
+    jest.spyOn(emitter, 'emit')
 
     let [tag] = [fakeTag()].map(t => orm.em.create('Tag', t))
 
@@ -356,15 +377,18 @@ test('correctly generates delete_resource resolvers for all registered resources
     })
 
     expect(await orm.em.find('Tag', {})).toHaveLength(0)
+    expect(emitter.emit).toHaveBeenCalledWith('tag::deleted', expect.anything())
 })
 
 test('correctly generates delete_resources resolvers for all registered resources', async () => {
     const {
         app,
-        ctx: { orm }
+        ctx: { orm, emitter }
     } = await setup()
 
     const client = Supertest(app)
+
+    jest.spyOn(emitter, 'emit')
 
     let [tag, tag2] = [fakeTag(), fakeTag()].map(t => orm.em.create('Tag', t))
 
@@ -409,6 +433,11 @@ test('correctly generates delete_resources resolvers for all registered resource
             }
         })
     ).toHaveLength(0)
+
+    expect(emitter.emit).toHaveBeenCalledWith(
+        'tags::deleted',
+        expect.anything()
+    )
 })
 
 test('correctly generates fetch_resources resolvers for all registered resources', async () => {

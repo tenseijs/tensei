@@ -21,9 +21,7 @@ import {
     hasMany,
     boolean,
     select,
-    Resolvers,
     graphQlQuery,
-    GraphQlMiddleware,
     GraphQLPluginContext,
     route,
     GraphQlQueryContract,
@@ -33,6 +31,7 @@ import {
 } from '@tensei/common'
 
 import {
+    USER_EVENTS,
     AuthData,
     TokenTypes,
     GrantConfig,
@@ -1787,7 +1786,7 @@ class Auth {
     }
 
     private register = async (ctx: ApiContext) => {
-        const { manager, body } = ctx
+        const { manager, body, emitter } = ctx
 
         const validator = Utils.validator(
             this.resources.user,
@@ -1848,10 +1847,16 @@ class Auth {
             }
         }
 
+        emitter.emit(USER_EVENTS.REGISTERED, user)
+
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
-    private resendVerificationEmail = async ({ manager, user }: ApiContext) => {
+    private resendVerificationEmail = async ({
+        manager,
+        user,
+        emitter
+    }: ApiContext) => {
         if (!user.email_verification_token) {
             return false
         }
@@ -1861,6 +1866,8 @@ class Auth {
         })
 
         await manager.persistAndFlush(user)
+
+        emitter.emit(USER_EVENTS.RESENT_VERIFICATION_EMAIL, user)
 
         return true
     }
@@ -1879,6 +1886,8 @@ class Auth {
             })
 
             await manager.persistAndFlush(user)
+
+            ctx.emitter.emit(USER_EVENTS.VERIFIED_EMAIL, user)
 
             return user.toJSON()
         }
@@ -2518,3 +2527,4 @@ class Auth {
 }
 
 export const auth = () => new Auth()
+export { USER_EVENTS } from './config'

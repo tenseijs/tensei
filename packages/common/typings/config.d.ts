@@ -1,8 +1,10 @@
 declare module '@tensei/common/config' {
     import { Logger } from 'pino'
+    import Emittery from 'emittery'
     import { Request, Response } from 'express'
     import { EntityManager } from '@mikro-orm/core'
     import { sanitizer, validator } from 'indicative'
+    import { EventContract } from '@tensei/common/events'
     import { ResourceContract } from '@tensei/common/resources'
     import { ExecutionParams } from 'subscriptions-transport-ws'
     import { DashboardContract } from '@tensei/common/dashboards'
@@ -290,6 +292,10 @@ declare module '@tensei/common/config' {
         databaseClient: any
         schemas: any
         name: string
+        events: {
+            [key: string]: EventContract<DataPayload>
+        }
+        emitter: Emittery
         serverUrl: string
         clientUrl: string
         viewsPath: string
