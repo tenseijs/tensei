@@ -97,11 +97,6 @@ test('Can add new fields to the user resource using the setup function', async (
 })
 
 test('Can enable email verification for auth', async () => {
-    const mailerMock = {
-        send: jest.fn(),
-        sendRaw: jest.fn()
-    }
-
     const {
         ctx: {
             orm: { em },
@@ -117,8 +112,7 @@ test('Can enable email verification for auth', async () => {
                 user.fields([text('Name')])
             })
             .plugin(),
-        graphql().plugin(),
-        setupFakeMailer(mailerMock)
+        graphql().plugin()
     ])
 
     const client = Supertest(app)
@@ -159,10 +153,6 @@ test('Can enable email verification for auth', async () => {
         registeredCustomer.id.toString()
     )
     expect(registeredCustomer.email_verification_token).toBeDefined()
-
-    expect(mailer.sendRaw).toHaveBeenCalledWith(
-        `Please verify your email using this link: ${registeredCustomer.email_verification_token}`
-    )
 
     const verify_email_response = await client
         .post(`/graphql`)

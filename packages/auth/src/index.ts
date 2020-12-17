@@ -1838,19 +1838,6 @@ class Auth {
             }
         }
 
-        if (this.config.verifyEmails && !this.config.skipWelcomeEmail) {
-            console.log(
-                // @ts-ignore
-                await ctx.mailer.use('mailtrap').send(message => {
-                    message
-                        .to('katifrantzvalliembiyekeh@gmail.com')
-                        .from('bahdcoder@gmail.com')
-                        .htmlView('users/register', ctx.user)
-                        .subject('Welcome to Tensei')
-                })
-            )
-        }
-
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
@@ -2281,7 +2268,6 @@ class Auth {
 
     protected forgotPassword = async ({
         body,
-        mailer,
         manager,
         userInputError
     }: ApiContext) => {

@@ -64,13 +64,13 @@ export const parseQueryToFindOptions = (
         sorters.forEach(([field, direction]) => {
             findOptions.orderBy = field.includes('.')
                 ? {
-                    ...findOptions.orderBy,
-                    ...parseSortFromStringToObject(field, direction)
-                }
+                      ...findOptions.orderBy,
+                      ...parseSortFromStringToObject(field, direction)
+                  }
                 : {
-                    ...findOptions.orderBy,
-                    [field]: direction
-                }
+                      ...findOptions.orderBy,
+                      [field]: direction
+                  }
         })
     }
 
@@ -180,7 +180,10 @@ export const transformToInfoObject = (resources: any, data: any) => {
                 ...acc[currVal.relation],
                 fieldsByTypeName: {
                     [currVal.relation]: {
-                        ...transformToInfoObject(resources, currVal.deep_populate)
+                        ...transformToInfoObject(
+                            resources,
+                            currVal.deep_populate
+                        )
                     }
                 }
             }
