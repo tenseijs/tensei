@@ -693,7 +693,10 @@ class Auth {
                                 )
                             }
 
-                            if (path === plural) {
+                            if (
+                                path === plural ||
+                                path === `${plural}__count`
+                            ) {
                                 return query.authorize(
                                     ({ user }) =>
                                         user &&
@@ -757,7 +760,7 @@ class Auth {
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
-                                        `insert:${slugSingular}`
+                                        `insert:${slugPlural}`
                                     )
                             )
                         }
@@ -767,7 +770,7 @@ class Auth {
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
-                                        `fetch:${slugSingular}`
+                                        `fetch:${slugPlural}`
                                     )
                             )
                         }
@@ -777,7 +780,7 @@ class Auth {
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
-                                        `show:${slugSingular}`
+                                        `show:${slugPlural}`
                                     )
                             )
                         }
@@ -790,7 +793,7 @@ class Auth {
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
-                                        `update:${slugSingular}`
+                                        `update:${slugPlural}`
                                     )
                             )
                         }
@@ -803,7 +806,7 @@ class Auth {
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]!.includes(
-                                        `delete:${slugSingular}`
+                                        `delete:${slugPlural}`
                                     )
                             )
                         }
@@ -1782,7 +1785,7 @@ class Auth {
         const validator = Utils.validator(
             this.resources.user,
             ctx.manager,
-            ctx.resourcesMap
+            ctx.req.resources
         )
 
         let [success, createUserPayload] = await validator.validate(

@@ -19,10 +19,8 @@ import {
 } from '@tensei/common'
 
 import {
-    getGraphQlInfoObject,
     parseQueryToFindOptions,
-    parseQueryToWhereOptions,
-    getFindOptionsPopulate
+    parseQueryToWhereOptions
 } from './populate-helpers'
 
 class Rest {
@@ -46,7 +44,7 @@ class Rest {
             total,
             page:
                 findOptions.offset ||
-                    (findOptions.offset === 0 && findOptions.limit)
+                (findOptions.offset === 0 && findOptions.limit)
                     ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
                     : 0,
             per_page: findOptions.limit ? findOptions.limit : 0,
@@ -122,7 +120,6 @@ class Rest {
                                     findOptions.populate || []
                                 )
 
-
                                 return response.formatter.created(entity)
                             }
                         )
@@ -158,8 +155,6 @@ class Rest {
                                     parseQueryToWhereOptions(query),
                                     findOptions
                                 )
-
-
 
                                 return response.formatter.ok(
                                     entities,
@@ -208,9 +203,7 @@ class Rest {
                                         `could not find ${modelName} with ID ${params.id}`
                                     )
                                 }
-                                return response.formatter.ok(
-                                    entity
-                                )
+                                return response.formatter.ok(entity)
                             }
                         )
                 )
@@ -274,9 +267,9 @@ class Rest {
                                     const relatedManyToOne = relatedResource.data.fields.find(
                                         f =>
                                             f.relatedProperty.type ===
-                                            resource.data.pascalCaseName &&
+                                                resource.data.pascalCaseName &&
                                             f.relatedProperty.reference ===
-                                            ReferenceType.MANY_TO_ONE
+                                                ReferenceType.MANY_TO_ONE
                                     )!
 
                                     const [
@@ -289,12 +282,7 @@ class Rest {
                                                 params.id,
                                             ...whereOptions
                                         },
-                                        {
-                                            ...findOptions,
-                                            populate: getFindOptionsPopulate(
-                                                findOptions
-                                            )
-                                        }
+                                        findOptions
                                     )
 
                                     return response.formatter.ok(
@@ -313,9 +301,9 @@ class Rest {
                                     const relatedManyToMany = relatedResource.data.fields.find(
                                         f =>
                                             f.relatedProperty.type ===
-                                            resource.data.pascalCaseName &&
+                                                resource.data.pascalCaseName &&
                                             f.relatedProperty.reference ===
-                                            ReferenceType.MANY_TO_MANY
+                                                ReferenceType.MANY_TO_MANY
                                     )!
 
                                     const [
@@ -343,9 +331,9 @@ class Rest {
 
                                 if (
                                     relatedField.relatedProperty.reference ===
-                                    ReferenceType.MANY_TO_ONE ||
+                                        ReferenceType.MANY_TO_ONE ||
                                     relatedField.relatedProperty.reference ===
-                                    ReferenceType.ONE_TO_ONE
+                                        ReferenceType.ONE_TO_ONE
                                 ) {
                                     const payload = ((await manager.findOneOrFail(
                                         resource.data.pascalCaseName,
@@ -517,29 +505,29 @@ class Rest {
                         ? route.config.path
                         : `/${route.config.path}`
 
-                        ; (app as any)[route.config.type.toLowerCase()](
-                            path,
+                    ;(app as any)[route.config.type.toLowerCase()](
+                        path,
 
-                            ...route.config.middleware.map(fn => AsyncHandler(fn)),
-                            AsyncHandler(
-                                async (
-                                    request: Request,
-                                    response: Response,
-                                    next: NextFunction
-                                ) => {
-                                    await this.authorizeResolver(
-                                        request as any,
-                                        route
-                                    )
+                        ...route.config.middleware.map(fn => AsyncHandler(fn)),
+                        AsyncHandler(
+                            async (
+                                request: Request,
+                                response: Response,
+                                next: NextFunction
+                            ) => {
+                                await this.authorizeResolver(
+                                    request as any,
+                                    route
+                                )
 
-                                    return next()
-                                }
-                            ),
-                            AsyncHandler(
-                                async (request: Request, response: Response) =>
-                                    route.config.handler(request, response)
-                            )
+                                return next()
+                            }
+                        ),
+                        AsyncHandler(
+                            async (request: Request, response: Response) =>
+                                route.config.handler(request, response)
                         )
+                    )
                 })
             })
     }

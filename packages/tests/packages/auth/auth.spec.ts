@@ -727,3 +727,41 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         'Your account is temporarily disabled.'
     )
 })
+
+test('registers new users with email/password based authentication', async () => {
+    const { app } = await setup([
+        auth().verifyEmails().csrf(false).user('Student').plugin(),
+        graphql().plugin()
+    ])
+
+    const client = Supertest(app)
+
+    const user = fakeUser()
+
+    const register_response = await client.post(`/graphql`).send({
+        query: gql`
+            mutation register_student($email: String!, $password: String!) {
+                register_student(
+                    object: { email: $email, password: $password }
+                ) {
+                    student {
+                        id
+                        email
+                        email_verified_at
+                    }
+                }
+            }
+        `,
+        variables: {
+            email: user.email,
+            password: 'password'
+        }
+    })
+
+    expect(register_response.status).toBe(200)
+    expect(register_response.body.data.register_student.student).toEqual({
+        id: expect.any(String),
+        email: user.email,
+        email_verified_at: null
+    })
+})
