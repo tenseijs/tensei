@@ -1,4 +1,4 @@
-name: Tests - @tensei/mail - express-session-mikro-orm
+name: Other packages
 
 on:
   push:
