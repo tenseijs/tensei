@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/tenseijs/tensei/compare/v0.5.0...v0.5.1) (2020-12-17)
+
+
+### Bug Fixes
+
+* **media:** fix packages required only by graphql package ([6a5737c](https://github.com/tenseijs/tensei/commit/6a5737cfc836ce362db0cf193067130a3eb8d7d7)), closes [#57](https://github.com/tenseijs/tensei/issues/57)
+
+
+
+
+
 # [0.5.0](https://github.com/tenseijs/tensei/compare/v0.4.4...v0.5.0) (2020-12-17)
 
 
