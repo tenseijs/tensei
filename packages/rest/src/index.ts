@@ -19,10 +19,8 @@ import {
 } from '@tensei/common'
 
 import {
-    getGraphQlInfoObject,
     parseQueryToFindOptions,
-    parseQueryToWhereOptions,
-    getFindOptionsPopulate
+    parseQueryToWhereOptions
 } from './populate-helpers'
 
 class Rest {
@@ -113,26 +111,13 @@ class Rest {
                                 const entity = manager.create(
                                     resource.data.pascalCaseName,
                                     body
-                                )
+                                ) as any
 
                                 await manager.persistAndFlush(entity)
 
                                 await manager.populate(
                                     [entity],
-                                    getFindOptionsPopulate(findOptions)
-                                )
-
-                                await Utils.graphql.populateFromResolvedNodes(
-                                    resources,
-                                    manager,
-                                    config.databaseConfig.type!,
-                                    resource,
-                                    getGraphQlInfoObject(
-                                        findOptions,
-                                        resources,
-                                        resource
-                                    ),
-                                    [entity]
+                                    findOptions.populate || []
                                 )
 
                                 return response.formatter.created(entity)
@@ -168,31 +153,11 @@ class Rest {
                                 ] = await manager.findAndCount(
                                     modelName,
                                     parseQueryToWhereOptions(query),
-                                    {
-                                        ...findOptions,
-                                        populate: getFindOptionsPopulate(
-                                            findOptions
-                                        )
-                                    }
-                                )
-
-                                await Utils.graphql.populateFromResolvedNodes(
-                                    resources,
-                                    manager,
-                                    config.databaseConfig.type!,
-                                    resource,
-                                    getGraphQlInfoObject(
-                                        findOptions,
-                                        resources,
-                                        resource
-                                    ),
-                                    entities
+                                    findOptions
                                 )
 
                                 return response.formatter.ok(
-                                    JSON.parse(
-                                        CircularJSON.stringify(entities)
-                                    ),
+                                    entities,
                                     this.getPageMetaFromFindOptions(
                                         total,
                                         findOptions
@@ -230,25 +195,7 @@ class Rest {
                                 const entity = await manager.findOne(
                                     modelName as EntityName<AnyEntity<any>>,
                                     params.id as FilterQuery<AnyEntity<any>>,
-                                    {
-                                        ...findOptions,
-                                        populate: getFindOptionsPopulate(
-                                            findOptions
-                                        )
-                                    }
-                                )
-
-                                await Utils.graphql.populateFromResolvedNodes(
-                                    resources,
-                                    manager,
-                                    config.databaseConfig.type!,
-                                    resource,
-                                    getGraphQlInfoObject(
-                                        findOptions,
-                                        resources,
-                                        resource
-                                    ),
-                                    [entity]
+                                    findOptions
                                 )
 
                                 if (!entity) {
@@ -256,9 +203,7 @@ class Rest {
                                         `could not find ${modelName} with ID ${params.id}`
                                     )
                                 }
-                                return response.formatter.ok(
-                                    JSON.parse(CircularJSON.stringify(entity))
-                                )
+                                return response.formatter.ok(entity)
                             }
                         )
                 )
@@ -337,31 +282,11 @@ class Rest {
                                                 params.id,
                                             ...whereOptions
                                         },
-                                        {
-                                            ...findOptions,
-                                            populate: getFindOptionsPopulate(
-                                                findOptions
-                                            )
-                                        }
-                                    )
-
-                                    await Utils.graphql.populateFromResolvedNodes(
-                                        resources,
-                                        manager,
-                                        config.databaseConfig.type!,
-                                        resource,
-                                        getGraphQlInfoObject(
-                                            findOptions,
-                                            resources,
-                                            resource
-                                        ),
-                                        results
+                                        findOptions
                                     )
 
                                     return response.formatter.ok(
-                                        JSON.parse(
-                                            CircularJSON.stringify(results)
-                                        ),
+                                        results,
                                         this.getPageMetaFromFindOptions(
                                             count,
                                             findOptions
@@ -392,31 +317,11 @@ class Rest {
                                             },
                                             ...whereOptions
                                         },
-                                        {
-                                            ...findOptions,
-                                            populate: getFindOptionsPopulate(
-                                                findOptions
-                                            )
-                                        }
-                                    )
-
-                                    await Utils.graphql.populateFromResolvedNodes(
-                                        resources,
-                                        manager,
-                                        config.databaseConfig.type!,
-                                        resource,
-                                        getGraphQlInfoObject(
-                                            findOptions,
-                                            resources,
-                                            resource
-                                        ),
-                                        results
+                                        findOptions
                                     )
 
                                     return response.formatter.ok(
-                                        JSON.parse(
-                                            CircularJSON.stringify(results)
-                                        ),
+                                        results,
                                         this.getPageMetaFromFindOptions(
                                             count,
                                             findOptions
@@ -449,32 +354,10 @@ class Rest {
                                         {
                                             id: payload.id
                                         },
-                                        {
-                                            ...findOptions,
-                                            populate: getFindOptionsPopulate(
-                                                findOptions
-                                            )
-                                        }
+                                        findOptions
                                     )
 
-                                    await Utils.graphql.populateFromResolvedNodes(
-                                        resources,
-                                        manager,
-                                        config.databaseConfig.type!,
-                                        resource,
-                                        getGraphQlInfoObject(
-                                            findOptions,
-                                            resources,
-                                            resource
-                                        ),
-                                        [result]
-                                    )
-
-                                    return response.formatter.ok(
-                                        JSON.parse(
-                                            CircularJSON.stringify(result)
-                                        )
-                                    )
+                                    return response.formatter.ok(result)
                                 }
                             }
                         )
@@ -529,12 +412,7 @@ class Rest {
                                 const entity = await manager.findOne(
                                     resource.data.pascalCaseName,
                                     params.id,
-                                    {
-                                        ...findOptions,
-                                        populate: getFindOptionsPopulate(
-                                            findOptions
-                                        )
-                                    }
+                                    findOptions
                                 )
 
                                 if (!entity) {
@@ -546,19 +424,6 @@ class Rest {
                                 manager.assign(entity, body)
 
                                 await manager.persistAndFlush(entity)
-
-                                await Utils.graphql.populateFromResolvedNodes(
-                                    resources,
-                                    manager,
-                                    config.databaseConfig.type!,
-                                    resource,
-                                    getGraphQlInfoObject(
-                                        findOptions,
-                                        resources,
-                                        resource
-                                    ),
-                                    [entity]
-                                )
 
                                 return response.formatter.ok(entity)
                             }
