@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      max-parallel: 6
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Node.js v-${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: yarn
+      - name: Build packages
+        run: yarn build
+      - name: Run package tests on sqlite database
+        run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
+        env:
+          DATABASE_TYPE: sqlite
+          DATABASE_NAME: tensei

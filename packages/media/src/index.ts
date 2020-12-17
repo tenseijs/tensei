@@ -1,5 +1,4 @@
 import { snakeCase } from 'change-case'
-import { graphqlUploadExpress } from 'graphql-upload'
 import { plugin, belongsTo, hasMany, hasOne } from '@tensei/common'
 
 import { routes } from './routes'
@@ -17,6 +16,8 @@ class MediaLibrary {
         maxFileSize: 10000000,
         transformations: []
     }
+
+    private usesGraphQl: boolean = false
 
     disk(disk: string) {
         this.config.disk = disk
@@ -38,6 +39,12 @@ class MediaLibrary {
 
     path(path: string) {
         this.config.path = path.startsWith('/') ? path.substring(1) : path
+
+        return this
+    }
+
+    graphql() {
+        this.usesGraphQl = true
 
         return this
     }
@@ -77,27 +84,30 @@ class MediaLibrary {
 
                 extendResources([MediaResource])
 
-                extendGraphQlQueries(queries(this.config))
-
                 extendRoutes(routes(this.config))
 
-                extendGraphQlTypeDefs([
-                    typeDefs(
-                        MediaResource.data.snakeCaseName,
-                        MediaResource.data.snakeCaseNamePlural
-                    )
-                ])
+                if (this.usesGraphQl) {
+                    extendGraphQlQueries(queries(this.config))
+                    extendGraphQlTypeDefs([
+                        typeDefs(
+                            MediaResource.data.snakeCaseName,
+                            MediaResource.data.snakeCaseNamePlural
+                        )
+                    ])
 
-                app.use((request, response, next) => {
-                    if (request.path === `/${this.config.path}`) {
-                        return next()
-                    }
+                    const { graphqlUploadExpress } = require('graphql-upload')
 
-                    return graphqlUploadExpress({
-                        maxFiles: this.config.maxFiles,
-                        maxFileSize: this.config.maxFileSize
-                    })(request, response, next)
-                })
+                    app.use((request, response, next) => {
+                        if (request.path === `/${this.config.path}`) {
+                            return next()
+                        }
+
+                        return graphqlUploadExpress({
+                            maxFiles: this.config.maxFiles,
+                            maxFileSize: this.config.maxFileSize
+                        })(request, response, next)
+                    })
+                }
             }
         )
     }

@@ -1,5 +1,4 @@
 import { plugin } from '@tensei/common'
-import { SesDriver } from '../drivers/Ses'
 
 import { SesConfig } from '@tensei/mail'
 
@@ -63,6 +62,7 @@ class SesPlugin {
     plugin() {
         return plugin('Ses Mailer')
             .register(({ extendMailer }) => {
+                const { SesDriver } = require('../drivers/Ses')
                 extendMailer(this.config.driver, (_, __, config) => new SesDriver(config), this.config)
             })
     }

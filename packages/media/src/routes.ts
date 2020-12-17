@@ -1,6 +1,4 @@
-import { ReadStream } from 'fs'
 import { route } from '@tensei/common'
-import { WriteStream } from 'fs-capacitor'
 import { MediaLibraryPluginConfig } from './types'
 
 import { process, handle } from './helpers/process-request'

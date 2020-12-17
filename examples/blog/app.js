@@ -64,7 +64,7 @@ module.exports = tensei()
                 secret: process.env.LINKEDIN_SECRET,
             })
             .plugin(),
-        media().plugin(),
+        media().graphql().plugin(),
         graphql()
             .middlewareOptions({
                 cors: {
