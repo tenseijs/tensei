@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/tenseijs/tensei/compare/v0.4.4...v0.5.0) (2020-12-17)
+
+
+### Bug Fixes
+
+* **core:** fix all package licesnes ([92ddc6a](https://github.com/tenseijs/tensei/commit/92ddc6a7ef0fa2e1397336147ec674974d89c1a8))
+* **graphql:** fix graphQL API ([962827b](https://github.com/tenseijs/tensei/commit/962827b3f447294e7fb4f1e7fe18a9058f644771))
+* **rest:** fix rest API endpoints ([408f6aa](https://github.com/tenseijs/tensei/commit/408f6aa64bb766c927e03758d309ab9f28f2f922))
+
+
+### Features
+
+* **auth:** cleanup auth for docs ([9d5c5bd](https://github.com/tenseijs/tensei/commit/9d5c5bde2b2412c7ee23dddce728f7fd89e4c52e))
+* **media:** add REST API upload support to the media package ([a496f3b](https://github.com/tenseijs/tensei/commit/a496f3b9de90c56acc7c4dee5967a9f095045826))
+
+
+### Reverts
+
+* **mail:** fix mail package folder casing ([5308805](https://github.com/tenseijs/tensei/commit/5308805b447d10ecd96e2834d95e93221daa268c))
+
+
+
+
+
 ## [0.4.4](https://github.com/tenseijs/tensei/compare/v0.4.3...v0.4.4) (2020-12-07)
 
 

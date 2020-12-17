@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/tenseijs/tensei/compare/v0.4.4...v0.5.0) (2020-12-17)
+
+
+### Bug Fixes
+
+* **auth:** fix authorization for rest api routes ([a1f2132](https://github.com/tenseijs/tensei/commit/a1f2132b62e6630eb68898da7cc4b51776a87c4a))
+* **cms:** fix border radius on cms components ([9fe4aaa](https://github.com/tenseijs/tensei/commit/9fe4aaa7c684b98923d158cea314b5000ebd5c0c))
+* **core:** fix all package licesnes ([92ddc6a](https://github.com/tenseijs/tensei/commit/92ddc6a7ef0fa2e1397336147ec674974d89c1a8))
+* **docs:** fix docs package ([7421935](https://github.com/tenseijs/tensei/commit/7421935d9e25f2a117ed0463bb7fc153f9a83acc))
+* **graphql:** fix graphQL API ([962827b](https://github.com/tenseijs/tensei/commit/962827b3f447294e7fb4f1e7fe18a9058f644771))
+* **graphql:** fix middleware system in graphql plugin ([c858847](https://github.com/tenseijs/tensei/commit/c8588472614ed616751f3a7f4f2936feab428331))
+* **graphql:** silent typescript error about csrfToken() method ([f885ef6](https://github.com/tenseijs/tensei/commit/f885ef66233b33745e1f8b7181468d2c5765935d))
+* **mail:** casing ([edc9858](https://github.com/tenseijs/tensei/commit/edc98588be83e69b5785252f0067e8d7d5928fe9))
+* **mail:** change SparkPost casing to correct file name ([941190e](https://github.com/tenseijs/tensei/commit/941190e8665a0102fab65f8eae4977431c17f030))
+* **mail:** fix failing tests in mail package ([bf1065f](https://github.com/tenseijs/tensei/commit/bf1065f547e8ae1381628c958db165e73bfd5bad))
+* **mail:** fix file & folder casing ([b1a3a34](https://github.com/tenseijs/tensei/commit/b1a3a34d823e68742b7c38ec0cac1e263de5eff0))
+* **mail:** fix file name consistency rule ([c0cbb2a](https://github.com/tenseijs/tensei/commit/c0cbb2a73257f3c6e2e86abcaaf30cebda2bfe1c))
+* **mail:** fix imports in tests ([cf28b6f](https://github.com/tenseijs/tensei/commit/cf28b6fb1b0e17e4357bd48340741d7b3c2c1974))
+* **mail:** fix mail casing ([d8525c3](https://github.com/tenseijs/tensei/commit/d8525c3b746b81f200eee56b19a70092fe52b9ba))
+* **mail:** fix mail folder casing ([48aa446](https://github.com/tenseijs/tensei/commit/48aa446cb41a8e58a3e82e791e40b136593c1d92))
+* **mail:** fix mail folders ([aaff564](https://github.com/tenseijs/tensei/commit/aaff56490c39985c024e888babd7ae0c74ab7054))
+* **media:** skip failing test (file truncated) ([3c3e751](https://github.com/tenseijs/tensei/commit/3c3e75121643e65d5f27d361d8cf54d32333eb8b))
+* **rest:** cleanup rest package ([2aff0a0](https://github.com/tenseijs/tensei/commit/2aff0a016cb70cd8c4f1e6acb56f1898317473a2))
+* **rest:** fix broken API paths ([50f0839](https://github.com/tenseijs/tensei/commit/50f0839db472082f952e73e9f5b55166322659a7))
+* **rest:** fix rest API endpoints ([408f6aa](https://github.com/tenseijs/tensei/commit/408f6aa64bb766c927e03758d309ab9f28f2f922))
+* **update-rest-package:** ensure that deep populate can populate for multiple on the same level ([fc8da73](https://github.com/tenseijs/tensei/commit/fc8da736ecdca6ed8c5ad9352a60a5cbe26f8548))
+
+
+### Features
+
+* add new components for cms ([db26903](https://github.com/tenseijs/tensei/commit/db26903d950acb69658e71f6dbd0c5d2f7264854))
+* **auth:** cleanup auth for docs ([9d5c5bd](https://github.com/tenseijs/tensei/commit/9d5c5bde2b2412c7ee23dddce728f7fd89e4c52e))
+* **mail:** add Ses and Smtp support for mail driver ([6fd7e51](https://github.com/tenseijs/tensei/commit/6fd7e51eae5364af1e4c4f194d71cee2ec72ce1b))
+* **mail:** pull in latest version of @adonis/mail into @tensei/mail package ([7b2d3c2](https://github.com/tenseijs/tensei/commit/7b2d3c2ee3da360e0cc613b1a684cb2a1ddbf84d))
+* **media:** add REST API upload support to the media package ([a496f3b](https://github.com/tenseijs/tensei/commit/a496f3b9de90c56acc7c4dee5967a9f095045826))
+* **revert-deep-populate-feature-2:** take out deep populate feature from the rest package ([1e71775](https://github.com/tenseijs/tensei/commit/1e7177524787541482e94d5da524bcd4ccd3032e))
+* add validations ([0908618](https://github.com/tenseijs/tensei/commit/090861894ed0157ca55a966da06f310f09386a8e))
+
+
+### Reverts
+
+* **mail:** fix mail package folder casing ([5308805](https://github.com/tenseijs/tensei/commit/5308805b447d10ecd96e2834d95e93221daa268c))
+* **mail:** fix mail package folder casing ([9e27067](https://github.com/tenseijs/tensei/commit/9e270677700ac68ac693b83809e65cbbff3605bd))
+
+
+
+
+
 ## [0.4.4](https://github.com/tenseijs/tensei/compare/v0.4.3...v0.4.4) (2020-12-07)
 
 

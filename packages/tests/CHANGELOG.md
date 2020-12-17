@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/tenseijs/tensei/compare/v0.4.4...v0.5.0) (2020-12-17)
+
+
+### Bug Fixes
+
+* **auth:** fix authorization for rest api routes ([a1f2132](https://github.com/tenseijs/tensei/commit/a1f2132b62e6630eb68898da7cc4b51776a87c4a))
+* **docs:** fix docs package ([7421935](https://github.com/tenseijs/tensei/commit/7421935d9e25f2a117ed0463bb7fc153f9a83acc))
+* **graphql:** fix graphQL API ([962827b](https://github.com/tenseijs/tensei/commit/962827b3f447294e7fb4f1e7fe18a9058f644771))
+* **graphql:** fix middleware system in graphql plugin ([c858847](https://github.com/tenseijs/tensei/commit/c8588472614ed616751f3a7f4f2936feab428331))
+* **media:** skip failing test (file truncated) ([3c3e751](https://github.com/tenseijs/tensei/commit/3c3e75121643e65d5f27d361d8cf54d32333eb8b))
+* **rest:** cleanup rest package ([2aff0a0](https://github.com/tenseijs/tensei/commit/2aff0a016cb70cd8c4f1e6acb56f1898317473a2))
+* **rest:** fix broken API paths ([50f0839](https://github.com/tenseijs/tensei/commit/50f0839db472082f952e73e9f5b55166322659a7))
+* **rest:** fix rest API endpoints ([408f6aa](https://github.com/tenseijs/tensei/commit/408f6aa64bb766c927e03758d309ab9f28f2f922))
+
+
+### Features
+
+* **auth:** cleanup auth for docs ([9d5c5bd](https://github.com/tenseijs/tensei/commit/9d5c5bde2b2412c7ee23dddce728f7fd89e4c52e))
+* **mail:** add Ses and Smtp support for mail driver ([6fd7e51](https://github.com/tenseijs/tensei/commit/6fd7e51eae5364af1e4c4f194d71cee2ec72ce1b))
+* **media:** add REST API upload support to the media package ([a496f3b](https://github.com/tenseijs/tensei/commit/a496f3b9de90c56acc7c4dee5967a9f095045826))
+* add validations ([0908618](https://github.com/tenseijs/tensei/commit/090861894ed0157ca55a966da06f310f09386a8e))
+
+
+### Reverts
+
+* **mail:** fix mail package folder casing ([5308805](https://github.com/tenseijs/tensei/commit/5308805b447d10ecd96e2834d95e93221daa268c))
+
+
+
+
+
 ## [0.4.4](https://github.com/tenseijs/tensei/compare/v0.4.3...v0.4.4) (2020-12-07)
 
 
