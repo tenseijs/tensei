@@ -234,7 +234,7 @@ export class MailManager
 	 * is invoked internally when a new driver instance is required
 	 */
 	protected createSparkpost(_: string, config: any) {
-		const { SparkPostDriver } = require('./drivers/SparkPost')
+		const { SparkPostDriver } = require('./drivers/Sparkpost')
 		return new SparkPostDriver(config, this.logger)
 	}
 
