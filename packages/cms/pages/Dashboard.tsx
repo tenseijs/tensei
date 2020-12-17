@@ -245,7 +245,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                         <div className="py-6">
                             <div className="max-w-full mx-auto px-4 sm:px-6 md:px-8">
                                 {/* Replace with your content */}
-                                <CreateResource />
+                                <Resource />
                                 {/* /End replace */}
                             </div>
                         </div>

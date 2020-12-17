@@ -636,7 +636,10 @@ class Auth {
                                 return resolve(parent, args, context, info)
                             }
                         )
-                        if (query.config.resource) {
+                        if (
+                            query.config.resource &&
+                            this.config.rolesAndPermissions
+                        ) {
                             const { path, internal } = query.config
                             const {
                                 snakeCaseNamePlural: plural,
@@ -735,7 +738,11 @@ class Auth {
                             return next()
                         }
                     ])
-                    if (route.config.resource && !this.config.cms) {
+                    if (
+                        route.config.resource &&
+                        !this.config.cms &&
+                        this.config.rolesAndPermissions
+                    ) {
                         const { resource, id } = route.config
 
                         const { slugSingular, slugPlural } = resource.data

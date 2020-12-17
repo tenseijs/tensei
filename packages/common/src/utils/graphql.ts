@@ -1,4 +1,3 @@
-import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import { ResourceContract, FilterOperators } from '@tensei/common'
 import { EntityManager, ReferenceType, Configuration } from '@mikro-orm/core'
 
@@ -42,6 +41,8 @@ export const getFindOptionsFromArgs = (args: any) => {
 }
 
 export const getParsedInfo = (ql: any) => {
+    const { parseResolveInfo } = require('graphql-parse-resolve-info')
+
     const parsedInfo = parseResolveInfo(ql, {
         keepRoot: false
     }) as any

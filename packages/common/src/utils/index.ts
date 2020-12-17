@@ -1,7 +1,7 @@
 import { Validator } from './Validator'
-import { EntityManager, ReferenceType } from '@mikro-orm/core'
 import { ResourceContract } from '@tensei/core'
 import { FilterOperators } from '@tensei/common'
+import { EntityManager, ReferenceType } from '@mikro-orm/core'
 
 export const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
 export const filterOperators: FilterOperators[] = [

@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from 'react'
-import { Heading, Button, Paragraph. TextInput } from '@tensei/components'
+import { Heading, Button, Paragraph, TextInput } from '@tensei/components'
 
 interface CreateResourceProps {}
 
@@ -30,12 +30,10 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
                     </Paragraph>
 
                     <div className="w-full md:w-2/3 mt-10">
-                        <TextInput label="Title" />
+                        <TextInput label="Title" name="title" id="id" />
                     </div>
                 </div>
-                <div className="bg-white rounded-lg p-12 mt-10">
-                    5
-                </div>
+                <div className="bg-white rounded-lg p-12 mt-10">5</div>
             </div>
         </Fragment>
     )

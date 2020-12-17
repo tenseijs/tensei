@@ -17,8 +17,9 @@ module.exports = {
                 'tensei-darkest': '#21185A',
 
                 'tensei-gray-900': '#61677C',
-                'tensei-gray-700': '#949BAF',
                 'tensei-gray-800': '#D3DCE0',
+                'tensei-gray-700': '#949BAF',
+                'tensei-gray-600': '#F0F1F4',
                 'tensei-gray-400': '#D4D7DF',
                 'tensei-gray-300': '#EAEBEF',
                 'tensei-gray-100': '#F7F9FA',

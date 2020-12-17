@@ -7,7 +7,18 @@ import Modal, { ConfirmModal } from './Modal'
 import { Heading, Paragraph } from './Typography'
 import TextInput from './TextInput'
 
-export { Table, Select, SearchInput, Modal, ConfirmModal, Button, StackedList, Heading, Paragraph, TextInput }
+export {
+    Table,
+    Select,
+    SearchInput,
+    Modal,
+    ConfirmModal,
+    Button,
+    StackedList,
+    Heading,
+    Paragraph,
+    TextInput
+}
 
 export * from './types'
 
