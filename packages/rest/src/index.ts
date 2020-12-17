@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import CircularJSON from 'circular-json'
 import {
     FindOptions,
     FilterQuery,

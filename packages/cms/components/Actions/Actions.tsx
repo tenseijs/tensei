@@ -36,7 +36,7 @@ const Actions: React.FC<ActionsProps> = ({}) => {
                         >
                             <Menu.Items
                                 static
-                                className="z-50 absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-sm shadow-sm outline-none"
+                                className="z-50 absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-sm outline-none"
                             >
                                 <div className="py-1">
                                     <Menu.Item>

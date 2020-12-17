@@ -462,6 +462,8 @@ export class Tensei implements TenseiContract {
                     payload.errors = error.errors
                 }
 
+                this.ctx.logger.error(error)
+
                 return response.status(error.status || 500).json(payload)
             }
         )

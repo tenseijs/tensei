@@ -29,23 +29,23 @@ const Button: React.FC<ButtonProps> = ({
 
     const classes = {
         primary:
-            'flex items-center w-full md:w-auto leading-5 px-8 py-2 text-white sm:text-sm bg-tensei-primary rounded-sm font-medium',
+            'flex items-center w-full md:w-auto leading-5 px-8 py-2 text-white sm:text-sm bg-tensei-primary rounded-md font-medium',
         danger:
-            'inline-flex justify-center w-full rounded-sm border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm',
+            'inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-10 py-2 bg-red-600 text-base font-medium text-white transition ease-in-out hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm',
         clear:
-            'mt-3 w-full inline-flex justify-center rounded-sm border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+            'mt-3 w-full inline-flex justify-center rounded-md border border-tensei-gray-600 px-10 py-2 bg-white text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
     }
 
     if (clear) {
-        props.className = `${props.className} ${classes.clear}`
+        props.className = `${props.className || ''} ${classes.clear}`
     }
 
     if (primary) {
-        props.className = `${props.className} ${classes.primary}`
+        props.className = `${props.className || ''} ${classes.primary}`
     }
 
     if (danger) {
-        props.className = `${props.className} ${classes.danger}`
+        props.className = `${props.className || ''} ${classes.danger}`
     }
 
     return <button {...props}>{children}</button>
