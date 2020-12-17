@@ -31,3 +31,5 @@ jobs:
         run: yarn build
       - name: Run package tests on mongodb database
         run: cd /home/runner/work/tensei/tensei/packages/tests && yarn test
+        env:
+          DATABASE_TYPE: mongo
