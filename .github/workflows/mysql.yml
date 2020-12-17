@@ -1,4 +1,4 @@
-name: Tests
+name: Mysql 8.0
 
 on:
   push:
