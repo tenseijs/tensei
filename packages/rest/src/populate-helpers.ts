@@ -32,18 +32,6 @@ export const parseQueryToFindOptions = (
             query.page >= 1 ? (query.page - 1) * findOptions.limit : 0
     }
 
-    if (query.deep_populate) {
-        const strigifiedQuery = qs.stringify(query.deep_populate, {
-            encode: false
-        })
-        const parsedQuery = qs.parse(strigifiedQuery, {
-            arrayLimit: 100,
-            depth: 20
-        })
-
-        findOptions.populate = parsedQuery as any
-    }
-
     if (query.populate) {
         findOptions.populate = query.populate.split(',')
     }
