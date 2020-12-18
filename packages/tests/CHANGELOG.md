@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.2](https://github.com/tenseijs/tensei/compare/v0.5.1...v0.5.2) (2020-12-18)
+
+
+### Bug Fixes
+
+* **core:** fix failing events tests for sql databases ([0af2922](https://github.com/tenseijs/tensei/commit/0af2922f65c52e4f2fe8103ecfa5b17d8cb98926))
+
+
+### Features
+
+* **core:** add full support for events using emittery ([8db1d43](https://github.com/tenseijs/tensei/commit/8db1d4371e20fe9bd10ff22941d6bdba7becf470))
+
+
+
+
+
 ## [0.5.1](https://github.com/tenseijs/tensei/compare/v0.5.0...v0.5.1) (2020-12-17)
 
 

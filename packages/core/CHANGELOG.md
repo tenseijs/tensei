@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.2](https://github.com/tenseijs/tensei/compare/v0.5.1...v0.5.2) (2020-12-18)
+
+
+### Features
+
+* **core:** add full support for events using emittery ([8db1d43](https://github.com/tenseijs/tensei/commit/8db1d4371e20fe9bd10ff22941d6bdba7becf470))
+
+
+
+
+
 ## [0.5.1](https://github.com/tenseijs/tensei/compare/v0.5.0...v0.5.1) (2020-12-17)
 
 **Note:** Version bump only for package @tensei/core
