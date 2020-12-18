@@ -169,15 +169,23 @@ test('emits inserted event after resource is inserted', async () => {
 
     const response = await client.post('/api/users').send(fake_user)
 
+    const expectedPayload = {}
+
     expect(response.status).toBe(201)
     expect(response.body.data).toEqual({
-        id: expect.any(String),
+        id: expect.anything(),
         full_name: fake_user.full_name,
         password: fake_user.password,
         email: fake_user.email,
-        posts: []
+        posts: [],
+        created_at: expect.any(String),
+        updated_at: expect.any(String),
     })
-    expect(listener).toHaveBeenCalledWith(response.body.data)
+    expect(listener).toHaveBeenCalledWith({
+        ...response.body.data,
+        created_at: new Date(response.body.data.created_at),
+        updated_at: new Date(response.body.data.updated_at),
+    })
 })
 
 test('emits updated event after resource is updated', async () => {
@@ -210,18 +218,28 @@ test('emits updated event after resource is updated', async () => {
         full_name: updatedUserPayload.full_name
     })
 
-    expect(response.status).toBe(200)
-    expect(response.body.data).toEqual({
-        id: expect.any(String),
+    const expectedPayload: any = {
         full_name: updatedUserPayload.full_name,
         password: user.password,
         email: updatedUserPayload.email,
-        posts: [],
-        updated_at: expect.any(String)
+    }
+
+    if (orm.config.get('type') === 'mongo') {
+        expectedPayload.posts = []
+    }
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({
+        id: expect.anything(),
+        ...expectedPayload,
+        updated_at: expect.any(String),
+        created_at: expect.any(String)
     })
     expect(listener).toHaveBeenCalledWith({
-        ...response.body.data,
-        updated_at: new Date(response.body.data.updated_at)
+        id: response.body.data.id,
+        ...expectedPayload,
+        updated_at: new Date(response.body.data.updated_at),
+        created_at: new Date(response.body.data.created_at)
     })
 })
 
@@ -251,5 +269,9 @@ test('emits deleted event after resource is deleted', async () => {
     const response = await client.delete(`/api/users/${user.id}`)
 
     expect(response.status).toBe(200)
-    expect(listener).toHaveBeenCalledWith(response.body.data)
+    expect(listener).toHaveBeenCalledWith({
+        ...response.body.data,
+        created_at: new Date(response.body.data.created_at),
+        updated_at: new Date(response.body.data.updated_at),
+    })
 })
