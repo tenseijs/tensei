@@ -117,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                     </div>
                 </div>
                 <div className="flex flex-col w-0 flex-1 overflow-hidden">
-                    <div className="relative z-10 flex-shrink-0 flex h-20 bg-white shadow-sm border-b border-tensei-gray-800">
+                    <div className="relative z-10 flex-shrink-0 flex h-20 bg-white border-b border-tensei-gray-800">
                         <button
                             onClick={() => {
                                 setOffCanvasOpen(!offCanvasOpen)
@@ -239,13 +239,13 @@ const Dashboard: React.FC<DashboardProps> = () => {
                         </div>
                     </div>
                     <main
-                        className="flex-1 relative overflow-y-auto focus:outline-none"
                         tabIndex={0}
+                        className="flex-1 relative overflow-y-auto focus:outline-none"
                     >
                         <div className="py-6">
-                            <div className="max-w-full mx-auto px-4 sm:px-6 md:px-8">
+                            <div className="max-w-full mx-auto px-6 sm:px-10 md:px-12">
                                 {/* Replace with your content */}
-                                <Resource />
+                                <ResourceDetail />
                                 {/* /End replace */}
                             </div>
                         </div>

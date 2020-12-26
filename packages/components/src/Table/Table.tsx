@@ -87,7 +87,7 @@ const Table: React.FC<TableProps> = ({
                                     selected.length === rows.length
                                 }
                                 onChange={onSelectAllCheckboxChange}
-                                className="text-tensei-primary"
+                                className="text-tensei-primary rounded-sm border border-tensei-gray-400"
                             />
                         </th>
                     ) : null}
@@ -116,7 +116,7 @@ const Table: React.FC<TableProps> = ({
                                     checked={selected.some(
                                         r => r[key] === row[key]
                                     )}
-                                    className="text-tensei-primary"
+                                    className="text-tensei-primary rounded-sm border border-tensei-gray-400"
                                     onChange={event =>
                                         onCheckboxChange(row, event)
                                     }
@@ -127,7 +127,7 @@ const Table: React.FC<TableProps> = ({
                             <Fragment
                                 key={`${column.field}-${row[key]}-${index}`}
                             >
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {column.render
                                         ? column.render(row[column.field], row)
                                         : row[column.field]}

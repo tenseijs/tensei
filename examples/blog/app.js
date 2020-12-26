@@ -1,10 +1,10 @@
 require('dotenv').config()
 const { rest } = require('@tensei/rest')
+const { auth } = require('@tensei/auth')
 const { media } = require('@tensei/media')
 const { ses, smtp } = require('@tensei/mail')
 const { graphql } = require('@tensei/graphql')
-const { auth, USER_EVENTS } = require('@tensei/auth')
-const { tensei, route, event } = require('@tensei/core')
+const { tensei, route } = require('@tensei/core')
 
 const Tag = require('./resources/Tag')
 const Post = require('./resources/Post')
@@ -88,11 +88,3 @@ module.exports = tensei()
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',
     })
-    .events([
-        event(USER_EVENTS.REGISTERED).listen(async ({ payload }) => {
-            console.log(
-                '#################',
-                await ctx.orm.em.count('Customer', {})
-            )
-        }),
-    ])

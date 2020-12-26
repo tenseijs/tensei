@@ -4,7 +4,8 @@ import {
     SearchInput,
     Select,
     ConfirmModal,
-    Button
+    Button,
+    Heading
 } from '@tensei/components'
 
 import Actions from '../../components/Actions'
@@ -22,6 +23,9 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                 title="Delete Account?"
                 description="Are you sure you want to delete this account? This action cannot be reversed."
             />
+            <Heading as="h2" className="mb-5">
+                Posts
+            </Heading>
             <div className="flex flex-wrap justify-between items-center w-full">
                 <div className="flex flex-wrap w-full md:w-auto">
                     <SearchInput className="md:mr-5 w-full mb-3 md:mb-0 md:w-96" />
@@ -115,7 +119,7 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                 <div className="flex flex-col">
                     <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                            <div className="shadow-sm overflow-hidden border-b border-tensei-gray-800 sm:rounded-lg">
+                            <div className="overflow-hidden border-b border-tensei-gray-600 rounded-lg">
                                 <Table
                                     columns={[
                                         {

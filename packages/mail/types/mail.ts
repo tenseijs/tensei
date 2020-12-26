@@ -693,7 +693,7 @@ declare module '@tensei/mail' {
 		): BaseMailerContract<Mailer>
 	}
 	const Mail: MailManagerContract
-	export const mail: (config: MailConfig, logger: Config['logger']) => MailManagerContract
+	export const mail: (config: MailConfig, logger: Config['logger'], mailsPath?: string) => MailManagerContract
 	export default Mail
 
 	class SesPlugin {

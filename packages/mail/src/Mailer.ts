@@ -88,16 +88,6 @@ export class Mailer<Name extends keyof MailersList> implements MailerContract<Na
 		 */
 		const response = await (this.driver as any).send(mail.message, mail.config)
 
-		/**
-		 * Emit event
-		 */
-		// this.manager.emitter.emit('mail:sent', {
-		// 	message: mail.message,
-		// 	views: Object.keys(mail.views).map((view) => (mail.views as any)[view].template),
-		// 	mailer: mail.mailer,
-		// 	response: response,
-		// })
-
 		return (response as unknown) as Promise<MailerResponseType<Name>>
 	}
 

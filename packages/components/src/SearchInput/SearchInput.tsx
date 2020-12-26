@@ -20,9 +20,9 @@ const SearchInput: React.FC<SearchInputProps> = ({
                 <input
                     id={name}
                     name={name}
-                    className="rounded-sm block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none focus:placeholder-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm"
-                    placeholder="Search"
                     type="search"
+                    placeholder="Search"
+                    className="rounded-md block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <svg
