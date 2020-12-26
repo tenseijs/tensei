@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.3](https://github.com/tenseijs/tensei/compare/v0.5.2...v0.5.3) (2020-12-26)
+
+
+### Bug Fixes
+
+* **cms:** fix color issues in cms components ([e14cd5b](https://github.com/tenseijs/tensei/commit/e14cd5bc3487fdceca06da70a5506d52f5711ed1))
+
+
+
+
+
 ## [0.5.2](https://github.com/tenseijs/tensei/compare/v0.5.1...v0.5.2) (2020-12-18)
 
 

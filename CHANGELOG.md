@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.3](https://github.com/tenseijs/tensei/compare/v0.5.2...v0.5.3) (2020-12-26)
+
+
+### Bug Fixes
+
+* **cms:** fix color issues in cms components ([e14cd5b](https://github.com/tenseijs/tensei/commit/e14cd5bc3487fdceca06da70a5506d52f5711ed1))
+* **core:** add root method to define project root ([29d4893](https://github.com/tenseijs/tensei/commit/29d4893d547945eda8a1abfa7a6b69f6ff4dd131))
+* **mail:** add types for new mail method signature ([6cca703](https://github.com/tenseijs/tensei/commit/6cca703d11a4fc9f993cc12b4ca5f00fdfd99fce))
+
+
+
+
+
 ## [0.5.2](https://github.com/tenseijs/tensei/compare/v0.5.1...v0.5.2) (2020-12-18)
 
 
