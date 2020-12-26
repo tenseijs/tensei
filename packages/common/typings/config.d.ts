@@ -295,6 +295,7 @@ declare module '@tensei/common/config' {
         events: {
             [key: string]: EventContract<DataPayload>
         }
+        root: string
         emitter: Emittery
         serverUrl: string
         clientUrl: string

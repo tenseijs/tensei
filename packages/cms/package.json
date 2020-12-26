@@ -9,10 +9,10 @@
     ],
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,tsx,css}'",
-        "dev:css": "NODE_ENV=development yarn build:css",
+        "dev:css": "cross-env NODE_ENV=development yarn build:css",
         "build:css": "tailwind build css/app.css -o css/app.min.css",
         "dev": "yarn dev:css && webpack --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
-        "build": "NODE_ENV=production webpack --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "build": "cross-env NODE_ENV=production webpack --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -23,6 +23,7 @@
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
         "@types/react-router-dom": "^5.1.6",
+        "cross-env": "^7.0.3",
         "laravel-mix": "^5.0.9",
         "laravel-mix-react-typescript-extension": "^1.0.3",
         "react": "^16.14.0",

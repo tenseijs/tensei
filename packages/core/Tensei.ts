@@ -68,13 +68,18 @@ export class Tensei implements TenseiContract {
         mailer: 'ethereal' as never
     }
 
-    public ctx: Config
+    public ctx: Config = {} as any
 
     public constructor() {
+        this.initCtx()
+    }
+
+    private initCtx() {
         this.ctx = {
             schemas: [],
             routes: [],
             events: {},
+            root: process.cwd(),
             emitter: new Emittery(),
             name: process.env.APP_NAME || 'Tensei',
             graphQlQueries: [],
@@ -82,7 +87,6 @@ export class Tensei implements TenseiContract {
             graphQlMiddleware: [],
             rootBoot: () => {},
             rootRegister: () => {},
-            viewsPath: Path.resolve(process.cwd(), 'emails'),
             storage: new StorageManager(this.defaultStorageConfig),
             storageConfig: this.defaultStorageConfig,
             databaseClient: null,
@@ -130,7 +134,7 @@ export class Tensei implements TenseiContract {
             }
         } as any
 
-        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger)
+        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger, this.ctx.root)
     }
 
     public setConfigOnResourceFields() {
@@ -145,12 +149,6 @@ export class Tensei implements TenseiContract {
 
     public routes(routes: RouteContract[]) {
         this.ctx.routes = [...this.ctx.routes, ...routes]
-
-        return this
-    }
-
-    public viewsPath(path: string) {
-        this.ctx.viewsPath = path
 
         return this
     }
@@ -372,7 +370,7 @@ export class Tensei implements TenseiContract {
             }
         }
 
-        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger)
+        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger, this.ctx.root)
 
         this.ctx.mailer.extend(name, driver)
     }
@@ -679,7 +677,13 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    private emit(name: string) {}
+    public root(root: string) {
+        this.ctx.root = root
+
+        this.initCtx()
+
+        return this
+    }
 }
 
 export const tensei = () => new Tensei()

@@ -28,7 +28,7 @@ declare module '@tensei/core' {
         events(events: EventContract<DataPayload>[]): this
         serverUrl(url: string): this
         clientUrl(url: string): this
-        viewsPath(path: string): this
+        root(path: string): this
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this
@@ -48,7 +48,7 @@ declare module '@tensei/core' {
         events(events: EventContract<DataPayload>[]): this
         serverUrl(url: string): this
         clientUrl(url: string): this
-        viewsPath(path: string): this
+        root(path: string): this
         resources(resources: ResourceContract[]): this
         dashboards(dashboards: DashboardContract[]): this
         plugins(plugins: PluginContract[]): this

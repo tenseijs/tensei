@@ -14,11 +14,9 @@ const Comment = require('./resources/Comment')
 const Reaction = require('./resources/Reaction')
 
 module.exports = tensei()
-    // .dashboardPath('tensei')
     .resources([Tag, Post, User, Comment, Editor, Reaction])
     .clientUrl('https://google.com')
     .serverUrl('http://localhost:5000')
-    // .defaultStorageDriver('local')
     .graphQlQueries([])
     .routes([
         route('Get products')

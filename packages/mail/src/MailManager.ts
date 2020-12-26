@@ -96,7 +96,7 @@ export class MailManager
 	 */
 	public view = {} as any
 
-	constructor(private config: MailConfig, public logger: Config['logger']) {
+	constructor(private config: MailConfig, public logger: Config['logger'], private mailsPath?: string) {
 		super({} as any)
 		this.BaseMailer.mail = this
 		this.setupViews()
@@ -118,7 +118,7 @@ export class MailManager
 		const supercharged = new Supercharged()
 
 		edge.mount(
-			Path.resolve(process.cwd(), 'emails')
+			 this.mailsPath || Path.resolve(process.cwd(), 'mails')
 		)
 
 		edge.use(supercharged.wire, { recurring: !cacheViews })
