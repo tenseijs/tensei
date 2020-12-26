@@ -64058,11 +64058,11 @@ var StackedList = function StackedList(_ref) {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, fields.map(function (field, index) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
       key: field.inputName,
-      className: classnames__WEBPACK_IMPORTED_MODULE_1___default()('w-full flex items-center flex-wrap px-6 py-3', {
+      className: classnames__WEBPACK_IMPORTED_MODULE_1___default()('w-full flex items-center flex-wrap px-6 py-4', {
         'border-t border-tensei-gray-300': index !== 0
       })
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-      className: "w-1/4 capitalize"
+      className: "w-1/4 capitalize text-tensei-gray-700"
     }, "some text"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
       className: "w-3/4"
     }, "some more text"));
@@ -64247,9 +64247,9 @@ var SearchInput = function SearchInput(_ref) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
     id: name,
     name: name,
-    className: "rounded-sm block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none focus:placeholder-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm",
+    type: "search",
     placeholder: "Search",
-    type: "search"
+    className: "rounded-md block w-full pr-10 pl-3 py-2 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: "absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("svg", {
@@ -64383,7 +64383,7 @@ var Table = function Table(_ref) {
     type: "checkbox",
     checked: selected.length !== 0 && selected.length === rows.length,
     onChange: onSelectAllCheckboxChange,
-    className: "text-tensei-primary"
+    className: "text-tensei-primary rounded-sm border border-tensei-gray-400"
   })) : null, columns.map(function (column) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
       key: column.field,
@@ -64402,7 +64402,7 @@ var Table = function Table(_ref) {
       checked: selected.some(function (r) {
         return r[key] === row[key];
       }),
-      className: "text-tensei-primary",
+      className: "text-tensei-primary rounded-sm border border-tensei-gray-400",
       onChange: function onChange(event) {
         return onCheckboxChange(row, event);
       }
@@ -64410,7 +64410,7 @@ var Table = function Table(_ref) {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0__["Fragment"], {
         key: "".concat(column.field, "-").concat(row[key], "-").concat(index)
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", {
-        className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+        className: "px-6 py-4 whitespace-nowrap text-sm"
       }, column.render ? column.render(row[column.field], row) : row[column.field]));
     }));
   })));
@@ -64485,7 +64485,7 @@ var Heading = function Heading(_ref) {
       className = _ref.className;
   var Element = as;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Element, {
-    className: classnames__WEBPACK_IMPORTED_MODULE_1___default()(className, 'font-bold text-xl tracking-wide')
+    className: classnames__WEBPACK_IMPORTED_MODULE_1___default()('font-bold text-xl tracking-wide text-tensei-darkest', className)
   }, children);
 };
 
@@ -64827,7 +64827,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = __importStar(__webpack_require__(/*! react */ "../../node_modules/react/index.js"));
 var components_1 = __webpack_require__(/*! @tensei/components */ "../components/lib/index.js");
 var Nav_1 = __importDefault(__webpack_require__(/*! ../components/Nav */ "./components/Nav/index.ts"));
-var Resource_1 = __importDefault(__webpack_require__(/*! ./Resource */ "./pages/Resource/index.ts"));
+var ShowResource_1 = __importDefault(__webpack_require__(/*! ./ShowResource */ "./pages/ShowResource/index.ts"));
 var Dashboard = function () {
     var _a = react_1.useState(false), offCanvasOpen = _a[0], setOffCanvasOpen = _a[1];
     return (react_1.default.createElement(react_1.default.Fragment, null,
@@ -64859,7 +64859,7 @@ var Dashboard = function () {
                         react_1.default.createElement("div", { className: "mt-5 flex-1 flex flex-col" },
                             react_1.default.createElement(Nav_1.default, { className: "flex-1 space-y-1 mt-3" }))))),
             react_1.default.createElement("div", { className: "flex flex-col w-0 flex-1 overflow-hidden" },
-                react_1.default.createElement("div", { className: "relative z-10 flex-shrink-0 flex h-20 bg-white shadow-sm border-b border-tensei-gray-800" },
+                react_1.default.createElement("div", { className: "relative z-10 flex-shrink-0 flex h-20 bg-white border-b border-tensei-gray-800" },
                     react_1.default.createElement("button", { onClick: function () {
                             setOffCanvasOpen(!offCanvasOpen);
                         }, className: "px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden" },
@@ -64898,10 +64898,10 @@ var Dashboard = function () {
                                                                 : 'text-gray-700') + " flex justify-between w-full px-4 py-2 text-sm leading-5 text-left" }, "Sign out"));
                                                     }))))));
                                 }))))),
-                react_1.default.createElement("main", { className: "flex-1 relative overflow-y-auto focus:outline-none", tabIndex: 0 },
+                react_1.default.createElement("main", { tabIndex: 0, className: "flex-1 relative overflow-y-auto focus:outline-none" },
                     react_1.default.createElement("div", { className: "py-6" },
-                        react_1.default.createElement("div", { className: "max-w-full mx-auto px-4 sm:px-6 md:px-8" },
-                            react_1.default.createElement(Resource_1.default, null))))))));
+                        react_1.default.createElement("div", { className: "max-w-full mx-auto px-6 sm:px-10 md:px-12" },
+                            react_1.default.createElement(ShowResource_1.default, null))))))));
 };
 exports.default = Dashboard;
 
@@ -64947,6 +64947,7 @@ var Resource = function (_a) {
     var _b = react_1.useState(null), deleting = _b[0], setDeleting = _b[1];
     return (react_1.default.createElement(react_1.default.Fragment, null,
         react_1.default.createElement(components_1.ConfirmModal, { open: !!deleting, setOpen: function () { return setDeleting(null); }, title: "Delete Account?", description: "Are you sure you want to delete this account? This action cannot be reversed." }),
+        react_1.default.createElement(components_1.Heading, { as: "h2", className: 'mb-5' }, "Posts"),
         react_1.default.createElement("div", { className: "flex flex-wrap justify-between items-center w-full" },
             react_1.default.createElement("div", { className: "flex flex-wrap w-full md:w-auto" },
                 react_1.default.createElement(components_1.SearchInput, { className: "md:mr-5 w-full mb-3 md:mb-0 md:w-96" }),
@@ -64969,7 +64970,7 @@ var Resource = function (_a) {
             react_1.default.createElement("div", { className: "flex flex-col" },
                 react_1.default.createElement("div", { className: "-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8" },
                     react_1.default.createElement("div", { className: "py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8" },
-                        react_1.default.createElement("div", { className: "shadow-sm overflow-hidden border-b border-tensei-gray-800 sm:rounded-lg" },
+                        react_1.default.createElement("div", { className: "overflow-hidden border-b border-tensei-gray-600 rounded-lg" },
                             react_1.default.createElement(components_1.Table, { columns: [
                                     {
                                         title: 'Name',
@@ -65057,6 +65058,85 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = void 0;
 var Resource_1 = __webpack_require__(/*! ./Resource */ "./pages/Resource/Resource.tsx");
 Object.defineProperty(exports, "default", { enumerable: true, get: function () { return __importDefault(Resource_1).default; } });
+
+
+/***/ }),
+
+/***/ "./pages/ShowResource/ShowResource.tsx":
+/*!*********************************************!*\
+  !*** ./pages/ShowResource/ShowResource.tsx ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var react_1 = __importStar(__webpack_require__(/*! react */ "../../node_modules/react/index.js"));
+var components_1 = __webpack_require__(/*! @tensei/components */ "../components/lib/index.js");
+var Resource_1 = __importDefault(__webpack_require__(/*! ../Resource */ "./pages/Resource/index.ts"));
+var ResourceDetail = function (_a) {
+    var _b = react_1.useState(null), deleting = _b[0], setDeleting = _b[1];
+    return (react_1.default.createElement(react_1.default.Fragment, null,
+        react_1.default.createElement(components_1.ConfirmModal, { open: !!deleting, setOpen: function () { return setDeleting(null); }, title: "Delete Account?", description: "Are you sure you want to delete this account? This action cannot be reversed." }),
+        react_1.default.createElement("header", { className: "flex justify-between items-center mt-5" },
+            react_1.default.createElement(components_1.Heading, { as: "h1" }, "Tag details"),
+            react_1.default.createElement("div", { className: "flex w-2/4 justify-end" },
+                react_1.default.createElement(components_1.Button, { danger: true }, "Delete"),
+                react_1.default.createElement(components_1.Button, { primary: true, className: "ml-7" }, "Edit"))),
+        react_1.default.createElement("div", { className: "bg-white rounded-lg shadow-sm border-tensei-gray-100 border my-10" },
+            react_1.default.createElement(components_1.StackedList, { fields: [
+                    { inputName: 'name' },
+                    { inputName: 'name' },
+                    { inputName: 'name' },
+                    { inputName: 'name' },
+                    { inputName: 'name' }
+                ] })),
+        react_1.default.createElement(Resource_1.default, null)));
+};
+exports.default = ResourceDetail;
+
+
+/***/ }),
+
+/***/ "./pages/ShowResource/index.ts":
+/*!*************************************!*\
+  !*** ./pages/ShowResource/index.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = void 0;
+var ShowResource_1 = __webpack_require__(/*! ./ShowResource */ "./pages/ShowResource/ShowResource.tsx");
+Object.defineProperty(exports, "default", { enumerable: true, get: function () { return __importDefault(ShowResource_1).default; } });
 
 
 /***/ }),

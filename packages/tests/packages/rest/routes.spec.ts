@@ -179,12 +179,12 @@ test('emits inserted event after resource is inserted', async () => {
         email: fake_user.email,
         posts: [],
         created_at: expect.any(String),
-        updated_at: expect.any(String),
+        updated_at: expect.any(String)
     })
     expect(listener).toHaveBeenCalledWith({
         ...response.body.data,
         created_at: new Date(response.body.data.created_at),
-        updated_at: new Date(response.body.data.updated_at),
+        updated_at: new Date(response.body.data.updated_at)
     })
 })
 
@@ -221,7 +221,7 @@ test('emits updated event after resource is updated', async () => {
     const expectedPayload: any = {
         full_name: updatedUserPayload.full_name,
         password: user.password,
-        email: updatedUserPayload.email,
+        email: updatedUserPayload.email
     }
 
     if (orm.config.get('type') === 'mongo') {
@@ -272,6 +272,6 @@ test('emits deleted event after resource is deleted', async () => {
     expect(listener).toHaveBeenCalledWith({
         ...response.body.data,
         created_at: new Date(response.body.data.created_at),
-        updated_at: new Date(response.body.data.updated_at),
+        updated_at: new Date(response.body.data.updated_at)
     })
 })

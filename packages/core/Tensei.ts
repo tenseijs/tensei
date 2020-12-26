@@ -678,8 +678,6 @@ export class Tensei implements TenseiContract {
 
         return this
     }
-
-    private emit(name: string) {}
 }
 
 export const tensei = () => new Tensei()

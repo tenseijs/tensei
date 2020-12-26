@@ -1855,7 +1855,8 @@ class Auth {
     private resendVerificationEmail = async ({
         manager,
         user,
-        emitter
+        emitter,
+        mailer
     }: ApiContext) => {
         if (!user.email_verification_token) {
             return false

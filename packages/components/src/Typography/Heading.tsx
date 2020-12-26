@@ -9,7 +9,12 @@ export interface HeadingProps {
 const Heading: React.FC<HeadingProps> = ({ children, as, className }) => {
     const Element = as!
     return (
-        <Element className={cn(className, 'font-bold text-xl tracking-wide')}>
+        <Element
+            className={cn(
+                'font-bold text-xl tracking-wide text-tensei-darkest',
+                className
+            )}
+        >
             {children}
         </Element>
     )
