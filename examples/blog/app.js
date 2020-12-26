@@ -14,6 +14,7 @@ const Comment = require('./resources/Comment')
 const Reaction = require('./resources/Reaction')
 
 module.exports = tensei()
+    .root(__dirname)
     .resources([Tag, Post, User, Comment, Editor, Reaction])
     .clientUrl('https://google.com')
     .serverUrl('http://localhost:5000')

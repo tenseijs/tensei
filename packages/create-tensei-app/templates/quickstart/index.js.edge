@@ -3,9 +3,9 @@ const { tensei } = require('@tensei/core')
 const { {{ api_package }} } = require('@tensei/{{ api_package }}')
 
 tensei()
+    .root(__dirname)
     .plugins([
         auth()
-            .noCookies()
             .plugin(),
         {{ api_package }}()
             .plugin()
@@ -24,3 +24,4 @@ tensei()
         @endif
     })
     .start()
+    .catch(console.error)
