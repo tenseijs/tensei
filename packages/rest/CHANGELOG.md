@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.7](https://github.com/tenseijs/tensei/compare/v0.5.6...v0.5.7) (2020-12-27)
+
+**Note:** Version bump only for package @tensei/rest
+
+
+
+
+
 ## [0.5.3](https://github.com/tenseijs/tensei/compare/v0.5.2...v0.5.3) (2020-12-26)
 
 **Note:** Version bump only for package @tensei/rest
