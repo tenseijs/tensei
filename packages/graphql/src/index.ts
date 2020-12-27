@@ -434,7 +434,7 @@ ${this.getOrderByQueryForResource(resource, config)}
     }
     `
         } else {
-            this.schemaString = `type Query {_: Boolean}`
+            this.schemaString = `${this.schemaString}type Query {_: Boolean}`
         }
 
         this.schemaString = `${this.schemaString}
