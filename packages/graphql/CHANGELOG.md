@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.6](https://github.com/tenseijs/tensei/compare/v0.5.5...v0.5.6) (2020-12-27)
+
+
+### Bug Fixes
+
+* **graphql:** fix graphql types when no queries are available ([68a6bd7](https://github.com/tenseijs/tensei/commit/68a6bd73e01d744ce3df61035476e02012b07721))
+
+
+
+
+
 ## [0.5.5](https://github.com/tenseijs/tensei/compare/v0.5.4...v0.5.5) (2020-12-27)
 
 

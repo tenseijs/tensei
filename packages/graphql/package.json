@@ -1,6 +1,6 @@
 {
     "name": "@tensei/graphql",
-    "version": "0.5.5",
+    "version": "0.5.6",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
