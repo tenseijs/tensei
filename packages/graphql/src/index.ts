@@ -419,8 +419,7 @@ ${this.getOrderByQueryForResource(resource, config)}
 `
         })
 
-        const resourcesWithQueryTypes = resources
-            
+        const resourcesWithQueryTypes = resources.filter(r => !r.isHiddenOnApi() && !r.data.hideOnFetchApi)
 
         if (resourcesWithQueryTypes.length > 0) {
             this.schemaString = `${this.schemaString}type Query {${resourcesWithQueryTypes.map(resource => {
