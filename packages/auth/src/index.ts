@@ -316,8 +316,8 @@ class Auth {
                       ]
                     : [])
             ])
-            .hideOnUpdateApi()
             .hideOnFetchApi()
+            .hideOnDeleteApi()
             .beforeCreate(async ({ entity, em }) => {
                 const payload: DataPayload = {
                     password: entity.password

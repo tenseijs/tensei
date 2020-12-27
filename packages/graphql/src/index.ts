@@ -419,19 +419,25 @@ ${this.getOrderByQueryForResource(resource, config)}
 `
         })
 
-        this.schemaString = `${this.schemaString}type Query {${resources
-            .filter(r => !r.isHiddenOnApi() && !r.data.hideOnFetchApi)
-            .map(resource => {
-                return `${this.defineFetchSingleQueryForResource(
-                    resource,
-                    config
-                )}${this.defineFetchAllQueryForResource(
-                    resource,
-                    config
-                )}${this.defineFetchAllCountQueryForResource(resource, config)}`
-            })}
-}
-`
+        const resourcesWithQueryTypes = resources
+            
+
+        if (resourcesWithQueryTypes.length > 0) {
+            this.schemaString = `${this.schemaString}type Query {${resourcesWithQueryTypes.map(resource => {
+                    return `${this.defineFetchSingleQueryForResource(
+                        resource,
+                        config
+                    )}${this.defineFetchAllQueryForResource(
+                        resource,
+                        config
+                    )}${this.defineFetchAllCountQueryForResource(resource, config)}`
+                })}
+    }
+    `
+        } else {
+            this.schemaString = `type Query {_: Boolean}`
+        }
+
         this.schemaString = `${this.schemaString}
 
         enum query_order {
