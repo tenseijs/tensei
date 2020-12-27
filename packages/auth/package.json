@@ -1,6 +1,6 @@
 {
     "name": "@tensei/auth",
-    "version": "0.5.3",
+    "version": "0.5.5",
     "main": "./build/index.js",
     "license": "MIT",
     "files": [
