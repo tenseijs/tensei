@@ -1,39 +1,59 @@
-import React, { useState, Fragment } from 'react'
-import { Heading, Button, Paragraph, TextInput } from '@tensei/components'
+import React, { Fragment } from 'react'
+import {
+    Heading,
+    Button,
+    TextInput,
+    Textarea,
+    Checkbox,
+    DatePicker
+} from '@tensei/components'
 
 interface CreateResourceProps {}
 
 const CreateResource: React.FC<CreateResourceProps> = ({}) => {
     return (
         <Fragment>
-            <header className="flex flex-wrap items-center justify-between">
-                <Heading as="h1" className="text-tensei-darkest">
-                    Update Tag
-                </Heading>
+            <header className="flex items-center justify-between">
+                <Heading as="h1">Update Tag</Heading>
 
-                <div className="flex w-2/4 justify-end">
+                <div className="flex">
                     <Button
                         clear
                         className="bg-tensei-gray-300 border-tensei-gray-300"
                     >
                         Delete
                     </Button>
-                    <Button primary className="ml-7">
+                    <Button primary className="ml-5">
                         Update
                     </Button>
                 </div>
             </header>
-            <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2 flex flex-col flex-wrap mt-10 bg-white rounded-lg p-12">
-                    <Paragraph className="tensei-gray-700">
-                        Put in information about the new
-                    </Paragraph>
-
-                    <div className="w-full md:w-2/3 mt-10">
-                        <TextInput label="Title" name="title" id="id" />
+            <div className="flex flex-wrap md:flex-nowrap mt-10">
+                <div className="flex flex-col flex-wrap w-full md:w-3/4 bg-white border border-tensei-gray-600 rounded-lg p-8 md:mr-4">
+                    <div className="mb-5">
+                        <TextInput
+                            label="Title"
+                            name="title"
+                            id="title"
+                            placeholder="Enter your title"
+                        />
+                    </div>
+                    <div className="mb-5">
+                        <Textarea
+                            label="Body"
+                            name="body"
+                            id="body"
+                            placeholder="Provide a full body"
+                        />
+                    </div>
+                    <div className="mb-5">
+                        <Checkbox label="Is active" id="is_active" />
+                    </div>
+                    <div className="mb-5">
+                        <DatePicker />
                     </div>
                 </div>
-                <div className="bg-white rounded-lg p-12 mt-10">5</div>
+                <div className="bg-white border border-tensei-gray-600 rounded-lg p-8 w-full md:w-1/4 mt-5 md:mt-0"></div>
             </div>
         </Fragment>
     )

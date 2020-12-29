@@ -8,6 +8,9 @@ export default {
         'src/Modal/index.ts',
         'src/Modal/ConfirmModal.tsx',
 
+        'src/DatePicker/index.ts',
+
+        'src/Icon/index.ts',
         'src/Button/index.ts',
         'src/Select/index.ts',
         'src/SearchInput/index.ts',
@@ -23,7 +26,7 @@ export default {
         format: 'esm',
         sourcemap: true
     },
-    plugins: [Ts()],
+    plugins: [Ts({})],
     preserveModules: true,
     external: ['react', '@apollo/client', 'react-dom', '@headlessui/react']
 }

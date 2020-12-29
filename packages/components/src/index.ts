@@ -1,23 +1,29 @@
+import Icon from './Icon'
 import Table from './Table'
 import Select from './Select'
 import Button from './Button'
-import SearchInput from './SearchInput'
+import Checkbox from './Checkbox'
+import Textarea from './Textarea'
+import TextInput from './TextInput'
 import { StackedList } from './List'
+import SearchInput from './SearchInput'
 import Modal, { ConfirmModal } from './Modal'
 import { Heading, Paragraph } from './Typography'
-import TextInput from './TextInput'
 
 export {
+    Icon,
     Table,
-    Select,
-    SearchInput,
     Modal,
-    ConfirmModal,
+    Select,
     Button,
-    StackedList,
     Heading,
+    Checkbox,
+    Textarea,
+    TextInput,
     Paragraph,
-    TextInput
+    SearchInput,
+    ConfirmModal,
+    StackedList
 }
 
 export * from './types'

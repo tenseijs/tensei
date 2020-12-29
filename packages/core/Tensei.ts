@@ -134,7 +134,11 @@ export class Tensei implements TenseiContract {
             }
         } as any
 
-        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger, this.ctx.root)
+        this.ctx.mailer = mail(
+            this.mailerConfig,
+            this.ctx.logger,
+            this.ctx.root
+        )
     }
 
     public setConfigOnResourceFields() {
@@ -370,7 +374,11 @@ export class Tensei implements TenseiContract {
             }
         }
 
-        this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger, this.ctx.root)
+        this.ctx.mailer = mail(
+            this.mailerConfig,
+            this.ctx.logger,
+            this.ctx.root
+        )
 
         this.ctx.mailer.extend(name, driver)
     }

@@ -78,9 +78,8 @@ export const populateFromResolvedNodes = async (
 ) => {
     if (!data.length) return
 
-    const relationshipFields = resource?.data.fields.filter(
-        f => f.relatedProperty.reference
-    ) || []
+    const relationshipFields =
+        resource?.data.fields.filter(f => f.relatedProperty.reference) || []
 
     const relatedManyToOneFields = relationshipFields.filter(
         field => field.relatedProperty.reference === ReferenceType.MANY_TO_ONE

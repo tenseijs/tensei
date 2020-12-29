@@ -11,7 +11,7 @@
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "declaration": true,
+        "declaration": false,
         "moduleResolution": "node"
     },
     "include": ["src"],

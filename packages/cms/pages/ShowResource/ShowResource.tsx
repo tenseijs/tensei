@@ -1,13 +1,22 @@
 import React, { useState } from 'react'
+import { RouteComponentProps } from 'react-router-dom'
 import { ConfirmModal, Heading, StackedList, Button } from '@tensei/components'
 
-import Actions from '../../components/Actions'
 import Resource from '../Resource'
 
 export interface ResourceDetailProps {}
 
-const ResourceDetail: React.FC<ResourceDetailProps> = ({}) => {
+const ResourceDetail: React.FC<
+    ResourceDetailProps &
+        RouteComponentProps<{
+            id: string
+        }>
+> = ({ match }) => {
     const [deleting, setDeleting] = useState<any>(null)
+
+    if (['create', 'update'].includes(match.params.id)) {
+        return null
+    }
 
     return (
         <>
@@ -22,7 +31,7 @@ const ResourceDetail: React.FC<ResourceDetailProps> = ({}) => {
 
                 <div className="flex w-2/4 justify-end">
                     <Button danger>Delete</Button>
-                    <Button primary className="ml-7">
+                    <Button primary className="ml-5">
                         Edit
                     </Button>
                 </div>
@@ -31,11 +40,11 @@ const ResourceDetail: React.FC<ResourceDetailProps> = ({}) => {
             <div className="bg-white rounded-lg shadow-sm border-tensei-gray-100 border my-10">
                 <StackedList
                     fields={[
+                        { inputName: 'id' },
                         { inputName: 'name' },
-                        { inputName: 'name' },
-                        { inputName: 'name' },
-                        { inputName: 'name' },
-                        { inputName: 'name' }
+                        { inputName: 'email' },
+                        { inputName: 'description' },
+                        { inputName: 'phone_number' }
                     ]}
                 />
             </div>

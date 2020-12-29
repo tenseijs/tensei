@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { TenseiState } from '@tensei/components'
 import { ApolloClient, InMemoryCache } from '@apollo/client'
 
@@ -32,10 +33,16 @@ class Core {
         } as TenseiState
     })()
 
+    components = {
+        Link
+    }
+
     client = new ApolloClient({
         uri: this.state.ctx.apiPath,
         cache: new InMemoryCache()
     })
+
+    getPath = (path: string) => `/${this.state.ctx.dashboardPath}/${path}`
 
     boot = () => {}
 }

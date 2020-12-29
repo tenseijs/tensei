@@ -419,18 +419,22 @@ ${this.getOrderByQueryForResource(resource, config)}
 `
         })
 
-        const resourcesWithQueryTypes = resources.filter(r => !r.isHiddenOnApi() && !r.data.hideOnFetchApi)
+        const resourcesWithQueryTypes = resources.filter(
+            r => !r.isHiddenOnApi() && !r.data.hideOnFetchApi
+        )
 
         if (resourcesWithQueryTypes.length > 0) {
-            this.schemaString = `${this.schemaString}type Query {${resourcesWithQueryTypes.map(resource => {
-                    return `${this.defineFetchSingleQueryForResource(
-                        resource,
-                        config
-                    )}${this.defineFetchAllQueryForResource(
-                        resource,
-                        config
-                    )}${this.defineFetchAllCountQueryForResource(resource, config)}`
-                })}
+            this.schemaString = `${
+                this.schemaString
+            }type Query {${resourcesWithQueryTypes.map(resource => {
+                return `${this.defineFetchSingleQueryForResource(
+                    resource,
+                    config
+                )}${this.defineFetchAllQueryForResource(
+                    resource,
+                    config
+                )}${this.defineFetchAllCountQueryForResource(resource, config)}`
+            })}
     }
     `
         } else {

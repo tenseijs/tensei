@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
     Table,
     SearchInput,
@@ -112,7 +113,9 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                     </Button>
                 </div>
 
-                <Button primary>Add Resource</Button>
+                <Link to={window.Tensei.getPath('resources/beans/create')}>
+                    <Button primary>Add Resource</Button>
+                </Link>
             </div>
 
             <div className="mt-8">
@@ -142,15 +145,34 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                                         {
                                             title: (
                                                 <span className="sr-only">
-                                                    Actions
+                                                    View
                                                 </span>
                                             ),
                                             field: 'actions',
-                                            className: 'relative px-6 py-3',
 
                                             render: (value, row) => (
                                                 <div className="flex items-center">
-                                                    <Actions />
+                                                    <Link
+                                                        to={window.Tensei.getPath(
+                                                            'resources/books/123'
+                                                        )}
+                                                        className="flex mr-4 items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full"
+                                                    >
+                                                        <span className="sr-only">
+                                                            View resource
+                                                        </span>
+
+                                                        <svg
+                                                            className="fill-current text-tensei-gray-700"
+                                                            width={14}
+                                                            height={14}
+                                                            viewBox="0 0 14 14"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
+                                                        </svg>
+                                                    </Link>
                                                     <button className="flex mr-4 items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full">
                                                         <span className="sr-only">
                                                             Edit

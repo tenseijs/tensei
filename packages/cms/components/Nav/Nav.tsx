@@ -1,4 +1,6 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { Icon } from '@tensei/components'
 
 export interface NavProps {
     className: string
@@ -8,8 +10,8 @@ const Nav: React.FC<NavProps> = ({ className }) => {
     return (
         <nav className={className}>
             <div className="w-full">
-                <div className="px-6 w-full flex items-center justify-between text-white cursor-pointer group">
-                    <span className="font-medium text-sm">DASHBOARDS</span>
+                <div className="px-10 w-full flex items-center justify-between text-white cursor-pointer group">
+                    <span className="font-medium text-xs">Dashboards</span>
                     <svg
                         width={12}
                         height={12}
@@ -21,18 +23,26 @@ const Nav: React.FC<NavProps> = ({ className }) => {
                     </svg>
                 </div>
 
-                <div className="w-full flex items-center justify-between text-sm text-white bg-tensei-primary py-3 px-6 cursor-pointer mt-4 bg-opacity-10">
-                    Main
-                </div>
-                <div className="w-full flex items-center justify-between text-sm text-tensei-gray-700 py-3 px-6 cursor-pointer">
-                    Tags
-                </div>
-                <div className="w-full flex items-center justify-between text-sm text-tensei-gray-700 py-3 px-6 cursor-pointer">
-                    Posts
-                </div>
-                <div className="w-full flex items-center justify-between text-sm text-tensei-gray-700 py-3 px-6 cursor-pointer">
-                    Performance
-                </div>
+                <Link
+                    to={window.Tensei.getPath('resources/beans')}
+                    className="relative w-full flex items-center justify-between text-xs text-white bg-tensei-primary py-3 px-10 cursor-pointer mt-4 bg-opacity-10"
+                >
+                    <div className="flex items-center">
+                        <Icon active icon="tag" />{' '}
+                        <span className="ml-4">Main</span>
+                    </div>
+
+                    <span className="absolute h-full w-1 left-0 bg-tensei-primary"></span>
+                </Link>
+
+                <Link
+                    to={window.Tensei.getPath('resources/okto')}
+                    className="w-full flex items-center justify-between text-xs text-tensei-gray-700 py-3 px-10 cursor-pointer transition ease-in-out hover:bg-tensei-primary hover:bg-opacity-10"
+                >
+                    <div className="flex items-center">
+                        <Icon icon="grid" /> <span className="ml-4">Main</span>
+                    </div>
+                </Link>
             </div>
         </nav>
     )

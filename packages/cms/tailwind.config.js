@@ -13,6 +13,8 @@ module.exports = {
             },
             colors: {
                 'tensei-primary': '#2346F8',
+
+                'tensei-primary-darker': '#243de1',
                 'tensei-secondary': '#33C5FF',
                 'tensei-darkest': '#21185A',
 

@@ -8,6 +8,7 @@ export interface ButtonProps {
     primary?: boolean
     danger?: boolean
     className?: string
+    as?: React.ReactElement
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -29,7 +30,7 @@ const Button: React.FC<ButtonProps> = ({
 
     const classes = {
         primary:
-            'flex items-center w-full md:w-auto leading-5 px-8 py-2 text-white sm:text-sm bg-tensei-primary rounded-md font-medium',
+            'flex items-center w-full md:w-auto leading-5 px-8 py-2 text-white sm:text-sm bg-tensei-primary rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out hover:bg-tensei-primary-darker',
         danger:
             'inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-10 py-2 bg-red-600 text-base font-medium text-white transition ease-in-out hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm',
         clear:

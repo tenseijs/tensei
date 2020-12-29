@@ -36,6 +36,7 @@
         "indicative": "^7.4.4",
         "luxon": "^1.25.0",
         "pluralize": "^8.0.0",
+        "react-flatpickr": "^3.10.6",
         "signale": "^1.4.0"
     },
     "publishConfig": {

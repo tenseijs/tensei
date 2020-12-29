@@ -29,6 +29,7 @@ export interface TenseiState {
     admin: User
     ctx: {
         apiPath: string
+        dashboardPath: string
     }
     permissions: {
         [key: string]: boolean
@@ -54,5 +55,6 @@ export interface ResourceContract {
 export interface Tensei {
     boot: () => void
     state: TenseiState
+    getPath: (path: string) => string
     client: ApolloClient<NormalizedCacheObject>
 }

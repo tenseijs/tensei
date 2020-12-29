@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
+import { Route } from 'react-router-dom'
 import { Transition, Menu } from '@tensei/components'
 
-import Nav from '../components/Nav'
 import Resource from './Resource'
+import Nav from '../components/Nav'
 import ResourceDetail from './ShowResource'
 import CreateResource from './CreateResource'
 
@@ -86,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                         </div>
                                     </div>
                                     <div className="mt-5 flex-1 h-0 overflow-y-auto">
-                                        <Nav className="px-2 space-y-1" />
+                                        <Nav className="md:px-2 space-y-1" />
                                     </div>
                                 </div>
                             )}
@@ -244,9 +245,34 @@ const Dashboard: React.FC<DashboardProps> = () => {
                     >
                         <div className="py-6">
                             <div className="max-w-full mx-auto px-6 sm:px-10 md:px-12">
-                                {/* Replace with your content */}
-                                <ResourceDetail />
-                                {/* /End replace */}
+                                <Route
+                                    exact
+                                    component={Resource}
+                                    path={window.Tensei.getPath(
+                                        'resources/:resource'
+                                    )}
+                                />
+                                <Route
+                                    exact
+                                    component={CreateResource}
+                                    path={window.Tensei.getPath(
+                                        'resources/:resource/create'
+                                    )}
+                                />
+                                <Route
+                                    exact
+                                    component={CreateResource}
+                                    path={window.Tensei.getPath(
+                                        'resources/:resource/:id/update'
+                                    )}
+                                />
+                                <Route
+                                    exact
+                                    component={ResourceDetail}
+                                    path={window.Tensei.getPath(
+                                        'resources/:resource/:id'
+                                    )}
+                                />
                             </div>
                         </div>
                     </main>
