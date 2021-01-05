@@ -71,7 +71,7 @@ class SmtpPlugin {
     plugin() {
         return plugin('Smtp Mailer')
             .register(({ extendMailer }) => {
-                extendMailer(this.config.driver, (_, __, config) => new SmtpDriver(config), this.config)
+                extendMailer(this.config.driver, (_, __, config) => new SmtpDriver(config as any), this.config)
             })
     }
 }
