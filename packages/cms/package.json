@@ -11,7 +11,7 @@
         "prettier": "prettier --write './**/*.{js,json,ts,tsx,css}'",
         "dev:css": "cross-env NODE_ENV=development yarn build:css",
         "dev": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
-        "build": "cross-env NODE_ENV=production webpack --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "build": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.12.1",
