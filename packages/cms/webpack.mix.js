@@ -7,6 +7,7 @@ mix.options({
     }
 })
 
-mix.ts('app.tsx', 'public/app.js')
-    .postCss('css/app.css', 'public/app.css', [require('tailwindcss')])
+mix.extract(['react', 'react-dom', 'react-router-dom'])
+    .ts('main.tsx', 'public/')
+    .postCss('css/styles.css', 'public/', [require('tailwindcss')])
     .copy('public/', Path.resolve('./', '..', 'core', 'build', 'public'))

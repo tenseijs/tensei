@@ -1,11 +1,16 @@
 import React, { useState } from 'react'
-import { Route } from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 import { Transition, Menu } from '@tensei/components'
 
-import Resource from './Resource'
 import Nav from '../components/Nav'
-import ResourceDetail from './ShowResource'
+
+import FourOhFour from './404'
+import Resource from './Resource'
+import Settings from './Settings'
+import ResourceIndex from './ResourceIndex'
+import ResourceDetail from './ResourceDetail'
 import CreateResource from './CreateResource'
+import PageWrapper from '../components/PageWrapper'
 
 export interface DashboardProps {}
 
@@ -101,7 +106,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                 <div className="hidden bg-tensei-darkest md:flex md:flex-shrink-0">
                     <div className="flex flex-col w-64">
                         {/* Sidebar component, swap this element with another sidebar if you like */}
-                        <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
+                        <div className="flex flex-col flex-grow pt-3 pb-4 overflow-y-auto">
                             <div className="flex items-center flex-shrink-0 px-4">
                                 <div className="flex items-center justify-start pl-6 h-12 rounded-lg bg-white w-full">
                                     <img
@@ -118,7 +123,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                     </div>
                 </div>
                 <div className="flex flex-col w-0 flex-1 overflow-hidden">
-                    <div className="relative z-10 flex-shrink-0 flex h-20 bg-white border-b border-tensei-gray-800">
+                    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-tensei-gray-800">
                         <button
                             onClick={() => {
                                 setOffCanvasOpen(!offCanvasOpen)
@@ -163,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                             Open user menu
                                                         </span>
                                                         <img
-                                                            className="h-10 w-10 rounded-full"
+                                                            className="h-8 w-8 rounded-full"
                                                             src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                                                             alt=""
                                                         />
@@ -217,8 +222,20 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                                 {({
                                                                     active
                                                                 }) => (
-                                                                    <a
-                                                                        href="#sign-out"
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            window.Tensei.client
+                                                                                .post(
+                                                                                    'logout'
+                                                                                )
+                                                                                .then(
+                                                                                    () => {
+                                                                                        window.location.href = window.Tensei.getPath(
+                                                                                            'auth/login'
+                                                                                        )
+                                                                                    }
+                                                                                )
+                                                                        }}
                                                                         className={`${
                                                                             active
                                                                                 ? 'bg-gray-100 text-gray-900'
@@ -226,7 +243,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                                         } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
                                                                     >
                                                                         Sign out
-                                                                    </a>
+                                                                    </button>
                                                                 )}
                                                             </Menu.Item>
                                                         </div>
@@ -241,40 +258,50 @@ const Dashboard: React.FC<DashboardProps> = () => {
                     </div>
                     <main
                         tabIndex={0}
-                        className="flex-1 relative overflow-y-auto focus:outline-none"
+                        className="flex-1 relative overflow-y-auto overflow-x-hidden focus:outline-none"
                     >
-                        <div className="py-6">
-                            <div className="max-w-full mx-auto px-6 sm:px-10 md:px-12">
-                                <Route
-                                    exact
-                                    component={Resource}
-                                    path={window.Tensei.getPath(
-                                        'resources/:resource'
-                                    )}
-                                />
-                                <Route
-                                    exact
-                                    component={CreateResource}
-                                    path={window.Tensei.getPath(
-                                        'resources/:resource/create'
-                                    )}
-                                />
-                                <Route
-                                    exact
-                                    component={CreateResource}
-                                    path={window.Tensei.getPath(
-                                        'resources/:resource/:id/update'
-                                    )}
-                                />
-                                <Route
-                                    exact
-                                    component={ResourceDetail}
-                                    path={window.Tensei.getPath(
-                                        'resources/:resource/:id'
-                                    )}
-                                />
-                            </div>
-                        </div>
+                        <Switch>
+                            <Route
+                                exact
+                                component={ResourceIndex}
+                                path={window.Tensei.getPath(
+                                    'resources/:resource'
+                                )}
+                            />
+                            <Route
+                                exact
+                                component={CreateResource}
+                                path={window.Tensei.getPath(
+                                    'resources/:resource/create'
+                                )}
+                            />
+                            <Route
+                                exact
+                                component={CreateResource}
+                                path={window.Tensei.getPath(
+                                    'resources/:resource/:id/update'
+                                )}
+                            />
+                            <Route
+                                exact
+                                component={ResourceDetail}
+                                path={window.Tensei.getPath(
+                                    'resources/:resource/:id'
+                                )}
+                            />
+
+                            <Route
+                                exact
+                                component={Settings}
+                                path={window.Tensei.getPath('settings')}
+                            />
+
+                            <Route
+                                component={FourOhFour}
+                                path={window.Tensei.getPath('404')}
+                            />
+                            <Route component={FourOhFour} />
+                        </Switch>
                     </main>
                 </div>
             </div>

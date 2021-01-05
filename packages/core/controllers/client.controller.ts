@@ -9,16 +9,14 @@ const indexFileContent = Fs.readFileSync(
 
 class ClientController {
     public async index(request: Express.Request, response: Express.Response) {
-        let shouldShowRegistrationScreen = true
-
-        // TODO: Check if a super-admin is already registered.
-
         response.send(
             Mustache.render(indexFileContent, {
                 styles: request.styles,
                 scripts: request.scripts,
-                user: request.admin_user
-                    ? JSON.stringify(request.admin_user)
+                user: request.user
+                    ? JSON.stringify({
+                          ...request.user
+                      })
                     : null,
                 resources: JSON.stringify(
                     Object.keys(request.resources).map(key =>
@@ -26,9 +24,11 @@ class ClientController {
                     )
                 ),
                 ctx: JSON.stringify({
-                    dashboardPath: request.currentCtx().dashboardPath
+                    dashboardPath: request.currentCtx().dashboardPath,
+                    apiPath: '/cms/api'
                 }),
-                shouldShowRegistrationScreen
+                shouldShowRegistrationScreen:
+                    (await request.manager.count('AdminUser')) === 0
             })
         )
     }

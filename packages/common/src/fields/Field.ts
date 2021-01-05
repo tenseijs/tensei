@@ -49,6 +49,30 @@ export class Field implements FieldContract {
         hideOnFetchApi: false
     }
 
+    public component = {
+        form: '',
+        index: '',
+        detail: ''
+    }
+
+    formComponent(component: string) {
+        this.component.form = component
+
+        return this
+    }
+
+    indexComponent(component: string) {
+        this.component.index = component
+
+        return this
+    }
+
+    detailComponent(component: string) {
+        this.component.detail = component
+
+        return this
+    }
+
     public property: FieldProperty = {
         name: '',
         type: 'string',
@@ -155,13 +179,6 @@ export class Field implements FieldContract {
     public isHidden: boolean = false
 
     public isRelationshipField: boolean = false
-
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component: string = `${this.constructor.name}Field`
 
     /**
      *
@@ -444,6 +461,7 @@ export class Field implements FieldContract {
         this: T,
         index: string | boolean = true
     ): T {
+        this.isSearchable = true
         this.property.index = index
 
         return this

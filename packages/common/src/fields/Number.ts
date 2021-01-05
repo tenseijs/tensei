@@ -1,12 +1,11 @@
 import Text from './Text'
 
 export class NumberField extends Text {
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component: string = `${this.constructor.name}`
+    public component = {
+        form: 'Integer',
+        index: 'Integer',
+        detail: 'Integer'
+    }
 
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)

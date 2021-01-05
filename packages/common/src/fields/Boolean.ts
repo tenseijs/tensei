@@ -2,11 +2,15 @@ import Field from './Field'
 import { BooleanFieldContract } from '@tensei/core'
 
 export class BooleanField extends Field implements BooleanFieldContract {
-    public component = 'BooleanField'
-
     private booleanConfig = {
         trueLabel: 'Yes',
         falseLabel: 'No'
+    }
+
+    public component = {
+        form: 'Boolean',
+        index: 'Boolean',
+        detail: 'Boolean'
     }
 
     /**

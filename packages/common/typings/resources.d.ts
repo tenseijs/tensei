@@ -11,8 +11,10 @@ declare module '@tensei/common/resources' {
         FlushHookFunction,
         DatabaseRepositoryInterface,
         User,
+        DataPayload,
         ResourceHelpers
     } from '@tensei/common/config'
+    import { ActionResponse } from '@tensei/common/actions'
     export interface ValidationMessages {
         [key: string]: string
     }
@@ -33,6 +35,7 @@ declare module '@tensei/common/resources' {
         hideOnDeleteSubscription: boolean
         camelCaseName: string
         displayField: string
+        displayFieldSnakeCase: string
         description: string
         snakeCaseName: string
         snakeCaseNamePlural: string

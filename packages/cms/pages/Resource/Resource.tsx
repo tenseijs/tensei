@@ -1,120 +1,181 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import Qs from 'qs'
+import Paginate from 'react-paginate'
+import { throttle } from 'throttle-debounce'
+import { Link, useHistory, useLocation } from 'react-router-dom'
+import React, { useState, useCallback, useEffect } from 'react'
 import {
     Table,
     SearchInput,
     Select,
     ConfirmModal,
     Button,
-    Heading
+    Heading,
+    ResourceContract,
+    PaginatedData
 } from '@tensei/components'
 
-import Actions from '../../components/Actions'
+export interface ResourceProps {
+    resource: ResourceContract
+}
 
-export interface ResourceProps {}
-
-const Resource: React.FC<ResourceProps> = ({}) => {
+const Resource: React.FC<ResourceProps> = ({ resource }) => {
+    const history = useHistory()
+    const location = useLocation()
     const [deleting, setDeleting] = useState<any>(null)
+
+    const fields = resource.fields.filter(field => field.showOnIndex)
+
+    const searchableFields = resource.fields.filter(field => field.isSearchable)
+
+    const getDefaultParametersFromSearch = () => {
+        const search = Qs.parse(location.search.split('?')[1])
+
+        const sort = ((search[`${resource.slug}_sort`] as string) || '').split(
+            '_'
+        )
+
+        return {
+            page: search[`${resource.slug}_page`] || 1,
+            per_page:
+                search[`${resource.slug}_per_page`] ||
+                resource.perPageOptions[0] ||
+                10,
+            search: search[`${resource.slug}_search`] || '',
+            sort: sort
+                ? {
+                      field: sort[0],
+                      direction: sort[1]
+                  }
+                : {}
+        }
+    }
+
+    const defaultParams = getDefaultParametersFromSearch()
+
+    const [data, setData] = useState<PaginatedData>({
+        meta: {
+            page: defaultParams.page as number,
+            per_page: defaultParams.per_page as number
+        },
+        search: defaultParams.search as string,
+        data: [],
+        sort: defaultParams.sort as any
+    })
+
+    const [loading, setLoading] = useState(true)
+
+    const getSearchString = () => {
+        const parameters: any = {
+            [`${resource.slug}_page`]: data.meta.page,
+            [`${resource.slug}_per_page`]: data.meta.per_page
+        }
+
+        if (data.sort?.field) {
+            parameters[
+                `${resource.slug}_sort`
+            ] = `${data.sort?.field}_${data.sort?.direction}`
+        }
+
+        if (data.search) {
+            parameters[`${resource.slug}_search`] = data.search
+        }
+
+        return Qs.stringify(parameters, { encodeValuesOnly: true })
+    }
+
+    const getQuery = () => {
+        let parameters: any = {
+            where: {}
+        }
+
+        if (data.search) {
+            parameters.where._or = searchableFields.map(field => ({
+                [field.inputName]: {
+                    _like: `%${data.search}%`
+                }
+            }))
+        }
+
+        if (data.sort?.field) {
+            parameters.sort = `${data.sort.field}:${data.sort.direction}`
+        }
+
+        parameters.page = data.meta.page
+        parameters.per_page = data.meta.per_page
+
+        return Qs.stringify(parameters, { encodeValuesOnly: true })
+    }
+
+    const query = getQuery()
+
+    const fetchData = useCallback(
+        throttle(
+            700,
+            (currentData: PaginatedData, slug: string, query: string) => {
+                setLoading(true)
+
+                window.Tensei.client
+                    .get(`${slug}?${query}`)
+                    .then(({ data: payload }) => {
+                        setData({
+                            ...currentData,
+                            ...payload
+                        })
+                        setLoading(false)
+                    })
+            }
+        ),
+        []
+    )
+
+    useEffect(() => {
+        fetchData(data, resource.slug, query)
+
+        history.push({
+            pathname: location.pathname,
+            search: getSearchString()
+        })
+    }, [
+        resource.slug,
+        data.meta.per_page,
+        data.meta.page,
+        data.sort,
+        data.search
+    ])
 
     return (
         <>
             <ConfirmModal
                 open={!!deleting}
-                setOpen={() => setDeleting(null)}
                 title="Delete Account?"
+                setOpen={() => setDeleting(null)}
                 description="Are you sure you want to delete this account? This action cannot be reversed."
             />
-            <Heading as="h2" className="mb-5">
-                Posts
+            <Heading as="h2" className="mb-5 text-2xl">
+                {resource.label}
             </Heading>
             <div className="flex flex-wrap justify-between items-center w-full">
                 <div className="flex flex-wrap w-full md:w-auto">
-                    <SearchInput className="md:mr-5 w-full mb-3 md:mb-0 md:w-96" />
-
-                    <Button clear>
-                        <span className="flex items-center px-3 text-tensei-gray-700">
-                            Filter
-                            <svg
-                                width={16}
-                                height={14}
-                                className="ml-4 text-tensei-gray-700 "
-                                viewBox="0 0 16 14"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect
-                                    x={9}
-                                    y={1}
-                                    width={7}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    x={9}
-                                    y={1}
-                                    width={7}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    y={6}
-                                    width={9}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    y={1}
-                                    width={5}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    x={11}
-                                    y={6}
-                                    width={5}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    y={11}
-                                    width={4}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    x={6}
-                                    y={11}
-                                    width={10}
-                                    height={2}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    x={7}
-                                    width={2}
-                                    height={4}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    x={11}
-                                    y={5}
-                                    width={2}
-                                    height={4}
-                                    fill="currentColor"
-                                />
-                                <rect
-                                    x={6}
-                                    y={10}
-                                    width={2}
-                                    height={4}
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        </span>
-                    </Button>
+                    <SearchInput
+                        className="md:mr-5 w-full mb-3 md:mb-0 md:w-96"
+                        value={data.search || ''}
+                        onChange={event =>
+                            setData({
+                                ...data,
+                                search: event.target.value
+                            })
+                        }
+                    />
                 </div>
 
-                <Link to={window.Tensei.getPath('resources/beans/create')}>
-                    <Button primary>Add Resource</Button>
+                <Link
+                    to={window.Tensei.getPath(
+                        `resources/${resource.slug}/create`
+                    )}
+                >
+                    <Button className="mt-3 md:mt-0" primary>
+                        Add {resource.name}
+                    </Button>
                 </Link>
             </div>
 
@@ -122,26 +183,40 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                 <div className="flex flex-col">
                     <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                            <div className="overflow-hidden border-b border-tensei-gray-600 rounded-lg">
+                            <div className="overflow-hidden border border-tensei-gray-600 rounded-lg">
                                 <Table
+                                    sort={data.sort}
+                                    loading={loading}
+                                    onSort={sort => setData({ ...data, sort })}
                                     columns={[
-                                        {
-                                            title: 'Name',
-                                            field: 'name',
-                                            sorter: false
-                                        },
-                                        {
-                                            title: 'Title',
-                                            field: 'title'
-                                        },
-                                        {
-                                            title: 'Email',
-                                            field: 'email'
-                                        },
-                                        {
-                                            title: 'Role',
-                                            field: 'role'
-                                        },
+                                        ...fields.map(field => ({
+                                            title: field.name,
+                                            field: field.inputName,
+                                            sorter: field.isSortable,
+                                            render: (
+                                                value: string,
+                                                row: any
+                                            ) => {
+                                                const Component =
+                                                    window.Tensei.components
+                                                        .index[
+                                                        field.component.index
+                                                    ] ||
+                                                    window.Tensei.components
+                                                        .index.Text
+
+                                                return (
+                                                    <Component
+                                                        field={field}
+                                                        values={row}
+                                                        value={
+                                                            row[field.inputName]
+                                                        }
+                                                        resource={resource}
+                                                    />
+                                                )
+                                            }
+                                        })),
                                         {
                                             title: (
                                                 <span className="sr-only">
@@ -212,17 +287,9 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                                             )
                                         }
                                     ]}
-                                    rows={Array.from(Array(5).keys()).map(
-                                        n => ({
-                                            id: n.toString(),
-                                            name: 'Kati Frantz',
-                                            title: 'Product manager',
-                                            email: 'tom@example.com',
-                                            role: 'Manager'
-                                        })
-                                    )}
+                                    rows={data.data as any}
                                     selection={{
-                                        onChange: console.log
+                                        onChange: () => {}
                                     }}
                                 />
                             </div>
@@ -230,68 +297,102 @@ const Resource: React.FC<ResourceProps> = ({}) => {
                     </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between">
-                    <Select />
+                <div className="mt-6 flex flex-wrap items-center justify-between">
+                    <Select
+                        className="w-full md:w-auto mb-3 md:mb-0"
+                        roundedFull
+                        options={
+                            resource.perPageOptions?.map(option => ({
+                                value: option,
+                                label: `${option} / page`
+                            })) || []
+                        }
+                        value={data.meta.per_page}
+                        onChange={event =>
+                            setData({
+                                ...data,
+                                meta: {
+                                    ...data.meta,
+                                    per_page: parseInt(event.target.value, 10)
+                                }
+                            })
+                        }
+                    />
 
-                    <div className="hidden sm:block">
-                        <p className="text-sm">
+                    <div className="hidden md:block">
+                        <p className="">
                             Showing
-                            <span className="font-medium mx-1">1</span>
+                            <span className="font-medium mx-1">
+                                {data.meta.per_page * (data.meta.page - 1) + 1}
+                            </span>
                             to
-                            <span className="font-medium mx-1">10</span>
+                            <span className="font-medium mx-1">
+                                {data.meta.per_page * data.meta.page}
+                            </span>
                             of
-                            <span className="font-medium mx-1">20</span>
+                            <span className="font-medium mx-1">
+                                {data.meta.total}
+                            </span>
                             results
                         </p>
                     </div>
 
-                    <nav className="flex items-center">
-                        <button className="mr-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
-                            <svg
-                                className="fill-current"
-                                width={10}
-                                height={10}
-                                viewBox="0 0 6 10"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path d="M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" />
-                            </svg>
-                        </button>
-
-                        <a
-                            href=""
-                            className="rounded-lg px-3 py-1 mr-2 font-semibold bg-tensei-primary text-white focus:outline-none border border-transparent focus:ring-offset-2 focus:ring-2 focus:ring-tensei-primary"
-                        >
-                            1
-                        </a>
-
-                        <a
-                            href="#"
-                            className="px-3 py-1 bg-transparent mr-2 rounded-lg focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary"
-                        >
-                            2
-                        </a>
-                        <a
-                            href="#"
-                            className="px-3 py-1 bg-transparent rounded-lg focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary"
-                        >
-                            3
-                        </a>
-
-                        <button className="ml-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
-                            <svg
-                                className="fill-current transform rotate-180"
-                                width={10}
-                                height={10}
-                                viewBox="0 0 6 10"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path d="M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" />
-                            </svg>
-                        </button>
-                    </nav>
+                    {loading && data.meta && data.meta.page ? null : (
+                        <Paginate
+                            forcePage={data.meta.page - 1}
+                            previousLabel={
+                                <button className="mr-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
+                                    <svg
+                                        className="fill-current"
+                                        width={10}
+                                        height={10}
+                                        viewBox="0 0 6 10"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path d="M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" />
+                                    </svg>
+                                </button>
+                            }
+                            nextLabel={
+                                <button className="ml-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
+                                    <svg
+                                        className="fill-current transform rotate-180"
+                                        width={10}
+                                        height={10}
+                                        viewBox="0 0 6 10"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path d="M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" />
+                                    </svg>
+                                </button>
+                            }
+                            breakLabel={'...'}
+                            breakClassName={'break-me'}
+                            pageCount={data.meta.page_count!}
+                            marginPagesDisplayed={2}
+                            pageRangeDisplayed={3}
+                            onPageChange={({ selected }) => {
+                                setData({
+                                    ...data,
+                                    meta: {
+                                        ...data.meta,
+                                        page: selected + 1
+                                    }
+                                })
+                            }}
+                            pageLinkClassName={
+                                'cursor-pointer px-3 py-1 bg-transparent mr-2 rounded-lg focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary'
+                            }
+                            containerClassName={
+                                'flex items-center justify-center w-full md:w-auto'
+                            }
+                            activeLinkClassName={
+                                'rounded-lg px-3 text-white py-1 mr-2 font-semibold bg-tensei-primary'
+                            }
+                        />
+                    )}
                 </div>
             </div>
         </>

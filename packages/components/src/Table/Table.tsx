@@ -6,6 +6,8 @@ import React, {
     useEffect
 } from 'react'
 
+import Pulse from '../Pulse'
+
 export interface TableColumn {
     title: ReactChild
     field: string
@@ -25,7 +27,13 @@ export interface TableCheckboxProps {
 
 export interface TableProps {
     key?: string
+    loading?: boolean
     rows: TableRow[]
+    sort?: {
+        field?: string
+        direction?: 'asc' | 'desc'
+    }
+    onSort?: (sort: TableProps['sort']) => void
     columns: TableColumn[]
     selection?: {
         onChange: (keys: (string | number)[], rows: TableRow[]) => any
@@ -37,9 +45,13 @@ const Table: React.FC<TableProps> = ({
     columns,
     selection,
     rows,
+    loading,
+    sort: defaultSort = {},
+    onSort,
     key = 'id'
 }) => {
     const [selected, setSelected] = useState<TableRow[]>([])
+    const [sort, setSort] = useState<TableProps['sort']>(defaultSort)
 
     const onCheckboxChange = (
         row: TableRow,
@@ -71,6 +83,38 @@ const Table: React.FC<TableProps> = ({
         }
     }, [selected])
 
+    useEffect(() => {
+        if (onSort) {
+            onSort(sort)
+        }
+
+        setSelected([])
+    }, [sort])
+
+    const Sorter = (
+        <svg
+            className="ml-2"
+            width={10}
+            height={14}
+            viewBox="0 0 10 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M5 12V1"
+                stroke="#21185A"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+            />
+            <path
+                d="M2 9.3335L5 12.3335L8 9.3335"
+                stroke="#21185A"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+            />
+        </svg>
+    )
+
     return (
         <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-white">
@@ -86,8 +130,9 @@ const Table: React.FC<TableProps> = ({
                                     selected.length !== 0 &&
                                     selected.length === rows.length
                                 }
+                                disabled={loading}
                                 onChange={onSelectAllCheckboxChange}
-                                className="text-tensei-primary rounded-sm border border-tensei-gray-400"
+                                className="text-tensei-primary rounded-sm border border-tensei-gray-600"
                             />
                         </th>
                     ) : null}
@@ -97,45 +142,95 @@ const Table: React.FC<TableProps> = ({
                             scope="col"
                             className={
                                 column.className ||
-                                'px-6 py-3 text-left text-xs font-medium text-tensei-darkest uppercase tracking-wider'
+                                'px-6 py-3 text-left text-xs font-extrabold text-tensei-darkest uppercase tracking-wider'
                             }
                         >
-                            {column.title}
+                            <div
+                                tabIndex={0}
+                                onClick={() =>
+                                    column.sorter
+                                        ? setSort({
+                                              field: column.field,
+                                              direction:
+                                                  column.field === sort?.field
+                                                      ? sort?.direction ===
+                                                        'asc'
+                                                          ? 'desc'
+                                                          : 'asc'
+                                                      : 'asc'
+                                          })
+                                        : undefined
+                                }
+                                className="flex items-center cursor-pointer focus:outline-none"
+                            >
+                                {column.title}{' '}
+                                {column.sorter ? (
+                                    <p
+                                        className={`transition duration-150 ease-in-out ${
+                                            column.field === sort?.field
+                                                ? ''
+                                                : 'opacity-30'
+                                        } ${
+                                            sort?.direction === 'asc' &&
+                                            column.field === sort.field
+                                                ? 'transform rotate-180 ml-2'
+                                                : ''
+                                        }`}
+                                    >
+                                        {Sorter}
+                                    </p>
+                                ) : null}
+                            </div>
                         </th>
                     ))}
                 </tr>
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-                {rows.map(row => (
-                    <tr key={row[key]}>
-                        {selection?.onChange ? (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <input
-                                    type="checkbox"
-                                    checked={selected.some(
-                                        r => r[key] === row[key]
-                                    )}
-                                    className="text-tensei-primary rounded-sm border border-tensei-gray-400"
-                                    onChange={event =>
-                                        onCheckboxChange(row, event)
-                                    }
-                                />
-                            </td>
-                        ) : null}
-                        {columns.map((column, index) => (
-                            <Fragment
-                                key={`${column.field}-${row[key]}-${index}`}
-                            >
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    {column.render
-                                        ? column.render(row[column.field], row)
-                                        : row[column.field]}
-                                </td>
-                            </Fragment>
-                        ))}
+                {loading ? (
+                    <tr className="h-24">
+                        <td colSpan={columns.length + 1}>
+                            <div className="w-full h-full flex items-center justify-center mt-8">
+                                <Pulse dotClassName="bg-tensei-primary" />
+                            </div>
+                        </td>
                     </tr>
-                ))}
+                ) : (
+                    <Fragment>
+                        {rows.map(row => (
+                            <tr key={row[key]}>
+                                {selection?.onChange ? (
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <input
+                                            type="checkbox"
+                                            checked={selected.some(
+                                                r => r[key] === row[key]
+                                            )}
+                                            className="text-tensei-primary rounded-sm border border-tensei-gray-600"
+                                            onChange={event =>
+                                                onCheckboxChange(row, event)
+                                            }
+                                        />
+                                    </td>
+                                ) : null}
+                                {columns.map((column, index) => (
+                                    <Fragment
+                                        key={`${column.field}-${row[key]}-${index}`}
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            {column.render
+                                                ? column.render(
+                                                      row[column.field],
+                                                      row
+                                                  )
+                                                : row[column.field]}
+                                        </td>
+                                    </Fragment>
+                                ))}
+                            </tr>
+                        ))}
+                    </Fragment>
+                )}
             </tbody>
         </table>
     )

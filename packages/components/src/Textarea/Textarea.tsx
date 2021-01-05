@@ -30,7 +30,7 @@ const Textarea: React.FC<TextInputProps> = ({
                     className={
                         hiddenLabel
                             ? 'sr-only'
-                            : 'text-tensei-darkest inline-block mb-2'
+                            : 'text-tensei-darkest block mb-2'
                     }
                 >
                     {label}
@@ -42,7 +42,7 @@ const Textarea: React.FC<TextInputProps> = ({
                 rows={rows}
                 cols={cols}
                 placeholder={placeholder}
-                className="rounded-md block w-full pr-10 pl-3 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-400 focus:border-tensei-primary sm:text-sm"
+                className="rounded-md block w-full pr-10 pl-3 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm"
             />
         </div>
     )

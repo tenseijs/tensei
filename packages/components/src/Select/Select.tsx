@@ -1,32 +1,60 @@
-import React from 'react'
+import React, { Fragment } from 'react'
+import { ChangeEventHandler } from 'react'
+
+interface SelectOption {
+    label: string
+    value: string | number
+}
 
 export interface SelectProps {
     name?: string
     id?: string
     label?: string
+    className?: string
+    roundedFull?: boolean
+    value?: string | number
+    options?: SelectOption[]
+    onChange?: ChangeEventHandler<HTMLSelectElement>
 }
 
-const Select: React.FC<SelectProps> = ({ name, id, label }) => {
+const Select: React.FC<SelectProps> = ({
+    name,
+    id,
+    label,
+    className,
+    roundedFull,
+    options = [],
+    onChange,
+    value
+}) => {
     return (
-        <div>
+        <Fragment>
             {label ? (
                 <label
                     htmlFor={id || name}
-                    className="block text-sm font-medium text-gray-700"
+                    className="text-tensei-darkest block mb-2"
                 >
                     {label}
                 </label>
             ) : null}
             <select
+                value={value}
                 id={id || name}
                 name={name || id}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary sm:text-sm rounded-md"
+                onChange={onChange}
+                className={`${
+                    className || ''
+                } mt-1 block w-full pl-5 pr-12 h-10 text-base focus:outline-none focus:ring-1 focus:ring-tensei-primary border-tensei-gray-800 focus:border-tensei-primary sm:text-sm ${
+                    roundedFull ? 'rounded-full' : 'rounded-md'
+                }`}
             >
-                <option>5 / page</option>
-                <option>10 / page</option>
-                <option>50 / page</option>
+                {options.map(option => (
+                    <option value={option.value} key={option.value}>
+                        {option.label}
+                    </option>
+                ))}
             </select>
-        </div>
+        </Fragment>
     )
 }
 

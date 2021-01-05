@@ -1,25 +1,30 @@
-import React from 'react'
+import React, { ChangeEventHandler } from 'react'
 
 export interface CheckboxProps {
     id?: string
     name?: string
+    error?: string
     label?: string
     checked?: boolean
     className?: string
+    onChange?: ChangeEventHandler<HTMLInputElement>
 }
 
 const Checkbox: React.FC<CheckboxProps> = ({
     id,
     name,
     label,
+    error,
     checked,
-    className
+    className,
+    onChange
 }) => {
     const props: any = {
         label,
         id,
         name,
-        type: 'checkbox'
+        type: 'checkbox',
+        onChange
     }
 
     if (checked !== undefined) {
@@ -31,7 +36,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
             {label && (
                 <label
                     htmlFor={id}
-                    className={'text-tensei-darkest inline-block mb-2'}
+                    className={'text-tensei-darkest block mb-2'}
                 >
                     {label}
                 </label>
@@ -39,8 +44,14 @@ const Checkbox: React.FC<CheckboxProps> = ({
             <div>
                 <input
                     {...props}
-                    className="rounded-sm border border-tensei-gray-400"
+                    className="rounded-sm border border-tensei-gray-600"
                 />
+
+                {error ? (
+                    <i className="text-tensei-error inline-block mt-2 text-sm">
+                        {error}
+                    </i>
+                ) : null}
             </div>
         </div>
     )

@@ -2,12 +2,11 @@ import DateField from './Date'
 import { ReferenceType } from '@mikro-orm/core'
 
 export class Timestamp extends DateField {
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component = 'TimestampField'
+    public component = {
+        form: 'Timestamp',
+        index: 'Timestamp',
+        detail: 'Timestamp'
+    }
 
     /**
      * When a new date string is initialized, it defaults the

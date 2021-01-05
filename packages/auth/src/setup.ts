@@ -2,7 +2,55 @@ import { sentenceCase } from 'change-case'
 import { EntityManager } from '@mikro-orm/core'
 import { ResourceContract, Permission, PluginSetupConfig } from '@tensei/common'
 
-import { AuthPluginConfig } from './config'
+export const setupCms = async (
+    config: PluginSetupConfig,
+    [RoleResource, PermissionResource]: ResourceContract[]
+) => {
+    const { resources, orm } = config
+
+    const { em } = orm!
+
+    const insertPermissions = await getPermissionsToInsert(
+        resources,
+        em,
+        PermissionResource
+    )
+
+    if (insertPermissions.length > 0) {
+        await em.persistAndFlush(
+            insertPermissions.map(permission =>
+                em.create(PermissionResource.data.pascalCaseName, permission)
+            )
+        )
+    }
+
+    // Insert default super admin role
+    let superAdminRole: any = await em.findOne(
+        RoleResource.data.pascalCaseName,
+        {
+            slug: 'super-admin'
+        }
+    )
+
+    const allPermissions = (
+        await em.find(PermissionResource.data.pascalCaseName, {})
+    ).map((permission: any) => permission.id)
+
+    if (superAdminRole) {
+        em.assign(superAdminRole, {
+            admin_permissions: allPermissions
+        })
+    }
+
+    await em.persistAndFlush(
+        superAdminRole ||
+            em.create(RoleResource.data.pascalCaseName, {
+                name: 'Super Admin',
+                slug: 'super-admin',
+                admin_permissions: allPermissions
+            })
+    )
+}
 
 export const setup = async (
     config: PluginSetupConfig,

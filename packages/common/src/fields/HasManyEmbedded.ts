@@ -5,13 +5,6 @@ import { FieldContract } from '@tensei/common'
 export class HasManyEmbedded extends Field {
     /**
      *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component = 'HasManyEmbeddedField'
-
-    /**
-     *
      * This defines a list of all fields in this object.
      * It is also an array of fields.
      *

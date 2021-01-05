@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "declaration": true,
+        "jsx": "react",
+        "outDir": "./build",
+        "strict": true,
+        "baseUrl": "./src",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "types": ["@types/jest"]
+    },
+    "exclude": ["__tests__", "build", "src/components"]
+}

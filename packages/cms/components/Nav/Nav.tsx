@@ -11,7 +11,7 @@ const Nav: React.FC<NavProps> = ({ className }) => {
         <nav className={className}>
             <div className="w-full">
                 <div className="px-10 w-full flex items-center justify-between text-white cursor-pointer group">
-                    <span className="font-medium text-xs">Dashboards</span>
+                    <span className="font-medium">Dashboards</span>
                     <svg
                         width={12}
                         height={12}
@@ -24,8 +24,8 @@ const Nav: React.FC<NavProps> = ({ className }) => {
                 </div>
 
                 <Link
-                    to={window.Tensei.getPath('resources/beans')}
-                    className="relative w-full flex items-center justify-between text-xs text-white bg-tensei-primary py-3 px-10 cursor-pointer mt-4 bg-opacity-10"
+                    to={window.Tensei.getPath('resources/comments')}
+                    className="transition duration-100 ease-in-out relative w-full flex items-center justify-between text-white bg-tensei-primary py-3 px-10 cursor-pointer mt-4 bg-opacity-10 font-bold"
                 >
                     <div className="flex items-center">
                         <Icon active icon="tag" />{' '}
@@ -36,8 +36,8 @@ const Nav: React.FC<NavProps> = ({ className }) => {
                 </Link>
 
                 <Link
-                    to={window.Tensei.getPath('resources/okto')}
-                    className="w-full flex items-center justify-between text-xs text-tensei-gray-700 py-3 px-10 cursor-pointer transition ease-in-out hover:bg-tensei-primary hover:bg-opacity-10"
+                    to={window.Tensei.getPath('resources/posts')}
+                    className="w-full flex items-center justify-between text-tensei-gray-700 py-3 px-10 cursor-pointer transition ease-in-out hover:bg-tensei-primary hover:bg-opacity-10"
                 >
                     <div className="flex items-center">
                         <Icon icon="grid" /> <span className="ml-4">Main</span>

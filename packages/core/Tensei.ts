@@ -1,11 +1,13 @@
 import Path from 'path'
 import pino from 'pino'
 import Emittery from 'emittery'
+import { rest } from '@tensei/rest'
 import BodyParser from 'body-parser'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
 import Express, { Application } from 'express'
 import AsyncHandler from 'express-async-handler'
+import { auth, USER_EVENTS } from '@tensei/auth'
 import { validator, sanitizer } from 'indicative'
 import { mail, MailConfig, MailManagerContract } from '@tensei/mail'
 import { responseEnhancer } from 'express-response-formatter'
@@ -14,6 +16,9 @@ import { StorageManager, Storage } from '@slynova/flydrive'
 import {
     Asset,
     Config,
+    plugin,
+    route,
+    event,
     RouteContract,
     PluginContract,
     ResourceContract,
@@ -105,14 +110,26 @@ export class Tensei implements TenseiContract {
             },
             scripts: [
                 {
-                    name: 'tensei.js',
-                    path: Path.resolve(__dirname, 'public', 'app.js')
+                    name: 'manifest.js',
+                    path: Path.resolve(__dirname, 'public', 'manifest.js')
+                },
+                {
+                    name: 'vendor.js',
+                    path: Path.resolve(__dirname, 'public', 'vendor.js')
+                },
+                {
+                    name: 'main.js',
+                    path: Path.resolve(__dirname, 'public', 'main.js')
                 }
             ],
             styles: [
                 {
                     name: 'tensei.css',
-                    path: Path.resolve(__dirname, 'public', 'app.css')
+                    path: Path.resolve(__dirname, 'public', 'styles.css')
+                },
+                {
+                    name: 'main.css',
+                    path: Path.resolve(__dirname, 'public', 'main.css')
                 }
             ],
             logger: pino({
@@ -223,6 +240,7 @@ export class Tensei implements TenseiContract {
 
         this.forceMiddleware()
 
+        this.registerCoreRoutes()
         await this.callPluginHook('register')
 
         await this.ctx.rootRegister(this.getPluginArguments())
@@ -233,7 +251,6 @@ export class Tensei implements TenseiContract {
 
         this.registerAssetsRoutes()
         this.registerMiddleware()
-        this.registerCoreRoutes()
 
         await this.callPluginHook('boot')
         await this.ctx.rootBoot(this.getPluginArguments())
@@ -433,11 +450,12 @@ export class Tensei implements TenseiContract {
     }
 
     public registerCoreRoutes() {
-        // The cms dashboard
-        this.app.get(
-            `/${this.ctx.dashboardPath}(/*)?`,
-            this.asyncHandler(ClientController.index)
-        )
+        this.routes([
+            route('Get CMS Dashboard')
+                .get()
+                .path(`/${this.ctx.dashboardPath}(/*)?`)
+                .handle(ClientController.index)
+        ])
     }
 
     public registerMiddleware() {
@@ -613,10 +631,46 @@ export class Tensei implements TenseiContract {
         if (this.ctx.plugins.length) {
             this.ctx.plugins = [...this.ctx.plugins, ...plugins]
         } else {
-            this.ctx.plugins = [...plugins]
+            this.ctx.plugins = [...this.cmsPlugins(), ...plugins]
         }
 
         return this
+    }
+
+    private cmsPlugins() {
+        return [
+            auth()
+                .cms()
+                .prefix('cms')
+                .user('Admin User')
+                .role('Admin Role')
+                .token('Admin Token')
+                .registered(async ({ manager, user }) => {
+                    const superAdminRole: any = await manager.findOne(
+                        'AdminRole',
+                        {
+                            slug: 'super-admin'
+                        }
+                    )
+
+                    manager.assign(user, {
+                        admin_roles: [superAdminRole.id]
+                    })
+
+                    await manager.persistAndFlush(user)
+                })
+                .permission('Admin Permission')
+                .apiPath('cms/api')
+                .rolesAndPermissions()
+                .plugin(),
+            rest().prefix('cms').basePath('cms/api').plugin(),
+            plugin('Custom CMS Auth').boot(({ getRoute, routes }) => {
+                getRoute('cms_register_admin-user')?.authorize(
+                    async ({ manager }) =>
+                        (await manager.count('AdminUser')) === 0
+                )
+            })
+        ]
     }
 
     private storageDriver<

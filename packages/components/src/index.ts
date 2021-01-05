@@ -1,4 +1,5 @@
 import Icon from './Icon'
+import Pulse from './Pulse'
 import Table from './Table'
 import Select from './Select'
 import Button from './Button'
@@ -6,6 +7,7 @@ import Checkbox from './Checkbox'
 import Textarea from './Textarea'
 import TextInput from './TextInput'
 import { StackedList } from './List'
+import DatePicker from './DatePicker'
 import SearchInput from './SearchInput'
 import Modal, { ConfirmModal } from './Modal'
 import { Heading, Paragraph } from './Typography'
@@ -13,6 +15,7 @@ import { Heading, Paragraph } from './Typography'
 export {
     Icon,
     Table,
+    Pulse,
     Modal,
     Select,
     Button,
@@ -21,6 +24,7 @@ export {
     Textarea,
     TextInput,
     Paragraph,
+    DatePicker,
     SearchInput,
     ConfirmModal,
     StackedList

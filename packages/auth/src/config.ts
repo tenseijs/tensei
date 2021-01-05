@@ -7,6 +7,7 @@ import {
 import { CookieOptions } from 'express'
 import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'
+import { ApiContext } from '@tensei/common'
 
 export interface GrantConfig {
     key: string
@@ -45,7 +46,10 @@ export interface AuthPluginConfig {
     fields: FieldContract[]
     profilePictures: boolean
     userResource: string
+    tokenResource: string
     cms: boolean
+    prefix: string
+    registered?: (ctx: ApiContext) => Promise<void> | void
     csrfEnabled: boolean
     disableAutoLoginAfterRegistration: boolean
     roleResource: string
@@ -112,6 +116,7 @@ export const defaultProviderScopes = (
 export const USER_EVENTS = {
     REGISTERED: 'user::registered',
     LOGGED_IN: 'user::logged::in',
+    ADMIN_REGISTERED: 'admin::registered',
     FORGOT_PASSWORD: 'user::forgot::password',
     RESET_PASSWORD: 'user::reset::password',
     VERIFIED_EMAIL: 'user::verified::email',

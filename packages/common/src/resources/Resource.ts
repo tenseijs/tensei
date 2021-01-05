@@ -115,27 +115,27 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public data: ResourceDataWithFields = {
         fields: [
-            id('ID').sortable().searchable(),
+            id('ID').searchable(),
             timestamp('Created At')
                 .defaultToNow()
                 .nullable()
                 .sortable()
-                .searchable()
                 .onCreate(() => new Date())
                 .hideOnInsertApi()
                 .hideOnUpdateApi()
                 .hideOnUpdate()
+                .hideOnIndex()
                 .hideOnCreate(),
             timestamp('Updated At')
                 .defaultToNow()
                 .nullable()
                 .sortable()
-                .searchable()
                 .onCreate(() => new Date())
                 .onUpdate(() => new Date())
                 .hideOnInsertApi()
                 .hideOnUpdateApi()
                 .hideOnCreate()
+                .hideOnIndex()
                 .hideOnUpdate()
         ],
         actions: [],
@@ -156,7 +156,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         permissions: [],
         group: 'Resources',
         groupSlug: 'resources',
-        displayField: 'id',
+        displayField: 'ID',
+        displayFieldSnakeCase: 'id',
         valueField: 'id',
         noTimestamps: false,
         camelCaseName: '',
@@ -317,6 +318,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public displayField(displayField: string) {
         this.data.displayField = displayField
+        this.data.displayFieldSnakeCase = snakeCase(displayField)
 
         return this
     }
@@ -332,6 +334,13 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         }
 
         this.data.fields = [...this.data.fields, ...fields]
+
+        this.data.fields = this.data.fields.sort(f =>
+            ['Updated At', 'Created At'].includes(f.name) ? 1 : -1
+        )
+        this.data.fields = this.data.fields.sort(f =>
+            ['ID'].includes(f.name) ? -1 : 1
+        )
 
         return this
     }

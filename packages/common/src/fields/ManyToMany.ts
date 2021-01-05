@@ -4,7 +4,11 @@ import RelationshipField from './RelationshipField'
 
 // This would be hasMany in other relationship language.
 export class ManyToMany extends RelationshipField {
-    public component = 'ManyToManyField'
+    public component = {
+        form: 'ManyToMany',
+        index: 'ManyToMany',
+        detail: 'ManyToMany'
+    }
 
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)

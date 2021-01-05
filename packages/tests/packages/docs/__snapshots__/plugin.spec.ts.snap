@@ -81,6 +81,20 @@ Object {
     "ID": Object {
       "type": "string",
     },
+    "LoginInput": Object {
+      "properties": Object {
+        "email": Object {
+          "format": "email",
+          "required": true,
+          "type": "string",
+        },
+        "password": Object {
+          "required": true,
+          "type": "string",
+        },
+      },
+      "type": "object",
+    },
     "PaginationMeta": Object {
       "properties": Object {
         "page": Object {
@@ -251,6 +265,42 @@ Object {
       ],
       "type": "object",
     },
+    "RegisterInput": Object {
+      "properties": Object {
+        "email": Object {
+          "format": "email",
+          "required": true,
+          "type": "string",
+        },
+        "password": Object {
+          "required": true,
+          "type": "string",
+        },
+      },
+      "type": "object",
+    },
+    "RequestPasswordInput": Object {
+      "properties": Object {
+        "email": Object {
+          "format": "email",
+          "required": true,
+          "type": "string",
+        },
+      },
+    },
+    "ResetPasswordInput": Object {
+      "properties": Object {
+        "password": Object {
+          "required": true,
+          "type": "string",
+        },
+        "token": Object {
+          "description": "This token was sent to the admin-user's email. Provide it here to reset the admin-user's password.",
+          "required": true,
+          "type": "string",
+        },
+      },
+    },
     "Tag": Object {
       "properties": Object {
         "created_at": Object {
@@ -381,7 +431,1595 @@ Object {
     "contact": Object {},
     "license": Object {},
   },
-  "paths": Object {},
+  "paths": Object {
+    "cms/api/comments": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches all comments that match an optional where query.",
+        "parameters": Array [
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch multiple comments",
+        "tags": Array [
+          "Comments",
+        ],
+      },
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/CommentInput",
+            },
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "201": Object {
+            "description": "The operation was successful.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Insert a single comment.",
+        "tags": Array [
+          "Comments",
+        ],
+      },
+    },
+    "cms/api/comments/{id}": Object {
+      "delete": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint deletes a single comment. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The comment was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Delete a single comment",
+        "tags": Array [
+          "Comments",
+        ],
+      },
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches a single comment. Provide the primary key ID of the entity you want to fetch.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The comment was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch a single comment",
+        "tags": Array [
+          "Comments",
+        ],
+      },
+      "patch": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint update a single comment. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/CommentInput",
+            },
+          },
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "200": Object {
+            "description": "The operation was successful.",
+          },
+          "404": Object {
+            "description": "The Comment was not found.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Update a single comment",
+        "tags": Array [
+          "Comments",
+        ],
+      },
+    },
+    "cms/api/comments/{id}/{relatedResource}": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "path",
+            "name": "relatedResource",
+            "required": true,
+          },
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The comment was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch relation to a comment",
+        "tags": Array [
+          "Comments",
+        ],
+      },
+    },
+    "cms/api/csrf": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "tags": Array [],
+      },
+    },
+    "cms/api/login": Object {
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "definitions": Object {
+          "LoginInput": Object {
+            "properties": Object {
+              "email": Object {
+                "format": "email",
+                "required": true,
+                "type": "string",
+              },
+              "password": Object {
+                "required": true,
+                "type": "string",
+              },
+            },
+            "type": "object",
+          },
+        },
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/LoginInput",
+            },
+            "type": "object",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Login an existing admin-user.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+    },
+    "cms/api/me": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "security": Array [
+          Object {
+            "Bearer": Array [],
+          },
+        ],
+        "summary": "Get the authenticated admin-user from a valid JWT.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+    },
+    "cms/api/passwords/email": Object {
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "definitions": Object {
+          "RequestPasswordInput": Object {
+            "properties": Object {
+              "email": Object {
+                "format": "email",
+                "required": true,
+                "type": "string",
+              },
+            },
+          },
+        },
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/RequestPasswordInput",
+            },
+            "type": "object",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Request a password reset for a admin-user using the admin-user email.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+    },
+    "cms/api/passwords/reset": Object {
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "definitions": Object {
+          "ResetPasswordInput": Object {
+            "properties": Object {
+              "password": Object {
+                "required": true,
+                "type": "string",
+              },
+              "token": Object {
+                "description": "This token was sent to the admin-user's email. Provide it here to reset the admin-user's password.",
+                "required": true,
+                "type": "string",
+              },
+            },
+          },
+        },
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/ResetPasswordInput",
+            },
+            "type": "object",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Reset a admin-user password using a password reset token.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+    },
+    "cms/api/posts": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches all posts that match an optional where query.",
+        "parameters": Array [
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch multiple posts",
+        "tags": Array [
+          "Posts",
+        ],
+      },
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/PostInput",
+            },
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "201": Object {
+            "description": "The operation was successful.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Insert a single post.",
+        "tags": Array [
+          "Posts",
+        ],
+      },
+    },
+    "cms/api/posts/{id}": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches a single post. Provide the primary key ID of the entity you want to fetch.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The post was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch a single post",
+        "tags": Array [
+          "Posts",
+        ],
+      },
+    },
+    "cms/api/posts/{id}/{relatedResource}": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "path",
+            "name": "relatedResource",
+            "required": true,
+          },
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The post was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch relation to a post",
+        "tags": Array [
+          "Posts",
+        ],
+      },
+    },
+    "cms/api/reactions": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches all reactions that match an optional where query.",
+        "parameters": Array [
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch multiple reactions",
+        "tags": Array [
+          "Reactions",
+        ],
+      },
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/ReactionInput",
+            },
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "201": Object {
+            "description": "The operation was successful.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Insert a single reaction.",
+        "tags": Array [
+          "Reactions",
+        ],
+      },
+    },
+    "cms/api/reactions/{id}": Object {
+      "delete": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint deletes a single reaction. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The reaction was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Delete a single reaction",
+        "tags": Array [
+          "Reactions",
+        ],
+      },
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches a single reaction. Provide the primary key ID of the entity you want to fetch.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The reaction was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch a single reaction",
+        "tags": Array [
+          "Reactions",
+        ],
+      },
+      "patch": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint update a single reaction. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/ReactionInput",
+            },
+          },
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "200": Object {
+            "description": "The operation was successful.",
+          },
+          "404": Object {
+            "description": "The Reaction was not found.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Update a single reaction",
+        "tags": Array [
+          "Reactions",
+        ],
+      },
+    },
+    "cms/api/reactions/{id}/{relatedResource}": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "path",
+            "name": "relatedResource",
+            "required": true,
+          },
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The reaction was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch relation to a reaction",
+        "tags": Array [
+          "Reactions",
+        ],
+      },
+    },
+    "cms/api/refresh-token": Object {
+      "delete": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "Sets the refresh token cookie to an invalid value and expires it.",
+        "parameters": Array [
+          Object {
+            "in": "cookie",
+            "name": "___refresh__token",
+            "required": true,
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Invalidate a refresh token.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "The refresh token is set in cookies response for all endpoints that return an access token (login, register).",
+        "parameters": Array [
+          Object {
+            "in": "cookie",
+            "name": "___refresh__token",
+            "required": true,
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Request a new (access token) using a refresh token.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+    },
+    "cms/api/register": Object {
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "definitions": Object {
+          "RegisterInput": Object {
+            "properties": Object {
+              "email": Object {
+                "format": "email",
+                "required": true,
+                "type": "string",
+              },
+              "password": Object {
+                "required": true,
+                "type": "string",
+              },
+            },
+            "type": "object",
+          },
+        },
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/RegisterInput",
+            },
+            "type": "object",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Register a new admin-user.",
+        "tags": Array [
+          "Auth",
+        ],
+      },
+    },
+    "cms/api/tags": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches all tags that match an optional where query.",
+        "parameters": Array [
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch multiple tags",
+        "tags": Array [
+          "Tags",
+        ],
+      },
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/TagInput",
+            },
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "201": Object {
+            "description": "The operation was successful.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Insert a single tag.",
+        "tags": Array [
+          "Tags",
+        ],
+      },
+    },
+    "cms/api/tags/{id}": Object {
+      "delete": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint deletes a single tag. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The tag was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Delete a single tag",
+        "tags": Array [
+          "Tags",
+        ],
+      },
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches a single tag. Provide the primary key ID of the entity you want to fetch.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The tag was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch a single tag",
+        "tags": Array [
+          "Tags",
+        ],
+      },
+      "patch": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint update a single tag. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/TagInput",
+            },
+          },
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "200": Object {
+            "description": "The operation was successful.",
+          },
+          "404": Object {
+            "description": "The Tag was not found.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Update a single tag",
+        "tags": Array [
+          "Tags",
+        ],
+      },
+    },
+    "cms/api/tags/{id}/{relatedResource}": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "path",
+            "name": "relatedResource",
+            "required": true,
+          },
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The tag was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch relation to a tag",
+        "tags": Array [
+          "Tags",
+        ],
+      },
+    },
+    "cms/api/users": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches all users that match an optional where query.",
+        "parameters": Array [
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch multiple users",
+        "tags": Array [
+          "Users",
+        ],
+      },
+      "post": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/UserInput",
+            },
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "201": Object {
+            "description": "The operation was successful.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Insert a single user.",
+        "tags": Array [
+          "Users",
+        ],
+      },
+    },
+    "cms/api/users/{id}": Object {
+      "delete": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint deletes a single user. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The user was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Delete a single user",
+        "tags": Array [
+          "Users",
+        ],
+      },
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint fetches a single user. Provide the primary key ID of the entity you want to fetch.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The user was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch a single user",
+        "tags": Array [
+          "Users",
+        ],
+      },
+      "patch": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint update a single user. Provide the primary key ID of the entity you want to delete.",
+        "parameters": Array [
+          Object {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": Object {
+              "$ref": "#/definitions/UserInput",
+            },
+          },
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "200": Object {
+            "description": "The operation was successful.",
+          },
+          "404": Object {
+            "description": "The User was not found.",
+          },
+          "422": Object {
+            "description": "Validation errors were found with the data provided.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Update a single user",
+        "tags": Array [
+          "Users",
+        ],
+      },
+    },
+    "cms/api/users/{id}/{relatedResource}": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "description": "This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.",
+        "parameters": Array [
+          Object {
+            "in": "path",
+            "name": "id",
+            "required": true,
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "path",
+            "name": "relatedResource",
+            "required": true,
+          },
+          Object {
+            "description": "This should be a JSON stringified version of a valid query object, for example: {\\"name\\":{\\"$eq\\":\\"string\\"}}",
+            "in": "query",
+            "name": "where",
+            "required": false,
+            "type": "deepObject",
+          },
+          Object {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "type": "integer",
+          },
+          Object {
+            "in": "query",
+            "name": "populate",
+            "required": false,
+            "type": "string",
+          },
+          Object {
+            "in": "query",
+            "name": "fields",
+            "required": false,
+            "type": "string",
+          },
+        ],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "404": Object {
+            "description": "The user was not found.",
+          },
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "summary": "Fetch relation to a user",
+        "tags": Array [
+          "Users",
+        ],
+      },
+    },
+    "tensei(/*)?": Object {
+      "get": Object {
+        "consumes": Array [
+          "application/json",
+        ],
+        "parameters": Array [],
+        "produces": Array [
+          "application/json",
+        ],
+        "responses": Object {
+          "500": Object {
+            "description": "Server error.",
+          },
+        },
+        "tags": Array [],
+      },
+    },
+  },
   "securityDefinitions": Object {
     "Bearer": Object {
       "in": "header",

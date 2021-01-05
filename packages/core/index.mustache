@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Dashboard | Tensei</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     {{#styles}}
         <link media="all" href="/{{name}}" rel="stylesheet" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     {{/styles}}
 </head>
 <body class='antialiased font-sans text-tensei-gray-900'>
@@ -18,7 +19,7 @@
     <script>
         window.___tensei___ = {
             ctx: '{{{ctx}}}',
-            user: '{{{user}}}',
+            admin: '{{{user}}}',
             resources: '{{{resources}}}',
             dashboards: '{{{dashboards}}}',
             shouldShowRegistrationScreen: '{{{shouldShowRegistrationScreen}}}'

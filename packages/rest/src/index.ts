@@ -12,9 +12,9 @@ import {
     route,
     Utils,
     plugin,
+    ApiContext,
     RouteContract,
-    ResourceContract,
-    ApiContext
+    ResourceContract
 } from '@tensei/common'
 
 import {
@@ -29,8 +29,16 @@ class Rest {
 
     private path: string = 'api'
 
+    private routePrefix: string = ''
+
     basePath(path: string) {
         this.path = path
+
+        return this
+    }
+
+    prefix(prefix: string) {
+        this.routePrefix = prefix
 
         return this
     }
@@ -49,6 +57,10 @@ class Rest {
             per_page: findOptions.limit ? findOptions.limit : 0,
             page_count: Math.ceil(total / findOptions.limit!) || 0
         }
+    }
+
+    private getRouteId(id: string) {
+        return this.routePrefix ? `${this.routePrefix}_${id}` : id
     }
 
     private extendRoutes(
@@ -70,7 +82,7 @@ class Rest {
                     route(`Insert ${singular}`)
                         .post()
                         .internal()
-                        .id(`insert_${singular}`)
+                        .id(this.getRouteId(`insert_${singular}`))
                         .resource(resource)
                         .path(getApiPath(plural))
                         .extend({
@@ -135,7 +147,7 @@ class Rest {
                     route(`Fetch multiple ${plural}`)
                         .get()
                         .internal()
-                        .id(`fetch_${plural}`)
+                        .id(this.getRouteId(`fetch_${plural}`))
                         .resource(resource)
                         .path(getApiPath(plural))
                         .extend({
@@ -144,31 +156,29 @@ class Rest {
                                 description: `This endpoint fetches all ${plural} that match an optional where query.`
                             }
                         })
-                        .handle(
-                            async ({ manager, query, config }, response) => {
-                                const findOptions = parseQueryToFindOptions(
-                                    query,
-                                    resource
-                                )
+                        .handle(async ({ manager, query }, response) => {
+                            const findOptions = parseQueryToFindOptions(
+                                query,
+                                resource
+                            )
 
-                                const [
-                                    entities,
-                                    total
-                                ] = await manager.findAndCount(
-                                    modelName,
-                                    parseQueryToWhereOptions(query),
+                            const [
+                                entities,
+                                total
+                            ] = await manager.findAndCount(
+                                modelName,
+                                parseQueryToWhereOptions(query),
+                                findOptions
+                            )
+
+                            return response.formatter.ok(
+                                entities,
+                                this.getPageMetaFromFindOptions(
+                                    total,
                                     findOptions
                                 )
-
-                                return response.formatter.ok(
-                                    entities,
-                                    this.getPageMetaFromFindOptions(
-                                        total,
-                                        findOptions
-                                    )
-                                )
-                            }
-                        )
+                            )
+                        })
                 )
 
             !resource.isHiddenOnApi() &&
@@ -177,7 +187,7 @@ class Rest {
                     route(`Fetch single ${singular}`)
                         .get()
                         .internal()
-                        .id(`show_${singular}`)
+                        .id(this.getRouteId(`show_${singular}`))
                         .resource(resource)
                         .extend({
                             docs: {
@@ -217,7 +227,7 @@ class Rest {
                 routes.push(
                     route(`Fetch ${singular} relations`)
                         .get()
-                        .id(`fetch_${singular}_relations`)
+                        .id(this.getRouteId(`fetch_${singular}_relations`))
                         .internal()
                         .resource(resource)
                         .extend({
@@ -373,7 +383,7 @@ class Rest {
                     route(`Update single ${singular}`)
                         .patch()
                         .internal()
-                        .id(`update_${singular}`)
+                        .id(this.getRouteId(`update_${singular}`))
                         .resource(resource)
                         .extend({
                             docs: {
@@ -445,7 +455,7 @@ class Rest {
                     route(`Delete single ${singular}`)
                         .delete()
                         .internal()
-                        .id(`delete_${singular}`)
+                        .id(this.getRouteId(`delete_${singular}`))
                         .resource(resource)
                         .path(getApiPath(`${plural}/:id`))
                         .extend({

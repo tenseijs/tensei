@@ -1,10 +1,31 @@
 import Text from './Text'
 
 export class Textarea extends Text {
+    public component = {
+        form: 'Textarea',
+        index: 'Textarea',
+        detail: 'Textarea'
+    }
+
+    private toggleEnabled: boolean = true
+
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
         this.property.columnTypes = ['text']
+    }
+
+    alwaysShow() {
+        this.toggleEnabled = false
+
+        return this
+    }
+
+    public serialize() {
+        return {
+            ...super.serialize(),
+            toggleEnabled: this.toggleEnabled
+        }
     }
 }
 

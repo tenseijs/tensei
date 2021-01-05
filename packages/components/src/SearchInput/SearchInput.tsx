@@ -1,15 +1,20 @@
 import React from 'react'
+import { ChangeEventHandler } from 'react'
 
 export interface SearchInputProps {
     className?: string
     label?: string
     name?: string
+    value?: string
+    onChange?: ChangeEventHandler<HTMLInputElement>
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
     label = 'Search',
     name = 'search',
-    className
+    value,
+    className,
+    onChange
 }) => {
     return (
         <div className={className}>
@@ -17,28 +22,31 @@ const SearchInput: React.FC<SearchInputProps> = ({
                 {label}
             </label>
             <div className="relative">
-                <input
-                    id={name}
-                    name={name}
-                    type="search"
-                    placeholder="Search"
-                    className="rounded-md block w-full pr-10 pl-3 h-10 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm"
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
                     <svg
-                        className="h-5 w-5 text-gray-400"
                         xmlns="http://www.w3.org/2000/svg"
+                        width={20}
+                        height={20}
                         viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
+                        aria-labelledby="search"
+                        role="presentation"
+                        className="fill-current search-icon-center text-gray-400"
                     >
                         <path
-                            fillRule="evenodd"
-                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                            clipRule="evenodd"
+                            fillRule="nonzero"
+                            d="M14.32 12.906l5.387 5.387a1 1 0 0 1-1.414 1.414l-5.387-5.387a8 8 0 1 1 1.414-1.414zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z"
                         />
                     </svg>
                 </div>
+                <input
+                    id={name}
+                    name={name}
+                    value={value}
+                    type="search"
+                    onChange={onChange}
+                    placeholder="Search"
+                    className="rounded-full block w-full pl-14 pr-8 h-10 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 focus:ring-1 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary"
+                />
             </div>
         </div>
     )

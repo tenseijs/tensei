@@ -103,7 +103,7 @@ declare module '@tensei/common/fields' {
 
     interface SerializedField {
         name: string
-        component: string
+        component: FieldContract['component']
         inputName: string
         isSortable: boolean
         description: string
@@ -168,6 +168,11 @@ declare module '@tensei/common/fields' {
              * form
              */
             showOnCreation: boolean
+        }
+        component: {
+            form: string
+            index: string
+            detail: string
         }
         sanitizeRule?: SanitizationRules
         showHideFieldFromApi: {
@@ -684,7 +689,11 @@ declare module '@tensei/common/fields' {
          * This is a short name for the frontend component that
          * will be mounted for this field.
          */
-        component: string
+        component: {
+            form: string
+            detail: string
+            index: string
+        }
         /**
          *
          * The database field associated with this field.

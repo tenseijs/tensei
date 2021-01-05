@@ -9,10 +9,12 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter var', ...defaultTheme.fontFamily.sans]
+                sans: ['Nunito', ...defaultTheme.fontFamily.sans]
             },
             colors: {
                 'tensei-primary': '#2346F8',
+
+                'tensei-primary-lighter': '#3f70fa',
 
                 'tensei-primary-darker': '#243de1',
                 'tensei-secondary': '#33C5FF',
@@ -21,8 +23,8 @@ module.exports = {
                 'tensei-gray-900': '#61677C',
                 'tensei-gray-800': '#D3DCE0',
                 'tensei-gray-700': '#949BAF',
-                'tensei-gray-600': '#F0F1F4',
-                'tensei-gray-400': '#D4D7DF',
+                'tensei-gray-600': '#D4D7DF',
+                'tensei-gray-400': '#F0F1F4',
                 'tensei-gray-300': '#EAEBEF',
                 'tensei-gray-100': '#F7F9FA',
 

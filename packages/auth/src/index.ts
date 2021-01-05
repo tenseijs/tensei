@@ -42,7 +42,7 @@ import {
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
-import { setup } from './setup'
+import { setup, setupCms } from './setup'
 import { ResourceContract } from '@tensei/common'
 import { createCsurfToken, checkCsurfToken } from './csrf'
 
@@ -58,9 +58,11 @@ class Auth {
         setupFn: AuthSetupFn
     } = {
         cms: false,
+        prefix: '',
         jwtEnabled: false,
         profilePictures: false,
         csrfEnabled: true,
+        tokenResource: 'Token',
         disableAutoLoginAfterRegistration: false,
         userResource: 'User',
         roleResource: 'Role',
@@ -92,6 +94,12 @@ class Auth {
 
     public constructor() {
         this.refreshResources()
+    }
+
+    public registered(registered: AuthPluginConfig['registered']) {
+        this.config.registered = registered
+
+        return this
     }
 
     private refreshResources() {
@@ -214,6 +222,12 @@ class Auth {
 
     public role(name: string) {
         this.config.roleResource = name
+
+        return this
+    }
+
+    public token(name: string) {
+        this.config.tokenResource = name
 
         return this
     }
@@ -345,7 +359,7 @@ class Auth {
     }
 
     private tokenResource() {
-        return resource('Token')
+        return resource(this.config.tokenResource)
             .fields([
                 text('Token').notNullable().hidden().searchable().unique(),
                 text('Name').searchable().nullable(),
@@ -539,8 +553,15 @@ class Auth {
             )
 
             .boot(async config => {
-                if (this.config.rolesAndPermissions) {
+                if (this.config.rolesAndPermissions && !this.config.cms) {
                     await setup(config, [
+                        this.resources.role,
+                        this.resources.permission
+                    ])
+                }
+
+                if (this.config.rolesAndPermissions && this.config.cms) {
+                    await setupCms(config, [
                         this.resources.role,
                         this.resources.permission
                     ])
@@ -569,7 +590,15 @@ class Auth {
                     })
                 )
 
-                if (!this.useTokens() && this.config.csrfEnabled) {
+                if (this.config.cms) {
+                    app.use(checkCsurfToken())
+                }
+
+                if (
+                    !this.useTokens() &&
+                    this.config.csrfEnabled &&
+                    !this.config.cms
+                ) {
                     app.use((request, response, next) => {
                         const query = request.body?.query
                             ?.replace(/(\r\n|\n|\r)/gm, '')
@@ -592,7 +621,7 @@ class Auth {
                     })
                 }
 
-                if (this.socialAuthEnabled()) {
+                if (this.socialAuthEnabled() && !this.config.cms) {
                     const grant = require('grant')
 
                     Object.keys(this.config.providers).forEach(provider => {
@@ -627,8 +656,6 @@ class Auth {
                         query.middleware(
                             async (resolve, parent, args, context, info) => {
                                 await this.getAuthUserFromContext(context)
-
-                                await this.ensureAuthUserIsNotBlocked(context)
 
                                 await this.ensureAuthUserIsNotBlocked(context)
 
@@ -836,13 +863,10 @@ class Auth {
             tags: ['Auth']
         }
 
-        if (this.config.cms) {
-            return []
-        }
-
         return [
             route(`Login ${name}`)
                 .path(this.getApiPath('login'))
+                .id(this.getRouteId(`login_${name}`))
                 .post()
                 .extend({
                     docs: {
@@ -887,6 +911,7 @@ class Auth {
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
                 .post()
+                .id(this.getRouteId(`register_${name}`))
                 .extend({
                     docs: {
                         ...extend,
@@ -930,9 +955,29 @@ class Auth {
                         }
                     }
                 ),
+            ...(this.useTokens()
+                ? []
+                : [
+                      route(`Logout ${name}`)
+                          .path(this.getApiPath('logout'))
+                          .id(this.getRouteId(`logout_${name}`))
+                          .post()
+                          .handle(async (request, response) => {
+                              request.session.destroy(error => {
+                                  if (error) {
+                                      return response.formatter.noContent({})
+                                  }
+
+                                  response.clearCookie('connect.sid')
+
+                                  return response.formatter.noContent({})
+                              })
+                          })
+                  ]),
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
                 .post()
+                .id(this.getRouteId(`request_password_reset_${name}`))
                 .extend({
                     docs: {
                         ...extend,
@@ -970,6 +1015,7 @@ class Auth {
             route(`Reset password`)
                 .path(this.getApiPath('passwords/reset'))
                 .post()
+                .id(this.getRouteId(`reset_password_${name}`))
                 .extend({
                     docs: {
                         ...extend,
@@ -1065,6 +1111,7 @@ class Auth {
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
                 .get()
+                .id(this.getRouteId(`get_authenticated_${name}`))
                 .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
@@ -1083,6 +1130,11 @@ class Auth {
                       route(`Resend Verification email`)
                           .path(this.getApiPath('emails/verification/resend'))
                           .post()
+                          .id(
+                              this.getRouteId(
+                                  `resend_${name}_verification_email`
+                              )
+                          )
                           .authorize(({ user }) => user && !user.public)
                           .extend({
                               docs: {
@@ -1100,6 +1152,7 @@ class Auth {
                       route(`Confirm ${name} email`)
                           .path(this.getApiPath('emails/verification/confirm'))
                           .post()
+                          .id(this.getRouteId(`confirm_${name}_email`))
                           .extend({
                               docs: {
                                   ...extend,
@@ -1118,6 +1171,7 @@ class Auth {
                       route(`Social Auth Login`)
                           .path(this.getApiPath('social/login'))
                           .post()
+                          .id(this.getRouteId(`social_login_${name}`))
                           .extend({
                               docs: {
                                   ...extend,
@@ -1132,6 +1186,7 @@ class Auth {
                           ),
                       route(`Social Auth Register`)
                           .path(this.getApiPath('social/register'))
+                          .id(this.getRouteId(`social_register_${name}`))
                           .post()
                           .extend({
                               docs: {
@@ -1153,6 +1208,7 @@ class Auth {
             route('Refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .post()
+                .id(this.getRouteId(`refresh_token_${name}`))
                 .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
@@ -1185,6 +1241,7 @@ class Auth {
             route('Remove refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .delete()
+                .id(this.getRouteId(`remove_refresh_token_${name}`))
                 .authorize(({ user }) => user && !user.public)
                 .extend({
                     docs: {
@@ -1208,6 +1265,7 @@ class Auth {
             ...(this.config.csrfEnabled && !this.useTokens()
                 ? [
                       route('Get CSRF Token')
+                          .id(this.getRouteId(`csrf_token_${name}`))
                           .path(this.getApiPath('csrf'))
                           .handle(async (request, response) => {
                               response.cookie(
@@ -1781,6 +1839,16 @@ class Auth {
         return `/${this.config.apiPath}/${path}`
     }
 
+    private getRouteId(id: string) {
+        return this.config.prefix ? `${this.config.prefix}_${id}` : id
+    }
+
+    prefix(prefix: string) {
+        this.config.prefix = prefix
+
+        return this
+    }
+
     private getRolesAndPermissionsNames() {
         return `${this.resources.role.data.snakeCaseNamePlural}.${this.resources.permission.data.snakeCaseNamePlural}`
     }
@@ -1804,7 +1872,7 @@ class Auth {
             })
         }
 
-        if (this.config.rolesAndPermissions) {
+        if (this.config.rolesAndPermissions && !this.config.cms) {
             const authenticatorRole: any = await manager.findOneOrFail(
                 this.resources.role.data.pascalCaseName,
                 {
@@ -1847,7 +1915,16 @@ class Auth {
             }
         }
 
-        emitter.emit(USER_EVENTS.REGISTERED, user)
+        if (this.config.registered) {
+            await this.config.registered(ctx)
+        }
+
+        emitter.emit(
+            this.config.cms
+                ? USER_EVENTS.ADMIN_REGISTERED
+                : USER_EVENTS.REGISTERED,
+            user
+        )
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
@@ -2063,6 +2140,10 @@ class Auth {
     public setAuthUserForPublicRoutes = async (ctx: GraphQLPluginContext) => {
         const { manager, user } = ctx
 
+        if (this.config.cms) {
+            return
+        }
+
         if (!this.config.rolesAndPermissions) {
             return
         }
@@ -2073,12 +2154,12 @@ class Auth {
                 slug: 'public'
             },
             {
-                populate: ['permissions'],
+                populate: [this.resources.permission.data.snakeCaseName],
                 refresh: true
             }
         )
 
-        if (!user) {
+        if (!user && publicRole) {
             ctx.user = {
                 public: true,
                 [this.getRoleUserKey()]: [publicRole as UserRole],

@@ -126,7 +126,7 @@ async function seedMongo(resources, connection) {
 }
 
 require('./app')
-    .start()
+    .start(() => {}, false)
     .then(async (tensei) => {
         const {
             ctx: {

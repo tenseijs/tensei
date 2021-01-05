@@ -1,4 +1,5 @@
 require('dotenv').config()
+const { mde } = require('@tensei/mde')
 const { rest } = require('@tensei/rest')
 const { auth } = require('@tensei/auth')
 const { media } = require('@tensei/media')
@@ -35,31 +36,6 @@ module.exports = tensei()
             ),
     ])
     .plugins([
-        auth()
-            .user('Customer')
-            .twoFactorAuth()
-            .verifyEmails()
-            .teams()
-            .apiPath('auth')
-            .rolesAndPermissions()
-            .social('github', {
-                key: process.env.GITHUB_KEY,
-                secret: process.env.GITHUB_SECRET,
-                scope: ['user', 'user:email'],
-            })
-            .social('gitlab', {
-                key: process.env.GITLAB_KEY,
-                secret: process.env.GITLAB_SECRET,
-            })
-            .social('google', {
-                key: process.env.GOOGLE_KEY,
-                secret: process.env.GOOGLE_SECRET,
-            })
-            .social('linkedin', {
-                key: process.env.LINKEDIN_KEY,
-                secret: process.env.LINKEDIN_SECRET,
-            })
-            .plugin(),
         media().graphql().plugin(),
         graphql()
             .middlewareOptions({
@@ -81,6 +57,7 @@ module.exports = tensei()
             .pass('b0adaac4573cd9')
             .port(2525)
             .plugin(),
+        mde().plugin(),
     ])
     .db({
         type: process.env.DATABASE_TYPE || 'mysql',
@@ -88,4 +65,7 @@ module.exports = tensei()
         debug: process.env.DEBUG === 'true' || false,
         user: process.env.DATABASE_USER || 'mikrotensei',
         password: process.env.DATABASE_PASSWORD || '',
+    })
+    .boot(({ routes }) => {
+        // routes.forEach(r => console.log(r.config.path, r.config.id, r.config.authorize.length))
     })

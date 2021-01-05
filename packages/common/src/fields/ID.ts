@@ -30,6 +30,12 @@ export class ID extends Field implements IDContract {
         this.property.type = 'number'
 
         this.exceptOnForms()
+
+        this.component = {
+            form: 'ID',
+            index: 'ID',
+            detail: 'ID'
+        }
     }
 
     public afterConfigSet() {

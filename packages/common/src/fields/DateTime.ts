@@ -13,13 +13,6 @@ export class DateTime extends DateField {
             this.property.columnTypes = ['timestamp without time zone']
         }
     }
-
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component = 'DateTimeField'
 }
 
 export const dateTime = (name: string, databaseField?: string) =>

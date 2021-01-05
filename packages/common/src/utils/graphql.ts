@@ -60,7 +60,7 @@ export const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
 
     allOperators.forEach(operator => {
         whereArgumentString = whereArgumentString.replace(
-            `"${operator}"`,
+            new RegExp(`"${operator}"`, 'g'),
             `"$${operator.split('_')[1]}"`
         )
     })

@@ -1,6 +1,12 @@
 import Field from './Field'
 
 export class DateField extends Field {
+    public component = {
+        form: 'Date',
+        index: 'Date',
+        detail: 'Date'
+    }
+
     /**
      *
      * Defines which day should be the first day of the week.
@@ -11,21 +17,14 @@ export class DateField extends Field {
     /**
      *
      * The date format to be used
-     * The date-fns library is used by
+     * The luxon library is used by
      * tensei
      *
-     * https://date-fns.org/v2.14.0/docs/format
+     * https://moment.github.io/luxon/docs/manual/parsing.html
      */
-    protected dateFormat: string = 'YYYY-MM-DD'
+    protected dateFormat: string = 'yyyy-MM-dd hh:mm:ss'
 
-    protected pickerFormat: string = 'YYYY-MM-DD'
-
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component = 'DateField'
+    protected pickerFormat: string = 'yyyy-MM-dd'
 
     /**
      *

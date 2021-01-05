@@ -4,12 +4,11 @@ import RelationshipField from './RelationshipField'
 
 // This would be BelongsTo in other relationship language.
 export class ManyToOne extends RelationshipField {
-    /**
-     *
-     * This is a short name for the frontend component that
-     * will be mounted for this field.
-     */
-    public component = 'ManyToOneField'
+    public component = {
+        form: 'ManyToOne',
+        index: 'ManyToOne',
+        detail: 'ManyToOne'
+    }
 
     public constructor(name: string, databaseField = snakeCase(name)) {
         super(name, databaseField)

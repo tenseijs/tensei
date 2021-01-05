@@ -8,7 +8,7 @@ declare module '@tensei/common/plugins' {
     import { DocumentNode } from 'graphql'
     import { Server } from 'http'
     import { EntityManager } from '@mikro-orm/core'
-    import { MailDriverContract } from '@tensei/mail'
+    import { MailDriverContract, MailConfig } from '@tensei/mail'
     import { ResourceContract, ManagerContract } from '@tensei/common/resources'
     import {
         Asset,
@@ -83,7 +83,7 @@ declare module '@tensei/common/plugins' {
         register(setupFunction: PluginSetupFunction): this
     }
 
-    export declare class Plugin extends PluginContract {}
+    export class Plugin extends PluginContract {}
 
     export const plugin: (name: string) => PluginContract
 }

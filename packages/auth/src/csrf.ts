@@ -1,7 +1,7 @@
 import Csurf from 'csurf'
 import { NextFunction, Request, Response } from 'express'
 
-const Middleware = Csurf({
+export const CsurfMiddleware = Csurf({
     cookie: true
 })
 
@@ -13,7 +13,11 @@ export const createCsurfToken = () => (
     response: Response,
     next: NextFunction
 ) => {
-    const _middleware = Middleware(request, response, _nextWithoutCheck(next))
+    const _middleware = CsurfMiddleware(
+        request,
+        response,
+        _nextWithoutCheck(next)
+    )
 
     response.cookie('x-csrf-token', request.csrfToken(), {
         secure: process.env.NODE_ENV === 'production'
@@ -22,4 +26,4 @@ export const createCsurfToken = () => (
     return _middleware
 }
 
-export const checkCsurfToken = () => Middleware
+export const checkCsurfToken = () => CsurfMiddleware

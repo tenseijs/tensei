@@ -64,7 +64,7 @@ module.exports = resource('Post')
         text('Slug').rules('required', 'slug').unique(),
         text('Description').rules('required').hideOnIndex(),
         // trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
-        integer('Av. CPC').rules('required').hideOnDetail(),
+        integer('Av. CPC').rules('required').hideOnDetail().sortable(),
         select('Category')
             .options([
                 {
@@ -98,6 +98,7 @@ module.exports = resource('Post')
         belongsTo('User').searchable().rules('required'),
         date('Published At')
             .notNullable()
+            .hideOnIndex()
             .firstDayOfWeek(4)
             .rules('required', 'date')
             .format('do MMM yyyy, hh:mm a'),

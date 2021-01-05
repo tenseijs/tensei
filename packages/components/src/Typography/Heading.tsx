@@ -10,7 +10,7 @@ const Heading: React.FC<HeadingProps> = ({ children, as, className }) => {
 
     return (
         <Element
-            className={`font-bold text-xl tracking-wide text-tensei-darkest ${className}`}
+            className={`text-xl tracking-wide text-tensei-darkest ${className}`}
         >
             {children}
         </Element>

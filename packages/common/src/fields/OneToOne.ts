@@ -4,7 +4,11 @@ import RelationshipField from './RelationshipField'
 
 // This would be hasMany in other relationship language.
 export class OneToOne extends RelationshipField {
-    public component = 'OneToOneField'
+    public component = {
+        form: 'OneToOne',
+        index: 'OneToOne',
+        detail: 'OneToOne'
+    }
 
     public constructor(name: string, databaseField = camelCase(name)) {
         super(name, databaseField)

@@ -6,6 +6,12 @@ export interface Option {
 }
 
 export class Select extends Field {
+    public component = {
+        form: 'Select',
+        index: 'Select',
+        detail: 'Select'
+    }
+
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 

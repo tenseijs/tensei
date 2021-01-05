@@ -1,6 +1,12 @@
 import Field from './Field'
 
 export class Text extends Field {
+    public component = {
+        form: 'Text',
+        index: 'Text',
+        detail: 'Text'
+    }
+
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 

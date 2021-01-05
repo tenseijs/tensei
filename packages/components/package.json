@@ -34,6 +34,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@headlessui/react": "^0.2.0"
+        "@headlessui/react": "^0.2.0",
+        "@types/react-flatpickr": "^3.8.1",
+        "react-flatpickr": "^3.10.6"
     }
 }
