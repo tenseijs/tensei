@@ -72,7 +72,7 @@
         "speakingurl": "^14.0.1",
         "tailwindcss": "npm:@tailwindcss/postcss7-compat",
         "throttle-debounce": "^3.0.1",
-        "toastedjs": "^0.0.2",
+        "toastedjs": "^0.0.16",
         "use-onclickoutside": "^0.3.1"
     }
 }
