@@ -11,17 +11,15 @@ const Register = () => {
         errors: {
             [key: string]: string
         }
-        password: string
         is_loading: boolean
-        remember_me: boolean
         is_login: boolean
+        submitted?: boolean
     }>({
         name: '',
         email: '',
         errors: {},
-        password: '',
+        submitted: false,
         is_loading: false,
-        remember_me: false,
         is_login: !!location.pathname.match('login')
     })
 
@@ -45,13 +43,25 @@ const Register = () => {
         event.preventDefault()
 
         window.Tensei.client
-            .post(state.is_login ? 'login' : 'register', {
-                email: state.email,
-                password: state.password,
-                remember_me: state.remember_me
-            })
+            .post(
+                `passwordless/email/${state.is_login ? 'login' : 'register'}`,
+                {
+                    email: state.email
+                }
+            )
             .then(() => {
-                window.location.href = window.Tensei.getPath('')
+                window.Tensei.success(
+                    'Please check your email for a magic link to log you in.',
+                    {
+                        duration: null
+                    }
+                )
+
+                setState({
+                    ...state,
+                    is_loading: false,
+                    submitted: true
+                })
             })
             .catch(({ response }) => {
                 setState({
@@ -76,7 +86,7 @@ const Register = () => {
                         src="https://res.cloudinary.com/bahdcoder/image/upload/v1604236130/Asset_1_4x_fhcfyg.png"
                     />
                 </div>
-                <div className="border-t-2 border-tensei-primary bg-white shadow-md py-8 px-8">
+                <div className="border-t-2 border-tensei-primary bg-white shadow-md pt-4 pb-6 px-8">
                     <form onSubmit={onSubmit}>
                         <TextInput
                             id="email"
@@ -93,53 +103,11 @@ const Register = () => {
                                 })
                             }
                         />
-                        <TextInput
-                            id="password"
-                            type="password"
-                            name="password"
-                            label="Password"
-                            className="mt-4"
-                            error={state.errors.password}
-                            placeholder={
-                                state.is_login
-                                    ? '********'
-                                    : 'Choose a secure password'
-                            }
-                            value={state.password}
-                            onChange={event =>
-                                setState({
-                                    ...state,
-                                    password: event.target.value
-                                })
-                            }
-                        />
-
-                        <div className="mt-8 flex flex-wrap justify-between items-center">
-                            <div className="flex items-center w-full md:w-auto">
-                                <Checkbox
-                                    onChange={event =>
-                                        setState({
-                                            ...state,
-                                            remember_me: event.target.checked
-                                        })
-                                    }
-                                    id="remember_me"
-                                    className="mr-3"
-                                    name="remember_me"
-                                    checked={state.remember_me}
-                                />
-
-                                <label
-                                    htmlFor="remember_me"
-                                    className="inline-block mt-0 md:mt-1"
-                                >
-                                    Remember me
-                                </label>
-                            </div>
-
+                        <div className="flex flex-wrap justify-end items-center mt-2">
                             <Button
                                 primary
                                 type="submit"
+                                disabled={state.submitted}
                                 loading={state.is_loading}
                                 className="mt-3 md:mt-3 text-center"
                             >

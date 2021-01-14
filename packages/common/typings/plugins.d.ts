@@ -62,6 +62,7 @@ declare module '@tensei/common/plugins' {
             driver: ExtendMailCallback,
             config: any
         ) => void
+        extendPlugins: (plugins: PluginContract[]) => void
         extendEvents: (events: EventContract<DataPayload>) => void
     }
 
@@ -72,13 +73,17 @@ declare module '@tensei/common/plugins' {
     ) => MailDriverContract
 
     export abstract class PluginContract {
-        name: string
-        slug: string
-        data: {
+        config: {
+            id: string
+            name: string
+            extra?: DataPayload
             permissions: Permission[]
             boot: (config: PluginSetupConfig) => void | Promise<void>
             register: (config: PluginSetupConfig) => void | Promise<void>
         }
+        id(id: string): this
+        name(name: string): this
+        extra(extra: DataPayload): this
         boot(setupFunction: PluginSetupFunction): this
         register(setupFunction: PluginSetupFunction): this
     }

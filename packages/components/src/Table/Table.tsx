@@ -33,6 +33,8 @@ export interface TableProps {
         field?: string
         direction?: 'asc' | 'desc'
     }
+    Empty?: React.ComponentType
+    emptyLink?: string
     onSort?: (sort: TableProps['sort']) => void
     columns: TableColumn[]
     selection?: {
@@ -48,7 +50,8 @@ const Table: React.FC<TableProps> = ({
     loading,
     sort: defaultSort = {},
     onSort,
-    key = 'id'
+    key = 'id',
+    Empty
 }) => {
     const [selected, setSelected] = useState<TableRow[]>([])
     const [sort, setSort] = useState<TableProps['sort']>(defaultSort)
@@ -118,7 +121,7 @@ const Table: React.FC<TableProps> = ({
     return (
         <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-white">
-                <tr>
+                <tr className="border-tensei-gray-600">
                     {selection?.onChange ? (
                         <th
                             key="select-all"
@@ -132,7 +135,7 @@ const Table: React.FC<TableProps> = ({
                                 }
                                 disabled={loading}
                                 onChange={onSelectAllCheckboxChange}
-                                className="text-tensei-primary rounded-sm border border-tensei-gray-600"
+                                className="text-tensei-primary rounded-sm border border-tensei-gray-500"
                             />
                         </th>
                     ) : null}
@@ -200,13 +203,13 @@ const Table: React.FC<TableProps> = ({
                         {rows.map(row => (
                             <tr key={row[key]}>
                                 {selection?.onChange ? (
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td className="px-6 py-3 whitespace-nowrap text-sm font-medium">
                                         <input
                                             type="checkbox"
                                             checked={selected.some(
                                                 r => r[key] === row[key]
                                             )}
-                                            className="text-tensei-primary rounded-sm border border-tensei-gray-600"
+                                            className="text-tensei-primary rounded-sm border border-tensei-gray-500"
                                             onChange={event =>
                                                 onCheckboxChange(row, event)
                                             }
@@ -217,7 +220,7 @@ const Table: React.FC<TableProps> = ({
                                     <Fragment
                                         key={`${column.field}-${row[key]}-${index}`}
                                     >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <td className="px-6 py-3 whitespace-nowrap text-sm">
                                             {column.render
                                                 ? column.render(
                                                       row[column.field],
@@ -229,6 +232,7 @@ const Table: React.FC<TableProps> = ({
                                 ))}
                             </tr>
                         ))}
+                        {rows.length === 0 && Empty ? <Empty /> : null}
                     </Fragment>
                 )}
             </tbody>

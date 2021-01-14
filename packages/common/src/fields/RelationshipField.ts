@@ -15,6 +15,7 @@ export class RelationshipField extends Field {
         super(name, databaseField)
 
         this.hideOnIndex()
+        this.dockToSidebarOnForms()
     }
 
     public cascades(cascades: Cascade[]) {

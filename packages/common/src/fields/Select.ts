@@ -12,9 +12,12 @@ export class Select extends Field {
         detail: 'Select'
     }
 
+    private selectOptions: Option[] = []
+
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
+        this.defaultFormValue('')
         this.property.enum = true
         this.property.items = []
     }
@@ -26,9 +29,17 @@ export class Select extends Field {
      *
      */
     public options(options: Array<Option>) {
+        this.selectOptions = options
         this.property.items = options.map(option => option.value)
 
         return this
+    }
+
+    public serialize() {
+        return {
+            ...super.serialize(),
+            selectOptions: this.selectOptions
+        }
     }
 }
 

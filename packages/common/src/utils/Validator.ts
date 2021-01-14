@@ -15,11 +15,15 @@ export class Validator {
         validator.extend('unique', {
             async: true,
             async validate(data, field, args) {
+                if (!data.original[args[0]]) {
+                    return true
+                }
+
                 const whereOptions: any = {
                     [args[0]]: data.original[args[0]]
                 }
 
-                if (args[1] && self.modelId) {
+                if (self.modelId) {
                     whereOptions.id = {
                         $ne: self.modelId
                     }

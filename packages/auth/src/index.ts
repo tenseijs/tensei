@@ -42,7 +42,7 @@ import {
 } from './config'
 import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
-import { setup, setupCms } from './setup'
+import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
 import { createCsurfToken, checkCsurfToken } from './csrf'
 
@@ -111,17 +111,6 @@ class Auth {
         this.resources.permission = this.permissionResource()
         this.resources.teamInvite = this.teamInviteResource()
         this.resources.passwordReset = this.passwordResetResource()
-
-        if (this.config.cms) {
-            this.resources.user.hideOnApi()
-            this.resources.team.hideOnApi()
-            this.resources.role.hideOnApi()
-            this.resources.token.hideOnApi()
-            this.resources.permission.hideOnApi()
-            this.resources.teamInvite.hideOnApi()
-            this.resources.oauthIdentity.hideOnApi()
-            this.resources.passwordReset.hideOnApi()
-        }
 
         this.config.setupFn(this.resources)
     }
@@ -282,7 +271,11 @@ class Auth {
                     .onlyOnForms()
                     .hideOnUpdateApi()
                     .hideOnUpdate(),
-                dateTime('Blocked At').nullable().hideOnApi(),
+                boolean('Blocked')
+                    .nullable()
+                    .default(false)
+                    .defaultFormValue(false)
+                    .hideOnApi(),
                 ...socialFields,
                 ...(this.config.rolesAndPermissions
                     ? [
@@ -495,6 +488,7 @@ class Auth {
 
     public plugin() {
         return plugin('Auth')
+            .extra(this.config)
             .register(
                 ({
                     gql,
@@ -553,15 +547,10 @@ class Auth {
             )
 
             .boot(async config => {
-                if (this.config.rolesAndPermissions && !this.config.cms) {
-                    await setup(config, [
-                        this.resources.role,
-                        this.resources.permission
-                    ])
-                }
+                this.refreshResources()
 
-                if (this.config.rolesAndPermissions && this.config.cms) {
-                    await setupCms(config, [
+                if (this.config.rolesAndPermissions) {
+                    await setup(config, [
                         this.resources.role,
                         this.resources.permission
                     ])
@@ -590,15 +579,7 @@ class Auth {
                     })
                 )
 
-                if (this.config.cms) {
-                    app.use(checkCsurfToken())
-                }
-
-                if (
-                    !this.useTokens() &&
-                    this.config.csrfEnabled &&
-                    !this.config.cms
-                ) {
+                if (!this.useTokens() && this.config.csrfEnabled) {
                     app.use((request, response, next) => {
                         const query = request.body?.query
                             ?.replace(/(\r\n|\n|\r)/gm, '')
@@ -621,7 +602,7 @@ class Auth {
                     })
                 }
 
-                if (this.socialAuthEnabled() && !this.config.cms) {
+                if (this.socialAuthEnabled()) {
                     const grant = require('grant')
 
                     Object.keys(this.config.providers).forEach(provider => {
@@ -651,102 +632,94 @@ class Auth {
                     )
                 }
 
-                if (!this.config.cms) {
-                    currentCtx().graphQlQueries.forEach(query => {
-                        query.middleware(
-                            async (resolve, parent, args, context, info) => {
-                                await this.getAuthUserFromContext(context)
+                currentCtx().graphQlQueries.forEach(query => {
+                    query.middleware(
+                        async (resolve, parent, args, context, info) => {
+                            await this.getAuthUserFromContext(context)
 
-                                await this.ensureAuthUserIsNotBlocked(context)
+                            await this.ensureAuthUserIsNotBlocked(context)
 
-                                return resolve(parent, args, context, info)
-                            }
-                        )
-                        if (
-                            query.config.resource &&
-                            this.config.rolesAndPermissions
-                        ) {
-                            const { path, internal } = query.config
-                            const {
-                                snakeCaseNamePlural: plural,
-                                snakeCaseName: singular,
-                                slug
-                            } = query.config.resource.data
-
-                            if (!internal) {
-                                return
-                            }
-
-                            if (
-                                [
-                                    `insert_${plural}`,
-                                    `insert_${singular}`
-                                ].includes(path)
-                            ) {
-                                return query.authorize(
-                                    ({ user }) =>
-                                        user &&
-                                        user[
-                                            this.getPermissionUserKey()
-                                        ]?.includes(`insert:${slug}`)
-                                )
-                            }
-
-                            if (
-                                [
-                                    `delete_${plural}`,
-                                    `delete_${singular}`
-                                ].includes(path)
-                            ) {
-                                return query.authorize(
-                                    ({ user }) =>
-                                        user &&
-                                        user[
-                                            this.getPermissionUserKey()
-                                        ]?.includes(`delete:${slug}`)
-                                )
-                            }
-
-                            if (
-                                [
-                                    `update_${plural}`,
-                                    `update_${singular}`
-                                ].includes(path)
-                            ) {
-                                return query.authorize(
-                                    ({ user }) =>
-                                        user &&
-                                        user[
-                                            this.getPermissionUserKey()
-                                        ]?.includes(`update:${slug}`)
-                                )
-                            }
-
-                            if (
-                                path === plural ||
-                                path === `${plural}__count`
-                            ) {
-                                return query.authorize(
-                                    ({ user }) =>
-                                        user &&
-                                        user[
-                                            this.getPermissionUserKey()
-                                        ]?.includes(`fetch:${slug}`)
-                                )
-                            }
-
-                            if (path === singular) {
-                                return query.authorize(
-                                    ({ user }) =>
-                                        user &&
-                                        user[
-                                            this.getPermissionUserKey()
-                                        ]?.includes(`show:${slug}`)
-                                )
-                            }
+                            return resolve(parent, args, context, info)
                         }
-                    })
-                }
+                    )
+                    if (
+                        query.config.resource &&
+                        this.config.rolesAndPermissions
+                    ) {
+                        const { path, internal } = query.config
+                        const {
+                            snakeCaseNamePlural: plural,
+                            snakeCaseName: singular,
+                            slug
+                        } = query.config.resource.data
+
+                        if (!internal) {
+                            return
+                        }
+
+                        if (
+                            [`insert_${plural}`, `insert_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(
+                                ({ user }) =>
+                                    user &&
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `insert:${slug}`
+                                    )
+                            )
+                        }
+
+                        if (
+                            [`delete_${plural}`, `delete_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(
+                                ({ user }) =>
+                                    user &&
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `delete:${slug}`
+                                    )
+                            )
+                        }
+
+                        if (
+                            [`update_${plural}`, `update_${singular}`].includes(
+                                path
+                            )
+                        ) {
+                            return query.authorize(
+                                ({ user }) =>
+                                    user &&
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `update:${slug}`
+                                    )
+                            )
+                        }
+
+                        if (path === plural || path === `${plural}__count`) {
+                            return query.authorize(
+                                ({ user }) =>
+                                    user &&
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `fetch:${slug}`
+                                    )
+                            )
+                        }
+
+                        if (path === singular) {
+                            return query.authorize(
+                                ({ user }) =>
+                                    user &&
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `show:${slug}`
+                                    )
+                            )
+                        }
+                    }
+                })
 
                 routes.forEach(route => {
                     route.middleware([
@@ -766,7 +739,6 @@ class Auth {
                     ])
                     if (
                         route.config.resource &&
-                        !this.config.cms &&
                         this.config.rolesAndPermissions
                     ) {
                         const { resource, id } = route.config
@@ -905,6 +877,7 @@ class Auth {
                     try {
                         return ok(await this.login(request as any))
                     } catch (error) {
+                        console.log('_________', request.session, error)
                         return unprocess(error)
                     }
                 }),
@@ -1292,12 +1265,6 @@ class Auth {
     private extendGraphQlQueries() {
         const name = this.resources.user.data.snakeCaseName
 
-        if (this.config.cms) {
-            // THE CMS DASHBOARD DOES NOT CONSUME GRAPHQL
-
-            return []
-        }
-
         const resources: ResourceContract[] = Object.keys(this.resources).map(
             key => (this.resources as any)[key]
         )
@@ -1663,10 +1630,6 @@ class Auth {
     private extendGraphQLTypeDefs(gql: any) {
         const snakeCaseName = this.resources.user.data.snakeCaseName
 
-        if (this.config.cms) {
-            return ``
-        }
-
         return gql`
         type register_${snakeCaseName}_response {
             ${
@@ -1872,7 +1835,7 @@ class Auth {
             })
         }
 
-        if (this.config.rolesAndPermissions && !this.config.cms) {
+        if (this.config.rolesAndPermissions) {
             const authenticatorRole: any = await manager.findOneOrFail(
                 this.resources.role.data.pascalCaseName,
                 {
@@ -1919,12 +1882,7 @@ class Auth {
             await this.config.registered(ctx)
         }
 
-        emitter.emit(
-            this.config.cms
-                ? USER_EVENTS.ADMIN_REGISTERED
-                : USER_EVENTS.REGISTERED,
-            user
-        )
+        emitter.emit(USER_EVENTS.REGISTERED, user)
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
@@ -2139,10 +2097,6 @@ class Auth {
 
     public setAuthUserForPublicRoutes = async (ctx: GraphQLPluginContext) => {
         const { manager, user } = ctx
-
-        if (this.config.cms) {
-            return
-        }
 
         if (!this.config.rolesAndPermissions) {
             return
@@ -2591,12 +2545,6 @@ class Auth {
                     ? config.scope
                     : defaultProviderScopes(provider)
         }
-
-        return this
-    }
-
-    public cms() {
-        this.config.cms = true
 
         return this
     }

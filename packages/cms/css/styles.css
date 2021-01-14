@@ -1,3 +1,83 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.tensei {
+    @apply text-white py-2 px-4 font-bold rounded-lg shadow-lg;
+}
+
+.toasted.default {
+    @apply bg-tensei-primary tensei;
+}
+
+.toasted.success {
+    @apply bg-tensei-success tensei;
+}
+
+.toasted.error {
+    @apply bg-tensei-error tensei;
+}
+
+.react-select-container {
+    min-height: 2.5rem;
+}
+
+.react-select__control {
+    @apply rounded-md;
+}
+
+.react-select__placeholder {
+    @apply text-tensei-gray-700 !important;
+}
+
+.react-select-container--error .react-select__control {
+    @apply border-2 border-tensei-error !important;
+}
+
+.react-select__control {
+    @apply border border-tensei-gray-500 rounded-md !important;
+}
+
+.react-select__control--is-focused {
+    @apply ring-tensei-primary ring-1 border-tensei-primary outline-none ring-tensei-primary !important;
+}
+
+.react-select__value-container {
+    @apply px-3 !important;
+}
+
+.react-select__indicator-separator {
+    @apply bg-tensei-gray-500 mt-0 mb-0 !important;
+}
+
+.react-select__menu {
+    @apply shadow-sm !important;
+}
+
+.react-select__menu-list {
+    @apply border border-tensei-gray-500 rounded-md !important;
+}
+
+.react-select__option--is-focused {
+    @apply bg-tensei-gray-600 cursor-pointer transition ease-in-out duration-75 !important;
+}
+
+.react-select__option--is-selected {
+    @apply bg-tensei-primary text-white hover:bg-tensei-primary !important;
+}
+
+.react-select__multi-value {
+    @apply bg-tensei-gray-600 !important;
+}
+
+.react-select__multi-value__label {
+    @apply font-semibold text-tensei-gray-800 !important;
+}
+
+.react-select__multi-value__remove {
+    @apply hover:bg-tensei-gray-600 text-tensei-gray-800 cursor-pointer !important;
+}
+
+.react-select__multi-value__remove svg {
+    @apply hover:text-tensei-gray-800 !important;
+}

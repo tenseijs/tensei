@@ -1,5 +1,5 @@
 import React from 'react'
-import { DetailComponentProps, Paragraph } from '@tensei/components'
+import { DetailComponentProps } from '@tensei/components'
 
 export interface BooleanProps extends DetailComponentProps {
     className?: string

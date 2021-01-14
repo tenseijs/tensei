@@ -5,7 +5,6 @@
 
 .sk-flow-dot {
     width: 25%;
-    height: 25%;
     border-radius: 50%;
     animation: sk-flow 0.7s cubic-bezier(0.455, 0.03, 0.515, 0.955) 0s infinite
         both;

@@ -29,7 +29,7 @@ export class Message implements MessageContract {
 	 * Path to the views used to generate content for the
 	 * message
 	 */
-	private contentViews: {
+	contentViews: {
 		html?: {
 			template: string
 			data?: any

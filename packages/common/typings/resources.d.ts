@@ -18,9 +18,11 @@ declare module '@tensei/common/resources' {
     export interface ValidationMessages {
         [key: string]: string
     }
+    export type SupportedIcons = 'grid' | 'tag' | 'duplicate'
     export interface ResourceData {
         name: string
         table: string
+        icon: SupportedIcons
         group: string
         slug: string
         label: string
@@ -55,7 +57,7 @@ declare module '@tensei/common/resources' {
         fields: FieldContract[]
         actions: ActionContract[]
     }
-    export interface SerializedResource extends ResourceData {
+    export interface SerializedResource extends Partial<ResourceData> {
         fields: SerializedField[]
         actions: SerializedAction[]
     }

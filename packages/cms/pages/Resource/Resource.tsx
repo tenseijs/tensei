@@ -1,46 +1,55 @@
 import Qs from 'qs'
 import Paginate from 'react-paginate'
 import { throttle } from 'throttle-debounce'
-import { Link, useHistory, useLocation } from 'react-router-dom'
 import React, { useState, useCallback, useEffect } from 'react'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import {
     Table,
     SearchInput,
     Select,
-    ConfirmModal,
     Button,
     Heading,
     ResourceContract,
-    PaginatedData
+    PaginatedData,
+    AbstractData
 } from '@tensei/components'
 
+import DeleteModal from '../../components/DeleteModal'
+
 export interface ResourceProps {
-    resource: ResourceContract
+    detailId?: string
+    baseResource: ResourceContract
+    relatedResource?: ResourceContract
 }
 
-const Resource: React.FC<ResourceProps> = ({ resource }) => {
+const Resource: React.FC<ResourceProps> = ({
+    baseResource,
+    relatedResource,
+    detailId
+}) => {
+    const resource = relatedResource ? relatedResource : baseResource
     const history = useHistory()
     const location = useLocation()
-    const [deleting, setDeleting] = useState<any>(null)
+    const [search, setSearch] = useState('')
+    const [deleting, setDeleting] = useState<AbstractData | null>(null)
 
     const fields = resource.fields.filter(field => field.showOnIndex)
 
     const searchableFields = resource.fields.filter(field => field.isSearchable)
 
     const getDefaultParametersFromSearch = () => {
-        const search = Qs.parse(location.search.split('?')[1])
+        const searchQuery = Qs.parse(location.search.split('?')[1])
 
-        const sort = ((search[`${resource.slug}_sort`] as string) || '').split(
-            '_'
-        )
+        const sort = (
+            (searchQuery[`${resource.slug}_sort`] as string) || ''
+        ).split('___')
 
         return {
-            page: search[`${resource.slug}_page`] || 1,
+            page: searchQuery[`${resource.slug}_page`] || 1,
             per_page:
-                search[`${resource.slug}_per_page`] ||
+                searchQuery[`${resource.slug}_per_page`] ||
                 resource.perPageOptions[0] ||
                 10,
-            search: search[`${resource.slug}_search`] || '',
             sort: sort
                 ? {
                       field: sort[0],
@@ -52,15 +61,16 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
 
     const defaultParams = getDefaultParametersFromSearch()
 
-    const [data, setData] = useState<PaginatedData>({
+    const getDefaultData = () => ({
         meta: {
-            page: defaultParams.page as number,
-            per_page: defaultParams.per_page as number
+            page: parseInt(defaultParams.page as string),
+            per_page: parseInt(defaultParams.per_page as string)
         },
-        search: defaultParams.search as string,
         data: [],
         sort: defaultParams.sort as any
     })
+
+    const [data, setData] = useState<PaginatedData>(getDefaultData())
 
     const [loading, setLoading] = useState(true)
 
@@ -73,11 +83,11 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
         if (data.sort?.field) {
             parameters[
                 `${resource.slug}_sort`
-            ] = `${data.sort?.field}_${data.sort?.direction}`
+            ] = `${data.sort?.field}___${data.sort?.direction}`
         }
 
-        if (data.search) {
-            parameters[`${resource.slug}_search`] = data.search
+        if (search) {
+            parameters[`${resource.slug}_search`] = search
         }
 
         return Qs.stringify(parameters, { encodeValuesOnly: true })
@@ -88,10 +98,10 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
             where: {}
         }
 
-        if (data.search) {
+        if (search) {
             parameters.where._or = searchableFields.map(field => ({
                 [field.inputName]: {
-                    _like: `%${data.search}%`
+                    _like: `%${search}%`
                 }
             }))
         }
@@ -106,8 +116,6 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
         return Qs.stringify(parameters, { encodeValuesOnly: true })
     }
 
-    const query = getQuery()
-
     const fetchData = useCallback(
         throttle(
             700,
@@ -115,11 +123,16 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
                 setLoading(true)
 
                 window.Tensei.client
-                    .get(`${slug}?${query}`)
+                    .get(
+                        relatedResource
+                            ? `${baseResource.slug}/${detailId}/${relatedResource.slug}?${query}`
+                            : `${slug}?${query}`
+                    )
                     .then(({ data: payload }) => {
                         setData({
                             ...currentData,
-                            ...payload
+                            data: payload.data,
+                            meta: payload.meta
                         })
                         setLoading(false)
                     })
@@ -129,27 +142,127 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
     )
 
     useEffect(() => {
-        fetchData(data, resource.slug, query)
+        setData(getDefaultData())
+    }, [resource.slug])
+
+    useEffect(() => {
+        fetchData(data, resource.slug, getQuery())
 
         history.push({
             pathname: location.pathname,
             search: getSearchString()
         })
-    }, [
-        resource.slug,
-        data.meta.per_page,
-        data.meta.page,
-        data.sort,
-        data.search
-    ])
+    }, [data.meta.per_page, data.meta.page, data.sort, search])
+
+    const computePaginationValues = () => {
+        const to = data.meta.per_page * data.meta.page
+
+        return {
+            from: data.meta.per_page * (data.meta.page - 1) + 1,
+            to: data.meta.total && data.meta.total <= to ? data.meta.total : to,
+            total: data.meta.total
+        }
+    }
+
+    const paginationValues = computePaginationValues()
+
+    const columns = [
+        ...fields.map(field => ({
+            title: field.name,
+            field: field.inputName,
+            sorter: field.isSortable,
+            render: (value: string, row: any) => {
+                const Component =
+                    window.Tensei.components.index[field.component.index] ||
+                    window.Tensei.components.index.Text
+
+                return (
+                    <Component
+                        field={field}
+                        values={row}
+                        value={row[field.inputName]}
+                        resource={resource}
+                    />
+                )
+            }
+        })),
+        {
+            title: <span className="sr-only">View</span>,
+            field: 'actions',
+
+            render: (value: string, row: any) => (
+                <div className="flex items-center">
+                    <Link
+                        to={window.Tensei.getPath(
+                            `resources/${resource.slug}/${row.id}`
+                        )}
+                        className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
+                    >
+                        <span className="sr-only">View resource</span>
+
+                        <svg
+                            width={20}
+                            height={20}
+                            className="fill-current text-tensei-gray-800"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path
+                                fillRule="evenodd"
+                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                    </Link>
+                    <Link
+                        to={window.Tensei.getPath(
+                            `resources/${resource.slug}/${row.id}/update`
+                        )}
+                        className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
+                    >
+                        <span className="sr-only">Edit</span>
+                        <svg
+                            className="fill-current text-tensei-gray-800"
+                            width={16}
+                            height={16}
+                            viewBox="0 0 14 14"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
+                        </svg>
+                    </Link>
+                    <button
+                        onClick={() => setDeleting(row)}
+                        className="flex items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
+                    >
+                        <span className="sr-only">Delete</span>
+                        <svg
+                            width={16}
+                            height={16}
+                            className="fill-current text-tensei-gray-800"
+                            viewBox="0 0 12 14"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path d="M1.5 12.25C1.5 13.075 2.175 13.75 3 13.75H9C9.825 13.75 10.5 13.075 10.5 12.25V3.25H1.5V12.25ZM11.25 1H8.625L7.875 0.25H4.125L3.375 1H0.75V2.5H11.25V1Z" />
+                        </svg>
+                    </button>
+                </div>
+            )
+        }
+    ]
 
     return (
         <>
-            <ConfirmModal
+            <DeleteModal
                 open={!!deleting}
-                title="Delete Account?"
+                resource={resource}
                 setOpen={() => setDeleting(null)}
-                description="Are you sure you want to delete this account? This action cannot be reversed."
+                selected={[deleting!].filter(Boolean)}
+                onDelete={() => fetchData(data, resource.slug, getQuery())}
             />
             <Heading as="h2" className="mb-5 text-2xl">
                 {resource.label}
@@ -158,13 +271,8 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
                 <div className="flex flex-wrap w-full md:w-auto">
                     <SearchInput
                         className="md:mr-5 w-full mb-3 md:mb-0 md:w-96"
-                        value={data.search || ''}
-                        onChange={event =>
-                            setData({
-                                ...data,
-                                search: event.target.value
-                            })
-                        }
+                        value={search || ''}
+                        onChange={event => setSearch(event.target.value)}
                     />
                 </div>
 
@@ -187,110 +295,35 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
                                 <Table
                                     sort={data.sort}
                                     loading={loading}
+                                    columns={columns}
                                     onSort={sort => setData({ ...data, sort })}
-                                    columns={[
-                                        ...fields.map(field => ({
-                                            title: field.name,
-                                            field: field.inputName,
-                                            sorter: field.isSortable,
-                                            render: (
-                                                value: string,
-                                                row: any
-                                            ) => {
-                                                const Component =
-                                                    window.Tensei.components
-                                                        .index[
-                                                        field.component.index
-                                                    ] ||
-                                                    window.Tensei.components
-                                                        .index.Text
-
-                                                return (
-                                                    <Component
-                                                        field={field}
-                                                        values={row}
-                                                        value={
-                                                            row[field.inputName]
-                                                        }
-                                                        resource={resource}
-                                                    />
-                                                )
-                                            }
-                                        })),
-                                        {
-                                            title: (
-                                                <span className="sr-only">
-                                                    View
-                                                </span>
-                                            ),
-                                            field: 'actions',
-
-                                            render: (value, row) => (
-                                                <div className="flex items-center">
-                                                    <Link
-                                                        to={window.Tensei.getPath(
-                                                            'resources/books/123'
-                                                        )}
-                                                        className="flex mr-4 items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full"
-                                                    >
-                                                        <span className="sr-only">
-                                                            View resource
-                                                        </span>
-
-                                                        <svg
-                                                            className="fill-current text-tensei-gray-700"
-                                                            width={14}
-                                                            height={14}
-                                                            viewBox="0 0 14 14"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
-                                                        </svg>
-                                                    </Link>
-                                                    <button className="flex mr-4 items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full">
-                                                        <span className="sr-only">
-                                                            Edit
-                                                        </span>
-                                                        <svg
-                                                            className="fill-current text-tensei-gray-700"
-                                                            width={14}
-                                                            height={14}
-                                                            viewBox="0 0 14 14"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
-                                                        </svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            setDeleting(row)
-                                                        }
-                                                        className="flex items-center justify-center bg-tensei-gray-300 h-8 w-8 rounded-full"
-                                                    >
-                                                        <span className="sr-only">
-                                                            Delete
-                                                        </span>
-                                                        <svg
-                                                            width={14}
-                                                            height={14}
-                                                            className="fill-current text-tensei-gray-700"
-                                                            viewBox="0 0 12 14"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path d="M1.5 12.25C1.5 13.075 2.175 13.75 3 13.75H9C9.825 13.75 10.5 13.075 10.5 12.25V3.25H1.5V12.25ZM11.25 1H8.625L7.875 0.25H4.125L3.375 1H0.75V2.5H11.25V1Z" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            )
-                                        }
-                                    ]}
                                     rows={data.data as any}
                                     selection={{
                                         onChange: () => {}
                                     }}
+                                    Empty={() => (
+                                        <tr className="h-24">
+                                            <td colSpan={columns.length + 1}>
+                                                <div className="w-full h-full flex flex-col items-center justify-center my-8">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width={65}
+                                                        height={51}
+                                                        viewBox="0 0 65 51"
+                                                        className="mb-4 text-tensei-gray-500 fill-current"
+                                                    >
+                                                        <path d="M56 40h2c.552285 0 1 .447715 1 1s-.447715 1-1 1h-2v2c0 .552285-.447715 1-1 1s-1-.447715-1-1v-2h-2c-.552285 0-1-.447715-1-1s.447715-1 1-1h2v-2c0-.552285.447715-1 1-1s1 .447715 1 1v2zm-5.364125-8H38v8h7.049375c.350333-3.528515 2.534789-6.517471 5.5865-8zm-5.5865 10H6c-3.313708 0-6-2.686292-6-6V6c0-3.313708 2.686292-6 6-6h44c3.313708 0 6 2.686292 6 6v25.049375C61.053323 31.5511 65 35.814652 65 41c0 5.522847-4.477153 10-10 10-5.185348 0-9.4489-3.946677-9.950625-9zM20 30h16v-8H20v8zm0 2v8h16v-8H20zm34-2v-8H38v8h16zM2 30h16v-8H2v8zm0 2v4c0 2.209139 1.790861 4 4 4h12v-8H2zm18-12h16v-8H20v8zm34 0v-8H38v8h16zM2 20h16v-8H2v8zm52-10V6c0-2.209139-1.790861-4-4-4H6C3.790861 2 2 3.790861 2 6v4h52zm1 39c4.418278 0 8-3.581722 8-8s-3.581722-8-8-8-8 3.581722-8 8 3.581722 8 8 8z" />
+                                                    </svg>
+                                                    <p>
+                                                        No{' '}
+                                                        {resource.name.toLowerCase()}{' '}
+                                                        matched the given
+                                                        criteria.
+                                                    </p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
                                 />
                             </div>
                         </div>
@@ -301,6 +334,7 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
                     <Select
                         className="w-full md:w-auto mb-3 md:mb-0"
                         roundedFull
+                        hideFirstOption
                         options={
                             resource.perPageOptions?.map(option => ({
                                 value: option,
@@ -319,25 +353,30 @@ const Resource: React.FC<ResourceProps> = ({ resource }) => {
                         }
                     />
 
-                    <div className="hidden md:block">
-                        <p className="">
-                            Showing
-                            <span className="font-medium mx-1">
-                                {data.meta.per_page * (data.meta.page - 1) + 1}
-                            </span>
-                            to
-                            <span className="font-medium mx-1">
-                                {data.meta.per_page * data.meta.page}
-                            </span>
-                            of
-                            <span className="font-medium mx-1">
-                                {data.meta.total}
-                            </span>
-                            results
-                        </p>
-                    </div>
+                    {data?.meta?.total && data.meta.total > 0 ? (
+                        <div className="hidden md:block">
+                            <p className="">
+                                Showing
+                                <span className="font-medium mx-1">
+                                    {paginationValues.from}
+                                </span>
+                                to
+                                <span className="font-medium mx-1">
+                                    {paginationValues.to}
+                                </span>
+                                of
+                                <span className="font-medium mx-1">
+                                    {paginationValues.total}
+                                </span>
+                                results
+                            </p>
+                        </div>
+                    ) : null}
 
-                    {loading && data.meta && data.meta.page ? null : (
+                    {loading &&
+                    data.meta &&
+                    data.meta.page &&
+                    data.meta.total === 0 ? null : (
                         <Paginate
                             forcePage={data.meta.page - 1}
                             previousLabel={

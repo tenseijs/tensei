@@ -4,18 +4,18 @@
 
 .react-mde {
     border-radius: 6px !important;
-    border: 1px solid #d4d7df !important;
+    border: 1px solid #c3c8d2 !important;
 }
 
 .mde-header {
     border-radius: 6px 6px 0 0 !important;
     background-color: #f7f9fa !important;
-    border-bottom: 1px solid #d4d7df !important;
+    border-bottom: 1px solid #c3c8d2 !important;
 }
 
 .react-mde .image-tip {
     color: inherit !important;
     background-color: #f7f9fa !important;
     border-radius: 0 0 6px 6px !important;
-    border-top: 1px solid #d4d7df !important;
+    border-top: 1px solid #c3c8d2 !important;
 }

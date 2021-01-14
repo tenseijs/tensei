@@ -42,9 +42,9 @@ const Button: React.FC<ButtonProps> = ({
                 ? 'cursor-not-allowed bg-red-500'
                 : 'bg-red-600 hover:bg-red-700'
         } font-medium text-white transition ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto`,
-        clear: `mt-3 w-full inline-flex justify-center rounded-lg border border-tensei-gray-600 px-6 ${
+        clear: `w-full inline-flex justify-center rounded-lg border border-tensei-gray-600 px-6 ${
             props.disabled ? 'cursor-not-allowed bg-tensei-primary-lighter' : ''
-        } bg-white font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto`
+        } bg-tensei-gray-600 font-medium text-tensei-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto`
     }
 
     if (clear) {
@@ -68,7 +68,7 @@ const Button: React.FC<ButtonProps> = ({
     return (
         <button {...props}>
             {loading ? (
-                <Pulse dotClassName="bg-white" height="10px" />
+                <Pulse dotClassName="bg-white" height="10px" dotHeight="100%" />
             ) : (
                 children
             )}

@@ -6,4 +6,4 @@ module.exports = resource('Tag')
         textarea('Description').hideOnIndex(),
         belongsToMany('Post'),
     ])
-    .displayField('name')
+    .displayField('Name')

@@ -141,6 +141,20 @@ declare module '@tensei/mail' {
 		bcc(address: string, name?: string): this
 		messageId(messageId: string): this
 		subject(message: string): this
+		contentViews: {
+			html?: {
+				template: string
+				data?: any
+			}
+			text?: {
+				template: string
+				data?: any
+			}
+			watch?: {
+				template: string
+				data?: any
+			}
+		}
 
 		/**
 		 * Routing options

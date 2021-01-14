@@ -1,7 +1,7 @@
 import { Validator } from './Validator'
 import { ResourceContract } from '@tensei/core'
 import { FilterOperators } from '@tensei/common'
-import { EntityManager, ReferenceType } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/core'
 
 export const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
 export const filterOperators: FilterOperators[] = [
@@ -24,6 +24,8 @@ export const allOperators = filterOperators.concat(topLevelOperators)
 
 import * as Graphql from './graphql'
 
+import * as Rest from './rest'
+
 export const Utils = {
     validator: (
         resource: ResourceContract,
@@ -34,5 +36,6 @@ export const Utils = {
         modelId?: string | number
     ) => new Validator(resource, manager, resourcesMap, modelId),
 
-    graphql: Graphql
+    graphql: Graphql,
+    rest: Rest
 }

@@ -20,7 +20,9 @@ const Mde: React.FC<MdeProps> = ({ label, id, name }: MdeProps) => {
             {label && (
                 <label
                     htmlFor={id}
-                    className={'text-tensei-darkest inline-block mb-2'}
+                    className={
+                        'font-semibold text-tensei-darkest inline-block mb-2'
+                    }
                 >
                     {label}
                 </label>
@@ -33,7 +35,7 @@ const Mde: React.FC<MdeProps> = ({ label, id, name }: MdeProps) => {
                 onTabChange={setTab}
                 classes={{
                     textArea:
-                        'block w-full pr-10 pl-3 leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary sm:text-sm'
+                        'block w-full pr-10 pl-3 leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary'
                 }}
                 generateMarkdownPreview={(markdown: string) =>
                     Promise.resolve(<ReactMarkdown source={markdown} />)

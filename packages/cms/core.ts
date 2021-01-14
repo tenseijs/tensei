@@ -1,24 +1,37 @@
+import Qs from 'qs'
 import Axios from 'axios'
+import Toasted from 'toastedjs'
 import {
-    TextInput,
-    Textarea,
-    TenseiState,
-    DatePicker,
-    Select,
-    Checkbox,
     Tensei,
-    Paragraph,
+    TenseiState,
+    ToastOptions,
     ResourceContract,
-    TenseiRegisterFunction,
-    TenseiCtxInterface
+    TenseiCtxInterface,
+    TenseiRegisterFunction
 } from '@tensei/components'
 
-import ID from './detail/ID'
-import Text from './detail/Text'
-import Date from './detail/Date'
-import IDIndex from './index/ID'
-import BooleanDetail from './detail/Boolean'
-import TextareaDetail from './detail/Textarea'
+// Form
+import IndexID from './index/ID'
+import IndexText from './index/Text'
+
+// Form
+import DetailID from './detail/ID'
+import DetailDate from './detail/Date'
+import DetailText from './detail/Text'
+import DetailBoolean from './detail/Boolean'
+import DetailOneToOne from './detail/OneToOne'
+import DetailTextarea from './detail/Textarea'
+import DetailManyToMany from './detail/ManyToMany'
+
+// Form
+import FormText from './form/Text'
+import FormSlug from './form/Slug'
+import FormSelect from './form/Select'
+import FormBoolean from './form/Boolean'
+import FormDate from './form/DatePicker'
+import FormTextarea from './form/Textarea'
+import FormManyToOne from './form/ManyToOne'
+import FormManyToMany from './form/ManyToMany'
 
 class Core {
     state = (() => {
@@ -61,31 +74,54 @@ class Core {
         } as TenseiState
     })()
 
+    constructor() {
+        const query = Qs.parse(window.location.search.split('?')[1])
+
+        if (query.error) {
+            this.error(query.error as string)
+        }
+    }
+
+    toast = new Toasted({
+        duration: 3000,
+        position: 'bottom-right',
+        theme: 'tensei'
+    })
+
     private hooks: TenseiRegisterFunction[] = []
 
     components: Tensei['components'] = {
         form: {
-            Select,
-            Textarea,
-            Checkbox,
-            Text: TextInput,
-            Date: DatePicker
+            Text: FormText,
+            Date: FormDate,
+            Slug: FormSlug,
+            Select: FormSelect,
+            Boolean: FormBoolean,
+            Textarea: FormTextarea,
+            OneToOne: FormManyToOne,
+            ManyToOne: FormManyToOne,
+            ManyToMany: FormManyToMany,
+            OneToMany: FormManyToMany
         },
         index: {
-            ID: IDIndex,
-            Text,
-            Date,
-            DateTime: Date,
-            Timestamp: Date
+            ID: IndexID,
+            Text: IndexText,
+            Date: DetailDate,
+            DateTime: DetailDate,
+            Timestamp: DetailDate
         },
         detail: {
-            ID,
-            Text,
-            Date,
-            DateTime: Date,
-            Timestamp: Date,
-            Boolean: BooleanDetail,
-            Textarea: TextareaDetail
+            ID: DetailID,
+            Text: DetailText,
+            Date: DetailDate,
+            DateTime: DetailDate,
+            Timestamp: DetailDate,
+            Boolean: DetailBoolean,
+            OneToOne: DetailOneToOne,
+            Textarea: DetailTextarea,
+            ManyToOne: DetailOneToOne,
+            ManyToMany: DetailManyToMany,
+            OneToMany: DetailManyToMany
         }
     }
 
@@ -127,6 +163,44 @@ class Core {
             this.ctx.setUser(this.state.admin)
         }
         this.ctx.setBooted(true)
+    }
+
+    success = (message: string, options: ToastOptions = {}) => {
+        this.toast.success(message, {
+            type: 'success',
+            ...options
+        })
+    }
+
+    show = (message: string, options: ToastOptions = {}) => {
+        this.toast.success(message, {
+            ...options
+        })
+    }
+
+    error = (message: string, options: ToastOptions = {}) => {
+        this.toast.error(message, {
+            type: 'error',
+            ...options
+        })
+    }
+
+    info = (message: string, options: ToastOptions = {}) => {
+        this.toast.info(message, {
+            type: 'info',
+            ...options
+        })
+    }
+
+    warning = (message: string, options: ToastOptions = {}) => {
+        this.toast.info(message, {
+            type: 'warning',
+            ...options
+        })
+    }
+
+    clear = () => {
+        this.toast.clear()
     }
 }
 

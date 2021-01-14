@@ -4,7 +4,7 @@ const { build, fake, sequence } = require('@jackfranklin/test-data-bot')
 const userBuilder = build('User', {
     fields: {
         full_name: fake((f) => f.name.findName()),
-        email: fake((f) => f.internet.exampleEmail()),
+        email: fake((f) => f.random.number() + '_' + f.internet.exampleEmail()),
         password: Bcrypt.hashSync('password'),
         // created_at: fake((f) => f.date.recent(f.random.number())),
     },
@@ -22,7 +22,10 @@ const administratorBuilder = build('User', {
 const postBuilder = build('Post', {
     fields: {
         user_id: sequence(),
-        title: fake((f) => f.lorem.sentence()),
+        title: fake(
+            (f) =>
+                `${f.lorem.sentence()}-${Math.floor(Math.random() * 1000000)}`
+        ),
         approved: fake((f) => f.random.boolean()),
         description: fake((f) => f.lorem.sentence()),
         content: fake((f) => f.lorem.sentence(10)),
@@ -30,7 +33,12 @@ const postBuilder = build('Post', {
         category: fake((f) =>
             f.random.arrayElement(['angular', 'javascript', 'mysql', 'pg'])
         ),
-        slug: fake((f) => `${f.lorem.slug()}-${Date.now()}`),
+        slug: fake(
+            (f) =>
+                `${f.lorem.slug()}-${Date.now()}-${Math.floor(
+                    Math.random() * 1000000
+                )}`
+        ),
         published_at: fake((f) => f.date.past()),
         scheduled_for: fake((f) => f.date.future()),
         // created_at: fake((f) => f.date.recent(f.random.number())),
@@ -66,7 +74,7 @@ const posts = Array(1000)
     .fill(undefined)
     .map(() => postBuilder())
 
-const users = Array(10)
+const users = Array(1000)
     .fill(undefined)
     .map(() => userBuilder())
 
@@ -143,7 +151,7 @@ require('./app')
         for (let index = 0; index < savedUsers.length; index++) {
             const user = savedUsers[index]
 
-            const posts = Array(10)
+            const posts = Array(1000)
                 .fill(undefined)
                 .map(() => em.create('Post', postBuilder()))
                 .map((post) => {
@@ -160,7 +168,7 @@ require('./app')
         for (let index = 0; index < savedPosts.length; index++) {
             const post = savedPosts[index]
 
-            const comments = Array(10)
+            const comments = Array(1000)
                 .fill(undefined)
                 .map(() => em.create('Comment', commentsBuilder()))
                 .map((comment) => {
@@ -172,7 +180,7 @@ require('./app')
             await em.persistAndFlush(comments)
         }
 
-        const tags = Array(10)
+        const tags = Array(1000)
             .fill(undefined)
             .map(() => em.create('Tag', tagsBuilder()))
             .map((tag) => {

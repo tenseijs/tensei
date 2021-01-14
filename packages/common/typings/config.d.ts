@@ -5,6 +5,7 @@ declare module '@tensei/common/config' {
     import { EntityManager } from '@mikro-orm/core'
     import { sanitizer, validator } from 'indicative'
     import { EventContract } from '@tensei/common/events'
+    import { FindOptions, FilterQuery } from '@mikro-orm/core'
     import { ResourceContract } from '@tensei/common/resources'
     import { ExecutionParams } from 'subscriptions-transport-ws'
     import { DashboardContract } from '@tensei/common/dashboards'
@@ -98,6 +99,17 @@ declare module '@tensei/common/config' {
                 fieldNode: any,
                 data: any[]
             ) => Promise<any[] | undefined>
+        }
+        rest: {
+            parseSortFromStringToObject: (
+                path: string,
+                direction: string
+            ) => any
+            parseQueryToFindOptions: (
+                query: any,
+                resource: ResourceContract
+            ) => FindOptions<any, import('@mikro-orm/core').Populate<any>>
+            parseQueryToWhereOptions: (query: any) => any
         }
     }
 
@@ -324,7 +336,6 @@ declare module '@tensei/common/config' {
         orm: MikroORM | null
         logger: Logger
         databaseConfig: DatabaseConfiguration & AdditionalEntities
-        dashboardPath: string
         resourcesMap: {
             [key: string]: ResourceContract
         }

@@ -12,6 +12,10 @@ export class NumberField extends Text {
 
         this.property.type = 'number'
         this.property.columnTypes = ['int']
+
+        this.htmlAttributes({
+            type: 'number'
+        })
     }
 
     /**

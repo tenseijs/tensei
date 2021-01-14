@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { RouteComponentProps, useParams, Redirect } from 'react-router-dom'
 import {
-    ConfirmModal,
-    Heading,
-    StackedList,
-    Button,
-    Pulse
-} from '@tensei/components'
+    RouteComponentProps,
+    useParams,
+    Redirect,
+    useHistory,
+    Link
+} from 'react-router-dom'
+import { Heading, StackedList, Button, Pulse } from '@tensei/components'
 
-import Resource from '../Resource'
 import PageWrapper from '../../components/PageWrapper'
+import DeleteModal from '../../components/DeleteModal'
 
 export interface ResourceDetailProps {}
 
@@ -19,9 +19,10 @@ const ResourceDetail: React.FC<
             id: string
         }>
 > = () => {
+    const history = useHistory()
     const [data, setData] = useState<any>({})
     const [loading, setLoading] = useState(true)
-    const [deleting, setDeleting] = useState<any>(null)
+    const [deleting, setDeleting] = useState<boolean>(false)
 
     const params = useParams<{
         id: string
@@ -38,6 +39,15 @@ const ResourceDetail: React.FC<
                 setData(data.data)
                 setLoading(false)
             })
+            .catch(error => {
+                history.push(
+                    window.Tensei.getPath(`resources/${params.resource}`)
+                )
+                window.Tensei.error(
+                    error?.response?.data?.error ||
+                        `Could not fetch ${resource.name} with ID of ${params.id}.`
+                )
+            })
     }
 
     useEffect(() => {
@@ -51,10 +61,11 @@ const ResourceDetail: React.FC<
     }
 
     const detailFields = resource.fields.filter(
-        field => field.showOnDetail && !field.isRelationshipField
+        field => field.showOnDetail && !field.showOnPanel
     )
-    const relationshipDetailFields = resource.fields.filter(
-        field => field.showOnDetail && field.isRelationshipField
+
+    const panelFields = resource.fields.filter(
+        field => field.showOnDetail && field.showOnPanel
     )
 
     const buildValues = (relationshipValues = false) => {
@@ -62,9 +73,7 @@ const ResourceDetail: React.FC<
             [key: string]: any
         } = {}
 
-        const fields = relationshipValues
-            ? relationshipDetailFields
-            : detailFields
+        const fields = relationshipValues ? panelFields : detailFields
 
         fields.forEach(field => {
             const Component =
@@ -75,8 +84,9 @@ const ResourceDetail: React.FC<
                 <Component
                     field={field}
                     values={data}
-                    value={data[field.inputName]}
+                    detailId={params.id}
                     resource={resource}
+                    value={data[field.inputName]}
                 />
             )
         })
@@ -92,11 +102,19 @@ const ResourceDetail: React.FC<
                 </div>
             ) : (
                 <>
-                    <ConfirmModal
+                    <DeleteModal
                         open={!!deleting}
-                        title="Delete Account?"
-                        setOpen={() => setDeleting(null)}
-                        description="Are you sure you want to delete this account? This action cannot be reversed."
+                        resource={resource}
+                        selected={[data]}
+                        leavesPage
+                        setOpen={() => setDeleting(!deleting)}
+                        onDelete={() =>
+                            history.push(
+                                window.Tensei.getPath(
+                                    `resources/${resource.slug}`
+                                )
+                            )
+                        }
                     />
                     <header className="flex justify-between flex-wrap items-center mt-5">
                         <Heading className="text-2xl w-full md:w-auto" as="h1">
@@ -106,10 +124,18 @@ const ResourceDetail: React.FC<
                         </Heading>
 
                         <div className="flex justify-end mt-3 md:mt-0">
-                            <Button danger>Delete</Button>
-                            <Button primary className="ml-5">
-                                Edit
+                            <Button onClick={() => setDeleting(true)} clear>
+                                Delete
                             </Button>
+                            <Link
+                                to={window.Tensei.getPath(
+                                    `resources/${resource.slug}/${params.id}/update`
+                                )}
+                            >
+                                <Button primary className="ml-5">
+                                    Edit
+                                </Button>
+                            </Link>
                         </div>
                     </header>
 
@@ -120,7 +146,29 @@ const ResourceDetail: React.FC<
                         />
                     </div>
 
-                    {/* <Resource /> */}
+                    {panelFields.map(field => {
+                        const Component =
+                            window.Tensei.components.detail[
+                                field.component.detail
+                            ]
+
+                        if (!Component) {
+                            return null
+                        }
+
+                        return (
+                            <div key={field.inputName} className="mb-6">
+                                <Component
+                                    field={field}
+                                    values={data}
+                                    resource={resource}
+                                    detailId={params.id}
+                                    key={field.inputName}
+                                    value={data[field.inputName]}
+                                />
+                            </div>
+                        )
+                    })}
                 </>
             )}
         </PageWrapper>

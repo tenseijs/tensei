@@ -25,6 +25,8 @@ export class BooleanField extends Field implements BooleanFieldContract {
 
         this.rules('boolean')
 
+        this.defaultFormValue(false)
+
         this.property.type = 'boolean'
     }
 

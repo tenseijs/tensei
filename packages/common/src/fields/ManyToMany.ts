@@ -13,6 +13,8 @@ export class ManyToMany extends RelationshipField {
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
+        this.showOnPanel = true
+        this.defaultFormValue([])
         this.relatedProperty.type = pascalCase(name)
         this.relatedProperty.reference = ReferenceType.MANY_TO_MANY
     }

@@ -55,6 +55,10 @@ export class Field implements FieldContract {
         detail: ''
     }
 
+    public showOnPanel: boolean = false
+
+    public sidebar: boolean = false
+
     formComponent(component: string) {
         this.component.form = component
 
@@ -225,7 +229,7 @@ export class Field implements FieldContract {
      * field
      *
      */
-    public defaultValue: string | number | boolean = ''
+    public defaultValue: any = null
 
     /**
      * Instantiate a new field. Requires the name,
@@ -528,12 +532,25 @@ export class Field implements FieldContract {
         return this
     }
 
+    public dockToSidebarOnForms() {
+        this.sidebar = true
+
+        return this
+    }
+
+    public removeFromSidebarOnForms() {
+        this.sidebar = true
+
+        return this
+    }
+
     /**
      *
      * Make this field nullable
      *
      */
     public notNullable<T extends FieldContract>(this: T): T {
+        this.isNullable = false
         this.property.nullable = false
         this.relatedProperty.nullable = false
 
@@ -552,6 +569,7 @@ export class Field implements FieldContract {
      *
      */
     public nullable<T extends FieldContract>(this: T): T {
+        this.isNullable = true
         this.property.nullable = true
         this.relatedProperty.nullable = true
 
@@ -576,16 +594,24 @@ export class Field implements FieldContract {
     /**
      *
      * Set the default value for this field.
+     * Will save to the database as default.
+     *
+     */
+    public default<T extends FieldContract>(this: T, value: any): T {
+        this.property.default = value
+
+        return this
+    }
+
+    /**
+     *
+     * Set the default value for this field.
      * Will show up on create forms as
      * default
      *
      */
-    public default<T extends FieldContract>(
-        this: T,
-        value: string | number | boolean | null
-    ): T {
+    public defaultFormValue<T extends FieldContract>(this: T, value: any): T {
         this.defaultValue = value
-        this.property.default = value
 
         return this
     }
@@ -727,6 +753,7 @@ export class Field implements FieldContract {
             ...this.showHideField,
 
             name: this.name,
+            sidebar: this.sidebar,
             hidden: this.isHidden,
             isUnique: this.isUnique,
             component: this.component,
@@ -735,6 +762,7 @@ export class Field implements FieldContract {
             isSortable: this.isSortable,
             attributes: this.attributes,
             rules: this.validationRules,
+            showOnPanel: this.showOnPanel,
             inputName: this.databaseField,
             isSearchable: this.isSearchable,
             defaultValue: this.defaultValue,

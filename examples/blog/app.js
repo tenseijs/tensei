@@ -1,9 +1,8 @@
 require('dotenv').config()
+const { cms } = require('@tensei/cms')
 const { mde } = require('@tensei/mde')
 const { rest } = require('@tensei/rest')
-const { auth } = require('@tensei/auth')
 const { media } = require('@tensei/media')
-const { ses, smtp } = require('@tensei/mail')
 const { graphql } = require('@tensei/graphql')
 const { tensei, route } = require('@tensei/core')
 
@@ -37,26 +36,9 @@ module.exports = tensei()
     ])
     .plugins([
         media().graphql().plugin(),
-        graphql()
-            .middlewareOptions({
-                cors: {
-                    credentials: true,
-                    origin: ['http://localhost:3001'],
-                },
-            })
-            .plugin(),
+        cms().plugin(),
+        graphql().plugin(),
         rest().plugin(),
-        ses('transactional')
-            .region('us-east-1')
-            .key('AKIAYCA6IR7CT27KWF7T')
-            .secret('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')
-            .plugin(),
-        smtp('mailtrap')
-            .host('smtp.mailtrap.io')
-            .user('df3db2ece4f0e4')
-            .pass('b0adaac4573cd9')
-            .port(2525)
-            .plugin(),
         mde().plugin(),
     ])
     .db({

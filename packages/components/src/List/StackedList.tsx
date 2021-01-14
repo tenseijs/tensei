@@ -18,7 +18,7 @@ const StackedList: React.FC<StackListProps> = ({ fields, values }) => {
                         index === 0 ? '' : ' border-t border-tensei-gray-600'
                     }`}
                 >
-                    <div className="w-full md:w-1/4 capitalize text-tensei-gray-700">
+                    <div className="w-full md:w-1/4 capitalize text-tensei-gray-800">
                         {field.name}
                     </div>
                     <div className="w-full mt-3 md:mt-0 md:w-3/4">

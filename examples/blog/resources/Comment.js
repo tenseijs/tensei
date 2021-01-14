@@ -9,7 +9,6 @@ const {
 } = require('@tensei/core')
 
 module.exports = resource('Comment')
-    .displayField('Title')
     .fields([
         text('Title').rules('required').searchable().sortable(),
         textarea('Body').rules('required').hideOnIndex(),
@@ -21,6 +20,7 @@ module.exports = resource('Comment')
         hasOne('Editor'),
         hasMany('Reaction'),
     ])
+    .displayField('Title')
     .filters([
         filter('Comments on Post')
             .dashboardView()
@@ -30,3 +30,4 @@ module.exports = resource('Comment')
                 },
             })),
     ])
+    .icon('comments')

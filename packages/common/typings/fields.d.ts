@@ -103,12 +103,13 @@ declare module '@tensei/common/fields' {
 
     interface SerializedField {
         name: string
+        sidebar: boolean
         component: FieldContract['component']
         inputName: string
         isSortable: boolean
         description: string
         rules: string[]
-        defaultValue: string | boolean | number
+        defaultValue: any
         isNullable: boolean
         isUnique: boolean
         isSearchable: boolean
@@ -119,6 +120,7 @@ declare module '@tensei/common/fields' {
         updateRules: string[]
         creationRules: string[]
         hidden: boolean
+        showOnPanel: boolean
         fieldName: string
         camelCaseName: string
         capsDatabasefieldName: string
@@ -195,6 +197,8 @@ declare module '@tensei/common/fields' {
         onUpdate(hook: () => any): this
         onCreate(hook: () => any): this
         shadow(): this
+        removeFromSidebarOnForms(): this
+        dockToSidebarOnForms(): this
         /**
          *
          * The name of the field. Will be used to display table columns,
@@ -267,7 +271,7 @@ declare module '@tensei/common/fields' {
          * field
          *
          */
-        defaultValue: string | number | boolean | string[] | number[] | null
+        defaultValue: any
 
         camelCaseName: string
 
@@ -375,6 +379,7 @@ declare module '@tensei/common/fields' {
          *
          */
         notNullable<T extends FieldContract>(this: T): T
+
         /**
          *
          * Make this field nullable
@@ -395,14 +400,9 @@ declare module '@tensei/common/fields' {
          * default
          *
          */
-        default<T extends FieldContract>(
-            this: T,
-            value: string | number | boolean
-        ): T
-        defaultRaw<T extends FieldContract>(
-            this: T,
-            value: string | number | boolean
-        ): T
+        default<T extends FieldContract>(this: T, value: any): T
+        defaultFormValue<T extends FieldContract>(this: T, value: any): T
+        defaultRaw<T extends FieldContract>(this: T, value: any): T
         /**
          *
          * Set html attributes for this component
@@ -447,7 +447,19 @@ declare module '@tensei/common/fields' {
          */
         serialize(): SerializedField
     }
-    interface TextContract extends FieldContract {}
+    interface TextContract extends FieldContract {
+        truncate(sub: number): this
+    }
+
+    export type SlugTypes = 'default' | 'date' | 'random'
+
+    interface SlugContract extends FieldContract {
+        from(field: string, inputName?: string): this
+        type(slugType: SlugTypes): this
+        editable(): this
+    }
+
+    const slug: (name: string, databaseField?: string) => SlugContract
     const text: (
         name: string,
         databaseField?: string | undefined
@@ -537,8 +549,10 @@ declare module '@tensei/common/fields' {
          *
          * https://date-fns.org/v2.14.0/docs/format
          */
-        format(format: string): this
         defaultToNow(): this
+        timePicker24Hr(): this
+        format(format: string): this
+        pickerFormat(format: string): this
     }
     const date: (
         name: string,
@@ -723,7 +737,7 @@ declare module '@tensei/common/fields' {
          * field
          *
          */
-        defaultValue: string | number | boolean
+        defaultValue: any
         /**
          * Instantiate a new field. Requires the name,
          * and optionally the corresponding database

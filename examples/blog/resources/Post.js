@@ -9,6 +9,7 @@ const {
     action,
     textarea,
     hasMany,
+    slug,
     belongsTo,
     belongsToMany,
 } = require('@tensei/core')
@@ -52,6 +53,9 @@ module.exports = resource('Post')
             .sortable()
             .searchable()
             .unique()
+            .htmlAttributes({
+                placeholder: 'Provide the title for this post.',
+            })
             .description(
                 'This will help you define how this post should work exactly.'
             )
@@ -61,9 +65,16 @@ module.exports = resource('Post')
             .falseLabel('Pending')
             .default(false)
             .hideOnIndex(),
-        text('Slug').rules('required', 'slug').unique(),
+        slug('Slug')
+            .rules('required', 'unique:slug')
+            .unique()
+            .type('random')
+            .editable()
+            .from('Title'),
         text('Description').rules('required').hideOnIndex(),
-        // trix('Content').rules('required', 'max:2000', 'min:12').hideOnIndex(),
+        textarea('Content')
+            .rules('required', 'max:2000', 'min:12')
+            .hideOnIndex(),
         integer('Av. CPC').rules('required').hideOnDetail().sortable(),
         select('Category')
             .options([
@@ -100,19 +111,18 @@ module.exports = resource('Post')
             .notNullable()
             .hideOnIndex()
             .firstDayOfWeek(4)
-            .rules('required', 'date')
-            .format('do MMM yyyy, hh:mm a'),
+            .rules('required', 'date'),
         dateTime('Scheduled For')
             .nullable()
             .rules('required', 'date')
-            .format('do MMM yyyy, hh:mm a')
             .hideOnIndex(),
-        belongsToMany('Tag'),
         hasMany('Comment'),
+        belongsToMany('Tag'),
     ])
     .perPageOptions([25, 50, 100])
-    .displayField('title')
+    .displayField('Title')
     .permissions(['create:matrix', 'update:matrix'])
     .showOnInsertSubscription()
     .showOnUpdateSubscription()
     .showOnDeleteSubscription()
+    .icon('duplicate')

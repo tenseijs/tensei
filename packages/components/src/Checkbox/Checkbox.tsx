@@ -36,7 +36,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
             {label && (
                 <label
                     htmlFor={id}
-                    className={'text-tensei-darkest block mb-2'}
+                    className={'font-semibold text-tensei-darkest block mb-2'}
                 >
                     {label}
                 </label>
@@ -44,7 +44,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
             <div>
                 <input
                     {...props}
-                    className="rounded-sm border border-tensei-gray-600"
+                    className="rounded-sm border border-tensei-gray-500"
                 />
 
                 {error ? (

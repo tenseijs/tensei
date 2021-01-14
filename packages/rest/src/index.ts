@@ -361,6 +361,10 @@ class Rest {
                                         }
                                     )) as any)[relatedField.databaseField]
 
+                                    if (!payload) {
+                                        return response.formatter.ok(null)
+                                    }
+
                                     manager.clear()
 
                                     const result = await manager.findOne(

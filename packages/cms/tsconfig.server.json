@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "declaration": true,
+        "outDir": "./build",
+        "strict": true,
+        "baseUrl": "./plugin",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "types": [
+            "@types/jest",
+            "@types/express-session",
+            "express-response-formatter"
+        ]
+    },
+    "exclude": [
+        "__tests__",
+        "build",
+        "pages",
+        "detail",
+        "index",
+        "store",
+        "public",
+        "css",
+        "form",
+        "components",
+        "main.tsx",
+        "core.ts"
+    ]
+}

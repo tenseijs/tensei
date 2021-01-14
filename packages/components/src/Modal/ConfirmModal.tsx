@@ -1,7 +1,7 @@
 import React from 'react'
 
 import Modal from './Modal'
-import Button from '../Button'
+import Button, { ButtonProps } from '../Button'
 
 export interface ConfirmModalProps {
     open: boolean
@@ -10,6 +10,8 @@ export interface ConfirmModalProps {
     confirmText?: string
     cancelText?: string
     onConfirm?: () => void
+    confirmButtonProps?: ButtonProps
+    cancelButtonProps?: ButtonProps
     setOpen: (open: boolean) => void
 }
 
@@ -20,7 +22,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     description,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
-    onConfirm
+    onConfirm,
+    confirmButtonProps,
+    cancelButtonProps
 }) => {
     return (
         <Modal open={open} setOpen={setOpen}>
@@ -28,20 +32,29 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3
                         id="modal-headline"
-                        className="text-lg leading-6 font-medium text-tensei-darkest"
+                        className="text-xl mb-6 leading-6 font-semibold text-tensei-darkest"
                     >
                         {title}
                     </h3>
-                    <div className="my-3">
-                        <p className="text-sm text-gray-500">{description}</p>
+                    <div className="mb-3">
+                        <p>{description}</p>
                     </div>
                 </div>
             </div>
             <div className="mt-5 sm:mt-4 sm:pl-4 sm:flex">
-                <Button danger onClick={onConfirm}>
+                <Button
+                    danger
+                    onClick={onConfirm}
+                    {...(confirmButtonProps || {})}
+                >
                     {confirmText}
                 </Button>
-                <Button clear onClick={() => setOpen(false)}>
+                <Button
+                    className="mt-3 md:mt-0"
+                    clear
+                    onClick={() => setOpen(false)}
+                    {...(cancelButtonProps || {})}
+                >
                     {cancelText}
                 </Button>
             </div>

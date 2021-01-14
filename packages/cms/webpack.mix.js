@@ -8,6 +8,6 @@ mix.options({
 })
 
 mix.extract(['react', 'react-dom', 'react-router-dom'])
-    .ts('main.tsx', 'public/')
-    .postCss('css/styles.css', 'public/', [require('tailwindcss')])
-    .copy('public/', Path.resolve('./', '..', 'core', 'build', 'public'))
+    .ts('main.tsx', 'build/public/')
+    .postCss('css/styles.css', 'build/public/', [require('tailwindcss')])
+// .copy('plugin/template/index.mustache', 'build/template/index.mustache')

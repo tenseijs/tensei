@@ -115,6 +115,7 @@ class MediaLibrary {
 
 export const files = (databaseField?: string) =>
     hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
+
 export const file = (databaseField?: string) =>
     hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
 

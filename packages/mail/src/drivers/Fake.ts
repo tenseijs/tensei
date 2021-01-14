@@ -10,6 +10,7 @@
 /// <reference path="../../types/mail.ts" />
 
 import nodemailer from 'nodemailer'
+import { Config } from '@tensei/common'
 import {
 	MessageNode,
 	TrapCallback,
@@ -23,7 +24,7 @@ import {
 export class FakeDriver implements FakeDriverContract {
 	private transporter: any
 
-	constructor(private listener: TrapCallback) {
+	constructor(private listener: TrapCallback, private logger: Config['logger']) {
 		this.transporter = nodemailer.createTransport({
 			jsonTransport: true,
 		})
@@ -37,9 +38,11 @@ export class FakeDriver implements FakeDriverContract {
 			throw new Error('Driver transport has been closed and cannot be used for sending emails')
 		}
 
-		const listenerResponse = this.listener(message)
 		const response = await this.transporter.sendMail(message)
-		return { ...response, ...listenerResponse }
+
+		this.logger.info(JSON.stringify(message, null, 3))
+
+		return { ...response }
 	}
 
 	/**

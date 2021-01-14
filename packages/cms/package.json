@@ -10,8 +10,11 @@
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,tsx,css}'",
         "dev:css": "cross-env NODE_ENV=development yarn build:css",
+        "dev:server": "tsc --watch --project tsconfig.server.json",
+        "build:server": "tsc --project tsconfig.server.json && yarn copy:files",
+        "copy:files": "copyfiles -u 1 plugin/template/index.mustache build/",
         "dev": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
-        "build": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "build": "yarn build:server && cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -54,16 +57,22 @@
         "@types/classnames": "^2.2.11",
         "@types/qs": "^6.9.5",
         "@types/react-paginate": "^6.2.1",
+        "@types/react-select": "^3.1.2",
+        "@types/speakingurl": "^13.0.2",
         "@types/throttle-debounce": "^2.1.0",
         "autoprefixer": "^10",
         "axios": "^0.21.1",
         "classnames": "^2.2.6",
+        "copyfiles": "^2.4.1",
         "graphql": "^15.4.0",
         "qs": "^6.9.4",
         "react-paginate": "^7.0.0",
         "react-router-dom": "^5.2.0",
+        "react-select": "^3.1.1",
+        "speakingurl": "^14.0.1",
         "tailwindcss": "npm:@tailwindcss/postcss7-compat",
         "throttle-debounce": "^3.0.1",
+        "toastedjs": "^0.0.2",
         "use-onclickoutside": "^0.3.1"
     }
 }

@@ -212,12 +212,17 @@ export class MailManager
 	}
 
 	/**
-	 * Creates an instance of `smtp` driver by lazy loading. This method
+	 * Creates an instance of `ethereal` driver by lazy loading. This method
 	 * is invoked internally when a new driver instance is required
 	 */
 	protected createEthereal(_: string, config: any) {
 		const { EtherealDriver } = require('./drivers/Ethereal')
 		return new EtherealDriver(config, this.logger)
+	}
+
+	protected createFake(_: string, config: any) {
+		const { FakeDriver } = require('./drivers/Fake')
+		return new FakeDriver(config, this.logger)
 	}
 
 	/**

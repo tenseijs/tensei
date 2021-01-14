@@ -5,13 +5,15 @@ export interface PulseProps {
     dotClassName?: string
     width?: string
     height?: string
+    dotHeight?: string
 }
 
 const Pulse: React.FC<PulseProps> = ({
     dotClassName = '',
     className = '',
     width = '40px',
-    height = '40px'
+    height = '40px',
+    dotHeight = '25%'
 }) => (
     <div
         className={`${className} sk-flow`}
@@ -20,9 +22,18 @@ const Pulse: React.FC<PulseProps> = ({
             height: `calc(${height} * 1.3)`
         }}
     >
-        <div className={`sk-flow-dot ${dotClassName}`}></div>
-        <div className={`sk-flow-dot ${dotClassName}`}></div>
-        <div className={`sk-flow-dot ${dotClassName}`}></div>
+        <div
+            style={{ height: dotHeight }}
+            className={`sk-flow-dot ${dotClassName}`}
+        ></div>
+        <div
+            style={{ height: dotHeight }}
+            className={`sk-flow-dot ${dotClassName}`}
+        ></div>
+        <div
+            style={{ height: dotHeight }}
+            className={`sk-flow-dot ${dotClassName}`}
+        ></div>
     </div>
 )
 

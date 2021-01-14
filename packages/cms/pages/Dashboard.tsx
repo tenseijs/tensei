@@ -123,7 +123,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                     </div>
                 </div>
                 <div className="flex flex-col w-0 flex-1 overflow-hidden">
-                    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-tensei-gray-800">
+                    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-tensei-gray-600">
                         <button
                             onClick={() => {
                                 setOffCanvasOpen(!offCanvasOpen)
@@ -168,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                             Open user menu
                                                         </span>
                                                         <img
-                                                            className="h-8 w-8 rounded-full"
+                                                            className="h-10 w-10 rounded-full"
                                                             src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                                                             alt=""
                                                         />
@@ -186,18 +186,24 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                 >
                                                     <Menu.Items
                                                         static
-                                                        className="absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-sm outline-none"
+                                                        className="shadow absolute right-0 w-56 mt-2 origin-top-right bg-white border border-tensei-gray-600 rounded-lg shadow-sm outline-none"
                                                     >
                                                         <div className="px-4 py-3">
-                                                            <p className="text-sm leading-5">
+                                                            <p className="text-sm leading-5 text-tensei-gray-800">
                                                                 Signed in as
                                                             </p>
-                                                            <p className="text-sm font-medium leading-5 text-gray-900 truncate">
-                                                                tom@example.com
+                                                            <p className="font-medium leading-5 truncate">
+                                                                {
+                                                                    window
+                                                                        .Tensei
+                                                                        .state
+                                                                        .admin
+                                                                        .email
+                                                                }
                                                             </p>
                                                         </div>
 
-                                                        <div className="py-1">
+                                                        <div>
                                                             <Menu.Item>
                                                                 {({
                                                                     active
@@ -206,9 +212,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                                         href="#account-settings"
                                                                         className={`${
                                                                             active
-                                                                                ? 'bg-gray-100 text-gray-900'
-                                                                                : 'text-gray-700'
-                                                                        } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
+                                                                                ? 'bg-tensei-gray-100'
+                                                                                : ''
+                                                                        } flex justify-between w-full px-4 py-3 leading-5 text-left`}
                                                                     >
                                                                         Account
                                                                         settings
@@ -217,7 +223,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                             </Menu.Item>
                                                         </div>
 
-                                                        <div className="py-1">
+                                                        <div>
                                                             <Menu.Item>
                                                                 {({
                                                                     active
@@ -238,11 +244,11 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                                         }}
                                                                         className={`${
                                                                             active
-                                                                                ? 'bg-gray-100 text-gray-900'
-                                                                                : 'text-gray-700'
-                                                                        } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
+                                                                                ? 'bg-tensei-gray-100'
+                                                                                : ''
+                                                                        } flex justify-between w-full px-4 py-3 leading-5 text-left`}
                                                                     >
-                                                                        Sign out
+                                                                        Logout
                                                                     </button>
                                                                 )}
                                                             </Menu.Item>

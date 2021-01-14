@@ -17,6 +17,8 @@ export class OneToMany extends RelationshipField {
     ) {
         super(name, databaseField)
 
+        this.defaultFormValue([])
+        this.showOnPanel = true
         this.relatedProperty.type = pascalCase(name)
         this.relatedProperty.reference = ReferenceType.ONE_TO_MANY
     }

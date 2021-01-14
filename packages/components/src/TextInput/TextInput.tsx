@@ -13,6 +13,7 @@ export interface TextInputProps {
     hiddenLabel?: boolean
     roundedFull?: boolean
     addonAfter?: ReactNode
+    inputClassName?: string
     onChange?: ChangeEventHandler<HTMLInputElement>
 }
 
@@ -27,7 +28,9 @@ const TextInput: React.FC<TextInputProps> = ({
     placeholder,
     hiddenLabel,
     type = 'text',
-    className = ''
+    className = '',
+    inputClassName,
+    ...rest
 }) => {
     return (
         <div className={className}>
@@ -37,13 +40,14 @@ const TextInput: React.FC<TextInputProps> = ({
                     className={
                         hiddenLabel
                             ? 'sr-only'
-                            : 'text-tensei-darkest block mb-2'
+                            : 'font-semibold text-tensei-darkest block mb-2'
                     }
                 >
                     {label}
                 </label>
             )}
             <input
+                {...rest}
                 id={id}
                 name={name}
                 type={type}
@@ -55,8 +59,8 @@ const TextInput: React.FC<TextInputProps> = ({
                 } block w-full pr-10 pl-3 h-10 leading-5 bg-white focus:outline-none placeholder-tensei-gray-700 ${
                     error
                         ? 'border-2 border-tensei-error '
-                        : 'focus:ring-tensei-primary border border-tensei-gray-600 focus:border-tensei-primary focus:ring-1 '
-                } sm:text-sm`}
+                        : 'focus:ring-tensei-primary border border-tensei-gray-500 focus:border-tensei-primary focus:ring-1 '
+                } ${inputClassName || ''}`}
             />
 
             {error ? (

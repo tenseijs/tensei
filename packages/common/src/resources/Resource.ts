@@ -14,6 +14,7 @@ import {
     SerializedResource,
     HookFunctionPromised,
     FlushHookFunction,
+    SupportedIcons,
     ResourceExtendContract
 } from '@tensei/common'
 
@@ -85,6 +86,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     constructor(name: string, tableName?: string) {
         this.data.name = name
+        this.data.icon = 'grid'
         this.data.label = Pluralize(name)
         this.data.snakeCaseName = snakeCase(name)
         this.data.camelCaseName = camelCase(name)
@@ -145,6 +147,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         label: '',
         filters: [],
         extend: {},
+        icon: 'grid',
         description: '',
         hideOnInsertApi: false,
         hideOnFetchApi: false,
@@ -169,7 +172,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         slugSingular: '',
         validationMessages: {
             required: 'The {{ field }} is required.',
-            email: 'The {{ field }} must be a valid email address.'
+            email: 'The {{ field }} must be a valid email address.',
+            unique: 'This {{ field }} has already been taked.'
         },
         displayInNavigation: true,
         perPageOptions: [10, 25, 50]
@@ -317,14 +321,26 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     }
 
     public displayField(displayField: string) {
+        const field = this.data.fields.find(
+            field => field.name === displayField
+        )
+
+        if (!field) {
+            console.error(
+                `A field with name ${displayField} was not found on resource ${this.data.name}.`
+            )
+
+            return this
+        }
+
         this.data.displayField = displayField
-        this.data.displayFieldSnakeCase = snakeCase(displayField)
+        this.data.displayFieldSnakeCase = field.databaseField
 
         return this
     }
 
     public fields(fields: FieldContract[]) {
-        // Make sure there's only one primary key on the resource.
+        // Make sure there's only one primary key on the resource (For now).
         const customPrimaryField = fields.find(field => field.property.primary)
 
         if (customPrimaryField) {
@@ -334,13 +350,6 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         }
 
         this.data.fields = [...this.data.fields, ...fields]
-
-        this.data.fields = this.data.fields.sort(f =>
-            ['Updated At', 'Created At'].includes(f.name) ? 1 : -1
-        )
-        this.data.fields = this.data.fields.sort(f =>
-            ['ID'].includes(f.name) ? -1 : 1
-        )
 
         return this
     }
@@ -403,9 +412,17 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
+    public icon(icon: SupportedIcons) {
+        this.data.icon = icon
+
+        return this
+    }
+
     public serialize(): SerializedResource {
+        const { table, ...rest } = this.data
+
         return {
-            ...this.data,
+            ...rest,
             fields: this.data.fields.map(field => field.serialize()),
             actions: this.data.actions.map(action => action.serialize())
         }

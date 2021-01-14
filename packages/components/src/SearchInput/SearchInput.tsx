@@ -18,7 +18,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
     return (
         <div className={className}>
-            <label htmlFor={name} className="sr-only">
+            <label htmlFor={name} className="font-semibold sr-only">
                 {label}
             </label>
             <div className="relative">

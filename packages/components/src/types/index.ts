@@ -54,7 +54,7 @@ export interface SerializedTenseiState {
 }
 
 export interface AbstractData {
-    [key: string]: string | number | boolean | undefined
+    [key: string]: string | number | boolean | undefined | any[] | null
 }
 
 export interface PaginatedData {
@@ -73,10 +73,26 @@ export interface PaginatedData {
 }
 
 export interface DetailComponentProps {
+    detailId?: string
     field: FieldContract
     value: AbstractData['']
     values: AbstractData
     resource: ResourceContract
+}
+
+export interface FormComponentProps {
+    id: string
+    name: string
+    editing?: boolean
+    editingId?: string
+    form: AbstractData
+    field: FieldContract
+    value: AbstractData['']
+    values: AbstractData
+    errors: AbstractData
+    error: string | undefined
+    resource: ResourceContract
+    onChange: (value: any) => void
 }
 
 export interface IndexComponentProps {
@@ -93,6 +109,7 @@ export interface FieldContract {
         index: string
         detail: string
     }
+    sidebar: boolean
     inputName: string
     isSortable: boolean
     description: string
@@ -123,6 +140,7 @@ export interface FieldContract {
     isUnsigned?: boolean
     trueLabel?: string
     falseLabel?: string
+    truncate: number
     isRelationshipField: boolean
     camelCaseNamePlural: string
     pascalCaseName: string
@@ -140,6 +158,7 @@ export interface ResourceContract {
     displayInNavigation: true
     fields: FieldContract[]
     group: string
+    icon: string
     groupSlug: string
     hideOnDeleteApi: false
     hideOnDeleteSubscription: true
@@ -170,6 +189,31 @@ interface TenseiRegisterParams {
 
 export type TenseiRegisterFunction = (params: TenseiRegisterParams) => void
 
+export interface ToastOptions {
+    duration?: number | null
+    type?: 'error' | 'success' | 'info' | 'warning'
+    action?: {
+        onClick: () => void
+        text?: string
+    }
+    theme?: string | null
+    position?:
+        | 'top-center'
+        | 'top-right'
+        | 'top-left'
+        | 'bottom-right'
+        | 'bottom-center'
+        | 'bottom-left'
+}
+
+export interface ToastInterface {
+    show: (message: string, options?: ToastOptions) => void
+    success: (message: string, options?: ToastOptions) => void
+    info: (message: string, options?: ToastOptions) => void
+    warning: (message: string, options?: ToastOptions) => void
+    error: (message: string, options?: ToastOptions) => void
+}
+
 export interface Tensei {
     boot: () => void
     state: TenseiState
@@ -187,6 +231,13 @@ export interface Tensei {
             [key: string]: React.FunctionComponent<any>
         }
     }
+    toast: ToastInterface
+    clear: () => void
+    show: (message: string, options?: ToastOptions) => void
+    success: (message: string, options?: ToastOptions) => void
+    info: (message: string, options?: ToastOptions) => void
+    warning: (message: string, options?: ToastOptions) => void
+    error: (message: string, options?: ToastOptions) => void
     formComponent: (name: string, Component: React.FC<any>) => void
     indexComponent: (name: string, Component: React.FC<any>) => void
     detailComponent: (name: string, Component: React.FC<any>) => void

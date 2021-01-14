@@ -15,5 +15,6 @@
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": false,
         "allowSyntheticDefaultImports": true
-    }
+    },
+    "exclude": ["plugin/"]
 }

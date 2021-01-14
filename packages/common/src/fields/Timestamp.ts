@@ -1,3 +1,4 @@
+import Dayjs from 'dayjs'
 import DateField from './Date'
 import { ReferenceType } from '@mikro-orm/core'
 
@@ -6,6 +7,13 @@ export class Timestamp extends DateField {
         form: 'Timestamp',
         index: 'Timestamp',
         detail: 'Timestamp'
+    }
+
+    protected config = {
+        ...super.config,
+        pickerFormat: 'Y-m-d H:i',
+        dateFormat: 'YYYY-MM-DD HH:mm:ss',
+        timePicker: true
     }
 
     /**
@@ -18,6 +26,8 @@ export class Timestamp extends DateField {
         this.property.type = 'date'
         this.property.columnTypes = ['timestamp']
         this.property.reference = ReferenceType.SCALAR
+
+        this.defaultFormValue(Dayjs().format(this.config.dateFormat))
     }
 
     public defaultToNow() {

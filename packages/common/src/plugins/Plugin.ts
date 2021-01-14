@@ -3,43 +3,57 @@ import {
     Permission,
     PluginContract,
     SetupFunctions,
-    PluginSetupFunction
+    PluginSetupFunction,
+    DataPayload
 } from '@tensei/common'
 
 export class Plugin implements PluginContract {
-    public data = {
+    public config: PluginContract['config'] = {
+        id: '',
+        name: '',
+        extra: {},
         permissions: [] as Permission[],
         boot: () => Promise.resolve(),
         register: () => Promise.resolve()
     }
 
-    public slug: string = ''
-
-    constructor(public name: string) {
-        this.slug = paramCase(name)
+    constructor(name: string) {
+        this.config.name = name
+        this.config.id = paramCase(name)
     }
 
-    private setValue(key: SetupFunctions, value: PluginSetupFunction) {
-        this.data = {
-            ...this.data,
-            [key]: value
-        }
+    id(id: string) {
+        this.config.id = id
+
+        return this
+    }
+
+    extra(extra: DataPayload) {
+        this.config.extra = extra
+
+        return this
+    }
+
+    name(name: string) {
+        this.config.name = name
+
+        return this
     }
 
     public permissions(permissions: Permission[]) {
-        this.data.permissions = permissions
+        this.config.permissions = permissions
 
         return this
     }
 
     public boot(setupFunction: PluginSetupFunction) {
-        this.setValue('boot', setupFunction)
+        this.config.boot = setupFunction
 
         return this
     }
 
     public register(setupFunction: PluginSetupFunction) {
-        this.setValue('register', setupFunction)
+        this.config.register = setupFunction
 
         return this
     }

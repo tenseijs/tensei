@@ -16,7 +16,10 @@ export class OneToOne extends RelationshipField {
         this.relatedProperty.type = pascalCase(name)
         this.relatedProperty.reference = ReferenceType.ONE_TO_ONE
 
+        this.rules(`unique:${databaseField}`)
+
         this.nullable()
+        this.defaultFormValue(null)
     }
 }
 

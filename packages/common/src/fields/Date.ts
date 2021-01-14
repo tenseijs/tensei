@@ -1,3 +1,4 @@
+import Dayjs from 'dayjs'
 import Field from './Field'
 
 export class DateField extends Field {
@@ -7,24 +8,20 @@ export class DateField extends Field {
         detail: 'Date'
     }
 
+    protected config = {
+        dateFormat: 'YYYY-MM-DD',
+        pickerFormat: 'Y-m-d H:i',
+        timePicker: false,
+        timePicker24Hr: false,
+        options: {}
+    }
+
     /**
      *
      * Defines which day should be the first day of the week.
      *
      */
     protected dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 0
-
-    /**
-     *
-     * The date format to be used
-     * The luxon library is used by
-     * tensei
-     *
-     * https://moment.github.io/luxon/docs/manual/parsing.html
-     */
-    protected dateFormat: string = 'yyyy-MM-dd hh:mm:ss'
-
-    protected pickerFormat: string = 'yyyy-MM-dd'
 
     /**
      *
@@ -49,6 +46,7 @@ export class DateField extends Field {
 
         this.property.type = 'date'
         this.property.columnTypes = ['date']
+        this.defaultFormValue(Dayjs().format(this.config.dateFormat))
     }
 
     /**
@@ -60,13 +58,39 @@ export class DateField extends Field {
      * https://moment.github.io/luxon/docs/manual/formatting.html#table-of-tokens
      */
     public format(format: string) {
-        this.dateFormat = format
+        this.config.dateFormat = format
+
+        return this
+    }
+
+    public pickerOptions(options: any) {
+        this.config.options = options
+
+        return this
+    }
+
+    /**
+     *
+     * Set the format used in the date picker. This should be a format
+     * supported by Flatpickr
+     *
+     * https://flatpickr.js.org/examples/
+     */
+    public pickerFormat(format: string) {
+        this.config.dateFormat = format
 
         return this
     }
 
     public defaultToNow() {
         this.property.defaultRaw = 'now'
+        this.defaultFormValue(new Date())
+
+        return this
+    }
+
+    public timePicker24Hr() {
+        this.config.timePicker24Hr = true
 
         return this
     }
@@ -75,9 +99,12 @@ export class DateField extends Field {
         return {
             ...super.serialize(),
 
-            format: this.dateFormat,
+            format: this.config.dateFormat,
             firstDayOfWeek: this.dayOfWeek,
-            pickerFormat: this.pickerFormat || this.dateFormat
+            timePicker: this.config.timePicker,
+            pickerOptions: this.config.options,
+            pickerFormat: this.config.pickerFormat,
+            timePicker24Hr: this.config.timePicker24Hr
         }
     }
 }
