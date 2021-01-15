@@ -4,16 +4,25 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import { Transition } from '@headlessui/react'
 
+import Heading from '../Typography/Heading'
+
 export interface ModalProps {
     root?: string
     open: boolean
+    title?: string
+    noPadding?: boolean
+    className?: string
     setOpen: (open: boolean) => void
 }
 
 const Modal: React.FC<ModalProps> = ({
     root = '#modal-root',
     open,
-    children
+    title,
+    setOpen,
+    children,
+    noPadding,
+    className
 }) => {
     const [el] = useState(document.createElement('div'))
     const modalRoot = document.querySelector(root)
@@ -38,7 +47,10 @@ const Modal: React.FC<ModalProps> = ({
                             aria-hidden={!open}
                             className="fixed inset-0 transition-opacity"
                         >
-                            <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
+                            <div
+                                className="absolute inset-0 bg-gray-900 opacity-50"
+                                onClick={() => setOpen(false)}
+                            ></div>
                         </div>
                     </Transition.Child>
                     {/* This element is to trick the browser into centering the modal contents. */}
@@ -61,9 +73,60 @@ const Modal: React.FC<ModalProps> = ({
                                 role="dialog"
                                 aria-modal="true"
                                 aria-labelledby="modal-headline"
-                                className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
+                                className={`inline-block bg-white rounded-lg ${
+                                    noPadding ? '' : 'px-4 pt-5 pb-4 sm:p-6'
+                                } text-left overflow-visible shadow-xl transform transition-all sm:w-full ${
+                                    className || ''
+                                }`}
                             >
-                                {children}
+                                {title ? (
+                                    <div className="w-full flex py-5 px-8 justify-between border-b border-tensei-gray-500">
+                                        <Heading
+                                            as="h3"
+                                            className="font-semibold"
+                                        >
+                                            {title}
+                                        </Heading>
+
+                                        <svg
+                                            className="cursor-pointer"
+                                            onClick={() => setOpen(false)}
+                                            width={26}
+                                            height={26}
+                                            viewBox="0 0 26 26"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <circle
+                                                cx={13}
+                                                cy={13}
+                                                r={13}
+                                                className="fill-current text-tensei-gray-300"
+                                            />
+                                            <rect
+                                                className="fill-current text-tensei-gray-800"
+                                                x="7.28564"
+                                                y="8.81055"
+                                                width="2.15499"
+                                                height="14.0074"
+                                                transform="rotate(-45 7.28564 8.81055)"
+                                            />
+                                            <rect
+                                                className="fill-current text-tensei-gray-800"
+                                                x="17.1904"
+                                                y="7.28516"
+                                                width="2.15499"
+                                                height="14.0074"
+                                                transform="rotate(45 17.1904 7.28516)"
+                                            />
+                                        </svg>
+                                    </div>
+                                ) : null}
+                                {title ? (
+                                    <div className="px-8">{children}</div>
+                                ) : (
+                                    children
+                                )}
                             </div>
                         )}
                     </Transition.Child>

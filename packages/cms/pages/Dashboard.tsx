@@ -1,6 +1,7 @@
+import Gravatar from 'react-gravatar'
 import React, { useState } from 'react'
-import { Route, Switch } from 'react-router-dom'
 import { Transition, Menu } from '@tensei/components'
+import { Route, Switch, Link } from 'react-router-dom'
 
 import Nav from '../components/Nav'
 
@@ -167,10 +168,13 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                         <span className="sr-only">
                                                             Open user menu
                                                         </span>
-                                                        <img
+                                                        <Gravatar
                                                             className="h-10 w-10 rounded-full"
-                                                            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                                                            alt=""
+                                                            email={
+                                                                window.Tensei
+                                                                    .state.admin
+                                                                    .email
+                                                            }
                                                         />
                                                     </Menu.Button>
                                                 </span>
@@ -208,17 +212,39 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                                 {({
                                                                     active
                                                                 }) => (
-                                                                    <a
-                                                                        href="#account-settings"
+                                                                    <Link
+                                                                        to={window.Tensei.getPath(
+                                                                            'settings'
+                                                                        )}
                                                                         className={`${
                                                                             active
                                                                                 ? 'bg-tensei-gray-100'
                                                                                 : ''
                                                                         } flex justify-between w-full px-4 py-3 leading-5 text-left`}
                                                                     >
-                                                                        Account
-                                                                        settings
-                                                                    </a>
+                                                                        Profile
+                                                                    </Link>
+                                                                )}
+                                                            </Menu.Item>
+                                                        </div>
+
+                                                        <div>
+                                                            <Menu.Item>
+                                                                {({
+                                                                    active
+                                                                }) => (
+                                                                    <Link
+                                                                        to={window.Tensei.getPath(
+                                                                            'settings'
+                                                                        )}
+                                                                        className={`${
+                                                                            active
+                                                                                ? 'bg-tensei-gray-100'
+                                                                                : ''
+                                                                        } flex justify-between w-full px-4 py-3 leading-5 text-left`}
+                                                                    >
+                                                                        Settings
+                                                                    </Link>
                                                                 )}
                                                             </Menu.Item>
                                                         </div>
@@ -297,7 +323,6 @@ const Dashboard: React.FC<DashboardProps> = () => {
                             />
 
                             <Route
-                                exact
                                 component={Settings}
                                 path={window.Tensei.getPath('settings')}
                             />

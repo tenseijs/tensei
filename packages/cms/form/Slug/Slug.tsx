@@ -21,6 +21,8 @@ const generateRandomString = () => {
     return result
 }
 
+const shortSlug = generateRandomString()
+
 const Slug: React.FC<FormComponentProps> = ({
     field,
     name,
@@ -40,7 +42,7 @@ const Slug: React.FC<FormComponentProps> = ({
                     ? slugify(`${slug} ${Dayjs().format('YYYY-MM-DD')}`)
                     : ''
             case 'random':
-                return slug ? slugify(`${slug} ${generateRandomString()}`) : ''
+                return slug ? slugify(`${slug} ${shortSlug}`) : ''
             default:
                 return slugify(slug)
         }

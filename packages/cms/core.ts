@@ -7,7 +7,8 @@ import {
     ToastOptions,
     ResourceContract,
     TenseiCtxInterface,
-    TenseiRegisterFunction
+    TenseiRegisterFunction,
+    CmsRoute
 } from '@tensei/components'
 
 // Form
@@ -108,7 +109,8 @@ class Core {
             Text: IndexText,
             Date: DetailDate,
             DateTime: DetailDate,
-            Timestamp: DetailDate
+            Timestamp: DetailDate,
+            Boolean: DetailBoolean
         },
         detail: {
             ID: DetailID,
@@ -123,6 +125,17 @@ class Core {
             ManyToMany: DetailManyToMany,
             OneToMany: DetailManyToMany
         }
+    }
+
+    routes: CmsRoute[] = []
+
+    route = (route: CmsRoute) => {
+        this.routes.push({
+            ...route,
+            settings: route.settings || false,
+            group: route.group || 'Global Settings',
+            requiredPermissions: route.requiredPermissions || []
+        })
     }
 
     ctx: TenseiCtxInterface = {} as any
@@ -162,6 +175,7 @@ class Core {
         if (this.state.admin) {
             this.ctx.setUser(this.state.admin)
         }
+        this.ctx.setRoutes([...this.ctx.routes, ...this.routes])
         this.ctx.setBooted(true)
     }
 

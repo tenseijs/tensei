@@ -49,6 +49,7 @@
     },
     "dependencies": {
         "@apollo/client": "^3.3.4",
+        "@reach/accordion": "^0.12.1",
         "@tailwindcss/aspect-ratio": "^0.2.0",
         "@tailwindcss/forms": "^0.2.1",
         "@tailwindcss/typography": "^0.3.1",
@@ -56,6 +57,7 @@
         "@types/axios": "^0.14.0",
         "@types/classnames": "^2.2.11",
         "@types/qs": "^6.9.5",
+        "@types/react-gravatar": "^2.6.8",
         "@types/react-paginate": "^6.2.1",
         "@types/react-select": "^3.1.2",
         "@types/speakingurl": "^13.0.2",
@@ -66,6 +68,7 @@
         "copyfiles": "^2.4.1",
         "graphql": "^15.4.0",
         "qs": "^6.9.4",
+        "react-gravatar": "^2.6.3",
         "react-paginate": "^7.0.0",
         "react-router-dom": "^5.2.0",
         "react-select": "^3.1.1",

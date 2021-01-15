@@ -38,6 +38,8 @@ declare module '@tensei/common/resources' {
         camelCaseName: string
         displayField: string
         displayFieldSnakeCase: string
+        secondaryDisplayField: string
+        secondaryDisplayFieldSnakeCase: string
         description: string
         snakeCaseName: string
         snakeCaseNamePlural: string
@@ -123,6 +125,7 @@ declare module '@tensei/common/resources' {
         canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
         canRunActionOnDashboard(authorizeFunction: AuthorizeFunction): this
         displayField(displayField: string): this
+        secondaryDisplayField(displayField: string): this
         fields(fields: FieldContract[]): this
         actions(actions: ActionContract[]): this
         noTimestamps(): this

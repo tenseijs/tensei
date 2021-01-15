@@ -1,0 +1,11 @@
+Tensei Cloud is highly inspired by Laravel Vapor. 
+
+Stages of deployment
+====================
+
+1. Developer runs yarn tensei link <app-ID> locally.
+2. Developer runs yarn tensei deploy. This sends the whole tensei project to our cloud.
+3. TC runs npm install and npm run build in the cloud.
+4. TC runs yarn tensei boot. This boots up the application by running all boot methods on plugins that need to make database queries.
+For example, run database sync will be done during this boot. Setting up admins and permissions will be done during this boot. That way, at run time, all we do is establish the database connection.
+

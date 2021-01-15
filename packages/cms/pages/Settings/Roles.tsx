@@ -14,34 +14,28 @@ import {
     AbstractData
 } from '@tensei/components'
 
-import DeleteModal from '../../components/DeleteModal'
+import ManageRole from './ManageRole'
 
-export interface ResourceProps {
+export interface RolesProps {
     detailId?: string
     baseResource: ResourceContract
     relatedResource?: ResourceContract
 }
 
-const Resource: React.FC<ResourceProps> = ({
+const Roles: React.FC<RolesProps> = ({
     baseResource,
     relatedResource,
     detailId
 }) => {
-    const resource = relatedResource ? relatedResource : baseResource
+    const resource = window.Tensei.state.resourcesMap['admin-roles']
     const history = useHistory()
     const location = useLocation()
     const [search, setSearch] = useState('')
+    const [creating, setCreating] = useState(false)
     const [deleting, setDeleting] = useState<AbstractData | null>(null)
+    const [editing, setEditing] = useState<AbstractData | null>(null)
 
     const fields = resource.fields.filter(field => field.showOnIndex)
-
-    const relatedField = baseResource.fields.find(
-        f => f.name === relatedResource?.name
-    )
-
-    if (!relatedField && relatedResource) {
-        return null
-    }
 
     const searchableFields = resource.fields.filter(field => field.isSearchable)
 
@@ -120,6 +114,7 @@ const Resource: React.FC<ResourceProps> = ({
 
         parameters.page = data.meta.page
         parameters.per_page = data.meta.per_page
+        parameters.populate = 'admin_permissions'
 
         return Qs.stringify(parameters, { encodeValuesOnly: true })
     }
@@ -133,7 +128,7 @@ const Resource: React.FC<ResourceProps> = ({
                 window.Tensei.client
                     .get(
                         relatedResource
-                            ? `${baseResource.slug}/${detailId}/${relatedField?.inputName}?${query}`
+                            ? `${baseResource.slug}/${detailId}/${relatedResource.slug}?${query}`
                             : `${slug}?${query}`
                     )
                     .then(({ data: payload }) => {
@@ -155,11 +150,6 @@ const Resource: React.FC<ResourceProps> = ({
 
     useEffect(() => {
         fetchData(data, resource.slug, getQuery())
-
-        history.push({
-            pathname: location.pathname,
-            search: getSearchString()
-        })
     }, [data.meta.per_page, data.meta.page, data.sort, search])
 
     const computePaginationValues = () => {
@@ -188,6 +178,7 @@ const Resource: React.FC<ResourceProps> = ({
                     <Component
                         field={field}
                         values={row}
+                        noLink={true}
                         value={row[field.inputName]}
                         resource={resource}
                     />
@@ -200,34 +191,8 @@ const Resource: React.FC<ResourceProps> = ({
 
             render: (value: string, row: any) => (
                 <div className="flex items-center">
-                    <Link
-                        to={window.Tensei.getPath(
-                            `resources/${resource.slug}/${row.id}`
-                        )}
-                        className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
-                    >
-                        <span className="sr-only">View resource</span>
-
-                        <svg
-                            width={20}
-                            height={20}
-                            className="fill-current text-tensei-gray-800"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path
-                                fillRule="evenodd"
-                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                clipRule="evenodd"
-                            />
-                        </svg>
-                    </Link>
-                    <Link
-                        to={window.Tensei.getPath(
-                            `resources/${resource.slug}/${row.id}/update`
-                        )}
+                    <Button
+                        onClick={() => setEditing(row)}
                         className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
                     >
                         <span className="sr-only">Edit</span>
@@ -241,7 +206,7 @@ const Resource: React.FC<ResourceProps> = ({
                         >
                             <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
                         </svg>
-                    </Link>
+                    </Button>
                     <button
                         onClick={() => setDeleting(row)}
                         className="flex items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
@@ -265,12 +230,16 @@ const Resource: React.FC<ResourceProps> = ({
 
     return (
         <>
-            <DeleteModal
-                open={!!deleting}
-                resource={resource}
-                setOpen={() => setDeleting(null)}
-                selected={[deleting!].filter(Boolean)}
+            <ManageRole
+                editing={editing}
+                setEditing={setEditing}
+                onUpdate={() => fetchData(data, resource.slug, getQuery())}
                 onDelete={() => fetchData(data, resource.slug, getQuery())}
+                onCreate={() => fetchData(data, resource.slug, getQuery())}
+                deleting={deleting}
+                setDeleting={setDeleting}
+                creating={creating}
+                setCreating={setCreating}
             />
             <Heading as="h2" className="mb-5 text-2xl">
                 {resource.label}
@@ -284,15 +253,13 @@ const Resource: React.FC<ResourceProps> = ({
                     />
                 </div>
 
-                <Link
-                    to={window.Tensei.getPath(
-                        `resources/${resource.slug}/create`
-                    )}
+                <Button
+                    onClick={() => setCreating(true)}
+                    className="mt-3 md:mt-0"
+                    primary
                 >
-                    <Button className="mt-3 md:mt-0" primary>
-                        Add {resource.name}
-                    </Button>
-                </Link>
+                    Add {resource.name}
+                </Button>
             </div>
 
             <div className="mt-8">
@@ -446,4 +413,4 @@ const Resource: React.FC<ResourceProps> = ({
     )
 }
 
-export default Resource
+export default Roles

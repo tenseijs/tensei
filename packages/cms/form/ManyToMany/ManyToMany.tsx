@@ -1,4 +1,5 @@
 import Qs from 'qs'
+import { Link } from 'react-router-dom'
 import AsyncSelect from 'react-select/async'
 import React, { useEffect, useState } from 'react'
 import {
@@ -12,9 +13,7 @@ const ManyToMany: React.FC<FormComponentProps> = ({
     field,
     name,
     id,
-    value,
     onChange,
-    error,
     resource,
     editing,
     editingId
@@ -27,7 +26,11 @@ const ManyToMany: React.FC<FormComponentProps> = ({
         r => r.name === field.name
     )
 
-    if (!relatedResource) {
+    const relationField = resource.fields.find(
+        field => field.name === relatedResource?.name
+    )
+
+    if (!relatedResource || !relationField) {
         return null
     }
 
@@ -48,7 +51,7 @@ const ManyToMany: React.FC<FormComponentProps> = ({
             }))
         }
 
-        parameters.fields = `id,${relatedResource.displayFieldSnakeCase}`
+        parameters.fields = `id,${relatedResource.displayFieldSnakeCase},${relatedResource.secondaryDisplayFieldSnakeCase}`
 
         parameters.page = 1
         parameters.per_page = relatedResource.perPageOptions[0] || 10
@@ -61,13 +64,18 @@ const ManyToMany: React.FC<FormComponentProps> = ({
             window.Tensei.client
                 .get(
                     `${resource.slug}/${editingId}/${
-                        relatedResource.slug
+                        relationField.inputName
                     }?${getQuery()}`
                 )
                 .then(({ data }) => {
                     setDefaultValue(
                         data.data.map((row: AbstractData) => ({
-                            label: row[relatedResource.displayFieldSnakeCase],
+                            label:
+                                row[relatedResource.displayFieldSnakeCase] ||
+                                row[
+                                    relatedResource
+                                        .secondaryDisplayFieldSnakeCase
+                                ],
                             value: row.id
                         }))
                     )
@@ -81,17 +89,6 @@ const ManyToMany: React.FC<FormComponentProps> = ({
                 })
         }
     }, [])
-
-    console.log(
-        '@@@@@@@@',
-        'Showing only the first ',
-        relatedResource.perPageOptions[0] || 10,
-        relatedResource.label.toLowerCase(),
-        'There are ',
-        hiddenRows,
-        ' more ',
-        relatedResource.label.toLowerCase()
-    )
 
     return (
         <>
@@ -123,6 +120,10 @@ const ManyToMany: React.FC<FormComponentProps> = ({
                                         row[
                                             relatedResource
                                                 .displayFieldSnakeCase
+                                        ] ||
+                                        row[
+                                            relatedResource
+                                                .secondaryDisplayFieldSnakeCase
                                         ]
                                 }))
                             )
@@ -137,6 +138,22 @@ const ManyToMany: React.FC<FormComponentProps> = ({
                     />
                 </div>
             )}
+            {!loadingDefault && hiddenRows !== 0 && editing ? (
+                <p className="text-tensei-primary font-semibold italic text-sm mt-3">
+                    Showing only the first{' '}
+                    {relatedResource.perPageOptions[0] || 10}{' '}
+                    {relatedResource.label.toLowerCase()}.{' '}
+                    <Link
+                        className="border-b border-tensei-primary"
+                        to={window.Tensei.getPath(
+                            `resources/${resource.slug}/${editingId}`
+                        )}
+                    >
+                        View the remaining {hiddenRows}{' '}
+                        {relatedResource.label.toLowerCase()}.
+                    </Link>
+                </p>
+            ) : null}
         </>
     )
 }

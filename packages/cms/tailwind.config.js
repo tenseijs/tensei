@@ -31,6 +31,8 @@ module.exports = {
 
                 'tensei-warning': '#F0B103',
                 'tensei-success': '#00976E',
+                'tensei-success-lighter': '#00CA93',
+                'tensei-success-darker': '#006449',
                 'tensei-error': '#D41B44'
             }
         }

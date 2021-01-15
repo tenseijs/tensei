@@ -22,11 +22,23 @@ export interface User {
     permissions: UserPermission[]
 }
 
+export interface CmsRoute {
+    settings: boolean
+    path: string
+    group: string
+    name: string
+    exact?: boolean
+    component: React.FC<any>
+    requiredPermissions: string[]
+}
+
 export interface TenseiCtxInterface {
     user: User
     booted?: boolean
     setUser: (user: User) => void
     setBooted: (booted: boolean) => void
+    routes: CmsRoute[]
+    setRoutes: (routes: CmsRoute[]) => void
 }
 
 export interface TenseiState {
@@ -54,7 +66,7 @@ export interface SerializedTenseiState {
 }
 
 export interface AbstractData {
-    [key: string]: string | number | boolean | undefined | any[] | null
+    [key: string]: any
 }
 
 export interface PaginatedData {
@@ -155,6 +167,8 @@ export interface ResourceContract {
     description: string
     displayField: string
     displayFieldSnakeCase: string
+    secondaryDisplayField: string
+    secondaryDisplayFieldSnakeCase: string
     displayInNavigation: true
     fields: FieldContract[]
     group: string
@@ -233,6 +247,7 @@ export interface Tensei {
     }
     toast: ToastInterface
     clear: () => void
+    route: (route: Partial<CmsRoute>) => void
     show: (message: string, options?: ToastOptions) => void
     success: (message: string, options?: ToastOptions) => void
     info: (message: string, options?: ToastOptions) => void

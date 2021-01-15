@@ -8,6 +8,7 @@ export interface ButtonProps {
     clear?: boolean
     primary?: boolean
     danger?: boolean
+    success?: boolean
     className?: string
     loading?: boolean
     as?: React.ReactElement
@@ -22,7 +23,8 @@ const Button: React.FC<ButtonProps> = ({
     primary,
     danger,
     loading,
-    className
+    className,
+    success
 }) => {
     const props = {
         onClick,
@@ -44,7 +46,12 @@ const Button: React.FC<ButtonProps> = ({
         } font-medium text-white transition ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto`,
         clear: `w-full inline-flex justify-center rounded-lg border border-tensei-gray-600 px-6 ${
             props.disabled ? 'cursor-not-allowed bg-tensei-primary-lighter' : ''
-        } bg-tensei-gray-600 font-medium text-tensei-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto`
+        } bg-tensei-gray-600 font-medium text-tensei-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto`,
+        success: `flex items-center justify-center w-full md:w-auto leading-5 px-6 ${
+            props.disabled
+                ? 'cursor-not-allowed bg-tensei-success-lighter'
+                : 'bg-tensei-success hover:bg-tensei-success-darker'
+        } text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-success transition ease-in-out`
     }
 
     if (clear) {
@@ -63,6 +70,12 @@ const Button: React.FC<ButtonProps> = ({
         props.className = `font-bold h-9 flex items-center ${
             props.className || ''
         } ${classes.danger}`
+    }
+
+    if (success) {
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.success}`
     }
 
     return (

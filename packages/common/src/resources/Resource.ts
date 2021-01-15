@@ -161,6 +161,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         groupSlug: 'resources',
         displayField: 'ID',
         displayFieldSnakeCase: 'id',
+        secondaryDisplayField: 'ID',
+        secondaryDisplayFieldSnakeCase: 'id',
         valueField: 'id',
         noTimestamps: false,
         camelCaseName: '',
@@ -335,6 +337,25 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
         this.data.displayField = displayField
         this.data.displayFieldSnakeCase = field.databaseField
+
+        return this
+    }
+
+    public secondaryDisplayField(displayField: string) {
+        const field = this.data.fields.find(
+            field => field.name === displayField
+        )
+
+        if (!field) {
+            console.error(
+                `A field with name ${displayField} was not found on resource ${this.data.name}.`
+            )
+
+            return this
+        }
+
+        this.data.secondaryDisplayField = displayField
+        this.data.secondaryDisplayFieldSnakeCase = field.databaseField
 
         return this
     }

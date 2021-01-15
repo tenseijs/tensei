@@ -81,3 +81,7 @@
 .react-select__multi-value__remove svg {
     @apply hover:text-tensei-gray-800 !important;
 }
+
+.permissions-accordion-button:focus + .permissions-accordion-panel {
+    @apply border-b border-l border-r border-tensei-primary;
+}

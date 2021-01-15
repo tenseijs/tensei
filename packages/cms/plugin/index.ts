@@ -13,11 +13,13 @@ import ExpressSessionMikroORMStore, {
     generateSessionEntity
 } from 'express-session-mikro-orm'
 import {
+    Utils,
     route,
     plugin,
     Asset,
     resource,
     text,
+    boolean,
     belongsToMany,
     dateTime,
     select,
@@ -169,8 +171,7 @@ class CmsPlugin {
 
                 if (
                     !token ||
-                    token[this.resources.user.data.snakeCaseName]
-                        .deactivated_at ||
+                    !token[this.resources.user.data.snakeCaseName].active ||
                     token.expires_at < new Date()
                 ) {
                     return response
@@ -232,20 +233,28 @@ class CmsPlugin {
                         this.resources.user.data.pascalCaseName
                     )) === 0
             )
-            .handle(async ({ config, manager, body }, response) => {
-                const { indicative, emitter } = config
-                try {
-                    const { email } = await indicative.validator.validate(
-                        body,
-                        {
-                            email: 'required|email'
-                        }
-                    )
+            .handle(async ({ config, manager, body, resources }, response) => {
+                const { emitter } = config
 
-                    let createUserPayload: any = {
-                        email
-                    }
+                const validator = Utils.validator(
+                    this.userResource(),
+                    manager,
+                    resources
+                )
 
+                const [success, payload] = await validator.validate(body)
+
+                if (!success) {
+                    return response.status(422).json(payload)
+                }
+
+                let createUserPayload: any = {
+                    email: payload.email
+                }
+
+                let roles = payload.admin_roles
+
+                if (!roles || (roles && roles.length === 0)) {
                     const authenticatorRole: any = await manager.findOne(
                         this.resources.role.data.pascalCaseName,
                         {
@@ -261,23 +270,22 @@ class CmsPlugin {
                         }
                     }
 
-                    createUserPayload.admin_roles = [authenticatorRole.id]
-
-                    const admin: User = manager.create(
-                        this.resources.user.data.pascalCaseName,
-                        createUserPayload
-                    )
-                    await manager.persistAndFlush(admin)
-
-                    emitter.emit('ADMIN_REGISTERED', admin)
-
-                    this.sendEmail(admin, config)
-
-                    return response.status(204).json()
-                } catch (errors) {
-                    console.log(errors)
-                    return response.status(422).json(errors)
+                    roles = [authenticatorRole.id]
                 }
+
+                createUserPayload.admin_roles = roles
+
+                const admin: User = manager.create(
+                    this.resources.user.data.pascalCaseName,
+                    createUserPayload
+                )
+                await manager.persistAndFlush(admin)
+
+                emitter.emit('ADMIN_REGISTERED', admin)
+
+                this.sendEmail(admin, config)
+
+                return response.status(204).json()
             }),
         route('Passwordless Email Login')
             .post()
@@ -376,10 +384,12 @@ class CmsPlugin {
                     .rules('required')
                     .unique()
                     .searchable()
+                    .sortable()
                     .rules('required'),
                 text('Slug')
-                    .rules('required')
+                    .rules('required', 'unique:slug')
                     .unique()
+                    .sortable()
                     .searchable()
                     .rules('required'),
                 text('Description').nullable().rules('max:255'),
@@ -393,15 +403,28 @@ class CmsPlugin {
     private userResource() {
         return resource(this.config.userResource)
             .fields([
+                text('Full name')
+                    .unique()
+                    .searchable()
+                    .nullable()
+                    .sortable()
+                    .rules('unique:full_name'),
                 text('Email')
                     .unique()
                     .searchable()
+                    .sortable()
                     .notNullable()
-                    .creationRules('required', 'email', 'unique:email'),
-                dateTime('Deactivated At').nullable(),
-                belongsToMany(this.config.roleResource)
+                    .rules('required', 'email', 'unique:email'),
+                boolean('Active')
+                    .nullable()
+                    .sortable()
+                    .defaultFormValue(true)
+                    .default(true)
+                    .rules('boolean'),
+                belongsToMany(this.config.roleResource).rules('array')
             ])
-            .hideOnApi()
+            .displayField('Full name')
+            .secondaryDisplayField('Email')
             .hideFromNavigation()
     }
 
@@ -460,7 +483,7 @@ class CmsPlugin {
             )
 
             if (user) {
-                user[this.resources.permission.data.snakeCaseName] = user[
+                user[this.resources.permission.data.snakeCaseNamePlural] = user[
                     this.getRoleUserKey()
                 ]
                     ?.toJSON()
@@ -530,10 +553,6 @@ class CmsPlugin {
                 this.router.use(responseEnhancer())
 
                 this.router.use(this.setAuth)
-
-                this.router.get('/beans', (r, re) => {
-                    re.json(['beans', 'corn'])
-                })
 
                 this.router.use(Csurf())
                 ;[...getRoutes(config, this.config), ...this.routes()].forEach(

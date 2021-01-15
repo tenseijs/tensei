@@ -1,16 +1,20 @@
 import { Route, Redirect } from 'react-router-dom'
 import React, { createContext, useState, useEffect } from 'react'
 
-import { TenseiCtxInterface, Pulse } from '@tensei/components'
+import { TenseiCtxInterface, Pulse, CmsRoute } from '@tensei/components'
 
 import Register from '../Register'
 import Dashboard from '../Dashboard'
+import Users from '../Settings/Users'
+import Roles from '../Settings/Roles'
 
 const TenseiCtx = createContext<TenseiCtxInterface>({
     user: null as any,
     booted: false,
     setUser: () => {},
-    setBooted: () => {}
+    setBooted: () => {},
+    routes: [],
+    setRoutes: () => {}
 })
 
 export const MustBeAuthComponent = (Component: React.FC<any>) => {
@@ -56,15 +60,35 @@ export const MustBeNotAuthComponent = (Component: React.FC<any>) => {
 }
 
 const Wrapper: React.FC = () => {
+    const [routes, setRoutes] = useState<CmsRoute[]>([
+        {
+            path: window.Tensei.getPath(`settings`),
+            requiredPermissions: ['index:admin-users'],
+            component: Users,
+            settings: true,
+            group: 'Administration Panel',
+            name: 'Users',
+            exact: true
+        },
+        {
+            path: window.Tensei.getPath(`settings/roles`),
+            requiredPermissions: ['index:admin-roles'],
+            component: Roles,
+            settings: true,
+            group: 'Administration Panel',
+            name: 'Roles'
+        }
+    ])
     const [booted, setBooted] = useState(false)
     const [user, setUser] = useState<TenseiCtxInterface['user']>(null as any)
 
     const value = {
         user,
         setUser,
-
         booted,
-        setBooted
+        setBooted,
+        routes,
+        setRoutes
     }
 
     window.Tensei.ctx = value
