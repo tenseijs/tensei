@@ -21,5 +21,5 @@ export default resource('User')
             .notNullable(),
         hasMany('Pizza')
     ])
-    .displayField('full_name')
+    .displayField('Full name')
     .perPageOptions([2, 5, 10])

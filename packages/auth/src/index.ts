@@ -411,7 +411,7 @@ class Auth {
                     .rules('required'),
                 belongsToMany(this.config.roleResource)
             ])
-            .displayField('name')
+            .displayField('Name')
             .hideOnDeleteApi()
             .hideOnUpdateApi()
             .group('Users & Permissions')
@@ -434,7 +434,7 @@ class Auth {
                 belongsToMany(this.config.userResource),
                 belongsToMany(this.config.permissionResource).owner()
             ])
-            .displayField('name')
+            .displayField('Name')
             .group('Users & Permissions')
     }
 
@@ -1578,7 +1578,7 @@ class Auth {
             })
 
             ctx.manager.assign(token[userField], {
-                blocked_at: Dayjs().format()
+                blocked: true
             })
 
             ctx.manager.persist(token)
@@ -2050,7 +2050,7 @@ class Auth {
             throw ctx.authenticationError('Invalid credentials.')
         }
 
-        if (user.blocked_at) {
+        if (user.blocked) {
             throw ctx.forbiddenError('Your account is temporarily disabled.')
         }
 
@@ -2131,7 +2131,7 @@ class Auth {
             return
         }
 
-        if (ctx.user.blocked_at) {
+        if (ctx.user.blocked) {
             throw ctx.forbiddenError('Your account is temporarily disabled.')
         }
     }

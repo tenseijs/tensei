@@ -141,7 +141,7 @@ test('correctly validates data and throws error with validation rules', async ()
         false,
         [
             {
-                message: 'unique validation failed on title',
+                message: 'This title has already been taked.',
                 validation: 'unique',
                 field: 'title'
             },
