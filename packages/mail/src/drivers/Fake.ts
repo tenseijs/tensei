@@ -24,7 +24,7 @@ import {
 export class FakeDriver implements FakeDriverContract {
 	private transporter: any
 
-	constructor(private listener: TrapCallback, private logger: Config['logger']) {
+	constructor(private listener: TrapCallback) {
 		this.transporter = nodemailer.createTransport({
 			jsonTransport: true,
 		})
@@ -38,11 +38,9 @@ export class FakeDriver implements FakeDriverContract {
 			throw new Error('Driver transport has been closed and cannot be used for sending emails')
 		}
 
+		const listenerResponse = this.listener(message)
 		const response = await this.transporter.sendMail(message)
-
-		this.logger.info(JSON.stringify(message, null, 3))
-
-		return { ...response }
+		return { ...response, ...listenerResponse }
 	}
 
 	/**

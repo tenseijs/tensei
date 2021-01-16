@@ -27,6 +27,7 @@ import {
 	QueueMonitorCallback,
 	MailManagerContract,
 	MessageComposeCallback,
+	MessageNode,
 } from '@tensei/mail'
 
 import { Mailer } from './Mailer'
@@ -222,7 +223,9 @@ export class MailManager
 
 	protected createFake(_: string, config: any) {
 		const { FakeDriver } = require('./drivers/Fake')
-		return new FakeDriver(config, this.logger)
+		return new FakeDriver((message: MessageNode) => {
+			this.logger.info(JSON.stringify(message, null, 2))
+		}, this.logger)
 	}
 
 	/**
