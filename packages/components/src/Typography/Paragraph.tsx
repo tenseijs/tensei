@@ -2,13 +2,15 @@ import React, { EventHandler, SyntheticEvent } from 'react'
 
 export interface ParagraphProps {
     className?: string
+    as?: string
     onClick?: EventHandler<SyntheticEvent<HTMLParagraphElement>>
 }
 
 const Paragraph: React.FC<ParagraphProps> = ({
     children,
     className,
-    onClick
+    onClick,
+    as = 'p'
 }) => {
     const props: any = {}
 
@@ -16,10 +18,16 @@ const Paragraph: React.FC<ParagraphProps> = ({
         props.tabIndex = 0
     }
 
+    const Component = as
+
     return (
-        <p onClick={onClick} className={`text-base ${className}`} {...props}>
+        <Component
+            onClick={onClick}
+            className={`text-base ${className}`}
+            {...props}
+        >
             {children}
-        </p>
+        </Component>
     )
 }
 

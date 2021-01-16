@@ -2,36 +2,33 @@ import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import ReactMde, { ReactMdeProps } from 'react-mde'
 
+import { FormComponentProps, DetailComponentProps } from '@tensei/components'
+
 import './mde.css'
 import 'react-mde/lib/styles/css/react-mde-all.css'
 
-export interface MdeProps {
-    label: string
-    id?: string
-    name?: string
-}
+export interface MdeProps extends FormComponentProps {}
 
-const Mde: React.FC<MdeProps> = ({ label, id, name }: MdeProps) => {
-    const [value, setValue] = useState<string>('')
+const Mde: React.FC<MdeProps> = ({ field, id, name, onChange, value }) => {
     const [tab, setTab] = useState<ReactMdeProps['selectedTab']>('write')
 
     return (
         <div>
-            {label && (
+            {field.name && (
                 <label
                     htmlFor={id}
                     className={
                         'font-semibold text-tensei-darkest inline-block mb-2'
                     }
                 >
-                    {label}
+                    {field.name}
                 </label>
             )}
 
             <ReactMde
                 value={value}
                 selectedTab={tab}
-                onChange={setValue}
+                onChange={onChange}
                 onTabChange={setTab}
                 classes={{
                     textArea:
@@ -57,10 +54,17 @@ const Mde: React.FC<MdeProps> = ({ label, id, name }: MdeProps) => {
     )
 }
 
+const DetailMde: React.FC<DetailComponentProps> = ({ value, ...rest }) => {
+    return (
+        <window.Tensei.components.detail.Textarea {...rest}>
+            <ReactMarkdown source={value} />
+        </window.Tensei.components.detail.Textarea>
+    )
+}
+
 export default Mde
 
-window.Tensei.register(({ formComponent, indexComponent, detailComponent }) => {
+window.Tensei.register(({ formComponent, detailComponent }) => {
     formComponent('Mde', Mde)
-    indexComponent('Mde', Mde)
-    detailComponent('Mde', Mde)
+    detailComponent('Mde', DetailMde)
 })

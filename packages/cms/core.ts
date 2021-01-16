@@ -1,15 +1,7 @@
 import Qs from 'qs'
 import Axios from 'axios'
 import Toasted from 'toastedjs'
-import {
-    Tensei,
-    TenseiState,
-    ToastOptions,
-    ResourceContract,
-    TenseiCtxInterface,
-    TenseiRegisterFunction,
-    CmsRoute
-} from '@tensei/components'
+import * as Lib from '@tensei/components'
 
 // Form
 import IndexID from './index/ID'
@@ -43,7 +35,7 @@ class Core {
             [key: string]: boolean
         } = {}
         let resourcesMap: {
-            [key: string]: ResourceContract
+            [key: string]: Lib.ResourceContract
         } = {}
         let registered = false
 
@@ -72,7 +64,7 @@ class Core {
             permissions,
             registered,
             resourcesMap
-        } as TenseiState
+        } as Lib.TenseiState
     })()
 
     constructor() {
@@ -89,9 +81,11 @@ class Core {
         theme: 'tensei'
     })
 
-    private hooks: TenseiRegisterFunction[] = []
+    private hooks: Lib.TenseiRegisterFunction[] = []
 
-    components: Tensei['components'] = {
+    lib: Lib.Tensei['lib'] = Lib
+
+    components: Lib.Tensei['components'] = {
         form: {
             Text: FormText,
             Date: FormDate,
@@ -127,9 +121,9 @@ class Core {
         }
     }
 
-    routes: CmsRoute[] = []
+    routes: Lib.CmsRoute[] = []
 
-    route = (route: CmsRoute) => {
+    route = (route: Lib.CmsRoute) => {
         this.routes.push({
             ...route,
             settings: route.settings || false,
@@ -138,7 +132,7 @@ class Core {
         })
     }
 
-    ctx: TenseiCtxInterface = {} as any
+    ctx: Lib.TenseiCtxInterface = {} as any
 
     client = Axios.create({
         baseURL: this.state.config.apiPath,
@@ -147,7 +141,7 @@ class Core {
 
     getPath = (path: string) => `/${this.state.config.dashboardPath}/${path}`
 
-    register = (fn: TenseiRegisterFunction) => {
+    register = (fn: Lib.TenseiRegisterFunction) => {
         this.hooks.push(fn)
     }
 
@@ -179,34 +173,34 @@ class Core {
         this.ctx.setBooted(true)
     }
 
-    success = (message: string, options: ToastOptions = {}) => {
+    success = (message: string, options: Lib.ToastOptions = {}) => {
         this.toast.success(message, {
             type: 'success',
             ...options
         })
     }
 
-    show = (message: string, options: ToastOptions = {}) => {
+    show = (message: string, options: Lib.ToastOptions = {}) => {
         this.toast.success(message, {
             ...options
         })
     }
 
-    error = (message: string, options: ToastOptions = {}) => {
+    error = (message: string, options: Lib.ToastOptions = {}) => {
         this.toast.error(message, {
             type: 'error',
             ...options
         })
     }
 
-    info = (message: string, options: ToastOptions = {}) => {
+    info = (message: string, options: Lib.ToastOptions = {}) => {
         this.toast.info(message, {
             type: 'info',
             ...options
         })
     }
 
-    warning = (message: string, options: ToastOptions = {}) => {
+    warning = (message: string, options: Lib.ToastOptions = {}) => {
         this.toast.info(message, {
             type: 'warning',
             ...options

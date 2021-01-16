@@ -199,6 +199,9 @@ declare module '@tensei/common/fields' {
         shadow(): this
         removeFromSidebarOnForms(): this
         dockToSidebarOnForms(): this
+        formComponent(component: string): this
+        indexComponent(component: string): this
+        detailComponent(component: string): this
         /**
          *
          * The name of the field. Will be used to display table columns,

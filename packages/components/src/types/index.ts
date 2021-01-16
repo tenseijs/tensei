@@ -248,6 +248,9 @@ export interface Tensei {
     }
     toast: ToastInterface
     clear: () => void
+    lib: {
+        [key: string]: React.FunctionComponent<any>
+    }
     route: (route: Partial<CmsRoute>) => void
     show: (message: string, options?: ToastOptions) => void
     success: (message: string, options?: ToastOptions) => void

@@ -1,7 +1,7 @@
 import Path from 'path'
 import { plugin } from '@tensei/common'
 
-export { mde as markdown, Mde } from './Mde'
+export { mde as markdown } from './Mde'
 
 export class MdePlugin {
     private config = {

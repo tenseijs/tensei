@@ -5,7 +5,12 @@ export interface TextareaProps extends DetailComponentProps {
     className?: string
 }
 
-const Textarea: React.FC<TextareaProps> = ({ value, className, field }) => {
+const Textarea: React.FC<TextareaProps> = ({
+    value,
+    className,
+    field,
+    children
+}) => {
     const [hide, setHide] = useState<boolean>(field.toggleEnabled)
 
     return (
@@ -30,10 +35,14 @@ const Textarea: React.FC<TextareaProps> = ({ value, className, field }) => {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <Paragraph className={className}>{value}</Paragraph>
+                    {children || (
+                        <Paragraph className={className}>{children}</Paragraph>
+                    )}
                 </Transition>
             ) : (
-                <Paragraph className={className}>{value}</Paragraph>
+                children || (
+                    <Paragraph className={className}>{children}</Paragraph>
+                )
             )}
         </div>
     )

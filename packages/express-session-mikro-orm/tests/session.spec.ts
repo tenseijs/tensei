@@ -359,15 +359,21 @@ it('The SessionStore.clearExpiredSessions() deletes all expired sessions', done 
                             orm
                         })
 
-                        store.clearExpiredSessions().then(() => {
-                            orm.em.find('Session', {}).then(foundSessions => {
-                                expect(foundSessions.length).to.eq(1)
+                        store
+                            .clearExpiredSessions()
+                            .then(() => {
+                                orm.em
+                                    .find('Session', {})
+                                    .then(foundSessions => {
+                                        expect(foundSessions.length).to.eq(1)
 
-                                orm.close().then(() => {
-                                    done()
-                                })
-                            }).catch(console.error)
-                        }).catch(console.error)
+                                        orm.close().then(() => {
+                                            done()
+                                        })
+                                    })
+                                    .catch(console.error)
+                            })
+                            .catch(console.error)
                     })
                     .catch(console.log)
             )

@@ -107,10 +107,6 @@ const Users: React.FC<ResourceProps> = ({
     )
 
     useEffect(() => {
-        setData(getDefaultData())
-    }, [resource.slug])
-
-    useEffect(() => {
         fetchData(data, resource.slug, getQuery())
     }, [data.meta.per_page, data.meta.page, data.sort, search])
 

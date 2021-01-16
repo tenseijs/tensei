@@ -7,11 +7,12 @@ const {
     hasOne,
     hasMany,
 } = require('@tensei/core')
+const { markdown } = require('@tensei/mde')
 
 module.exports = resource('Comment')
     .fields([
         text('Title').rules('required').searchable().sortable(),
-        textarea('Body').rules('required').hideOnIndex(),
+        markdown('Body').rules('required').hideOnIndex(),
         textarea('Reply')
             .rules('required', 'max:255')
             .hideOnIndex()

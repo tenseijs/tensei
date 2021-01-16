@@ -124,10 +124,6 @@ const Roles: React.FC<RolesProps> = ({
     )
 
     useEffect(() => {
-        setData(getDefaultData())
-    }, [resource.slug])
-
-    useEffect(() => {
         fetchData(data, resource.slug, getQuery())
     }, [data.meta.per_page, data.meta.page, data.sort, search])
 
