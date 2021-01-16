@@ -138,7 +138,7 @@ const ManyToMany: React.FC<FormComponentProps> = ({
                     />
                 </div>
             )}
-            {!loadingDefault && hiddenRows !== 0 && editing ? (
+            {!loadingDefault && hiddenRows && hiddenRows !== 0 && editing ? (
                 <p className="text-tensei-primary font-semibold italic text-sm mt-3">
                     Showing only the first{' '}
                     {relatedResource.perPageOptions[0] || 10}{' '}

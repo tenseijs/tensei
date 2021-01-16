@@ -56,7 +56,10 @@ const ResourceDetail: React.FC<
 
     const resource = window.Tensei.state.resourcesMap[params.resource]
 
-    if (!resource) {
+    if (
+        !resource ||
+        (resource && !window.Tensei.state.permissions[`show:${resource.slug}`])
+    ) {
         return <Redirect to={window.Tensei.getPath('404')} />
     }
 
@@ -124,18 +127,26 @@ const ResourceDetail: React.FC<
                         </Heading>
 
                         <div className="flex justify-end mt-3 md:mt-0">
-                            <Button onClick={() => setDeleting(true)} clear>
-                                Delete
-                            </Button>
-                            <Link
-                                to={window.Tensei.getPath(
-                                    `resources/${resource.slug}/${params.id}/update`
-                                )}
-                            >
-                                <Button primary className="ml-5">
-                                    Edit
+                            {window.Tensei.state.permissions[
+                                `update:${resource.slug}`
+                            ] && (
+                                <Button onClick={() => setDeleting(true)} clear>
+                                    Delete
                                 </Button>
-                            </Link>
+                            )}
+                            {window.Tensei.state.permissions[
+                                `update:${resource.slug}`
+                            ] && (
+                                <Link
+                                    to={window.Tensei.getPath(
+                                        `resources/${resource.slug}/${params.id}/update`
+                                    )}
+                                >
+                                    <Button primary className="ml-5">
+                                        Edit
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     </header>
 

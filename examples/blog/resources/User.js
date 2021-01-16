@@ -21,6 +21,7 @@ const User = resource('User')
             .notNullable(),
         hasMany('Post'),
     ])
+    .group('Blog')
     .displayField('Full name')
     .perPageOptions([100, 250, 500])
 

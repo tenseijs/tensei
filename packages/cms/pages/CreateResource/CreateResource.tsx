@@ -21,7 +21,13 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
 
     const resource = window.Tensei.state.resourcesMap[params.resource]
 
-    if (!resource) {
+    if (
+        !resource ||
+        (params.id &&
+            !window.Tensei.state.permissions[`update:${resource.slug}`]) ||
+        (!params.id &&
+            !window.Tensei.state.permissions[`create:${resource.slug}`])
+    ) {
         return <Redirect to={window.Tensei.getPath('404')} />
     }
 

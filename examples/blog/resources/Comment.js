@@ -31,3 +31,4 @@ module.exports = resource('Comment')
             })),
     ])
     .icon('comments')
+    .group('Blog')

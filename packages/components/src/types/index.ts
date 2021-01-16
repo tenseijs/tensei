@@ -10,7 +10,7 @@ export interface UserRole {
     id: number
     name: string
     slug: string
-    permissions: UserPermission[]
+    admin_permissions: UserPermission[]
 }
 
 export interface User {
@@ -19,7 +19,8 @@ export interface User {
     roles: UserRole[]
     created_at: string
     updated_at: string
-    permissions: UserPermission[]
+    admin_roles: UserRole[]
+    admin_permissions: string[]
 }
 
 export interface CmsRoute {

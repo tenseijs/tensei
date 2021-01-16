@@ -57,7 +57,9 @@ const ManageUser: React.FC<ResourceProps> = ({
                 }
 
                 window.Tensei.success(
-                    `Admin user created. The new admin may now login.`
+                    editing
+                        ? 'Admin user updated.'
+                        : `Admin user created. The new admin may now login.`
                 )
 
                 if (editing) {

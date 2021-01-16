@@ -17,6 +17,10 @@ const ResourceIndex: React.FC<ResourceIndexProps> = () => {
         return <Redirect to={window.Tensei.getPath('404')} />
     }
 
+    if (!window.Tensei.state.permissions[`index:${resource.slug}`]) {
+        return <Redirect to={window.Tensei.getPath('404')} />
+    }
+
     return (
         <PageWrapper>
             <Resource baseResource={resource} />

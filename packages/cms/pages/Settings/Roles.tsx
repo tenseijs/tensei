@@ -2,7 +2,7 @@ import Qs from 'qs'
 import Paginate from 'react-paginate'
 import { throttle } from 'throttle-debounce'
 import React, { useState, useCallback, useEffect } from 'react'
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { useHistory, useLocation, Redirect } from 'react-router-dom'
 import {
     Table,
     SearchInput,
@@ -28,7 +28,6 @@ const Roles: React.FC<RolesProps> = ({
     detailId
 }) => {
     const resource = window.Tensei.state.resourcesMap['admin-roles']
-    const history = useHistory()
     const location = useLocation()
     const [search, setSearch] = useState('')
     const [creating, setCreating] = useState(false)
@@ -39,37 +38,17 @@ const Roles: React.FC<RolesProps> = ({
 
     const searchableFields = resource.fields.filter(field => field.isSearchable)
 
-    const getDefaultParametersFromSearch = () => {
-        const searchQuery = Qs.parse(location.search.split('?')[1])
-
-        const sort = (
-            (searchQuery[`${resource.slug}_sort`] as string) || ''
-        ).split('___')
-
-        return {
-            page: searchQuery[`${resource.slug}_page`] || 1,
-            per_page:
-                searchQuery[`${resource.slug}_per_page`] ||
-                resource.perPageOptions[0] ||
-                10,
-            sort: sort
-                ? {
-                      field: sort[0],
-                      direction: sort[1]
-                  }
-                : {}
-        }
+    if (!window.Tensei.state.permissions['index:admin-roles']) {
+        return <Redirect to={window.Tensei.getPath('404')} />
     }
-
-    const defaultParams = getDefaultParametersFromSearch()
 
     const getDefaultData = () => ({
         meta: {
-            page: parseInt(defaultParams.page as string),
-            per_page: parseInt(defaultParams.per_page as string)
+            page: 1,
+            per_page: resource.perPageOptions[0] || 10
         },
         data: [],
-        sort: defaultParams.sort as any
+        sort: {}
     })
 
     const [data, setData] = useState<PaginatedData>(getDefaultData())
@@ -185,48 +164,53 @@ const Roles: React.FC<RolesProps> = ({
                 )
             }
         })),
-        {
+        (window.Tensei.state.permissions['update:admin-roles'] ||
+            window.Tensei.state.permissions['delete:admin-roles']) && {
             title: <span className="sr-only">View</span>,
             field: 'actions',
 
             render: (value: string, row: any) => (
                 <div className="flex items-center">
-                    <Button
-                        onClick={() => setEditing(row)}
-                        className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
-                    >
-                        <span className="sr-only">Edit</span>
-                        <svg
-                            className="fill-current text-tensei-gray-800"
-                            width={16}
-                            height={16}
-                            viewBox="0 0 14 14"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                    {window.Tensei.state.permissions['update:admin-roles'] && (
+                        <Button
+                            onClick={() => setEditing(row)}
+                            className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
                         >
-                            <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
-                        </svg>
-                    </Button>
-                    <button
-                        onClick={() => setDeleting(row)}
-                        className="flex items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
-                    >
-                        <span className="sr-only">Delete</span>
-                        <svg
-                            width={16}
-                            height={16}
-                            className="fill-current text-tensei-gray-800"
-                            viewBox="0 0 12 14"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                            <span className="sr-only">Edit</span>
+                            <svg
+                                className="fill-current text-tensei-gray-800"
+                                width={16}
+                                height={16}
+                                viewBox="0 0 14 14"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path d="M0.25 10.9374V13.7499H3.0625L11.3575 5.45492L8.545 2.64242L0.25 10.9374ZM13.5325 3.27992C13.825 2.98742 13.825 2.51492 13.5325 2.22242L11.7775 0.467422C11.485 0.174922 11.0125 0.174922 10.72 0.467422L9.3475 1.83992L12.16 4.65242L13.5325 3.27992Z" />
+                            </svg>
+                        </Button>
+                    )}
+                    {window.Tensei.state.permissions['delete:admin-roles'] && (
+                        <button
+                            onClick={() => setDeleting(row)}
+                            className="flex items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
                         >
-                            <path d="M1.5 12.25C1.5 13.075 2.175 13.75 3 13.75H9C9.825 13.75 10.5 13.075 10.5 12.25V3.25H1.5V12.25ZM11.25 1H8.625L7.875 0.25H4.125L3.375 1H0.75V2.5H11.25V1Z" />
-                        </svg>
-                    </button>
+                            <span className="sr-only">Delete</span>
+                            <svg
+                                width={16}
+                                height={16}
+                                className="fill-current text-tensei-gray-800"
+                                viewBox="0 0 12 14"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path d="M1.5 12.25C1.5 13.075 2.175 13.75 3 13.75H9C9.825 13.75 10.5 13.075 10.5 12.25V3.25H1.5V12.25ZM11.25 1H8.625L7.875 0.25H4.125L3.375 1H0.75V2.5H11.25V1Z" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
             )
         }
-    ]
+    ].filter(Boolean)
 
     return (
         <>
@@ -270,7 +254,7 @@ const Roles: React.FC<RolesProps> = ({
                                 <Table
                                     sort={data.sort}
                                     loading={loading}
-                                    columns={columns}
+                                    columns={columns as any[]}
                                     onSort={sort => setData({ ...data, sort })}
                                     rows={data.data as any}
                                     selection={{

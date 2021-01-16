@@ -32,6 +32,10 @@ export interface ResourceProps {
 
 const baseResourcePermissions = [
     {
+        label: 'Index',
+        value: 'index'
+    },
+    {
         label: 'Create',
         value: 'insert'
     },
@@ -98,7 +102,9 @@ const ManageUser: React.FC<ResourceProps> = ({
                     onUpdate()
                 }
 
-                window.Tensei.success(`Admin role created.`)
+                window.Tensei.success(
+                    `Admin role ${editing ? 'updated' : 'created'}.`
+                )
 
                 if (editing) {
                     setEditing(null)
@@ -347,7 +353,7 @@ const ManageUser: React.FC<ResourceProps> = ({
                                                                 className={`w-1/4 flex ${
                                                                     permissionIndex >
                                                                     3
-                                                                        ? 'mr-4'
+                                                                        ? 'mt-4'
                                                                         : ''
                                                                 }`}
                                                                 checkboxClassName={

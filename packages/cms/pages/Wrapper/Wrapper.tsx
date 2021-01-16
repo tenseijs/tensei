@@ -62,7 +62,7 @@ export const MustBeNotAuthComponent = (Component: React.FC<any>) => {
 const Wrapper: React.FC = () => {
     const [routes, setRoutes] = useState<CmsRoute[]>([
         {
-            path: window.Tensei.getPath(`settings`),
+            path: window.Tensei.getPath(`settings/users`),
             requiredPermissions: ['index:admin-users'],
             component: Users,
             settings: true,

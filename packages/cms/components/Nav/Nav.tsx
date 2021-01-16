@@ -59,6 +59,17 @@ const Nav: React.FC<NavProps> = ({ className }) => {
                             })
                         }
 
+                        const groupResources = group.resources.filter(
+                            resource =>
+                                window.Tensei.state.admin.admin_permissions.includes(
+                                    `index:${resource.slug}`
+                                )
+                        )
+
+                        if (groupResources.length === 0) {
+                            return null
+                        }
+
                         return (
                             <Fragment key={groupSlug}>
                                 <div
@@ -97,7 +108,7 @@ const Nav: React.FC<NavProps> = ({ className }) => {
                                     </svg>
                                 </div>
                                 {group.active &&
-                                    group.resources.map(resource => {
+                                    groupResources.map(resource => {
                                         const linkActive = location.pathname.includes(
                                             window.Tensei.getPath(
                                                 `resources/${resource.slug}`

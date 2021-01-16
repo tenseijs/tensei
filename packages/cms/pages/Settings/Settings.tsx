@@ -3,8 +3,6 @@ import { Link, Route, useLocation, Switch } from 'react-router-dom'
 
 interface SettingsPageProps {}
 
-import Roles from './Roles'
-import Users from './Users'
 import { CmsRoute } from '@tensei/components'
 
 const getGroups = () => {
@@ -34,6 +32,10 @@ const Settings: React.FC<SettingsPageProps> = () => {
                             {Object.keys(groups).map(groupKey => {
                                 const group = groups[groupKey]
 
+                                if (group.length === 0) {
+                                    return null
+                                }
+
                                 return (
                                     <div
                                         className="mb-5"
@@ -46,6 +48,23 @@ const Settings: React.FC<SettingsPageProps> = () => {
                                         {group.map(route => {
                                             const active =
                                                 route.path === location.pathname
+
+                                            const canSee =
+                                                route.requiredPermissions
+                                                    .length === 0 ||
+                                                route.requiredPermissions
+                                                    .map(permission =>
+                                                        window.Tensei.state.admin.admin_permissions.includes(
+                                                            permission
+                                                        )
+                                                    )
+                                                    .filter(Boolean).length ===
+                                                    route.requiredPermissions
+                                                        .length
+
+                                            if (!canSee) {
+                                                return null
+                                            }
 
                                             return (
                                                 <Link

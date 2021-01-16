@@ -222,27 +222,6 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                                                                 : ''
                                                                         } flex justify-between w-full px-4 py-3 leading-5 text-left`}
                                                                     >
-                                                                        Profile
-                                                                    </Link>
-                                                                )}
-                                                            </Menu.Item>
-                                                        </div>
-
-                                                        <div>
-                                                            <Menu.Item>
-                                                                {({
-                                                                    active
-                                                                }) => (
-                                                                    <Link
-                                                                        to={window.Tensei.getPath(
-                                                                            'settings'
-                                                                        )}
-                                                                        className={`${
-                                                                            active
-                                                                                ? 'bg-tensei-gray-100'
-                                                                                : ''
-                                                                        } flex justify-between w-full px-4 py-3 leading-5 text-left`}
-                                                                    >
                                                                         Settings
                                                                     </Link>
                                                                 )}
