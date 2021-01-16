@@ -350,7 +350,7 @@ it('The SessionStore.clearExpiredSessions() deletes all expired sessions', done 
                             {
                                 session_id: 3,
                                 data: sampleSession,
-                                expires: new Date('2021-01-01')
+                                expires: new Date('2099-01-01')
                             }
                         ].map(object => orm.em.create('Session', object))
                     )
@@ -366,8 +366,8 @@ it('The SessionStore.clearExpiredSessions() deletes all expired sessions', done 
                                 orm.close().then(() => {
                                     done()
                                 })
-                            })
-                        })
+                            }).catch(console.error)
+                        }).catch(console.error)
                     })
                     .catch(console.log)
             )
