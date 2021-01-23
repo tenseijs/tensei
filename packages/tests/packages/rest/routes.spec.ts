@@ -253,7 +253,7 @@ test('emits deleted event after resource is deleted', async () => {
         plugin('Register listeners').register(({ extendEvents }) => {
             extendEvents([
                 event('user::deleted').listen(({ payload }) =>
-                    listener(payload.toJSON())
+                    listener(payload.map(p => p.toJSON()))
                 )
             ])
         })
@@ -269,9 +269,11 @@ test('emits deleted event after resource is deleted', async () => {
     const response = await client.delete(`/api/users/${user.id}`)
 
     expect(response.status).toBe(200)
-    expect(listener).toHaveBeenCalledWith({
-        ...response.body.data,
-        created_at: new Date(response.body.data.created_at),
-        updated_at: new Date(response.body.data.updated_at)
-    })
+    expect(listener).toHaveBeenCalledWith([
+        {
+            ...response.body.data,
+            created_at: new Date(response.body.data.created_at),
+            updated_at: new Date(response.body.data.updated_at)
+        }
+    ])
 })

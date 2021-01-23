@@ -206,7 +206,7 @@ test('Can upload files using the rest plugin', async () => {
     } = await setup(100000000, 48)
 
     const response = await Supertest(app)
-        .post('/files?preset=beans')
+        .post('/files/upload')
         .set('Content-Type', 'multipart/form-data')
         .attach('files', getFileFixture('pdf.pdf'))
         .attach('files', getFileFixture('png.png'))
