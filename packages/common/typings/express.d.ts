@@ -1,3 +1,4 @@
+import { Logger } from 'pino'
 import { Request } from 'express'
 import { Mail } from '@tensei/mail'
 import { StorageManager } from '@slynova/flydrive'
@@ -27,6 +28,7 @@ declare global {
             manager: EntityManager
             scripts: Asset[]
             styles: Asset[]
+            logger: Logger
             originatedFromDashboard: boolean | undefined
             authenticationError: (message?: string) => unknown
             forbiddenError: (message?: string) => unknown

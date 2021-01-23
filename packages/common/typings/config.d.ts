@@ -259,13 +259,15 @@ declare module '@tensei/common/config' {
         ctx: GraphQLPluginContext
     ) => boolean | Promise<boolean>
     type HookFunction<EntityType = DataPayload> = (
-        payload: EventArgs<EntityType>
+        payload: EventArgs<EntityType>,
+        config: Config
     ) => void
     type FlushHookFunction<EntityType = DataPayload> = (
         payload: FlushEventArgs
     ) => Promise<void>
     type HookFunctionPromised<EntityType = DataPayload> = (
-        payload: EventArgs<EntityType>
+        payload: EventArgs<EntityType>,
+        config: Config
     ) => Promise<void>
     type FieldHookFunction<FieldValueType = any> = (
         payload: DataPayload,
@@ -335,6 +337,7 @@ declare module '@tensei/common/config' {
         styles: Asset[]
         orm: MikroORM | null
         logger: Logger
+        request: Request
         databaseConfig: DatabaseConfiguration & AdditionalEntities
         resourcesMap: {
             [key: string]: ResourceContract

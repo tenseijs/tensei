@@ -490,12 +490,45 @@ class Rest {
 
                                 await modelRepository.removeAndFlush(entity)
 
-                                config.emitter.emit(
-                                    `${singular}::deleted`,
+                                config.emitter.emit(`${singular}::deleted`, [
                                     entity
-                                )
+                                ])
 
                                 return response.formatter.ok(entity)
+                            }
+                        )
+                )
+
+            !resource.isHiddenOnApi() &&
+                !resource.data.hideOnDeleteApi &&
+                routes.push(
+                    route(`Delete many ${plural}`)
+                        .delete()
+                        .internal()
+                        .id(this.getRouteId(`delete_many_${singular}`))
+                        .resource(resource)
+                        .path(getApiPath(`${plural}`))
+                        .extend({
+                            docs: {
+                                summary: `Delete multiple ${plural}`,
+                                description: `This endpoint deletes multiple ${plural}. Provide a search query to find all ${plural} to be deleted.`
+                            }
+                        })
+                        .handle(
+                            async ({ manager, query, config }, response) => {
+                                const entities = await manager.find(
+                                    modelName,
+                                    parseQueryToWhereOptions(query)
+                                )
+
+                                await manager.removeAndFlush(entities)
+
+                                config.emitter.emit(
+                                    `${singular}::deleted`,
+                                    entities
+                                )
+
+                                return response.formatter.ok(entities)
                             }
                         )
                 )

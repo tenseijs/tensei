@@ -1,7 +1,12 @@
 import Qs from 'qs'
 import Axios from 'axios'
 import Toasted from 'toastedjs'
+import { Link } from 'react-router-dom'
 import * as Lib from '@tensei/components'
+
+import Paginator from './components/Paginator'
+import PageWrapper from './components/PageWrapper'
+import DeleteModal from './components/DeleteModal'
 
 // Form
 import IndexID from './index/ID'
@@ -83,7 +88,13 @@ class Core {
 
     private hooks: Lib.TenseiRegisterFunction[] = []
 
-    lib: Lib.Tensei['lib'] = Lib
+    lib: Lib.Tensei['lib'] = {
+        ...Lib,
+        Link,
+        Paginator,
+        DeleteModal,
+        PageWrapper
+    }
 
     components: Lib.Tensei['components'] = {
         form: {
@@ -95,8 +106,8 @@ class Core {
             Textarea: FormTextarea,
             OneToOne: FormManyToOne,
             ManyToOne: FormManyToOne,
-            ManyToMany: FormManyToMany,
-            OneToMany: FormManyToMany
+            OneToMany: FormManyToMany,
+            ManyToMany: FormManyToMany
         },
         index: {
             ID: IndexID,
@@ -126,8 +137,9 @@ class Core {
     route = (route: Lib.CmsRoute) => {
         this.routes.push({
             ...route,
+            path: this.getPath(route.path),
             settings: route.settings || false,
-            group: route.group || 'Global Settings',
+            group: route.settings ? route.group || 'Global Settings' : '',
             requiredPermissions: route.requiredPermissions || []
         })
     }
@@ -160,6 +172,7 @@ class Core {
     boot = () => {
         this.hooks.forEach(hook => {
             hook({
+                route: this.route,
                 formComponent: this.formComponent,
                 indexComponent: this.indexComponent,
                 detailComponent: this.detailComponent

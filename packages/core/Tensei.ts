@@ -47,19 +47,6 @@ export class Tensei implements TenseiContract {
     private databaseBooted: boolean = false
     private registeredApplication: boolean = false
 
-    private defaultStorageConfig = {
-        default: 'local',
-        disks: {
-            local: {
-                driver: 'local',
-                config: {
-                    root: `${process.cwd()}/storage`,
-                    publicPath: `public`
-                }
-            }
-        }
-    }
-
     private mailerConfig: MailConfig = {
         mailers: {
             fake: {
@@ -88,8 +75,18 @@ export class Tensei implements TenseiContract {
             graphQlMiddleware: [],
             rootBoot: () => {},
             rootRegister: () => {},
-            storage: new StorageManager(this.defaultStorageConfig),
-            storageConfig: this.defaultStorageConfig,
+            storageConfig: {
+                default: 'local',
+                disks: {
+                    local: {
+                        driver: 'local',
+                        config: {
+                            root: `${this.ctx.root}/storage`,
+                            publicPath: ``
+                        }
+                    }
+                }
+            },
             databaseClient: null,
             serverUrl: '',
             clientUrl: '',
@@ -134,6 +131,19 @@ export class Tensei implements TenseiContract {
             this.ctx.logger,
             this.ctx.root
         )
+
+        this.ctx.storage = new StorageManager({
+            default: 'local',
+            disks: {
+                local: {
+                    driver: 'local',
+                    config: {
+                        root: `${this.ctx.root}/storage`,
+                        publicPath: ``
+                    }
+                }
+            }
+        })
     }
 
     public setConfigOnResourceFields() {
@@ -438,13 +448,13 @@ export class Tensei implements TenseiContract {
 
         this.app.disable('x-powered-by')
 
-        const rootStorage = (this.ctx.storageConfig.disks?.local?.config as any)
-            .root
-        const publicPath = (this.ctx.storageConfig.disks?.local?.config as any)
-            .publicPath
+        if (this.ctx.storageConfig.default === 'local') {
+            const rootStorage = (this.ctx.storageConfig.disks?.local
+                ?.config as any).root
+            const publicPath = (this.ctx.storageConfig.disks?.local
+                ?.config as any).publicPath
 
-        if (rootStorage && publicPath) {
-            this.app.use(Express.static(`${rootStorage}/${publicPath}`))
+            this.app.use(Express.static(`${rootStorage}`))
         }
 
         this.app.use(
@@ -459,8 +469,12 @@ export class Tensei implements TenseiContract {
                 request.currentCtx = () => this.ctx
                 request.mailer = this.ctx.mailer
                 request.config = this.ctx
+                request.logger = this.ctx.logger
                 request.storage = this.ctx.storage
                 request.emitter = this.ctx.emitter
+
+                // @ts-ignore
+                this.ctx.request = request
 
                 next()
             }

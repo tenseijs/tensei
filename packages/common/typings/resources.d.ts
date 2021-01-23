@@ -85,12 +85,12 @@ declare module '@tensei/common/resources' {
         }
         hooks: {
             onInit: HookFunction[]
-            beforeCreate: HookFunctionPromised[]
-            afterCreate: HookFunctionPromised[]
-            beforeUpdate: HookFunctionPromised[]
-            afterUpdate: HookFunctionPromised[]
-            beforeDelete: HookFunctionPromised[]
-            afterDelete: HookFunctionPromised[]
+            beforeCreate: (HookFunction | HookFunctionPromised)[]
+            afterCreate: (HookFunction | HookFunctionPromised)[]
+            beforeUpdate: (HookFunction | HookFunctionPromised)[]
+            afterUpdate: (HookFunction | HookFunctionPromised)[]
+            beforeDelete: (HookFunction | HookFunctionPromised)[]
+            afterDelete: (HookFunction | HookFunctionPromised)[]
             beforeFlush: FlushHookFunction[]
             onFlush: FlushHookFunction[]
             afterFlush: FlushHookFunction[]
@@ -137,12 +137,12 @@ declare module '@tensei/common/resources' {
         slug(slug: string): this
         label(label: string): this
         serialize(): SerializedResource
-        beforeCreate(hook: HookFunctionPromised): this
-        afterCreate(hook: HookFunctionPromised): this
-        beforeUpdate(hook: HookFunctionPromised): this
-        afterUpdate(hook: HookFunctionPromised): this
-        beforeDelete(hook: HookFunctionPromised): this
-        afterDelete(hook: HookFunctionPromised): this
+        beforeCreate(hook: HookFunction | HookFunctionPromised): this
+        afterCreate(hook: HookFunction | HookFunctionPromised): this
+        beforeUpdate(hook: HookFunction | HookFunctionPromised): this
+        afterUpdate(hook: HookFunction | HookFunctionPromised): this
+        beforeDelete(hook: HookFunction | HookFunctionPromised): this
+        afterDelete(hook: HookFunction | HookFunctionPromised): this
         onInit(hook: HookFunction): this
     }
 

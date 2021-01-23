@@ -5,7 +5,7 @@
         "declaration": true,
         "outDir": "./build",
         "strict": true,
-        "baseUrl": "./src",
+        "baseUrl": "./server",
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,

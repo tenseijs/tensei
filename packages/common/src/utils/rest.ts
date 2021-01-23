@@ -41,7 +41,7 @@ export const parseQueryToFindOptions = (
     }
 
     if (query.filters) {
-        findOptions.filters = query.filters
+        findOptions.filters = query.filters.split(',')
     }
 
     if (query.sort) {
@@ -87,7 +87,8 @@ export const parseQueryToWhereOptions = (query: any) => {
                     true: true,
                     false: false,
                     null: null,
-                    undefined: undefined
+                    undefined: undefined,
+                    '': null
                 }
                 if (value in keywords) {
                     return keywords[value]

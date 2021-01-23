@@ -18,7 +18,7 @@ test('Can upload files using the graphql plugin', async () => {
                 hash
                 mime_type
                 extension
-                original_filename
+                name
             }
         }
     `
@@ -112,7 +112,7 @@ test('Cannot upload more than max files', async () => {
                 hash
                 mime_type
                 extension
-                original_filename
+                name
             }
         }
     `
@@ -166,7 +166,7 @@ test.skip('Cannot upload files larger than max file size', async () => {
                 hash
                 mime_type
                 extension
-                original_filename
+                name
             }
         }
     `

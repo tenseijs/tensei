@@ -9,14 +9,19 @@ import {
     Pulse
 } from '@tensei/components'
 
-const ManyToMany: React.FC<FormComponentProps> = ({
+const ManyToMany: React.FC<
+    FormComponentProps & {
+        customQuery?: (parameters: AbstractData) => AbstractData
+    }
+> = ({
     field,
     name,
     id,
     onChange,
     resource,
     editing,
-    editingId
+    editingId,
+    customQuery
 }) => {
     const [hiddenRows, setHiddenRows] = useState<number | null>(null)
     const [defaultValue, setDefaultValue] = useState<any[]>([])
@@ -27,7 +32,9 @@ const ManyToMany: React.FC<FormComponentProps> = ({
     )
 
     const relationField = resource.fields.find(
-        field => field.name === relatedResource?.name
+        field =>
+            field.name === relatedResource?.name &&
+            ['ManyToMany', 'OneToMany'].includes(field.fieldName)
     )
 
     if (!relatedResource || !relationField) {
@@ -39,7 +46,7 @@ const ManyToMany: React.FC<FormComponentProps> = ({
             field => field.isSearchable
         )
 
-        let parameters: any = {
+        let parameters: AbstractData = {
             where: {}
         }
 
@@ -56,7 +63,10 @@ const ManyToMany: React.FC<FormComponentProps> = ({
         parameters.page = 1
         parameters.per_page = relatedResource.perPageOptions[0] || 10
 
-        return Qs.stringify(parameters, { encodeValuesOnly: true })
+        return Qs.stringify(
+            customQuery ? customQuery(parameters) : parameters,
+            { encodeValuesOnly: true }
+        )
     }
 
     useEffect(() => {
@@ -67,9 +77,9 @@ const ManyToMany: React.FC<FormComponentProps> = ({
                         relationField.inputName
                     }?${getQuery()}`
                 )
-                .then(({ data }) => {
+                .then(({ data: responseData }) => {
                     setDefaultValue(
-                        data.data.map((row: AbstractData) => ({
+                        responseData.data.map((row: AbstractData) => ({
                             label:
                                 row[relatedResource.displayFieldSnakeCase] ||
                                 row[
@@ -80,8 +90,10 @@ const ManyToMany: React.FC<FormComponentProps> = ({
                         }))
                     )
 
-                    if (data.meta.total > data.data.length) {
-                        setHiddenRows(data.meta.total - data.data.length)
+                    if (responseData.meta.total > responseData.data.length) {
+                        setHiddenRows(
+                            responseData.meta.total - responseData.data.length
+                        )
                     }
                 })
                 .finally(() => {
@@ -92,7 +104,7 @@ const ManyToMany: React.FC<FormComponentProps> = ({
 
     return (
         <>
-            <Label id={id} label={relatedResource.label} />
+            <Label id={id} label={field.label || relatedResource.label} />
             {!loadingDefault ? (
                 <AsyncSelect
                     onChange={values =>

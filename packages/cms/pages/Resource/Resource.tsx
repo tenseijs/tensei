@@ -1,6 +1,7 @@
 import Qs from 'qs'
 import Paginate from 'react-paginate'
 import { throttle } from 'throttle-debounce'
+import Paginator from '../../components/Paginator'
 import React, { useState, useCallback, useEffect } from 'react'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import {
@@ -36,7 +37,9 @@ const Resource: React.FC<ResourceProps> = ({
     const fields = resource.fields.filter(field => field.showOnIndex)
 
     const relatedField = baseResource.fields.find(
-        f => f.name === relatedResource?.name
+        f =>
+            f.name === relatedResource?.name &&
+            ['OneToMany', 'ManyToMany'].includes(f.fieldName)
     )
 
     if (!relatedField && relatedResource) {
@@ -401,41 +404,9 @@ const Resource: React.FC<ResourceProps> = ({
                     data.meta &&
                     data.meta.page &&
                     data.meta.total === 0 ? null : (
-                        <Paginate
-                            forcePage={data.meta.page - 1}
-                            previousLabel={
-                                <button className="mr-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
-                                    <svg
-                                        className="fill-current"
-                                        width={10}
-                                        height={10}
-                                        viewBox="0 0 6 10"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path d="M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" />
-                                    </svg>
-                                </button>
-                            }
-                            nextLabel={
-                                <button className="ml-2 p-3 focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary rounded-lg">
-                                    <svg
-                                        className="fill-current transform rotate-180"
-                                        width={10}
-                                        height={10}
-                                        viewBox="0 0 6 10"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path d="M6 1.2833L2.2915 4.9999L6 8.7165L4.8583 9.8582L-2.12363e-07 4.9999L4.8583 0.141602L6 1.2833Z" />
-                                    </svg>
-                                </button>
-                            }
-                            breakLabel={'...'}
-                            breakClassName={'break-me'}
-                            pageCount={data.meta.page_count!}
-                            marginPagesDisplayed={2}
-                            pageRangeDisplayed={3}
+                        <Paginator
+                            page={data.meta.page - 1}
+                            page_count={data.meta.page_count!}
                             onPageChange={({ selected }) => {
                                 setData({
                                     ...data,
@@ -445,15 +416,6 @@ const Resource: React.FC<ResourceProps> = ({
                                     }
                                 })
                             }}
-                            pageLinkClassName={
-                                'cursor-pointer px-3 py-1 bg-transparent mr-2 rounded-lg focus:outline-none focus:ring-2 border border-transparent focus:ring-tensei-primary'
-                            }
-                            containerClassName={
-                                'flex items-center justify-center w-full md:w-auto'
-                            }
-                            activeLinkClassName={
-                                'rounded-lg px-3 text-white py-1 mr-2 font-semibold bg-tensei-primary'
-                            }
                         />
                     )}
                 </div>
