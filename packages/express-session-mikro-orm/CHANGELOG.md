@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
+
+
+### Bug Fixes
+
+* **express-session-mikro-orm:** fix failing tests ([3e59492](https://github.com/tenseijs/tensei/commit/3e59492d68a45f2be9fa8b0a00b3c513d036fa3a))
+
+
+### Features
+
+* **cms:** fix double fetching of data on administration panel settings ([46b5b52](https://github.com/tenseijs/tensei/commit/46b5b5274466a3fe10f709c18dc8608c1f8e4360))
+
+
+
+
+
 # [0.5.0](https://github.com/tenseijs/tensei/compare/v0.4.4...v0.5.0) (2020-12-17)
 
 

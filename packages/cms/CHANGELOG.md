@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
+
+
+### Bug Fixes
+
+* **cms:** fix build script for cms ([41ee42a](https://github.com/tenseijs/tensei/commit/41ee42afd199689157f487c967898f90999cc80c))
+* **cms:** fix create:resource permission on CreateResource component ([c95a8d0](https://github.com/tenseijs/tensei/commit/c95a8d0257bd4095235dfbaa2eec19cbe49a8668))
+* **cms:** fix purge content folders ([9f05e07](https://github.com/tenseijs/tensei/commit/9f05e0796e85bac4c5625363ce414003d4346001))
+* **core:** remove unused rest and auth imports ([d2d462d](https://github.com/tenseijs/tensei/commit/d2d462d5a552c93d75a746d84c7792b06b49c03c))
+* **mail:** fix fake driver ([369852a](https://github.com/tenseijs/tensei/commit/369852aef479b6b26bf992b02cd212fed2fd4d40))
+
+
+### Features
+
+* **cms:** add administration panel settings page ([b4e2d57](https://github.com/tenseijs/tensei/commit/b4e2d57c1c28433992be83287446e3c7dfc1fb7f))
+* **cms:** add granular permissions ([3f3846d](https://github.com/tenseijs/tensei/commit/3f3846dfb1f0d06588e93be5002d27b01140469b))
+* **cms:** create / update resources on CMS ([72c23a3](https://github.com/tenseijs/tensei/commit/72c23a3b719e5c3c398e991aaeff8e29f1c26b35))
+* **cms:** fix double fetching of data on administration panel settings ([46b5b52](https://github.com/tenseijs/tensei/commit/46b5b5274466a3fe10f709c18dc8608c1f8e4360))
+* **cms:** implement media library uploads / delete ([16fcf09](https://github.com/tenseijs/tensei/commit/16fcf09cc3336ff8c3adf2dfacbd37de83fd796a))
+* **cms:** implement media library uploads / delete ([e407b54](https://github.com/tenseijs/tensei/commit/e407b54290b5c5035a41afadb7c499240fc693c4))
+* **cms:** setup index and detail pages for cms ([222ba18](https://github.com/tenseijs/tensei/commit/222ba1813d5519644a8a7979adc0dec5c25d78c3))
+* **components:** add Icon, Checkbox, Textarea and TextInput components ([a7c1c83](https://github.com/tenseijs/tensei/commit/a7c1c837f7ab568e785e64d5c2e10b68f44bd58e))
+
+
+
+
+
 ## [0.5.3](https://github.com/tenseijs/tensei/compare/v0.5.2...v0.5.3) (2020-12-26)
 
 

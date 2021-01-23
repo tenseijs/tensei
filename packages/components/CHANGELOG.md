@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
+
+
+### Features
+
+* **cms:** add administration panel settings page ([b4e2d57](https://github.com/tenseijs/tensei/commit/b4e2d57c1c28433992be83287446e3c7dfc1fb7f))
+* **cms:** add granular permissions ([3f3846d](https://github.com/tenseijs/tensei/commit/3f3846dfb1f0d06588e93be5002d27b01140469b))
+* **cms:** create / update resources on CMS ([72c23a3](https://github.com/tenseijs/tensei/commit/72c23a3b719e5c3c398e991aaeff8e29f1c26b35))
+* **cms:** fix double fetching of data on administration panel settings ([46b5b52](https://github.com/tenseijs/tensei/commit/46b5b5274466a3fe10f709c18dc8608c1f8e4360))
+* **cms:** implement media library uploads / delete ([e407b54](https://github.com/tenseijs/tensei/commit/e407b54290b5c5035a41afadb7c499240fc693c4))
+* **cms:** setup index and detail pages for cms ([222ba18](https://github.com/tenseijs/tensei/commit/222ba1813d5519644a8a7979adc0dec5c25d78c3))
+* **components:** add Icon, Checkbox, Textarea and TextInput components ([a7c1c83](https://github.com/tenseijs/tensei/commit/a7c1c837f7ab568e785e64d5c2e10b68f44bd58e))
+
+
+
+
+
 ## [0.5.3](https://github.com/tenseijs/tensei/compare/v0.5.2...v0.5.3) (2020-12-26)
 
 

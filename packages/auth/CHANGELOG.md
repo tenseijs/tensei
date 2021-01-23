@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
+
+
+### Bug Fixes
+
+* **tests:** fix failing snapshot tests ([8111e61](https://github.com/tenseijs/tensei/commit/8111e618b1a8c60dae018e0b09974993191d5fcd))
+
+
+### Features
+
+* **cms:** create / update resources on CMS ([72c23a3](https://github.com/tenseijs/tensei/commit/72c23a3b719e5c3c398e991aaeff8e29f1c26b35))
+* **cms:** setup index and detail pages for cms ([222ba18](https://github.com/tenseijs/tensei/commit/222ba1813d5519644a8a7979adc0dec5c25d78c3))
+
+
+
+
+
 ## [0.5.7](https://github.com/tenseijs/tensei/compare/v0.5.6...v0.5.7) (2020-12-27)
 
 **Note:** Version bump only for package @tensei/auth

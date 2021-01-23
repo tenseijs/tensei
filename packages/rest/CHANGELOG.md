@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
+
+
+### Features
+
+* **cms:** create / update resources on CMS ([72c23a3](https://github.com/tenseijs/tensei/commit/72c23a3b719e5c3c398e991aaeff8e29f1c26b35))
+* **cms:** implement media library uploads / delete ([e407b54](https://github.com/tenseijs/tensei/commit/e407b54290b5c5035a41afadb7c499240fc693c4))
+* **cms:** setup index and detail pages for cms ([222ba18](https://github.com/tenseijs/tensei/commit/222ba1813d5519644a8a7979adc0dec5c25d78c3))
+
+
+
+
+
 ## [0.5.7](https://github.com/tenseijs/tensei/compare/v0.5.6...v0.5.7) (2020-12-27)
 
 **Note:** Version bump only for package @tensei/rest
