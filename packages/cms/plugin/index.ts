@@ -214,7 +214,8 @@ class CmsPlugin {
                         ),
                         ctx: JSON.stringify({
                             dashboardPath: this.config.path,
-                            apiPath: `/${this.config.path}/api`
+                            apiPath: `/${this.config.path}/api`,
+                            serverUrl: request.config.serverUrl
                         }),
                         shouldShowRegistrationScreen:
                             (await request.manager.count(

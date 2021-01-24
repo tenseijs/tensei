@@ -10,8 +10,9 @@ export interface ModalProps {
     root?: string
     open: boolean
     title?: string
-    noPadding?: boolean
     className?: string
+    noPadding?: boolean
+    closeOnBackdropClick?: boolean
     setOpen: (open: boolean) => void
 }
 
@@ -22,7 +23,8 @@ const Modal: React.FC<ModalProps> = ({
     setOpen,
     children,
     noPadding,
-    className
+    className,
+    closeOnBackdropClick = true
 }) => {
     const [el] = useState(document.createElement('div'))
     const modalRoot = document.querySelector(root)
@@ -32,8 +34,8 @@ const Modal: React.FC<ModalProps> = ({
     }, [])
 
     return ReactDOM.createPortal(
-        <Transition show={open}>
-            <div className="fixed z-10 inset-0 overflow-y-auto">
+        <Transition show={open || false}>
+            <div className="fixed z-50 inset-0 overflow-y-auto">
                 <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                     <Transition.Child
                         enter="ease-out duration-300"
@@ -49,7 +51,11 @@ const Modal: React.FC<ModalProps> = ({
                         >
                             <div
                                 className="absolute inset-0 bg-gray-900 opacity-50"
-                                onClick={() => setOpen(false)}
+                                onClick={
+                                    closeOnBackdropClick
+                                        ? () => setOpen(false)
+                                        : undefined
+                                }
                             ></div>
                         </div>
                     </Transition.Child>
@@ -75,7 +81,7 @@ const Modal: React.FC<ModalProps> = ({
                                 aria-labelledby="modal-headline"
                                 className={`inline-block bg-white rounded-lg ${
                                     noPadding ? '' : 'px-4 pt-5 pb-4 sm:p-6'
-                                } text-left overflow-visible shadow-xl transform transition-all sm:w-full ${
+                                } text-left overflow-visible shadow-xl transform transition-all w-full ${
                                     className || ''
                                 }`}
                             >

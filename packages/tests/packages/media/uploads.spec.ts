@@ -18,7 +18,7 @@ test('Can upload files using the graphql plugin', async () => {
                 hash
                 mime_type
                 extension
-                original_filename
+                name
             }
         }
     `
@@ -112,7 +112,7 @@ test('Cannot upload more than max files', async () => {
                 hash
                 mime_type
                 extension
-                original_filename
+                name
             }
         }
     `
@@ -166,7 +166,7 @@ test.skip('Cannot upload files larger than max file size', async () => {
                 hash
                 mime_type
                 extension
-                original_filename
+                name
             }
         }
     `
@@ -206,7 +206,7 @@ test('Can upload files using the rest plugin', async () => {
     } = await setup(100000000, 48)
 
     const response = await Supertest(app)
-        .post('/files?preset=beans')
+        .post('/files/upload')
         .set('Content-Type', 'multipart/form-data')
         .attach('files', getFileFixture('pdf.pdf'))
         .attach('files', getFileFixture('png.png'))

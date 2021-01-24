@@ -310,6 +310,13 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                 component={FourOhFour}
                                 path={window.Tensei.getPath('404')}
                             />
+                            {window.Tensei.ctx.routes.map(route => (
+                                <Route
+                                    key={route.path}
+                                    component={route.component}
+                                    path={route.path}
+                                />
+                            ))}
                             <Route component={FourOhFour} />
                         </Switch>
                     </main>

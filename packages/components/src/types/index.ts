@@ -29,6 +29,7 @@ export interface CmsRoute {
     group: string
     name: string
     exact?: boolean
+    icon?: React.ReactChild
     component: React.FC<any>
     requiredPermissions: string[]
 }
@@ -197,6 +198,7 @@ export interface ResourceContract {
 }
 
 interface TenseiRegisterParams {
+    route: (route: CmsRoute) => void
     formComponent: (name: string, Component: React.FC<any>) => void
     indexComponent: (name: string, Component: React.FC<any>) => void
     detailComponent: (name: string, Component: React.FC<any>) => void

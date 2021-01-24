@@ -1,6 +1,6 @@
 {
     "name": "@tensei/mde",
-    "version": "0.5.3",
+    "version": "0.5.8",
     "main": "build/index.js",
     "license": "MIT",
     "files": [
@@ -24,7 +24,8 @@
         "test:watch": "yarn test --watch",
         "prettier": "prettier --write './**/*.{js,json,ts,tsx,css}'",
         "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
-        "build": "yarn build:server && cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "build": "yarn build:server",
         "build:server": "tsc",
         "dev:server": "tsc --watch"
     },

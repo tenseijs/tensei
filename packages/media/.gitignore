@@ -1,3 +1,5 @@
 build
 tensei.sqlite
 .env
+public/
+mix-manifest.json

@@ -27,11 +27,28 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
     const [deleting, setDeleting] = useState<boolean>(false)
     const oneItem = selected.length === 1
 
+    const getQuery = () => {
+        return Qs.stringify(
+            {
+                where: {
+                    id: {
+                        _in: selected.map(item => item.id)
+                    }
+                }
+            },
+            { encodeValuesOnly: true }
+        )
+    }
+
     const onConfirm = () => {
         setDeleting(true)
 
         window.Tensei.client
-            .delete(`${resource.slug}/${selected[0].id}`)
+            .delete(
+                `${resource.slug}/${
+                    oneItem ? selected[0].id : `?${getQuery()}`
+                }`
+            )
             .then(() => {
                 window.Tensei.success(
                     `${resource.name} with ID ${selected[0].id} was deleted.`

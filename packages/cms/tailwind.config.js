@@ -14,6 +14,8 @@ module.exports = {
             colors: {
                 'tensei-primary': '#2346F8',
 
+                'tensei-primary-200': '#D3D8FA',
+
                 'tensei-primary-lighter': '#3f70fa',
 
                 'tensei-primary-darker': '#243de1',

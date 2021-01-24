@@ -1,6 +1,6 @@
 {
     "name": "@examples/blog",
-    "version": "0.5.4",
+    "version": "0.5.8",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {

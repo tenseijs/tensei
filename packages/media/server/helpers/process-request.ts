@@ -1,5 +1,7 @@
+import sharp from 'sharp'
 import Busboy from 'busboy'
 import Crypto from 'crypto'
+import Mime from 'mime-types'
 import createError from 'http-errors'
 import { WriteStream } from 'fs-capacitor'
 import { Request, Response } from 'express'
@@ -191,10 +193,9 @@ export const handle = async (
 ) => {
     let files = ((await Promise.all(ctx.body?.files)) as UploadFile[]).map(
         file => {
-            const split = file.filename.split('.')
-            const extension = split[split.length - 1]
+            const extension = Mime.extension(file.mimetype)
 
-            const hash = Crypto.randomBytes(36).toString('hex')
+            const hash = Crypto.randomBytes(24).toString('hex')
 
             let file_path: string = ctx.body.path || '/'
 
@@ -215,28 +216,134 @@ export const handle = async (
         files.map(file =>
             ctx.storage
                 .disk(config.disk)
-                .put(`${file.storage_filename}`, file.createReadStream())
+                .put(file.storage_filename, file.createReadStream())
         )
     )
+
+    const metacallbacks = (await Promise.all(
+        files.map(
+            file =>
+                new Promise(resolve => {
+                    file.createReadStream().pipe(
+                        sharp().metadata((error, meta) => {
+                            if (error) {
+                                resolve(null)
+                            }
+
+                            resolve(meta)
+                        })
+                    )
+                })
+        )
+    )) as sharp.Metadata[]
+
+    await Promise.all([
+        Promise.all(
+            files.map((file, idx) =>
+                Promise.all(
+                    config.transformations
+                        .map(([t, name]) => [t(metacallbacks[idx]), name])
+                        .filter(([t]) => t !== undefined)
+                        .map(([transform, name]) => [
+                            file
+                                .createReadStream()
+                                .pipe(transform as sharp.Sharp),
+                            name
+                        ])
+                        .map(([stream, name]) =>
+                            ctx.storage
+                                .disk(config.disk)
+                                .put(
+                                    `${file.path}${name}___${file.hash}.${file.extension}`,
+                                    stream as NodeJS.ReadableStream
+                                )
+                        )
+                ).catch(ctx.logger.error)
+            )
+        ).catch(ctx.logger.error)
+    ]).catch(ctx.logger.error)
+
+    const savedTransforms = (files.map((file, idx) =>
+        config.transformations
+            .map(([t, name]) => [
+                file,
+                `${name}___${file.hash}`,
+                t(metacallbacks[idx])
+            ])
+            .filter(([, , transformed]) => !!transformed)
+    ) as unknown) as [[UploadFile, string, sharp.Sharp][]]
 
     const storedFiles = await Promise.all(
         files.map(file => ctx.storage.disk().getStat(file.storage_filename))
     )
 
-    files = files.map((file, index) => ({
-        ...file,
-        size: storedFiles[index].size
-    }))
+    const storedTransforms = await Promise.all(
+        savedTransforms.map(transforms =>
+            transforms.length === 0
+                ? null
+                : Promise.all(
+                      transforms.map(([file, name]) =>
+                          ctx.storage
+                              .disk()
+                              .getStat(`${file.path}${name}.${file.extension}`)
+                              .catch(() => null)
+                      )
+                  )
+        )
+    )
 
-    const entities = files.map(file =>
-        ctx.manager.create(mediaResource().data.pascalCaseName, {
+    files = (files.map((file, index) => ({
+        ...file,
+        size: storedFiles[index].size,
+        transformations:
+            storedTransforms[index] === null
+                ? []
+                : storedTransforms[index]!.map((stats, tIndex) => {
+                      if (
+                          !savedTransforms[index] ||
+                          !savedTransforms[index]![tIndex]
+                      ) {
+                          return null
+                      }
+
+                      const [
+                          transformedFile,
+                          name,
+                          sharpInstance
+                      ] = savedTransforms[index]![tIndex]
+
+                      return {
+                          size: stats?.size,
+                          // @ts-ignore
+                          width: sharpInstance.options.width,
+                          // @ts-ignore
+                          height: sharpInstance.options.height,
+                          disk: config.disk,
+                          mime_type: transformedFile.mimetype,
+                          extension: transformedFile.extension,
+                          name: name,
+                          path: transformedFile.path,
+                          hash: name
+                      }
+                  }).filter(Boolean)
+    })) as unknown) as UploadFile[]
+
+    const resourceName = mediaResource(config).data.pascalCaseName
+
+    const entities = files.map((file, idx) =>
+        ctx.manager.create(resourceName, {
             size: file.size,
             hash: file.hash,
             path: file.path,
             disk: config.disk,
             mime_type: file.mimetype,
             extension: file.extension,
-            original_filename: file.filename
+            name: file.filename,
+            width: metacallbacks[idx]?.width,
+            height: metacallbacks[idx]?.height,
+            transformations: file.transformations.map(t =>
+                ctx.manager.create(resourceName, t)
+            )
         })
     )
 

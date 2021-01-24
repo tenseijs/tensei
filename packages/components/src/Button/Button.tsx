@@ -11,6 +11,7 @@ export interface ButtonProps {
     success?: boolean
     className?: string
     loading?: boolean
+    secondary?: boolean
     as?: React.ReactElement
 }
 
@@ -24,7 +25,8 @@ const Button: React.FC<ButtonProps> = ({
     danger,
     loading,
     className,
-    success
+    success,
+    secondary
 }) => {
     const props = {
         onClick,
@@ -39,6 +41,11 @@ const Button: React.FC<ButtonProps> = ({
                 ? 'cursor-not-allowed bg-tensei-primary-lighter'
                 : 'bg-tensei-primary hover:bg-tensei-primary-darker'
         } text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out`,
+        secondary: `flex items-center justify-center w-full md:w-auto leading-5 px-6 ${
+            props.disabled
+                ? 'cursor-not-allowed opacity-50'
+                : 'bg-transparent hover:bg-tensei-primary-darker hover:bg-opacity-20'
+        } text-white border border-tensei-primary rounded-lg font-medium text-tensei-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out`,
         danger: `inline-flex justify-center w-full rounded-lg border border-transparent shadow-sm px-6 ${
             props.disabled
                 ? 'cursor-not-allowed bg-red-500'
@@ -76,6 +83,12 @@ const Button: React.FC<ButtonProps> = ({
         props.className = `font-bold h-9 flex items-center ${
             props.className || ''
         } ${classes.success}`
+    }
+
+    if (secondary) {
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.secondary}`
     }
 
     return (

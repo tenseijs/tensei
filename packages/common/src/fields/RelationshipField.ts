@@ -8,6 +8,13 @@ export class RelationshipField extends Field {
     public isRelationshipField: boolean = true
 
     /**
+     * Will be used as the label for showing
+     * this field on forms
+     *
+     */
+    public relationshipLabel: string = ''
+
+    /**
      * When a new date string is initialized, it defaults the
      * date to today's date.
      */
@@ -16,6 +23,8 @@ export class RelationshipField extends Field {
 
         this.hideOnIndex()
         this.dockToSidebarOnForms()
+
+        this.relationshipLabel = name
     }
 
     public cascades(cascades: Cascade[]) {
@@ -30,8 +39,27 @@ export class RelationshipField extends Field {
         return this
     }
 
+    public alwaysLoad() {
+        this.relatedProperty.eager = true
+
+        return this
+    }
+
+    public label(label: string) {
+        this.relationshipLabel = label
+
+        return this
+    }
+
     public foreignKey(foreignKey: string) {
         return this
+    }
+
+    public serialize() {
+        return {
+            ...super.serialize(),
+            label: this.relationshipLabel
+        }
     }
 }
 

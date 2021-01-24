@@ -2,7 +2,6 @@ import { MikroORM, EntitySchema, ReferenceType } from '@mikro-orm/core'
 import { FieldContract, ResourceContract, Config } from '@tensei/common'
 
 import Migrator from './Migrator'
-import BaseEntity from './BaseEntity'
 
 const hookNames: (keyof ResourceContract['hooks'])[] = [
     'onInit',
@@ -110,6 +109,8 @@ class Database {
     private generateEntityClass(resource: ResourceContract) {
         const entityClass = function () {}
 
+        const config = this.config
+
         Object.defineProperty(entityClass, 'name', {
             value: resource.data.pascalCaseName,
             writable: false
@@ -119,7 +120,7 @@ class Database {
             entityClass.prototype[hookName] = (eventPayload: any) =>
                 Promise.all(
                     (resource.hooks[hookName] as any).map((fn: any) =>
-                        fn(eventPayload)
+                        fn(eventPayload, config)
                     )
                 )
         })

@@ -1,0 +1,13 @@
+# Multisites
+=================
+
+```
+tensei()
+    .resources([...])
+    .sites([
+        site('Course Platform')
+            .resources([...])
+            .routes([...])
+            .graphQlServers([...])
+    ])
+```

@@ -1,10 +1,13 @@
 import React, { useState, Fragment } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ResourceContract, Transition, Icon } from '@tensei/components'
+import { ResourceContract, CmsRoute, Icon } from '@tensei/components'
 
 export interface NavProps {
     className: string
 }
+
+import NavLink from '../NavLink'
+import NavGroup from '../NavGroup'
 
 const getGroups = () => {
     const { resources } = window.Tensei.state
@@ -12,24 +15,62 @@ const getGroups = () => {
     const sidebarResources = resources.filter(r => r.displayInNavigation)
 
     let groups: {
-        [key: string]: {
-            slug: string
-            label: string
-            resources: ResourceContract[]
-            active?: boolean
-        }
-    } = {}
+        slug: string
+        label: string
+        active?: boolean
+        routes: CmsRoute[]
+    }[] = []
 
     sidebarResources.forEach(resource => {
         if (resource.group && resource.groupSlug) {
-            groups[resource.groupSlug] = {
-                slug: resource.groupSlug,
-                label: resource.group,
-                resources: [
-                    ...((groups[resource.groupSlug] || {}).resources || []),
-                    resource
-                ],
-                active: true
+            const resourceRoute = {
+                settings: false,
+                group: resource.group,
+                name: resource.label,
+                icon: resource.icon,
+                path: window.Tensei.getPath(`resources/${resource.slug}`),
+                requiredPermissions: [`index:${resource.slug}`],
+                component: () => <p></p>
+            }
+
+            const existingGroup = groups.findIndex(
+                g => g.slug === resource.groupSlug
+            )
+
+            if (existingGroup === -1) {
+                groups.push({
+                    active: true,
+                    slug: resource.groupSlug,
+                    label: resource.group,
+                    routes: [resourceRoute]
+                })
+            } else {
+                groups[existingGroup] = {
+                    ...groups[existingGroup],
+                    routes: [...groups[existingGroup].routes, resourceRoute]
+                }
+            }
+        }
+    })
+
+    const routes = window.Tensei.ctx.routes.filter(r => !r.settings)
+
+    routes.forEach(route => {
+        if (route.group) {
+            const existingGroup = groups.findIndex(g => g.label === route.group)
+
+            if (existingGroup === -1) {
+                groups.push({
+                    label: route.group,
+                    slug: '',
+                    active: true,
+                    routes: [route]
+                })
+            } else {
+                groups[existingGroup] = {
+                    ...groups[existingGroup],
+                    routes: [...groups[existingGroup].routes, route]
+                }
             }
         }
     })
@@ -44,110 +85,78 @@ const Nav: React.FC<NavProps> = ({ className }) => {
     return (
         <nav className={className}>
             <div className="w-full">
-                {Object.keys(groups)
-                    .sort()
-                    .map(groupSlug => {
-                        const group = groups[groupSlug]
+                {groups.map((group, index) => {
+                    const onGroupToggle = () => {
+                        setGroups(
+                            groups.map((g, i) =>
+                                i === index ? { ...g, active: !g.active } : g
+                            )
+                        )
+                    }
 
-                        const onGroupToggle = () => {
-                            setGroups({
-                                ...groups,
-                                [groupSlug]: {
-                                    ...group,
-                                    active: !group.active
-                                }
-                            })
-                        }
-
-                        const groupResources = group.resources.filter(
-                            resource =>
-                                window.Tensei.state.admin.admin_permissions.includes(
-                                    `index:${resource.slug}`
+                    const groupRoutes = group.routes.filter(
+                        route =>
+                            route.requiredPermissions.length === 0 ||
+                            route.requiredPermissions
+                                .map(p =>
+                                    window.Tensei.state.admin.admin_permissions.includes(
+                                        p
+                                    )
                                 )
-                        )
+                                .filter(Boolean).length ===
+                                route.requiredPermissions.length
+                    )
 
-                        if (groupResources.length === 0) {
-                            return null
-                        }
+                    if (groupRoutes.length === 0) {
+                        return null
+                    }
 
-                        return (
-                            <Fragment key={groupSlug}>
-                                <div
-                                    tabIndex={0}
-                                    onClick={() => {
-                                        setGroups({
-                                            ...groups,
-                                            [groupSlug]: {
-                                                ...group,
-                                                active: !group.active
-                                            }
-                                        })
-                                    }}
-                                    onKeyPress={event => {
-                                        if (event.keyCode === 0) {
-                                            onGroupToggle()
-                                        }
-                                    }}
-                                    className="cursor-pointer focus:outline-none px-10 py-3 w-full flex items-center justify-between text-white cursor-pointer group hover:bg-tensei-primary hover:bg-opacity-10 transition ease-in-out duration-75"
-                                >
-                                    <span className="font-medium">
-                                        {group.label}
-                                    </span>
-                                    <svg
-                                        width={12}
-                                        height={12}
-                                        viewBox="0 0 12 9"
-                                        className={`fill-current transition ease-in-out ${
-                                            group.active
-                                                ? 'transform rotate-180'
-                                                : ''
-                                        }`}
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path d="M1.41 0.840027L6 5.42003L10.59 0.840027L12 2.25003L6 8.25003L0 2.25003L1.41 0.840027Z" />
-                                    </svg>
-                                </div>
-                                {group.active &&
-                                    groupResources.map(resource => {
-                                        const linkActive = location.pathname.includes(
-                                            window.Tensei.getPath(
-                                                `resources/${resource.slug}`
-                                            )
-                                        )
+                    return (
+                        <Fragment key={group.label}>
+                            <NavGroup
+                                onClick={() => {
+                                    onGroupToggle()
+                                }}
+                                onKeyPress={event => {
+                                    if (event.keyCode === 0) {
+                                        onGroupToggle()
+                                    }
+                                }}
+                                active={group.active}
+                                name={group.label}
+                            />
+                            {group.active &&
+                                groupRoutes.map(route => {
+                                    const linkActive = location.pathname.includes(
+                                        route.path
+                                    )
 
-                                        return (
-                                            <Link
-                                                key={resource.slug}
-                                                to={window.Tensei.getPath(
-                                                    `resources/${resource.slug}`
-                                                )}
-                                                className={`w-full cursor-pointer flex items-center justify-between py-3 px-10 cursor-pointer transition ease-in-out hover:bg-tensei-primary hover:bg-opacity-10 ${
-                                                    linkActive
-                                                        ? 'relative font-bold text-white bg-tensei-primary bg-opacity-10'
-                                                        : 'text-tensei-gray-700 '
-                                                }`}
-                                            >
-                                                <div className="flex items-center">
-                                                    <Icon
-                                                        icon={
-                                                            resource.icon as any
-                                                        }
-                                                        active={linkActive}
-                                                    />{' '}
-                                                    <span className="ml-4">
-                                                        {resource.label}
-                                                    </span>
-                                                </div>
-
-                                                {linkActive ? (
-                                                    <span className="absolute h-full w-1 left-0 bg-tensei-primary"></span>
-                                                ) : null}
-                                            </Link>
-                                        )
-                                    })}
-                            </Fragment>
-                        )
-                    })}
+                                    return (
+                                        <NavLink
+                                            key={route.path}
+                                            to={route.path}
+                                            active={linkActive}
+                                            icon={route.icon as any}
+                                            name={route.name}
+                                        />
+                                    )
+                                })}
+                        </Fragment>
+                    )
+                })}
+                <div className="mt-16">
+                    {window.Tensei.ctx.routes
+                        .filter(route => !route.group)
+                        .map(route => (
+                            <NavLink
+                                to={route.path}
+                                key={route.path}
+                                icon={route.icon as any}
+                                name={route.name}
+                                active={location.pathname.includes(route.path)}
+                            />
+                        ))}
+                </div>
             </div>
         </nav>
     )

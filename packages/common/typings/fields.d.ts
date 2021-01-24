@@ -568,6 +568,8 @@ declare module '@tensei/common/fields' {
         cascades(cascades: Cascade[]): this
         foreignKey(foreignKey: string): this
         owner(): this
+        alwaysLoad(): this
+        label(label: string): this
     }
     const oneToOne: (name: string, databaseField?: string) => RelationshipField
     const oneToMany: (name: string, databaseField?: string) => RelationshipField

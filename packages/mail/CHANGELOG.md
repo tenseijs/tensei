@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
+
+
+### Bug Fixes
+
+* **mail:** fix fake driver ([369852a](https://github.com/tenseijs/tensei/commit/369852aef479b6b26bf992b02cd212fed2fd4d40))
+* **mail:** fix smtp config prop ([2d5bf4b](https://github.com/tenseijs/tensei/commit/2d5bf4b196ed54d962abd9829e792460f34d8344))
+
+
+### Features
+
+* **cms:** create / update resources on CMS ([72c23a3](https://github.com/tenseijs/tensei/commit/72c23a3b719e5c3c398e991aaeff8e29f1c26b35))
+
+
+
+
+
 ## [0.5.3](https://github.com/tenseijs/tensei/compare/v0.5.2...v0.5.3) (2020-12-26)
 
 

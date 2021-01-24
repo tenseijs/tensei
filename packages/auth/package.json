@@ -1,6 +1,6 @@
 {
     "name": "@tensei/auth",
-    "version": "0.5.7",
+    "version": "0.5.8",
     "main": "./build/index.js",
     "license": "MIT",
     "files": [
@@ -38,7 +38,7 @@
     },
     "dependencies": {
         "@purest/providers": "^1.0.1",
-        "@tensei/common": "^0.5.7",
+        "@tensei/common": "^0.5.8",
         "@types/bcryptjs": "^2.4.2",
         "@types/csurf": "^1.11.0",
         "@types/express-session": "^1.17.3",
@@ -53,7 +53,7 @@
         "csurf": "^1.11.0",
         "dayjs": "^1.8.34",
         "express-session": "^1.17.1",
-        "express-session-mikro-orm": "^0.5.0",
+        "express-session-mikro-orm": "^0.5.8",
         "grant": "^5.4.4",
         "jsonwebtoken": "^8.5.1",
         "purest": "^3.1.0",

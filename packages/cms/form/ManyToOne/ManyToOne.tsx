@@ -72,7 +72,7 @@ const ManyToOne: React.FC<FormComponentProps> = ({
 
     return (
         <>
-            <Label id={id} label={field.name} />
+            <Label id={id} label={field.label || field.name} />
             {!loadingDefault ? (
                 <AsyncSelect
                     onChange={option => onChange(option.value)}
