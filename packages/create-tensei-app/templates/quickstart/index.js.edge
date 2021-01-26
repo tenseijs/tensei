@@ -1,27 +1,15 @@
 const { auth } = require('@tensei/auth')
 const { tensei } = require('@tensei/core')
-const { {{ api_package }} } = require('@tensei/{{ api_package }}')
+const { graphql } = require('@tensei/graphql')
 
 tensei()
     .root(__dirname)
     .plugins([
         auth()
+            .jwt()
             .plugin(),
-        {{ api_package }}()
+        graphql()
             .plugin()
     ])
-    .db({
-        type: '{{ mikro_orm_database }}',
-        dbName: '{{ mikro_orm_db_name }}',
-        @if(mikro_orm_db_pass !== undefined)
-        password: '{{ mikro_orm_db_pass }}',
-        @endif
-        @if(mikro_orm_db_host !== undefined)
-        host: '{{ mikro_orm_db_host }}',
-        @endif
-        @if(mikro_orm_db_username !== undefined)
-        user: '{{ mikro_orm_db_username }}',
-        @endif
-    })
     .start()
     .catch(console.error)

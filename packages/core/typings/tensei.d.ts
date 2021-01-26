@@ -1,4 +1,5 @@
 declare module '@tensei/core' {
+    import { Server } from 'http'
     import { Application } from 'express'
     import {
         Config,
@@ -20,7 +21,8 @@ declare module '@tensei/core' {
         start(fn?: (ctx: Config) => any, listen?: boolean): Promise<this>
         boot(boot: PluginSetupFunction): this
         register(register: PluginSetupFunction): this
-        listen(): void
+        listen(port: number): Promise<Server>
+        migrate(): Promise<void>
         routes(routes: RouteContract[]): this
         graphQlQueries(routes: GraphQlQueryContract[]): this
         graphQlTypeDefs(defs: TensieContext['graphQlTypeDefs']): this
@@ -39,8 +41,9 @@ declare module '@tensei/core' {
         app: Application
         start(fn?: (ctx: Config) => any, listen?: boolean): Promise<this>
         boot(boot: PluginSetupFunction): this
+        migrate(): Promise<void>
         register(register: PluginSetupFunction): this
-        listen(): void
+        listen(port: number): Promise<Server>
         routes(routes: RouteContract[]): this
         graphQlQueries(routes: GraphQlQueryContract[]): this
         graphQlTypeDefs(defs: TensieContext['graphQlTypeDefs']): this

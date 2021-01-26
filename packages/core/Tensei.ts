@@ -67,6 +67,7 @@ export class Tensei implements TenseiContract {
             schemas: [],
             routes: [],
             events: {},
+            migrating: false,
             root: process.cwd(),
             emitter: new Emittery(),
             name: process.env.APP_NAME || 'Tensei',
@@ -96,10 +97,6 @@ export class Tensei implements TenseiContract {
             resourcesMap: {},
             dashboardsMap: {},
             orm: null,
-            databaseConfig: {
-                type: 'sqlite',
-                entities: []
-            },
             scripts: [],
             styles: [],
             logger: pino({
@@ -131,6 +128,12 @@ export class Tensei implements TenseiContract {
             this.ctx.logger,
             this.ctx.root
         )
+
+        this.ctx.databaseConfig = {
+            dbName: this.ctx.name.toLowerCase(),
+            type: 'sqlite',
+            entities: []
+        },
 
         this.ctx.storage = new StorageManager({
             default: 'local',
@@ -270,6 +273,12 @@ export class Tensei implements TenseiContract {
         }
     }
 
+    public async migrate() {
+        this.ctx.migrating = true
+
+        await this.bootApplication()
+    }
+
     public async start(fn?: (ctx: Config) => any, listen = true) {
         if (!this.registeredApplication) {
             await this.bootApplication()
@@ -300,13 +309,16 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public listen() {
-        const port = process.env.PORT || 4500
+    public async listen(port = process.env.PORT || 8810) {
+        this.ctx.serverUrl = this.ctx.serverUrl || `http://localhost:${port}`
+        if (! this.registeredApplication) {
+            await this.bootApplication()
+        }
 
-        this.server.listen(port, () => {
+        return this.server.listen(port, () => {
             this.ctx.logger.info(
                 `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://127.0.0.1:${port}`
+                    this.ctx.serverUrl || `http://localhost:${port}`
                 }`
             )
         })

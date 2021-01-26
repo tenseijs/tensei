@@ -309,6 +309,7 @@ declare module '@tensei/common/config' {
         events: {
             [key: string]: EventContract<DataPayload>
         }
+        migrating: boolean
         root: string
         emitter: Emittery
         serverUrl: string

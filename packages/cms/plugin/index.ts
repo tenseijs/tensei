@@ -397,6 +397,7 @@ class CmsPlugin {
                 belongsToMany(this.config.userResource),
                 belongsToMany(this.config.permissionResource).owner()
             ])
+            .hideOnApi()
             .displayField('Name')
             .hideFromNavigation()
     }
@@ -426,6 +427,7 @@ class CmsPlugin {
             ])
             .displayField('Full name')
             .secondaryDisplayField('Email')
+            .hideOnApi()
             .hideFromNavigation()
     }
 
@@ -509,11 +511,9 @@ class CmsPlugin {
         return plugin('CMS')
             .id('cms')
             .register(
-                ({ app, script, style, extendResources, databaseConfig }) => {
+                ({ script, style, extendResources, databaseConfig }) => {
                     this.scripts.forEach(s => script(s.name, s.path))
                     this.styles.forEach(s => style(s.name, s.path))
-
-                    // this.router.use(Csurf())
 
                     databaseConfig.entities = [
                         ...(databaseConfig.entities || []),
@@ -535,10 +535,12 @@ class CmsPlugin {
                     this.sessionMikroOrmOptions
                 )
 
-                await setupCms(config, [
-                    this.resources.role,
-                    this.resources.permission
-                ])
+                if (config.migrating) {
+                    await setupCms(config, [
+                        this.resources.role,
+                        this.resources.permission
+                    ])
+                }
 
                 this.router.use(
                     ExpressSession({
