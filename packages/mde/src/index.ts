@@ -16,8 +16,8 @@ export class MdePlugin {
 
     plugin() {
         return plugin('Markdown Editor').register(({ script, style }) => {
-            style('mde.css', Path.resolve(__dirname, '..', 'public/app.css'))
-            script('mde.js', Path.resolve(__dirname, '..', 'public/app.js'))
+            style('mde.css', Path.resolve(__dirname, '..', 'build/client/app.css'))
+            script('mde.js', Path.resolve(__dirname, '..', 'build/client/app.js'))
         })
     }
 }

@@ -30,9 +30,7 @@ class Database {
 
         this.orm = await MikroORM.init(this.getMikroORMOptions() as any)
 
-        if (this.config.migrating) {
-            await new Migrator(this.orm!, this.schemas).init()
-        }
+        await new Migrator(this.orm!, this.schemas).init()
 
         return [this.orm!, this.schemas]
     }

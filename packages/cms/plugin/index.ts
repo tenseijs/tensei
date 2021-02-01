@@ -533,12 +533,10 @@ class CmsPlugin {
                     this.sessionMikroOrmOptions
                 )
 
-                if (config.migrating) {
-                    await setupCms(config, [
-                        this.resources.role,
-                        this.resources.permission
-                    ])
-                }
+                await setupCms(config, [
+                    this.resources.role,
+                    this.resources.permission
+                ])
 
                 this.router.use(
                     ExpressSession({

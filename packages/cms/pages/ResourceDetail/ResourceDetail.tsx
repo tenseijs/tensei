@@ -6,10 +6,9 @@ import {
     useHistory,
     Link
 } from 'react-router-dom'
-import { Heading, StackedList, Button, Pulse } from '@tensei/components'
+import { Heading, StackedList, Button, Pulse, DeleteModal } from '@tensei/components'
 
 import PageWrapper from '../../components/PageWrapper'
-import DeleteModal from '../../components/DeleteModal'
 
 export interface ResourceDetailProps {}
 

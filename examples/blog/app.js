@@ -17,7 +17,6 @@ module.exports = tensei()
     .root(__dirname)
     .resources([Tag, Post, User, Comment, Editor, Reaction])
     .clientUrl('https://google.com')
-    .serverUrl('http://localhost:5000')
     .graphQlQueries([])
     .routes([
         route('Get products')

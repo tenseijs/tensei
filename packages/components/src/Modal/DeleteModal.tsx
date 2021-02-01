@@ -58,10 +58,12 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
                     onDelete()
                 }
             })
-            .catch(() => {
+            .catch((error) => {
                 Tensei.error(
-                    `An error occured deleting ${resource.name} with ID ${selected[0].id}.`
+                    error?.response?.data?.error || `An error occured deleting ${resource.name} with ID ${selected[0].id}.`
                 )
+
+                setDeleting(false)
             })
             .finally(() => {
                 if (!leavesPage) {
