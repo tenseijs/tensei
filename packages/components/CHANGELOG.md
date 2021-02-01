@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.9](https://github.com/tenseijs/tensei/compare/v0.5.8...v0.5.9) (2021-02-01)
+
+
+### Features
+
+* **cli:** add generate plugin command to cli ([2b3d00d](https://github.com/tenseijs/tensei/commit/2b3d00db23503c9a2a009eb5cc3f3c03ff29234c))
+
+
+
+
+
 ## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
 
 

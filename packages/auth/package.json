@@ -1,6 +1,6 @@
 {
     "name": "@tensei/auth",
-    "version": "0.5.8",
+    "version": "0.5.9",
     "main": "./build/index.js",
     "license": "MIT",
     "files": [
@@ -38,7 +38,7 @@
     },
     "dependencies": {
         "@purest/providers": "^1.0.1",
-        "@tensei/common": "^0.5.8",
+        "@tensei/common": "^0.5.9",
         "@types/bcryptjs": "^2.4.2",
         "@types/csurf": "^1.11.0",
         "@types/express-session": "^1.17.3",
