@@ -198,7 +198,7 @@ export interface ResourceContract {
 }
 
 interface TenseiRegisterParams {
-    route: (route: CmsRoute) => void
+    route: (route: Partial<CmsRoute>) => void
     formComponent: (name: string, Component: React.FC<any>) => void
     indexComponent: (name: string, Component: React.FC<any>) => void
     detailComponent: (name: string, Component: React.FC<any>) => void

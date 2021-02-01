@@ -13,9 +13,8 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "x-build": "tsc --p tsconfig.json",
-        "x-dev": "tsc --watch --p tsconfig.json",
-        "x-test": "jest --verbose --runInBand --forceExit"
+        "build": "tsc --p tsconfig.json",
+        "dev": "tsc --watch --p tsconfig.json"
     },
     "dependencies": {
         "@types/change-case": "^2.3.1",
@@ -38,6 +37,7 @@
         "edge.js": "^1.1.4",
         "execa": "^5.0.0",
         "fs-extra": "^9.1.0",
+        "hygen": "^6.0.4",
         "kill-port": "^1.6.1",
         "latest-version": "^5.1.0",
         "listr": "^0.14.3",

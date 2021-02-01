@@ -1,10 +1,9 @@
 import Fs from 'fs'
-import Ora from 'ora'
 import Path from 'path'
+import chalk from 'chalk'
 import Execa from 'execa'
 import Edge from 'edge.js'
 import latestVersion from 'latest-version'
-import signale from './signale'
 
 export const getAvailableTemplates = () => ['quickstart']
 
@@ -64,29 +63,24 @@ export const hasYarnInstalled = () => {
 
 export const installProjectDependencies = (
     packageManager: string,
-    project: string,
-    runDev = true
-) => {
-    try {
-        const spinner = Ora(
-            `Installing dependencies with ${packageManager}`
-        ).start()
+    project: string
+) =>
+    Execa.sync(packageManager, ['install'], {
+        cwd: Path.resolve(process.cwd(), project),
+        stdin: 'ignore',
+        shell: true
+    })
 
-        Execa.sync(packageManager, ['install'], {
-            cwd: Path.resolve(process.cwd(), project),
-            stdin: 'ignore'
-        })
+export const style = {
+    error: chalk.bold.red,
+    warning: chalk.keyword('orange'),
+    success: chalk.greenBright,
+    info: chalk.grey,
 
-        spinner.stop()
+    header: chalk.bold.underline.hex('#e8e8e8'),
+    cmd: chalk.hex('#808080'),
+    tensei: chalk.hex('#56b3e2'),
+    love: chalk.redBright,
 
-        signale.success(
-            `🚀 Done installing project.\n\n🎉 Congratulations on the start of something amazing!\n\n💻 Run the following command to get started:\n\ncd ${project} && ${packageManager} run dev\n\n`
-        )
-
-        process.exit(0)
-    } catch (e) {
-        signale.error(e)
-
-        process.exit(1)
-    }
+    green: chalk.green
 }

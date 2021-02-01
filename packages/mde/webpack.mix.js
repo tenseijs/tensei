@@ -4,4 +4,4 @@ mix.webpackConfig({
     externals: {
         react: 'window.React'
     }
-}).ts('./src/components/Mde.tsx', 'public/app.js')
+}).ts('./src/components/Mde.tsx', 'build/client/app.js')

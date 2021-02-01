@@ -12,7 +12,7 @@ import chalk from 'chalk'
 import Listr from 'listr'
 import yargs from 'yargs'
 import Fs from 'fs-extra'
-import checkNodeVersion from 'check-node-version'
+import { hasYarnInstalled } from './utils/helpers'
 
 const pkg = require('../package')
 
@@ -30,13 +30,13 @@ const style = {
     green: chalk.green
 }
 
-const { _: args, 'yarn-install': yarnInstall } = yargs
+const { _: args, template } = yargs
     .scriptName(pkg.name)
     .usage('Usage: $0 <project directory> [option]')
-    .example('$0 newapp' as any)
-    .option('yarn-install', {
-        default: true,
-        describe: 'Skip yarn install with --no-yarn-install'
+    .example('$0 awesome-tensei-app' as any)
+    .option('template', {
+        default: 'default',
+        describe: 'Define which template to create a project from.'
     })
     .version(pkg.version)
     .strict().argv
@@ -73,6 +73,11 @@ const createProjectTasks = ({ newAppDir }: { newAppDir: string }) => {
                 appDirExists ? 'Using' : 'Creating'
             } directory '${newAppDir}'`,
             task: () => {
+                if (!Fs.existsSync(path.resolve(templateDir, template))) {
+                    console.error(`Template ${template} does not exist.`)
+                    process.exit(1)
+                }
+
                 if (appDirExists) {
                     // make sure that the target directory is empty
                     if (Fs.readdirSync(newAppDir).length > 0) {
@@ -84,50 +89,24 @@ const createProjectTasks = ({ newAppDir }: { newAppDir: string }) => {
                 } else {
                     Fs.ensureDirSync(path.dirname(newAppDir))
                 }
-                Fs.copySync(templateDir, newAppDir)
+
+                Fs.copySync(path.resolve(templateDir, template), newAppDir)
             }
         }
     ]
 }
 
 const installNodeModulesTasks = ({ newAppDir }: { newAppDir: string }) => {
+    const useYarn = hasYarnInstalled()
+
     return [
-        // {
-        //     title: 'Checking node and yarn compatibility',
-        //     task: () => {
-        //         return new Promise((resolve, reject) => {
-        //             const { engines } = require(path.join(
-        //                 newAppDir,
-        //                 'package.json'
-        //             ))
-
-        //             checkNodeVersion(engines, (_error, result) => {
-        //                 if (result.isSatisfied) {
-        //                     return resolve(undefined)
-        //                 }
-
-        //                 const errors = Object.keys(result.versions).map(
-        //                     name => {
-        //                         const { version, wanted } = result.versions[
-        //                             name
-        //                         ]
-        //                         return `${name} ${wanted} required, but you have ${version}.`
-        //                     }
-        //                 )
-        //                 return reject(new Error(errors.join('\n')))
-        //             })
-        //         })
-        //     }
-        // },
         {
-            title: 'Running `yarn install`... (This could take a while)',
-            skip: () => {
-                if (yarnInstall === false) {
-                    return 'skipped on request'
-                }
-            },
+            title:
+                'Running `' +
+                (useYarn ? 'yarn' : 'npm') +
+                ' install`... (This could take a while)',
             task: () => {
-                return execa('yarn install', {
+                return execa(useYarn ? 'yarn install' : 'npm install', {
                     shell: true,
                     cwd: newAppDir
                 })
@@ -159,7 +138,7 @@ new Listr(
             '',
             `We've created your app in '${style.green(newAppDir)}'`,
             `Enter the directory and run '${style.green(
-                'yarn tensei dev'
+                'yarn dev'
             )}' to start the development server.`,
             '',
             ` ⚡️ ${style.tensei(
@@ -202,7 +181,6 @@ new Listr(
         ].map(item => console.log(item))
     })
     .catch(e => {
-        console.log()
-        console.log(e)
+        console.error(e)
         process.exit(1)
     })

@@ -510,24 +510,22 @@ class CmsPlugin {
     plugin() {
         return plugin('CMS')
             .id('cms')
-            .register(
-                ({ script, style, extendResources, databaseConfig }) => {
-                    this.scripts.forEach(s => script(s.name, s.path))
-                    this.styles.forEach(s => style(s.name, s.path))
+            .register(({ script, style, extendResources, databaseConfig }) => {
+                this.scripts.forEach(s => script(s.name, s.path))
+                this.styles.forEach(s => style(s.name, s.path))
 
-                    databaseConfig.entities = [
-                        ...(databaseConfig.entities || []),
-                        generateSessionEntity(this.sessionMikroOrmOptions)
-                    ]
+                databaseConfig.entities = [
+                    ...(databaseConfig.entities || []),
+                    generateSessionEntity(this.sessionMikroOrmOptions)
+                ]
 
-                    extendResources([
-                        this.resources.user,
-                        this.resources.role,
-                        this.resources.token,
-                        this.resources.permission
-                    ])
-                }
-            )
+                extendResources([
+                    this.resources.user,
+                    this.resources.role,
+                    this.resources.token,
+                    this.resources.permission
+                ])
+            })
             .boot(async config => {
                 const { app, orm } = config
                 const Store = ExpressSessionMikroORMStore(

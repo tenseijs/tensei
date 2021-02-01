@@ -4,7 +4,8 @@
     "main": "lib/index.js",
     "license": "MIT",
     "files": [
-        "lib"
+        "lib",
+        "components.d.ts"
     ],
     "devDependencies": {
         "@apollo/client": "^3.3.4",

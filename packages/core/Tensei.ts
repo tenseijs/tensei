@@ -128,25 +128,23 @@ export class Tensei implements TenseiContract {
             this.ctx.logger,
             this.ctx.root
         )
-
-        this.ctx.databaseConfig = {
+        ;(this.ctx.databaseConfig = {
             dbName: this.ctx.name.toLowerCase(),
             type: 'sqlite',
             entities: []
-        },
-
-        this.ctx.storage = new StorageManager({
-            default: 'local',
-            disks: {
-                local: {
-                    driver: 'local',
-                    config: {
-                        root: `${this.ctx.root}/storage`,
-                        publicPath: ``
+        }),
+            (this.ctx.storage = new StorageManager({
+                default: 'local',
+                disks: {
+                    local: {
+                        driver: 'local',
+                        config: {
+                            root: `${this.ctx.root}/storage`,
+                            publicPath: ``
+                        }
                     }
                 }
-            }
-        })
+            }))
     }
 
     public setConfigOnResourceFields() {
@@ -311,7 +309,7 @@ export class Tensei implements TenseiContract {
 
     public async listen(port = process.env.PORT || 8810) {
         this.ctx.serverUrl = this.ctx.serverUrl || `http://localhost:${port}`
-        if (! this.registeredApplication) {
+        if (!this.registeredApplication) {
             await this.bootApplication()
         }
 

@@ -6,12 +6,14 @@ import Select from './Select'
 import Button from './Button'
 import Checkbox from './Checkbox'
 import Textarea from './Textarea'
+import Paginator from './Paginator'
 import TextInput from './TextInput'
 import { StackedList } from './List'
 import DatePicker from './DatePicker'
 import SearchInput from './SearchInput'
-import Modal, { ConfirmModal } from './Modal'
+import PageWrapper from './PageWrapper'
 import { Heading, Paragraph } from './Typography'
+import Modal, { ConfirmModal, DeleteModal } from './Modal'
 
 export {
     Icon,
@@ -26,9 +28,12 @@ export {
     Textarea,
     TextInput,
     Paragraph,
+    Paginator,
     DatePicker,
+    PageWrapper,
     SearchInput,
     ConfirmModal,
+    DeleteModal,
     StackedList
 }
 
