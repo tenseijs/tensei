@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.10](https://github.com/tenseijs/tensei/compare/v0.5.9...v0.5.10) (2021-02-01)
+
+
+### Bug Fixes
+
+* **cms:** fix cms migration when running dev server ([2738c01](https://github.com/tenseijs/tensei/commit/2738c01b772a9e2d351562840eb2462128d4c134))
+
+
+
+
+
+
 ## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
 
 
