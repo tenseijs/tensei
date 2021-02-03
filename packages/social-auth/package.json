@@ -1,6 +1,6 @@
 {
     "name": "@tensei/social-auth",
-    "version": "0.5.9",
+    "version": "0.5.11",
     "main": "./src/index.js",
     "license": "MIT",
     "files": [
