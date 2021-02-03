@@ -1,11 +1,8 @@
 import Dayjs from 'dayjs'
-import Uniqid from 'uniqid'
+import crypto from 'crypto'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
-import Randomstring from 'randomstring'
-import ExpressSession from 'express-session'
 import { validateAll } from 'indicative/validator'
-import ExpressSessionMikroORMStore from 'express-session-mikro-orm'
 import {
     plugin,
     resource,
@@ -40,7 +37,6 @@ import {
     SupportedSocialProviders,
     defaultProviderScopes
 } from './config'
-import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
@@ -56,12 +52,9 @@ class Auth {
     private config: AuthPluginConfig & {
         setupFn: AuthSetupFn
     } = {
-        cms: false,
         prefix: '',
-        profilePictures: false,
         tokenResource: 'Token',
         enableRefreshTokens: false,
-        disableAutoLoginAfterRegistration: false,
         userResource: 'User',
         roleResource: 'Role',
         permissionResource: 'Permission',
@@ -84,6 +77,8 @@ class Auth {
         rolesAndPermissions: false,
         providers: {}
     }
+
+    private TwoFactorAuth: any = null
 
     private resources: AuthResources = {} as any
 
@@ -172,6 +167,7 @@ class Auth {
     }
 
     public twoFactorAuth() {
+        this.TwoFactorAuth = require('@tensei/two-factor-auth')
         this.config.twoFactorAuth = true
 
         return this
@@ -251,18 +247,8 @@ class Auth {
                           boolean('Two Factor Enabled')
                               .hideOnCreate()
                               .hideOnUpdate()
-                              .hideOnIndex()
-                              .hideOnDetail()
-                              .hideOnApi()
                               .nullable(),
-                          text('Two Factor Secret')
-                              .hidden()
-                              .hideOnApi()
-                              .hideOnIndex()
-                              .hideOnCreate()
-                              .hideOnUpdate()
-                              .hideOnDetail()
-                              .nullable()
+                          text('Two Factor Secret').hideOnApi().nullable()
                       ]
                     : []),
                 ...this.config.fields,
@@ -314,10 +300,12 @@ class Auth {
     }
 
     private tokenResource() {
-        const tokenTypes = [{
-            label: 'API Token',
-            value: TokenTypes.API
-        }]
+        const tokenTypes = [
+            {
+                label: 'API Token',
+                value: TokenTypes.API
+            }
+        ]
 
         if (this.config.enableRefreshTokens) {
             tokenTypes.push({
@@ -330,10 +318,7 @@ class Auth {
             .fields([
                 text('Token').notNullable().hidden().searchable().unique(),
                 text('Name').searchable().nullable(),
-                select('Type')
-                    .options(tokenTypes)
-                    .searchable()
-                    .nullable(),
+                select('Type').options(tokenTypes).searchable().nullable(),
                 dateTime('Last Used At').nullable(),
                 dateTime('Compromised At').nullable(),
                 dateTime('Expires At').hidden(),
@@ -481,6 +466,20 @@ class Auth {
             .boot(async config => {
                 this.refreshResources()
 
+                if (this.config.twoFactorAuth) {
+                    config.app.use((request, response, next) => {
+                        request.verifyTwoFactorAuthToken = (
+                            token: string | number
+                        ) =>
+                            this.TwoFactorAuth.verifyTwoFactorAuthToken(
+                                request,
+                                token
+                            )
+
+                        next()
+                    })
+                }
+
                 if (this.config.rolesAndPermissions) {
                     await setup(config, [
                         this.resources.role,
@@ -493,52 +492,17 @@ class Auth {
                 this.forceRemoveInsertUserQueries(config.graphQlQueries)
 
                 if (this.socialAuthEnabled()) {
-                    const grant = require('grant')
-                    
-                    const Store = ExpressSessionMikroORMStore(ExpressSession, {
-                        entityName: `${this.resources.user.data.pascalCaseName}Session`,
-                        tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
-                        collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+                    const { register } = require('@tensei/social-auth')
+
+                    register({
+                        app,
+                        clientUrl,
+                        serverUrl,
+                        orm: config.orm,
+                        authConfig: this.config,
+                        resources: this.resources,
+                        apiPath: this.config.apiPath
                     })
-        
-                    app.use(
-                        ExpressSession({
-                            store: new Store({
-                                orm: config.orm
-                            }) as any,
-                            resave: false,
-                            saveUninitialized: false,
-                            cookie: this.config.cookieOptions,
-                            secret:
-                                process.env.SESSION_SECRET || '__sessions__secret__'
-                        })
-                    )
-
-                    Object.keys(this.config.providers).forEach(provider => {
-                        const providerConfig = this.config.providers[provider]
-                        const clientCallback =
-                            providerConfig.clientCallback || ''
-
-                        this.config.providers[provider] = {
-                            ...providerConfig,
-                            redirect_uri: `${serverUrl}/connect/${provider}/callback`,
-                            clientCallback: clientCallback.startsWith('http')
-                                ? clientCallback
-                                : `${clientUrl}${
-                                      clientCallback.startsWith('/') ? '/' : ''
-                                  }${clientCallback}`
-                        }
-                    })
-
-                    app.use(grant.express()(this.config.providers))
-
-                    app.get(
-                        `/${this.config.apiPath}/:provider/callback`,
-                        SocialAuthCallbackController.connect({
-                            ...this.config,
-                            resources: this.resources
-                        })
-                    )
                 }
 
                 currentCtx().graphQlQueries.forEach(query => {
@@ -841,7 +805,7 @@ class Auth {
                 .id(this.getRouteId(`logout_${name}`))
                 .post()
                 .handle(async (request, response) => {
-                      return response.formatter.noContent({})
+                    return response.formatter.noContent({})
                 }),
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
@@ -936,7 +900,9 @@ class Auth {
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
                               response.formatter.ok(
-                                  await this.enableTwoFactorAuth(request as any)
+                                  await this.TwoFactorAuth.enableTwoFactorAuth(
+                                      request as any
+                                  )
                               )
                           ),
                       route(`Confirm Enable Two Factor Auth`)
@@ -952,7 +918,7 @@ class Auth {
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
                               response.formatter.ok(
-                                  await this.confirmEnableTwoFactorAuth(
+                                  await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
                                       request as any
                                   )
                               )
@@ -970,7 +936,7 @@ class Auth {
                           .authorize(({ user }) => !!user)
                           .handle(async (request, response) =>
                               response.formatter.ok(
-                                  await this.disableTwoFactorAuth(
+                                  await this.TwoFactorAuth.disableTwoFactorAuth(
                                       request as any
                                   )
                               )
@@ -1074,27 +1040,35 @@ class Auth {
                           )
                   ]
                 : []),
-            ...(this.config.enableRefreshTokens ? [
-                route('Refresh Token')
-                .path(this.getApiPath('refresh-token'))
-                .post()
-                .id(this.getRouteId(`refresh_token_${name}`))
-                .authorize(({ user }) => user && !user.public)
-                .handle(
-                    async (request, { formatter: { ok, unauthorized } }) => {
-                        try {
-                            return ok(
-                                await this.handleRefreshTokens(request as any)
-                            )
-                        } catch (error) {
-                            return unauthorized({
-                                message:
-                                    error.message || 'Invalid refresh token.'
-                            })
-                        }
-                    }
-                )
-            ] : []),
+            ...(this.config.enableRefreshTokens
+                ? [
+                      route('Refresh Token')
+                          .path(this.getApiPath('refresh-token'))
+                          .post()
+                          .id(this.getRouteId(`refresh_token_${name}`))
+                          .authorize(({ user }) => user && !user.public)
+                          .handle(
+                              async (
+                                  request,
+                                  { formatter: { ok, unauthorized } }
+                              ) => {
+                                  try {
+                                      return ok(
+                                          await this.handleRefreshTokens(
+                                              request as any
+                                          )
+                                      )
+                                  } catch (error) {
+                                      return unauthorized({
+                                          message:
+                                              error.message ||
+                                              'Invalid refresh token.'
+                                      })
+                                  }
+                              }
+                          )
+                  ]
+                : [])
         ]
     }
 
@@ -1140,11 +1114,11 @@ class Auth {
                     }
                 }),
             graphQlQuery(`Logout ${name}`)
-            .path(`logout_${name}`)
-            .mutation()
-            .handle(async (_, args, ctx) => {
-                return true
-            }),
+                .path(`logout_${name}`)
+                .mutation()
+                .handle(async (_, args, ctx) => {
+                    return true
+                }),
             graphQlQuery(`Register ${name}`)
                 .path(`register_${name}`)
                 .mutation()
@@ -1203,14 +1177,16 @@ class Auth {
                           .path(`enable_${name}_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
-                              this.enableTwoFactorAuth(ctx)
+                              this.TwoFactorAuth.enableTwoFactorAuth(ctx)
                           )
                           .authorize(({ user }) => user && !user.public),
                       graphQlQuery('Confirm Enable Two Factor Auth')
                           .path(`confirm_${name}_enable_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
-                              await this.confirmEnableTwoFactorAuth(ctx)
+                              await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
+                                  ctx
+                              )
 
                               const { user } = ctx
 
@@ -1231,7 +1207,7 @@ class Auth {
                           .path(`disable_${name}_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
-                              await this.disableTwoFactorAuth(ctx)
+                              await this.TwoFactorAuth.disableTwoFactorAuth(ctx)
 
                               const { user } = ctx
 
@@ -1321,19 +1297,21 @@ class Auth {
                           })
                   ]
                 : []),
-            ...(this.config.enableRefreshTokens ? [
-                graphQlQuery('Refresh token')
-                    .path(`refresh_${name}_token`)
-                    .mutation()
-                    .handle(async (_, args, ctx, info) =>
-                        this.handleRefreshTokens(ctx)
-                    ),
-            ] : [])
+            ...(this.config.enableRefreshTokens
+                ? [
+                      graphQlQuery('Refresh token')
+                          .path(`refresh_${name}_token`)
+                          .mutation()
+                          .handle(async (_, args, ctx, info) =>
+                              this.handleRefreshTokens(ctx)
+                          )
+                  ]
+                : [])
         ]
     }
 
     private async handleRefreshTokens(ctx: ApiContext) {
-        if (! this.config.enableRefreshTokens) {
+        if (!this.config.enableRefreshTokens) {
             return undefined
         }
 
@@ -1520,11 +1498,15 @@ class Auth {
             password: String!
         }
 
-        ${this.config.enableRefreshTokens ? `
+        ${
+            this.config.enableRefreshTokens
+                ? `
         input refresh_${snakeCaseName}_token_input {
             refresh_token: String
         }
-        ` : ''}
+        `
+                : ''
+        }
 
         extend type Mutation {
             login_${snakeCaseName}(object: login_${snakeCaseName}_input!): login_${snakeCaseName}_response!
@@ -1557,9 +1539,13 @@ class Auth {
             `
                     : ''
             }
-            ${this.config.enableRefreshTokens ? `
+            ${
+                this.config.enableRefreshTokens
+                    ? `
             refresh_${snakeCaseName}_token(object: refresh_${snakeCaseName}_token_input): login_${snakeCaseName}_response!
-            ` : ''}
+            `
+                    : ''
+            }
         }
 
         extend type Query {
@@ -1897,7 +1883,7 @@ class Auth {
 
     private populateContextFromToken = async (
         token: string,
-        ctx: ApiContext,
+        ctx: ApiContext
     ) => {
         const { manager } = ctx
 
@@ -1962,115 +1948,6 @@ class Auth {
         if (!token) return
 
         return this.populateContextFromToken(token, ctx)
-    }
-
-    private disableTwoFactorAuth = async ({
-        manager,
-        body,
-        user,
-        userInputError
-    }: ApiContext) => {
-        if (!user.two_factor_enabled) {
-            throw userInputError(
-                `You do not have two factor authentication enabled.`
-            )
-        }
-
-        const Speakeasy = require('speakeasy')
-
-        const verified = Speakeasy.totp.verify({
-            encoding: 'base32',
-            token: body.object ? body.object.token : body.token,
-            secret: user.two_factor_secret
-        })
-
-        if (!verified) {
-            throw userInputError(`Invalid two factor authentication code.`)
-        }
-
-        manager.assign(user, {
-            two_factor_secret: null,
-            two_factor_enabled: false
-        })
-
-        await manager.persistAndFlush(user)
-
-        return user.toJSON()
-    }
-
-    private confirmEnableTwoFactorAuth = async ({
-        user,
-        body,
-        manager,
-        userInputError
-    }: ApiContext) => {
-        const Speakeasy = require('speakeasy')
-
-        const payload = await validateAll(body.object ? body.object : body, {
-            token: 'required|number'
-        })
-
-        if (!user.two_factor_secret) {
-            throw userInputError(
-                `You must enable two factor authentication first.`
-            )
-        }
-
-        const verified = Speakeasy.totp.verify({
-            encoding: 'base32',
-            token: payload.token,
-            secret: user.two_factor_secret
-        })
-
-        if (!verified) {
-            throw userInputError(`Invalid two factor token.`)
-        }
-
-        manager.assign(user, {
-            two_factor_enabled: true
-        })
-
-        await manager.persistAndFlush(user)
-
-        return user.toJSON()
-    }
-
-    private enableTwoFactorAuth = async ({ user, manager }: ApiContext) => {
-        const Qr = require('qrcode')
-        const Speakeasy = require('speakeasy')
-
-        const { base32, ascii } = Speakeasy.generateSecret()
-
-        manager.assign(user, {
-            two_factor_secret: base32,
-            two_factor_enabled: null
-        })
-
-        await manager.persistAndFlush(user!)
-
-        return new Promise((resolve, reject) =>
-            Qr.toDataURL(
-                Speakeasy.otpauthURL({
-                    secret: ascii,
-                    label: user.email,
-                    issuer: process.env.APP_NAME || 'Tensei'
-                }),
-                (error: null | Error, dataURL: string) => {
-                    if (error) {
-                        reject({
-                            status: 500,
-                            message: `Error generating qr code.`,
-                            error
-                        })
-                    }
-
-                    return resolve({
-                        dataURL,
-                        user: user.toJSON()
-                    })
-                }
-            )
-        )
     }
 
     protected forgotPassword = async ({
@@ -2224,8 +2101,8 @@ class Auth {
     public async generateRefreshToken(
         ctx: GraphQLPluginContext,
         previousTokenExpiry?: string
-    ): Promise<string|undefined> {
-        if (! this.config.enableRefreshTokens) {
+    ): Promise<string | undefined> {
+        if (!this.config.enableRefreshTokens) {
             return undefined
         }
 
@@ -2260,7 +2137,7 @@ class Auth {
 
         await ctx.manager.persistAndFlush(entity)
 
-        // TODO: 
+        // TODO:
         // 1. Encrypt the token using application key
         // 2. Create JWT with token as payload
         // 3. Save Token to database.
@@ -2285,11 +2162,7 @@ class Auth {
     }
 
     public generateRandomToken(length = 32) {
-        return (
-            Randomstring.generate(length) +
-            Uniqid() +
-            Randomstring.generate(length)
-        )
+        return crypto.randomBytes(length).toString('hex')
     }
 
     public social(provider: SupportedSocialProviders, config: GrantConfig) {
@@ -2304,12 +2177,6 @@ class Auth {
                     ? config.scope
                     : defaultProviderScopes(provider)
         }
-
-        return this
-    }
-
-    public skipLoginAfterRegistration() {
-        this.config.disableAutoLoginAfterRegistration = true
 
         return this
     }

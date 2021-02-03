@@ -43,14 +43,11 @@ export enum TokenTypes {
 
 export interface AuthPluginConfig {
     fields: FieldContract[]
-    profilePictures: boolean
     userResource: string
     tokenResource: string
-    cms: boolean
     prefix: string
     enableRefreshTokens?: boolean
     registered?: (ctx: ApiContext) => Promise<void> | void
-    disableAutoLoginAfterRegistration: boolean
     roleResource: string
     permissionResource: string
     rolesAndPermissions: boolean

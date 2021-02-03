@@ -6,7 +6,13 @@ import {
     useHistory,
     Link
 } from 'react-router-dom'
-import { Heading, StackedList, Button, Pulse, DeleteModal } from '@tensei/components'
+import {
+    Heading,
+    StackedList,
+    Button,
+    Pulse,
+    DeleteModal
+} from '@tensei/components'
 
 import PageWrapper from '../../components/PageWrapper'
 

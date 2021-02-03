@@ -1,10 +1,9 @@
 import Fs from 'fs'
 import Path from 'path'
 import Csurf from 'csurf'
-import Uniqid from 'uniqid'
+import crypto from 'crypto'
 import Mustache from 'mustache'
 import { DateTime } from 'luxon'
-import Randomstring from 'randomstring'
 import AsyncHandler from 'express-async-handler'
 import { Router, RequestHandler } from 'express'
 import { responseEnhancer } from 'express-response-formatter'
@@ -138,11 +137,7 @@ class CmsPlugin {
     }
 
     public generateRandomToken(length = 32) {
-        return (
-            Randomstring.generate(length) +
-            Uniqid() +
-            Randomstring.generate(length)
-        )
+        return crypto.randomBytes(length).toString('hex')
     }
 
     private routes = () => [
@@ -554,31 +549,36 @@ class CmsPlugin {
 
                 app.use(`/${this.config.path}`, this.router)
 
-                app.get(`/${this.config.path}(/*)?`, async (request, response) => {
-                    response.send(
-                        Mustache.render(indexFileContent, {
-                            styles: request.styles,
-                            scripts: request.scripts,
-                            user: request.user
-                                ? JSON.stringify({
-                                      ...request.user
-                                  })
-                                : null,
-                            resources: JSON.stringify(
-                                request.config.resources.map(r => r.serialize())
-                            ),
-                            ctx: JSON.stringify({
-                                dashboardPath: this.config.path,
-                                apiPath: `/${this.config.path}/api`,
-                                serverUrl: request.config.serverUrl
-                            }),
-                            shouldShowRegistrationScreen:
-                                (await request.manager.count(
-                                    this.resources.user.data.pascalCaseName
-                                )) === 0
-                        })
-                    )
-                })
+                app.get(
+                    `/${this.config.path}(/*)?`,
+                    async (request, response) => {
+                        response.send(
+                            Mustache.render(indexFileContent, {
+                                styles: request.styles,
+                                scripts: request.scripts,
+                                user: request.user
+                                    ? JSON.stringify({
+                                          ...request.user
+                                      })
+                                    : null,
+                                resources: JSON.stringify(
+                                    request.config.resources.map(r =>
+                                        r.serialize()
+                                    )
+                                ),
+                                ctx: JSON.stringify({
+                                    dashboardPath: this.config.path,
+                                    apiPath: `/${this.config.path}/api`,
+                                    serverUrl: request.config.serverUrl
+                                }),
+                                shouldShowRegistrationScreen:
+                                    (await request.manager.count(
+                                        this.resources.user.data.pascalCaseName
+                                    )) === 0
+                            })
+                        )
+                    }
+                )
             })
     }
 }

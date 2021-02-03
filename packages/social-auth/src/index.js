@@ -1,33 +1,25 @@
-import Dayjs from 'dayjs'
-import Uniqid from 'uniqid'
-import Purest from 'purest'
-import Request from 'request'
-import Random from 'randomstring'
-import { RequestHandler } from 'express'
-import purestConfig from '@purest/providers'
-import AsyncHandler from 'express-async-handler'
-import {
-    AuthPluginConfig,
-    SupportedSocialProviders,
-    AuthResources
-} from '../config'
+const grant = require('grant')
+const Purest = require('purest')
+const crypto = require('crypto')
+const Request = require('request')
+const ExpressSession = require('express-session')
+const purestConfig = require('@purest/providers')
+const AsyncHandler = require('express-async-handler')
+const ExpressSessionMikroORMStore = require('express-session-mikro-orm')
 
 const purest = Purest({ request: Request })
 
 class SocialAuthCallbackController {
-    public connect = (
-        authConfig: AuthPluginConfig & {
-            resources: AuthResources
-        }
-    ): RequestHandler =>
+    connect = (
+        authConfig) =>
         AsyncHandler(async (request, response) => {
             const { query, params, manager } = request
 
-            const provider = params.provider as SupportedSocialProviders
+            const provider = params.provider
             const access_token =
                 query.access_token || query.code || query.oauth_token
 
-            const redirect = (error?: any, code?: string) =>
+            const redirect = (error, code) =>
                 response.redirect(
                     `${authConfig.providers[provider].clientCallback}${
                         error ? `?error=${error}` : ''
@@ -39,8 +31,8 @@ class SocialAuthCallbackController {
             if (!access_token) return redirect(query.error)
 
             try {
-                const [error, providerData]: any = await this[provider](
-                    access_token as string
+                const [error, providerData] = await this[provider](
+                    access_token
                 )
 
                 if (!providerData.email)
@@ -57,7 +49,7 @@ class SocialAuthCallbackController {
 
                 let temporal_token = this.getTemporalToken()
 
-                const db: any = manager.getRepository(
+                const db = manager.getRepository(
                     authConfig.resources.oauthIdentity.data.pascalCaseName
                 )
                 const existingOauthIdentity = await db.findOne(
@@ -99,11 +91,11 @@ class SocialAuthCallbackController {
             }
         })
 
-    private getTemporalToken() {
-        return Random.generate(24) + Uniqid() + Random.generate(24)
+    getTemporalToken() {
+        return crypto.randomBytes(length).toString('hex')
     }
 
-    private async github(token: string) {
+    async github(token) {
         const github = purest({
             provider: 'github',
             config: purestConfig,
@@ -119,7 +111,7 @@ class SocialAuthCallbackController {
                 .query()
                 .get('user')
                 .auth(token)
-                .request((error: any, res: any, body: any) => {
+                .request((error, res, body) => {
                     const data = {
                         ...body,
                         name: body.name,
@@ -135,7 +127,7 @@ class SocialAuthCallbackController {
                         .get('user/emails')
                         .auth(token)
                         .request(
-                            (emailError: any, res: any, emailBody: any) => {
+                            (emailError, res, emailBody) => {
                                 return resolve([
                                     emailError,
                                     {
@@ -154,17 +146,17 @@ class SocialAuthCallbackController {
         )
     }
 
-    private facebook() {}
+    facebook() {}
 
-    private gitlab() {}
+    gitlab() {}
 
-    private google(access_token: string) {
+    google(access_token) {
         return new Promise(resolve =>
             purest({ provider: 'google', config: purestConfig })
                 .query('oauth')
                 .get('tokeninfo')
                 .qs({ access_token })
-                .request((error: any, res: any, body: any) =>
+                .request((error, res, body) =>
                     resolve([
                         error,
                         {
@@ -178,9 +170,9 @@ class SocialAuthCallbackController {
         )
     }
 
-    private twitter() {}
+    twitter() {}
 
-    private async linkedin(access_token: string) {
+    async linkedin(access_token) {
         const linkedin = purest({
             provider: 'linkedin',
             config: {
@@ -206,7 +198,7 @@ class SocialAuthCallbackController {
                     .query()
                     .get('me')
                     .auth(access_token)
-                    .request((err: any, res: any, body: any) =>
+                    .request((err, res, body) =>
                         resolve([err, body])
                     )
             )
@@ -219,7 +211,7 @@ class SocialAuthCallbackController {
                         'emailAddress?q=members&projection=(elements*(handle~))'
                     )
                     .auth(access_token)
-                    .request((err: any, res: any, body: any) =>
+                    .request((err, res, body) =>
                         resolve([err, body])
                     )
             })
@@ -227,7 +219,7 @@ class SocialAuthCallbackController {
         const [
             [detailsError, detailsBody],
             [emailError, emailBody]
-        ]: any = await Promise.all([getDetailsRequest(), getEmailRequest()])
+        ] = await Promise.all([getDetailsRequest(), getEmailRequest()])
 
         return [
             detailsError || emailError,
@@ -242,4 +234,59 @@ class SocialAuthCallbackController {
     }
 }
 
-export default new SocialAuthCallbackController()
+module.exports = {
+    controller: new SocialAuthCallbackController(),
+    register: ({
+        app,
+        orm,
+        apiPath,
+        serverUrl,
+        clientUrl,
+        authConfig,
+        resourcesMap,
+    }) => {
+        const Store = ExpressSessionMikroORMStore(ExpressSession, {
+            entityName: `${resourcesMap.user.data.pascalCaseName}Session`,
+            tableName: `${resourcesMap.user.data.snakeCaseNamePlural}_sessions`,
+            collection: `${resourcesMap.user.data.snakeCaseNamePlural}_sessions`
+        })
+
+        app.use(
+            ExpressSession({
+                store: new Store({
+                    orm: orm
+                }),
+                resave: false,
+                saveUninitialized: false,
+                secret:
+                    process.env.SESSION_SECRET || '__sessions__secret__'
+            })
+        )
+
+        Object.keys(authConfig.providers).forEach(provider => {
+            const providerConfig = authConfig.providers[provider]
+            const clientCallback =
+                providerConfig.clientCallback || ''
+
+            providers[provider] = {
+                ...providerConfig,
+                redirect_uri: `${serverUrl}/connect/${provider}/callback`,
+                clientCallback: clientCallback.startsWith('http')
+                    ? clientCallback
+                    : `${clientUrl}${
+                          clientCallback.startsWith('/') ? '/' : ''
+                      }${clientCallback}`
+            }
+        })
+
+        app.use(grant.express()(authConfig.providers))
+
+        app.get(
+            `/${apiPath}/:provider/callback`,
+            SocialAuthCallbackController.connect({
+                ...authConfig,
+                resources: resourcesMap
+            })
+        )
+    }
+}

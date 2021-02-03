@@ -398,9 +398,17 @@ export default (config: Config, cmsConfig: any) => {
                         } catch (e) {
                             console.log(e.name)
 
-                            return response.formatter.badRequest(`Failed deleting ${modelName} with ID ${params.id}. ${e.name === 'ForeignKeyConstraintViolationException' ? 'Foreign key constraint violated.' : ''}`)
+                            return response.formatter.badRequest(
+                                `Failed deleting ${modelName} with ID ${
+                                    params.id
+                                }. ${
+                                    e.name ===
+                                    'ForeignKeyConstraintViolationException'
+                                        ? 'Foreign key constraint violated.'
+                                        : ''
+                                }`
+                            )
                         }
-
 
                         config.emitter.emit(`${singular}::deleted`, entity)
 

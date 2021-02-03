@@ -35,10 +35,9 @@ module.exports = tensei()
             ),
     ])
     .plugins([
-        cms()
-            .plugin(),
+        cms().plugin(),
         media().graphql().maxFileSize(500000000000).plugin(),
-        auth().user('Customer').plugin(),
+        auth().user('Customer').twoFactorAuth().plugin(),
         graphql().plugin(),
         mde().plugin(),
         rest().plugin(),

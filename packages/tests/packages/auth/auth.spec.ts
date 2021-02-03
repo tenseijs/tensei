@@ -178,7 +178,11 @@ test('Can enable email verification for auth', async () => {
                 email_verification_token:
                     registeredCustomer.email_verification_token
             }
-        }).set('Authorization', `Bearer ${response.body.data.register_customer.access_token}`)
+        })
+        .set(
+            'Authorization',
+            `Bearer ${response.body.data.register_customer.access_token}`
+        )
 
     expect(verify_email_response.body.data.confirm_customer_email).toEqual({
         id: registeredCustomer.id.toString(),
@@ -689,9 +693,7 @@ test('authentication works when refresh tokens are disabled', async () => {
     const login_response = await client.post(`/graphql`).send({
         query: gql`
             mutation login_student($email: String!, $password: String!) {
-                login_student(
-                    object: { email: $email, password: $password }
-                ) {
+                login_student(object: { email: $email, password: $password }) {
                     student {
                         id
                         email

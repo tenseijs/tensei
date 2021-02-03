@@ -20,7 +20,7 @@ import {
     FieldContract,
     ResourceContract,
     PluginSetupConfig,
-    GraphQlQueryContract,
+    GraphQlQueryContract
 } from '@tensei/common'
 import { ReferenceType } from '@mikro-orm/core'
 
@@ -673,7 +673,7 @@ input id_where_query {
                 )
             })
             .boot(async config => {
-                const { currentCtx, app, graphQlMiddleware } = config
+                const { currentCtx, app, graphQlMiddleware, serverUrl } = config
 
                 const typeDefs = [
                     gql(this.schemaString),
@@ -773,6 +773,10 @@ input id_where_query {
                     })
                     .reduce((acc, middleware) => [...acc, ...middleware], [])
 
+                const playgroundEndpoint = `${serverUrl}/${
+                    this.getMiddlewareOptions.path || 'graphql'
+                }`
+
                 const graphQlServer = new ApolloServer({
                     schema: applyMiddleware(
                         schema,
@@ -792,14 +796,11 @@ input id_where_query {
                     playground: false
                 })
 
-                const playgroundEndpoint = `/${
-                    this.getMiddlewareOptions.path || 'graphql'
-                }`
-
                 app.get(
                     `/${this.getMiddlewareOptions.path || 'graphql'}`,
                     (request, response, next) =>
                         expressPlayground({
+                            endpoint: playgroundEndpoint,
                             settings: {
                                 ...defaultPlaygroundOptions.settings,
                                 'request.credentials': 'same-origin',
