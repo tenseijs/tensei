@@ -37,7 +37,6 @@ export type AuthResources = {
 
 export enum TokenTypes {
     REFRESH = 'REFRESH',
-    API = 'API',
     PASSWORDLESS = 'PASSWORDLESS'
 }
 

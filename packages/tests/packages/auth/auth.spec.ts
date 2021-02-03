@@ -99,8 +99,7 @@ test('Can add new fields to the user resource using the setup function', async (
 test('Can enable email verification for auth', async () => {
     const {
         ctx: {
-            orm: { em },
-            mailer
+            orm: { em }
         },
         app
     } = await setup([
@@ -109,7 +108,7 @@ test('Can enable email verification for auth', async () => {
             .verifyEmails()
             .refreshTokens()
             .setup(({ user }) => {
-                user.fields([text('Name')])
+                user.fields([text('Name').nullable()])
             })
             .plugin(),
         graphql().plugin()

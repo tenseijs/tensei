@@ -300,12 +300,7 @@ class Auth {
     }
 
     private tokenResource() {
-        const tokenTypes = [
-            {
-                label: 'API Token',
-                value: TokenTypes.API
-            }
-        ]
+        const tokenTypes = []
 
         if (this.config.enableRefreshTokens) {
             tokenTypes.push({
@@ -429,7 +424,6 @@ class Auth {
 
                     extendResources([
                         this.resources.user,
-                        this.resources.token,
                         this.resources.passwordReset
                     ])
 
@@ -438,6 +432,10 @@ class Auth {
                             this.resources.role,
                             this.resources.permission
                         ])
+                    }
+
+                    if (this.config.enableRefreshTokens) {
+                        extendResources([this.resources.token])
                     }
 
                     if (Object.keys(this.config.providers).length > 0) {
