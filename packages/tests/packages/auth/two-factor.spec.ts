@@ -99,7 +99,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         confirm_enable_2fa_response.body.data
             .confirm_student_enable_two_factor_auth
     ).toEqual({
-        id: user.id,
+        id: user.id.toString(),
         two_factor_enabled: true
     })
 
@@ -127,7 +127,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     expect(
         disable_2fa_response.body.data.disable_student_two_factor_auth
     ).toEqual({
-        id: user.id,
+        id: user.id.toString(),
         two_factor_enabled: false
     })
 })
