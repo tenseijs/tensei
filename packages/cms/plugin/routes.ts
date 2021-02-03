@@ -26,7 +26,7 @@ export default (config: Config, cmsConfig: any) => {
     }
 
     const getApiPath = (path: string) => {
-        return `${cmsConfig.apiPath}/${path}`
+        return `/api/${path}`
     }
 
     const { resources } = config

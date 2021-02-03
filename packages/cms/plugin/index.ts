@@ -102,7 +102,7 @@ class CmsPlugin {
     }
 
     private getApiPath = (path: string) => {
-        return `/${this.config.apiPath}/${path}`
+        return `/api/${path}`
     }
 
     private resources = {
@@ -194,35 +194,6 @@ class CmsPlugin {
                 }
 
                 return response.redirect(`/${this.config.path}`)
-            }),
-        route('Get CMS Dashboard')
-            .get()
-            .id('get_cms_dashboard')
-            .path(`${this.config.path}(/*)?`)
-            .handle(async (request, response) => {
-                response.send(
-                    Mustache.render(indexFileContent, {
-                        styles: request.styles,
-                        scripts: request.scripts,
-                        user: request.user
-                            ? JSON.stringify({
-                                  ...request.user
-                              })
-                            : null,
-                        resources: JSON.stringify(
-                            request.config.resources.map(r => r.serialize())
-                        ),
-                        ctx: JSON.stringify({
-                            dashboardPath: this.config.path,
-                            apiPath: `/${this.config.path}/api`,
-                            serverUrl: request.config.serverUrl
-                        }),
-                        shouldShowRegistrationScreen:
-                            (await request.manager.count(
-                                this.resources.user.data.pascalCaseName
-                            )) === 0
-                    })
-                )
             }),
         route('Passwordless Email Registration')
             .post()
@@ -581,7 +552,33 @@ class CmsPlugin {
                     }
                 )
 
-                app.use(this.router)
+                app.use(`/${this.config.path}`, this.router)
+
+                app.get(`/${this.config.path}(/*)?`, async (request, response) => {
+                    response.send(
+                        Mustache.render(indexFileContent, {
+                            styles: request.styles,
+                            scripts: request.scripts,
+                            user: request.user
+                                ? JSON.stringify({
+                                      ...request.user
+                                  })
+                                : null,
+                            resources: JSON.stringify(
+                                request.config.resources.map(r => r.serialize())
+                            ),
+                            ctx: JSON.stringify({
+                                dashboardPath: this.config.path,
+                                apiPath: `/${this.config.path}/api`,
+                                serverUrl: request.config.serverUrl
+                            }),
+                            shouldShowRegistrationScreen:
+                                (await request.manager.count(
+                                    this.resources.user.data.pascalCaseName
+                                )) === 0
+                        })
+                    )
+                })
             })
     }
 }

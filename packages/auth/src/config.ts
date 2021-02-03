@@ -28,18 +28,17 @@ export type SupportedSocialProviders =
 
 export type AuthResources = {
     user: ResourceContract
-    team: ResourceContract
     role: ResourceContract
     oauthIdentity: ResourceContract
     permission: ResourceContract
-    teamInvite: ResourceContract
     passwordReset: ResourceContract
     token: ResourceContract
 }
 
 export enum TokenTypes {
     REFRESH = 'REFRESH',
-    API = 'API'
+    API = 'API',
+    PASSWORDLESS = 'PASSWORDLESS'
 }
 
 export interface AuthPluginConfig {
@@ -49,12 +48,10 @@ export interface AuthPluginConfig {
     tokenResource: string
     cms: boolean
     prefix: string
+    enableRefreshTokens?: boolean
     registered?: (ctx: ApiContext) => Promise<void> | void
-    csrfEnabled: boolean
     disableAutoLoginAfterRegistration: boolean
     roleResource: string
-    disableCookies: boolean
-    jwtEnabled: boolean
     permissionResource: string
     rolesAndPermissions: boolean
     passwordResetResource: string
@@ -64,12 +61,10 @@ export interface AuthPluginConfig {
         accessTokenExpiresIn: number
         refreshTokenExpiresIn: number
     }
-    refreshTokenCookieName: string
-    teams: boolean
+    refreshTokenHeaderName: string
     cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>
     verifyEmails?: boolean
     skipWelcomeEmail?: boolean
-    teamFields: FieldContract[]
     twoFactorAuth: boolean
     beforeCreateUser?: HookFunction
     afterCreateUser?: HookFunction

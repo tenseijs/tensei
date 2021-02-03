@@ -1,6 +1,7 @@
 require('dotenv').config()
 const { cms } = require('@tensei/cms')
 const { mde } = require('@tensei/mde')
+const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { media } = require('@tensei/media')
 const { graphql } = require('@tensei/graphql')
@@ -34,11 +35,13 @@ module.exports = tensei()
             ),
     ])
     .plugins([
-        cms().plugin(),
+        cms()
+            .plugin(),
         media().graphql().maxFileSize(500000000000).plugin(),
+        auth().user('Customer').plugin(),
         graphql().plugin(),
-        rest().plugin(),
         mde().plugin(),
+        rest().plugin(),
     ])
     .db({
         type: process.env.DATABASE_TYPE || 'mysql',

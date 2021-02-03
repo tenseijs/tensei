@@ -44,7 +44,6 @@ import SocialAuthCallbackController from './controllers/SocialAuthCallbackContro
 
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
-import { createCsurfToken, checkCsurfToken } from './csrf'
 
 type JwtPayload = {
     id: string
@@ -59,14 +58,12 @@ class Auth {
     } = {
         cms: false,
         prefix: '',
-        jwtEnabled: false,
         profilePictures: false,
-        csrfEnabled: true,
         tokenResource: 'Token',
+        enableRefreshTokens: false,
         disableAutoLoginAfterRegistration: false,
         userResource: 'User',
         roleResource: 'Role',
-        disableCookies: false,
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
         fields: [],
@@ -80,9 +77,7 @@ class Auth {
         cookieOptions: {
             secure: process.env.NODE_ENV === 'production'
         },
-        refreshTokenCookieName: '___refresh__token',
-        teams: false,
-        teamFields: [],
+        refreshTokenHeaderName: 'x-tensei-refresh-token',
         twoFactorAuth: false,
         verifyEmails: false,
         skipWelcomeEmail: false,
@@ -102,14 +97,18 @@ class Auth {
         return this
     }
 
+    public refreshTokens() {
+        this.config.enableRefreshTokens = true
+
+        return this
+    }
+
     private refreshResources() {
         this.resources.user = this.userResource()
-        this.resources.team = this.teamResource()
         this.resources.role = this.roleResource()
         this.resources.token = this.tokenResource()
         this.resources.oauthIdentity = this.oauthResource()
         this.resources.permission = this.permissionResource()
-        this.resources.teamInvite = this.teamInviteResource()
         this.resources.passwordReset = this.passwordResetResource()
 
         this.config.setupFn(this.resources)
@@ -117,31 +116,6 @@ class Auth {
 
     public afterUpdateUser(hook: HookFunction) {
         this.config.afterUpdateUser = hook
-
-        return this
-    }
-
-    public noCookies() {
-        this.config.disableCookies = true
-
-        return this
-    }
-
-    public jwt() {
-        this.config.jwtEnabled = true
-
-        return this
-    }
-
-    private useTokens() {
-        return (
-            this.config.jwtEnabled ||
-            (this.config.disableCookies && !this.config.jwtEnabled)
-        )
-    }
-
-    public csrf(csrfEnabled = false) {
-        this.config.csrfEnabled = csrfEnabled
 
         return this
     }
@@ -197,12 +171,6 @@ class Auth {
         return this
     }
 
-    public teamFields(fields: AuthPluginConfig['teamFields']) {
-        this.config.teamFields = fields
-
-        return this
-    }
-
     public twoFactorAuth() {
         this.config.twoFactorAuth = true
 
@@ -223,12 +191,6 @@ class Auth {
 
     public permission(name: string) {
         this.config.permissionResource = name
-
-        return this
-    }
-
-    public teams() {
-        this.config.teams = true
 
         return this
     }
@@ -352,21 +314,24 @@ class Auth {
     }
 
     private tokenResource() {
+        const tokenTypes = [{
+            label: 'API Token',
+            value: TokenTypes.API
+        }]
+
+        if (this.config.enableRefreshTokens) {
+            tokenTypes.push({
+                label: 'Refresh Token',
+                value: TokenTypes.REFRESH
+            })
+        }
+
         return resource(this.config.tokenResource)
             .fields([
                 text('Token').notNullable().hidden().searchable().unique(),
                 text('Name').searchable().nullable(),
                 select('Type')
-                    .options([
-                        {
-                            label: 'Refresh Token',
-                            value: 'REFRESH'
-                        },
-                        {
-                            label: 'API Token',
-                            value: 'API'
-                        }
-                    ])
+                    .options(tokenTypes)
                     .searchable()
                     .nullable(),
                 dateTime('Last Used At').nullable(),
@@ -375,29 +340,6 @@ class Auth {
                 belongsTo(this.config.userResource).nullable()
             ])
             .hideOnApi()
-    }
-
-    private teamResource() {
-        return resource('Team')
-            .fields([
-                text('Name').unique(),
-                belongsTo(this.config.userResource),
-                belongsToMany(this.config.userResource),
-                ...this.config.teamFields
-            ])
-            .hideFromNavigation()
-    }
-
-    private teamInviteResource() {
-        return resource('Team Invite')
-            .fields([
-                text('Email'),
-                text('Role'),
-                text('Token').unique().rules('required'),
-                belongsTo(this.resources.team.data.name),
-                belongsTo(this.config.userResource)
-            ])
-            .hideOnFetchApi()
     }
 
     private permissionResource() {
@@ -513,21 +455,11 @@ class Auth {
                         ])
                     }
 
-                    if (this.config.teams) {
-                        extendResources([
-                            this.resources.team,
-                            this.resources.teamInvite
-                        ])
-                    }
-
                     if (Object.keys(this.config.providers).length > 0) {
                         extendResources([this.resources.oauthIdentity])
                     }
 
-                    if (
-                        !this.config.disableCookies ||
-                        this.socialAuthEnabled()
-                    ) {
+                    if (this.socialAuthEnabled()) {
                         databaseConfig.entities = [
                             ...(databaseConfig.entities || []),
                             require('express-session-mikro-orm').generateSessionEntity(
@@ -558,52 +490,29 @@ class Auth {
 
                 const { app, serverUrl, clientUrl, currentCtx, routes } = config
 
-                const Store = ExpressSessionMikroORMStore(ExpressSession, {
-                    entityName: `${this.resources.user.data.pascalCaseName}Session`,
-                    tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
-                    collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
-                })
-
                 this.forceRemoveInsertUserQueries(config.graphQlQueries)
-
-                app.use(
-                    ExpressSession({
-                        store: new Store({
-                            orm: config.orm
-                        }) as any,
-                        resave: false,
-                        saveUninitialized: false,
-                        cookie: this.config.cookieOptions,
-                        secret:
-                            process.env.SESSION_SECRET || '__sessions__secret__'
-                    })
-                )
-
-                if (!this.useTokens() && this.config.csrfEnabled) {
-                    app.use((request, response, next) => {
-                        const query = request.body?.query
-                            ?.replace(/(\r\n|\n|\r)/gm, '')
-                            ?.replace(/\s/g, '')
-
-                        const queryAccepted =
-                            query === '{csrf_token}' ||
-                            (query?.startsWith('query') &&
-                                query?.endsWith('{csrf_token}'))
-
-                        if (
-                            request.method === 'POST' &&
-                            typeof query === 'string' &&
-                            queryAccepted
-                        ) {
-                            return createCsurfToken()(request, response, next)
-                        }
-
-                        return checkCsurfToken()(request, response, next)
-                    })
-                }
 
                 if (this.socialAuthEnabled()) {
                     const grant = require('grant')
+                    
+                    const Store = ExpressSessionMikroORMStore(ExpressSession, {
+                        entityName: `${this.resources.user.data.pascalCaseName}Session`,
+                        tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
+                        collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+                    })
+        
+                    app.use(
+                        ExpressSession({
+                            store: new Store({
+                                orm: config.orm
+                            }) as any,
+                            resave: false,
+                            saveUninitialized: false,
+                            cookie: this.config.cookieOptions,
+                            secret:
+                                process.env.SESSION_SECRET || '__sessions__secret__'
+                        })
+                    )
 
                     Object.keys(this.config.providers).forEach(provider => {
                         const providerConfig = this.config.providers[provider]
@@ -877,7 +786,6 @@ class Auth {
                     try {
                         return ok(await this.login(request as any))
                     } catch (error) {
-                        console.log('_________', request.session, error)
                         return unprocess(error)
                     }
                 }),
@@ -928,25 +836,13 @@ class Auth {
                         }
                     }
                 ),
-            ...(this.useTokens()
-                ? []
-                : [
-                      route(`Logout ${name}`)
-                          .path(this.getApiPath('logout'))
-                          .id(this.getRouteId(`logout_${name}`))
-                          .post()
-                          .handle(async (request, response) => {
-                              request.session.destroy(error => {
-                                  if (error) {
-                                      return response.formatter.noContent({})
-                                  }
-
-                                  response.clearCookie('connect.sid')
-
-                                  return response.formatter.noContent({})
-                              })
-                          })
-                  ]),
+            route(`Logout ${name}`)
+                .path(this.getApiPath('logout'))
+                .id(this.getRouteId(`logout_${name}`))
+                .post()
+                .handle(async (request, response) => {
+                      return response.formatter.noContent({})
+                }),
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
                 .post()
@@ -1178,25 +1074,12 @@ class Auth {
                           )
                   ]
                 : []),
-            route('Refresh Token')
+            ...(this.config.enableRefreshTokens ? [
+                route('Refresh Token')
                 .path(this.getApiPath('refresh-token'))
                 .post()
                 .id(this.getRouteId(`refresh_token_${name}`))
                 .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Request a new (access token) using a refresh token.`,
-                        description: `The refresh token is set in cookies response for all endpoints that return an access token (login, register).`,
-                        parameters: [
-                            {
-                                name: this.config.refreshTokenCookieName,
-                                required: true,
-                                in: 'cookie'
-                            }
-                        ]
-                    }
-                })
                 .handle(
                     async (request, { formatter: { ok, unauthorized } }) => {
                         try {
@@ -1210,46 +1093,8 @@ class Auth {
                             })
                         }
                     }
-                ),
-            route('Remove refresh Token')
-                .path(this.getApiPath('refresh-token'))
-                .delete()
-                .id(this.getRouteId(`remove_refresh_token_${name}`))
-                .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Invalidate a refresh token.`,
-                        description: `Sets the refresh token cookie to an invalid value and expires it.`,
-                        parameters: [
-                            {
-                                name: this.config.refreshTokenCookieName,
-                                required: true,
-                                in: 'cookie'
-                            }
-                        ]
-                    }
-                })
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.removeRefreshTokens(request as any)
-                    )
-                ),
-            ...(this.config.csrfEnabled && !this.useTokens()
-                ? [
-                      route('Get CSRF Token')
-                          .id(this.getRouteId(`csrf_token_${name}`))
-                          .path(this.getApiPath('csrf'))
-                          .handle(async (request, response) => {
-                              response.cookie(
-                                  'x-csrf-token',
-                                  request.csrfToken()
-                              )
-
-                              return response.formatter.noContent([])
-                          })
-                  ]
-                : [])
+                )
+            ] : []),
         ]
     }
 
@@ -1294,26 +1139,12 @@ class Auth {
                         [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
-            ...(this.useTokens()
-                ? []
-                : [
-                      graphQlQuery(`Logout ${name}`)
-                          .path(`logout_${name}`)
-                          .mutation()
-                          .handle(async (_, args, ctx) => {
-                              return new Promise(resolve => {
-                                  ctx.req.session.destroy(error => {
-                                      if (error) {
-                                          return resolve(false)
-                                      }
-
-                                      ctx.res.clearCookie('connect.sid')
-
-                                      return resolve(true)
-                                  })
-                              })
-                          })
-                  ]),
+            graphQlQuery(`Logout ${name}`)
+            .path(`logout_${name}`)
+            .mutation()
+            .handle(async (_, args, ctx) => {
+                return true
+            }),
             graphQlQuery(`Register ${name}`)
                 .path(`register_${name}`)
                 .mutation()
@@ -1490,53 +1321,28 @@ class Auth {
                           })
                   ]
                 : []),
-            ...(this.useTokens()
-                ? [
-                      graphQlQuery('Refresh token')
-                          .path(`refresh_${name}_token`)
-                          .mutation()
-                          .handle(async (_, args, ctx, info) =>
-                              this.handleRefreshTokens(ctx)
-                          )
-                  ]
-                : []),
-            ...(this.config.csrfEnabled && !this.useTokens()
-                ? [
-                      graphQlQuery('Get CSRF Token')
-                          .path(`csrf_token`)
-                          .query()
-                          .handle(async (_, args, ctx, info) => {
-                              ctx.res.cookie(
-                                  'x-csrf-token',
-                                  ctx.req.csrfToken()
-                              )
-
-                              return true
-                          })
-                  ]
-                : [])
+            ...(this.config.enableRefreshTokens ? [
+                graphQlQuery('Refresh token')
+                    .path(`refresh_${name}_token`)
+                    .mutation()
+                    .handle(async (_, args, ctx, info) =>
+                        this.handleRefreshTokens(ctx)
+                    ),
+            ] : [])
         ]
     }
 
-    private async removeRefreshTokens(ctx: ApiContext) {
-        ctx.res.cookie(this.config.refreshTokenCookieName, '', {
-            ...this.config.cookieOptions,
-            httpOnly: true,
-            maxAge: 0
-        })
-
-        return true
-    }
-
     private async handleRefreshTokens(ctx: ApiContext) {
+        if (! this.config.enableRefreshTokens) {
+            return undefined
+        }
+
         const { body } = ctx
         const userField = this.resources.user.data.snakeCaseName
         const tokenName = this.resources.token.data.pascalCaseName
 
         const refreshToken =
-            (ctx.req.cookies
-                ? ctx.req.cookies[this.config.refreshTokenCookieName]
-                : undefined) ||
+            ctx.req.headers[this.config.refreshTokenHeaderName] ||
             (body
                 ? body.object
                     ? body.object.refresh_token
@@ -1615,14 +1421,15 @@ class Auth {
             [this.resources.user.data.snakeCaseName]: ctx.user
         }
 
-        if (this.useTokens()) {
-            userPayload.access_token = this.generateJwt({
-                id: ctx.user.id
-            })
+        userPayload.access_token = this.generateJwt({
+            id: ctx.user.id
+        })
 
+        if (this.config.enableRefreshTokens) {
             userPayload.refresh_token = refreshToken
-            userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
         }
+
+        userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
 
         return userPayload
     }
@@ -1632,28 +1439,16 @@ class Auth {
 
         return gql`
         type register_${snakeCaseName}_response {
-            ${
-                this.useTokens()
-                    ? `
-                access_token: String!
-                refresh_token: String
-                expires_in: Int!
-            `
-                    : ''
-            }
+            access_token: String!
+            ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
+            expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_${snakeCaseName}_response {
-            ${
-                this.useTokens()
-                    ? `
-                access_token: String!
-                refresh_token: String
-                expires_in: Int!
-            `
-                    : ''
-            }
+            access_token: String!
+            ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
+            expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
@@ -1725,25 +1520,15 @@ class Auth {
             password: String!
         }
 
-        ${
-            this.useTokens()
-                ? `
+        ${this.config.enableRefreshTokens ? `
         input refresh_${snakeCaseName}_token_input {
             refresh_token: String
         }
-        `
-                : ''
-        }
+        ` : ''}
 
         extend type Mutation {
             login_${snakeCaseName}(object: login_${snakeCaseName}_input!): login_${snakeCaseName}_response!
-            ${
-                !this.config.disableCookies
-                    ? `
             logout_${snakeCaseName}: Boolean!
-            `
-                    : ``
-            }
             register_${snakeCaseName}(object: insert_${snakeCaseName}_input!): register_${snakeCaseName}_response!
             request_${snakeCaseName}_password_reset(object: request_${snakeCaseName}_password_reset_input!): Boolean!
             reset_${snakeCaseName}_password(object: reset_${snakeCaseName}_password_input!): Boolean!
@@ -1772,24 +1557,13 @@ class Auth {
             `
                     : ''
             }
-            ${
-                this.useTokens()
-                    ? `
+            ${this.config.enableRefreshTokens ? `
             refresh_${snakeCaseName}_token(object: refresh_${snakeCaseName}_token_input): login_${snakeCaseName}_response!
-            `
-                    : ''
-            }
+            ` : ''}
         }
 
         extend type Query {
             authenticated_${snakeCaseName}: ${snakeCaseName}!
-            ${
-                this.config.csrfEnabled && !this.useTokens()
-                    ? `
-            csrf_token: Boolean!
-            `
-                    : ''
-            }
         }
     `
     }
@@ -1868,15 +1642,6 @@ class Auth {
         }
 
         ctx.user = user
-
-        if (
-            !this.config.disableCookies &&
-            !this.config.disableAutoLoginAfterRegistration
-        ) {
-            ctx.req.session.user = {
-                id: user.id
-            }
-        }
 
         if (this.config.registered) {
             await this.config.registered(ctx)
@@ -2080,12 +1845,6 @@ class Auth {
             }
         }
 
-        if (!this.config.disableCookies) {
-            ctx.req.session.user = {
-                id: user.id
-            }
-        }
-
         if (this.config.rolesAndPermissions) {
             await manager.populate([user], [this.getRolesAndPermissionsNames()])
         }
@@ -2139,23 +1898,18 @@ class Auth {
     private populateContextFromToken = async (
         token: string,
         ctx: ApiContext,
-        userId?: number
     ) => {
         const { manager } = ctx
 
         try {
             let id
 
-            if (token) {
-                const payload = Jwt.verify(
-                    token,
-                    this.config.tokensConfig.secretKey
-                ) as JwtPayload
+            const payload = Jwt.verify(
+                token,
+                this.config.tokensConfig.secretKey
+            ) as JwtPayload
 
-                id = payload.id
-            } else {
-                id = userId
-            }
+            id = payload.id
 
             if (!id) {
                 return
@@ -2205,11 +1959,9 @@ class Auth {
         const { headers } = req
         const [, token] = (headers['authorization'] || '').split('Bearer ')
 
-        let userId = ctx.req.session.user?.id
+        if (!token) return
 
-        if (!token && !userId) return
-
-        return this.populateContextFromToken(token, ctx, userId)
+        return this.populateContextFromToken(token, ctx)
     }
 
     private disableTwoFactorAuth = async ({
@@ -2472,9 +2224,9 @@ class Auth {
     public async generateRefreshToken(
         ctx: GraphQLPluginContext,
         previousTokenExpiry?: string
-    ): Promise<string> {
-        if (!this.config.disableCookies) {
-            return ''
+    ): Promise<string|undefined> {
+        if (! this.config.enableRefreshTokens) {
+            return undefined
         }
 
         const plainTextToken = this.generateRandomToken(64)
@@ -2496,7 +2248,7 @@ class Auth {
             {
                 token: plainTextToken,
                 [this.resources.user.data.snakeCaseName]: ctx.user.id,
-                type: 'REFRESH',
+                type: TokenTypes.REFRESH,
                 expires_at: previousTokenExpiry
                     ? previousTokenExpiry
                     : Dayjs().add(
@@ -2508,6 +2260,13 @@ class Auth {
 
         await ctx.manager.persistAndFlush(entity)
 
+        // TODO: 
+        // 1. Encrypt the token using application key
+        // 2. Create JWT with token as payload
+        // 3. Save Token to database.
+        // 4. To verify token, decode JWT
+        // 5. Decrypt token from JWT
+        // 6. Query the database for the refresh token
         return plainTextToken
     }
 

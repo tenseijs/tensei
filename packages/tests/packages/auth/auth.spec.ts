@@ -107,7 +107,7 @@ test('Can enable email verification for auth', async () => {
         auth()
             .user('Customer')
             .verifyEmails()
-            .csrf(false)
+            .refreshTokens()
             .setup(({ user }) => {
                 user.fields([text('Name')])
             })
@@ -134,6 +134,8 @@ test('Can enable email verification for auth', async () => {
                         email
                         email_verified_at
                     }
+
+                    access_token
                 }
             }
         `,
@@ -176,8 +178,7 @@ test('Can enable email verification for auth', async () => {
                 email_verification_token:
                     registeredCustomer.email_verification_token
             }
-        })
-        .set('Cookie', `${response.header['set-cookie'][0].split(';')[0]}`)
+        }).set('Authorization', `Bearer ${response.body.data.register_customer.access_token}`)
 
     expect(verify_email_response.body.data.confirm_customer_email).toEqual({
         id: registeredCustomer.id.toString(),
@@ -198,7 +199,7 @@ test('Can request a password reset and reset password', async () => {
         },
         app
     } = await setup([
-        auth().verifyEmails().csrf(false).user('Student').plugin(),
+        auth().verifyEmails().refreshTokens().user('Student').plugin(),
         graphql().plugin(),
         setupFakeMailer(mailerMock)
     ])
@@ -286,119 +287,6 @@ test('Can request a password reset and reset password', async () => {
     })
 })
 
-test('Can login and stay authenticated with cookie based applications', async () => {
-    const {
-        ctx: {
-            orm: { em }
-        },
-        app
-    } = await setup([
-        auth().verifyEmails().csrf(false).user('Student').plugin(),
-        graphql().plugin()
-    ])
-
-    const client = Supertest(app)
-
-    const user = em.create('Student', fakeUser())
-
-    await em.persistAndFlush(user)
-
-    const login_response = await client.post(`/graphql`).send({
-        query: gql`
-            mutation login_student($email: String!, $password: String!) {
-                login_student(object: { email: $email, password: $password }) {
-                    student {
-                        id
-                        email
-                    }
-                }
-            }
-        `,
-        variables: {
-            password: 'password',
-            email: user.email
-        }
-    })
-
-    const userEntity = (await em.findOne('Student', {
-        email: user.email
-    })) as any
-
-    expect(login_response.body).toEqual({
-        data: {
-            login_student: {
-                student: {
-                    id: userEntity.id.toString(),
-                    email: user.email
-                }
-            }
-        }
-    })
-
-    const authCookie = login_response.header['set-cookie'][0].split(';')[0]
-
-    // A logged in student can stay authenticated.
-    const authenticated_response = await client
-        .post(`/graphql`)
-        .send({
-            query: gql`
-                query authenticated_student {
-                    authenticated_student {
-                        id
-                        email
-                    }
-                }
-            `
-        })
-        .set('Cookie', authCookie)
-
-    expect(authenticated_response.body).toEqual({
-        data: {
-            authenticated_student: {
-                id: userEntity.id.toString(),
-                email: user.email
-            }
-        }
-    })
-
-    // Can logout a customer
-    const logout_response = await client
-        .post(`/graphql`)
-        .send({
-            query: gql`
-                mutation logout_student {
-                    logout_student
-                }
-            `
-        })
-        .set('Cookie', authCookie)
-
-    expect(logout_response.body).toEqual({
-        data: {
-            logout_student: true
-        }
-    })
-
-    // After logout, any further authenticated calls are Unauthorized
-    const authenticated_response_after_logout = await client
-        .post(`/graphql`)
-        .send({
-            query: gql`
-                query authenticated_student {
-                    authenticated_student {
-                        id
-                        email
-                    }
-                }
-            `
-        })
-        .set('Cookie', authCookie)
-
-    expect(authenticated_response_after_logout.body.errors[0].message).toBe(
-        'Unauthorized.'
-    )
-})
-
 test('access tokens and refresh tokens are generated correctly', async done => {
     const jwtExpiresIn = 2 // in seconds
     const refreshTokenExpiresIn = 4 // in seconds
@@ -411,8 +299,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
     } = await setup([
         auth()
             .verifyEmails()
+            .refreshTokens()
             .user('Student')
-            .noCookies()
             .setup(({ user }) => {
                 user.fields([text('Name').nullable()])
             })
@@ -618,7 +506,7 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         },
         app
     } = await setup([
-        auth().user('Customer').noCookies().plugin(),
+        auth().user('Customer').refreshTokens().plugin(),
         graphql().plugin()
     ])
 
@@ -730,7 +618,7 @@ test('if a refresh token is used twice (compromised), the user is automatically 
 
 test('registers new users with email/password based authentication', async () => {
     const { app } = await setup([
-        auth().verifyEmails().csrf(false).user('Student').plugin(),
+        auth().verifyEmails().user('Student').plugin(),
         graphql().plugin()
     ])
 
@@ -760,6 +648,67 @@ test('registers new users with email/password based authentication', async () =>
 
     expect(register_response.status).toBe(200)
     expect(register_response.body.data.register_student.student).toEqual({
+        id: expect.any(String),
+        email: user.email,
+        email_verified_at: null
+    })
+})
+
+test('authentication works when refresh tokens are disabled', async () => {
+    const { app } = await setup([
+        auth().verifyEmails().user('Student').plugin(),
+        graphql().plugin()
+    ])
+
+    const client = Supertest(app)
+
+    const user = fakeUser()
+
+    const register_response = await client.post(`/graphql`).send({
+        query: gql`
+            mutation register_student($email: String!, $password: String!) {
+                register_student(
+                    object: { email: $email, password: $password }
+                ) {
+                    student {
+                        id
+                        email
+                        email_verified_at
+                    }
+                }
+            }
+        `,
+        variables: {
+            email: user.email,
+            password: 'password'
+        }
+    })
+
+    expect(register_response.status).toBe(200)
+
+    const login_response = await client.post(`/graphql`).send({
+        query: gql`
+            mutation login_student($email: String!, $password: String!) {
+                login_student(
+                    object: { email: $email, password: $password }
+                ) {
+                    student {
+                        id
+                        email
+                        email_verified_at
+                    }
+                    access_token
+                }
+            }
+        `,
+        variables: {
+            email: user.email,
+            password: 'password'
+        }
+    })
+
+    expect(login_response.status).toBe(200)
+    expect(login_response.body.data.login_student.student).toEqual({
         id: expect.any(String),
         email: user.email,
         email_verified_at: null
