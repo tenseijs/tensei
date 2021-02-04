@@ -4,7 +4,7 @@ to: <%= h.changeCase.param(name) %>/package.json
 
 {
     "name": "tensei-<%= h.changeCase.param(name) %>",
-    "version": "0.5.8",
+    "version": "1.0.0",
     "main": "./build/server/plugin.js",
     "license": "MIT",
     "types": "./build/server/plugin.d.ts",
@@ -21,10 +21,11 @@ to: <%= h.changeCase.param(name) %>/package.json
         "build": "yarn build:server && yarn build:client"
     },
     "devDependencies": {
-        "@tensei/common": "^0.5.11",
-        "@tensei/components": "^0.5.11",
+        "@tensei/common": "^0.5.12",
+        "@tensei/components": "^0.5.12",
+        "autoprefixer": "^10.2.4",
         "laravel-mix": "^6.0.5",
-        "postcss": "^8.1",
+        "postcss": "^8.2.4",
         "tailwindcss": "^2.0.2",
         "typescript": "^4.1.3"
     }
