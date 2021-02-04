@@ -18,7 +18,7 @@ const NavGroup: React.FC<NavGroupProps> = ({
             tabIndex={0}
             onClick={onClick}
             onKeyPress={onKeyPress}
-            className="cursor-pointer focus:outline-none px-10 py-3 w-full flex items-center justify-between text-white cursor-pointer group hover:bg-tensei-primary hover:bg-opacity-10 transition ease-in-out duration-75"
+            className="cursor-pointer focus:outline-none px-10 py-3 w-full flex items-center justify-between text-white cursor-pointer group hover:bg-tensei-primary hover:bg-opacity-10 transition ease-in-out duration-75 my-3"
         >
             <span className="font-medium">{name}</span>
             <svg

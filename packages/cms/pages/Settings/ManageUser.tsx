@@ -99,6 +99,12 @@ const ManageUser: React.FC<ResourceProps> = ({
         }
     }, [editing])
 
+    useEffect(() => {
+        if (Boolean(editing) === false) {
+            setForm({})
+        }
+    }, [creating, editing])
+
     return (
         <>
             <DeleteModal

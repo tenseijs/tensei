@@ -1,15 +1,16 @@
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
-const { tensei } = require('@tensei/core')
 const { media } = require('@tensei/media')
+const { tensei, welcome } = require('@tensei/core')
 
 tensei()
     .root(__dirname)
+    .routes([welcome()])
     .plugins([
         cms().plugin(),
         media().plugin(),
-        auth().jwt().plugin(),
+        auth().plugin(),
         rest().plugin()
     ])
     .start()

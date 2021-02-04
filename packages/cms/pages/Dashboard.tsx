@@ -11,7 +11,6 @@ import Settings from './Settings'
 import ResourceIndex from './ResourceIndex'
 import ResourceDetail from './ResourceDetail'
 import CreateResource from './CreateResource'
-import PageWrapper from '../components/PageWrapper'
 
 export interface DashboardProps {}
 
@@ -152,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
                         <div className="flex-1 px-8 flex justify-between">
                             <div className="flex-1 flex items-center">
                                 <h2 className="text-tensei-darkest font-bold">
-                                    Main Dashboard
+                                    {window.Tensei.state.config.name}
                                 </h2>
                             </div>
                             <div className="ml-4 flex items-center md:ml-6">
@@ -313,8 +312,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
                             {window.Tensei.ctx.routes.map(route => (
                                 <Route
                                     key={route.path}
-                                    component={route.component}
                                     path={route.path}
+                                    exact={route.exact}
+                                    component={route.component}
                                 />
                             ))}
                             <Route component={FourOhFour} />

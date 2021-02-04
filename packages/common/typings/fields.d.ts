@@ -584,6 +584,7 @@ declare module '@tensei/common/fields' {
     interface BooleanFieldContract extends FieldContract {
         trueLabel(value: string): this
         falseLabel(value: string): this
+        positiveValues(values: any[]): this
     }
     const boolean: (
         name: string,

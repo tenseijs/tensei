@@ -155,10 +155,10 @@ new Listr(
             '',
             `${style.tensei(
                 ' ❖ Get started with the Tutorial'
-            )}: https://redwoodjs.com/tutorial`,
+            )}: https://tenseijs.com/tutorial`,
             `${style.tensei(
                 ' ❖ Read the Documentation'
-            )}: https://redwoodjs.com/docs`,
+            )}: https://tenseijs.com/docs`,
             '',
             style.header('Stay updated'),
             '',

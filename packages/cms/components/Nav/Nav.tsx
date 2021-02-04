@@ -85,6 +85,21 @@ const Nav: React.FC<NavProps> = ({ className }) => {
     return (
         <nav className={className}>
             <div className="w-full">
+                {window.Tensei.ctx.routes
+                    .filter(route => !route.group)
+                    .map(route => (
+                        <NavLink
+                            to={route.path}
+                            key={route.path}
+                            icon={route.icon as any}
+                            name={route.name}
+                            active={
+                                location.pathname === route.path ||
+                                location.pathname ===
+                                    `${route.path.slice(0, -1)}`
+                            }
+                        />
+                    ))}
                 {groups.map((group, index) => {
                     const onGroupToggle = () => {
                         setGroups(
@@ -144,19 +159,6 @@ const Nav: React.FC<NavProps> = ({ className }) => {
                         </Fragment>
                     )
                 })}
-                <div className="mt-16">
-                    {window.Tensei.ctx.routes
-                        .filter(route => !route.group)
-                        .map(route => (
-                            <NavLink
-                                to={route.path}
-                                key={route.path}
-                                icon={route.icon as any}
-                                name={route.name}
-                                active={location.pathname.includes(route.path)}
-                            />
-                        ))}
-                </div>
             </div>
         </nav>
     )

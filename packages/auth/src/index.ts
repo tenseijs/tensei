@@ -232,6 +232,9 @@ class Auth {
                 boolean('Blocked')
                     .nullable()
                     .default(false)
+                    .trueLabel('No')
+                    .falseLabel('Yes')
+                    .positiveValues(['false', false])
                     .defaultFormValue(false)
                     .hideOnApi(),
                 ...socialFields,
@@ -248,7 +251,13 @@ class Auth {
                               .hideOnCreate()
                               .hideOnUpdate()
                               .nullable(),
-                          text('Two Factor Secret').hideOnApi().nullable()
+                          text('Two Factor Secret')
+                              .hideOnApi()
+                              .hideOnDetail()
+                              .hideOnIndex()
+                              .hideOnCreate()
+                              .hideOnUpdate()
+                              .nullable()
                       ]
                     : []),
                 ...this.config.fields,

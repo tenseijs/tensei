@@ -153,6 +153,12 @@ const ManageUser: React.FC<ResourceProps> = ({
         })
     }, [])
 
+    useEffect(() => {
+        if (Boolean(editing) === false) {
+            setForm({})
+        }
+    }, [creating, editing])
+
     const onCheckboxSelected = (permissionSlug: string, checked: boolean) => {
         if (permissionSlugs.includes(permissionSlug)) {
             setPermissionSlugs(

@@ -5,7 +5,7 @@ import crypto from 'crypto'
 import Mustache from 'mustache'
 import { DateTime } from 'luxon'
 import AsyncHandler from 'express-async-handler'
-import { Router, RequestHandler } from 'express'
+import { Router, RequestHandler, static as Static } from 'express'
 import { responseEnhancer } from 'express-response-formatter'
 import ExpressSession, { CookieOptions } from 'express-session'
 import ExpressSessionMikroORMStore, {
@@ -18,6 +18,7 @@ import {
     Asset,
     resource,
     text,
+    event,
     boolean,
     belongsToMany,
     dateTime,
@@ -111,7 +112,10 @@ class CmsPlugin {
         permission: this.permissionResource()
     }
 
-    private async sendEmail(user: User, { mailer, orm, serverUrl }: Config) {
+    private async sendEmail(
+        user: User,
+        { mailer, orm, serverUrl, name }: Config
+    ) {
         const token = this.generateRandomToken()
 
         await orm?.em.persistAndFlush(
@@ -120,18 +124,43 @@ class CmsPlugin {
                 admin_user: user.id,
                 type: 'PASSWORDLESS',
                 expires_at: DateTime.local().plus({
-                    minutes: 10
+                    minutes: 15
                 })
             })
         )
+
+        const url = `${serverUrl}/${this.config.apiPath}/passwordless/token/${token}`
 
         mailer.send(message => {
             message
                 .to(user.email)
                 .from(user.email)
-                .subject('Login with this link')
+                .subject(`Sign-in link for ${name}.`)
                 .html(
-                    `This is an example. ${serverUrl}/${this.config.apiPath}/passwordless/token/${token}`
+                    `
+<p>Hi! 👋</p>
+
+<p>You asked us to send you a sign-in link for ${name}.</p>
+
+<ul>
+    <li>
+        This link expires in 13 minutes. After that you will need to request another link.
+    </li>
+    <li>
+        This link can only be used once. After you click the link it will no longer work.
+    </li>
+
+    <li>
+      You can always request another link!
+    </li>
+</ul>
+
+<p>
+==> <a href="${url}">Click here to access the ${name} cms dashboard</a>
+</p>
+
+<b><i>Note: This link expires in 13 minutes and can only be used once. You can always request another link to be sent if this one has been used or is expired.</i></b>
+`
                 )
         })
     }
@@ -493,7 +522,7 @@ class CmsPlugin {
                 ])
             })
             .boot(async config => {
-                const { app, orm } = config
+                const { app, orm, extendEvents } = config
                 const Store = ExpressSessionMikroORMStore(
                     ExpressSession,
                     this.sessionMikroOrmOptions
@@ -567,6 +596,7 @@ class CmsPlugin {
                                     )
                                 ),
                                 ctx: JSON.stringify({
+                                    name: request.config.name,
                                     dashboardPath: this.config.path,
                                     apiPath: `/${this.config.path}/api`,
                                     serverUrl: request.config.serverUrl
@@ -579,6 +609,19 @@ class CmsPlugin {
                         )
                     }
                 )
+
+                app.use(
+                    '/tensei-assets',
+                    Static(Path.resolve(__dirname, '..', 'default-assets'))
+                )
+
+                extendEvents([
+                    event('tensei::listening').listen(({ ctx }) => {
+                        ctx.logger.info(
+                            `🦄 Access your cms dashboard ${ctx.serverUrl}/${this.config.path}`
+                        )
+                    })
+                ])
             })
     }
 }

@@ -14,9 +14,6 @@ import { StorageManager, Storage } from '@slynova/flydrive'
 import {
     Asset,
     Config,
-    plugin,
-    route,
-    event,
     RouteContract,
     PluginContract,
     ResourceContract,
@@ -64,6 +61,7 @@ export class Tensei implements TenseiContract {
 
     private initCtx() {
         this.ctx = {
+            port: process.env.PORT || 8810,
             schemas: [],
             routes: [],
             events: {},
@@ -89,7 +87,7 @@ export class Tensei implements TenseiContract {
                 }
             },
             databaseClient: null,
-            serverUrl: '',
+            serverUrl: `http://localhost:${this.ctx.port}`,
             clientUrl: '',
             resources: [],
             plugins: [],
@@ -249,6 +247,8 @@ export class Tensei implements TenseiContract {
 
         this.registeredApplication = true
 
+        this.ctx.emitter.emit('tensei::booted')
+
         return this
     }
 
@@ -257,7 +257,7 @@ export class Tensei implements TenseiContract {
             const event = this.ctx.events[eventName]
 
             event.config.listeners.forEach(listener => {
-                this.ctx.emitter.on(eventName as any, listener)
+                this.ctx.emitter.on(eventName as any, listener as any)
             })
         })
 
@@ -307,18 +307,17 @@ export class Tensei implements TenseiContract {
         return this
     }
 
-    public async listen(port = process.env.PORT || 8810) {
-        this.ctx.serverUrl = this.ctx.serverUrl || `http://localhost:${port}`
+    public async listen() {
         if (!this.registeredApplication) {
             await this.bootApplication()
         }
 
-        return this.server.listen(port, () => {
+        return this.server.listen(this.ctx.port, () => {
             this.ctx.logger.info(
-                `🚀 Access your server on ${
-                    this.ctx.serverUrl || `http://localhost:${port}`
-                }`
+                `🚀 Access your server on ${this.ctx.serverUrl}`
             )
+
+            this.ctx.emitter.emit('tensei::listening')
         })
     }
 
@@ -374,6 +373,12 @@ export class Tensei implements TenseiContract {
         }
     }
 
+    public mailer(driver: string) {
+        this.mailerConfig.mailer = (driver as unknown) as never
+
+        return this
+    }
+
     private extendMailer(
         name: string,
         driver: ExtendMailCallback,
@@ -425,6 +430,12 @@ export class Tensei implements TenseiContract {
     }
 
     public db(databaseConfig: DatabaseConfiguration) {
+        this.ctx.databaseConfig = databaseConfig
+
+        return this
+    }
+
+    public databaseConfig(databaseConfig: DatabaseConfiguration) {
         this.ctx.databaseConfig = databaseConfig
 
         return this
