@@ -65,7 +65,7 @@ declare module '@tensei/core' {
 
     export const tensei: () => TenseiContract
 
-    export const welcome: () => RouteContract
+    export const welcome: () => PluginContract
 
     export * from '@tensei/common'
 }

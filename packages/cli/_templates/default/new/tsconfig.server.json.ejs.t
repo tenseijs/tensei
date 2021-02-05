@@ -11,8 +11,7 @@ to: <%= h.changeCase.param(name) %>/tsconfig.server.json
         "baseUrl": "./server",
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "types": ["@types/jest"]
+        "forceConsistentCasingInFileNames": true
     },
     "exclude": ["__tests__", "build", "client"]
 }

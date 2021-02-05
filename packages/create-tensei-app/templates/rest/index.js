@@ -6,8 +6,8 @@ const { tensei, welcome } = require('@tensei/core')
 
 tensei()
     .root(__dirname)
-    .routes([welcome()])
     .plugins([
+        welcome(),
         cms().plugin(),
         media().plugin(),
         auth().plugin(),

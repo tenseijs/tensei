@@ -24,9 +24,11 @@ to: <%= h.changeCase.param(name) %>/package.json
         "@tensei/common": "^0.5.12",
         "@tensei/components": "^0.5.12",
         "autoprefixer": "^10.2.4",
+        "cross-env": "^7.0.3",
         "laravel-mix": "^6.0.5",
         "postcss": "^8.2.4",
         "tailwindcss": "^2.0.2",
+        "ts-loader": "^8.0.14",
         "typescript": "^4.1.3"
     }
 }

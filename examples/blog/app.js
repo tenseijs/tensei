@@ -21,8 +21,8 @@ module.exports = tensei()
     .resources([Tag, Post, User, Comment, Editor, Reaction])
     .clientUrl('https://google.com')
     .graphQlQueries([])
-    .routes([welcome()])
     .plugins([
+        welcome(),
         cms().plugin(),
         media().graphql().maxFileSize(500000000000).plugin(),
         auth().user('Customer').twoFactorAuth().plugin(),

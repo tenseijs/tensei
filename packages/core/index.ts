@@ -1,13 +1,13 @@
 import Path from 'path'
-import { route } from '@tensei/common'
+import { plugin } from '@tensei/common'
 
 export { tensei } from './Tensei'
 
 export const welcome = () =>
-    route('Welcome')
-        .path('/')
-        .handle((request, response) =>
+    plugin('Welcome').boot(({ app }) => {
+        app.get('/', (request, response) =>
             response.sendFile(Path.resolve(__dirname, 'welcome.html'))
         )
+    })
 
 export * from '@tensei/common'

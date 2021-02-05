@@ -5,7 +5,8 @@
     "license": "MIT",
     "types": "./build/index.d.ts",
     "files": [
-        "build/"
+        "build/",
+        "default-assets/"
     ],
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,tsx,css}'",

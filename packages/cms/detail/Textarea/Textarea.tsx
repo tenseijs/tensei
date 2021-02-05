@@ -40,9 +40,7 @@ const Textarea: React.FC<TextareaProps> = ({
                     )}
                 </Transition>
             ) : (
-                children || (
-                    <Paragraph className={className}>{value}</Paragraph>
-                )
+                children || <Paragraph className={className}>{value}</Paragraph>
             )}
         </div>
     )
