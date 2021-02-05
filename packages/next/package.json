@@ -1,6 +1,6 @@
 {
     "name": "@tensei/next",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",

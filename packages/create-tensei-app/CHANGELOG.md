@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/tenseijs/tensei/compare/v0.5.12...v0.6.0) (2021-02-05)
+
+
+### Bug Fixes
+
+* **tensei:** several tiny bug fixes for a better release ([1242abb](https://github.com/tenseijs/tensei/commit/1242abb2aecbd5f784c1f4304435ee43d5b46dd0))
+
+
+
+
+
 ## [0.5.12](https://github.com/tenseijs/tensei/compare/v0.5.11...v0.5.12) (2021-02-04)
 
 

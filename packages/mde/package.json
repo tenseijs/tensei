@@ -1,6 +1,6 @@
 {
     "name": "@tensei/mde",
-    "version": "0.5.11",
+    "version": "0.6.0",
     "main": "build/index.js",
     "license": "MIT",
     "files": [

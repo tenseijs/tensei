@@ -1,6 +1,6 @@
 {
     "name": "@tensei/media",
-    "version": "0.5.12",
+    "version": "0.6.0",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -17,7 +17,7 @@
         "build": "yarn build:server && yarn build:client"
     },
     "dependencies": {
-        "@tensei/common": "^0.5.12",
+        "@tensei/common": "^0.6.0",
         "@types/busboy": "^0.2.3",
         "@types/fs-capacitor": "^2.0.0",
         "@types/http-errors": "^1.8.0",
