@@ -145,7 +145,10 @@ export const Media = ({ detailId, relatedResource }) => {
                 detailId={detailId}
                 setOpen={setUploadOpen}
                 relatedResource={relatedResource}
-                onUploaded={() => fetchData(data, getQuery())}
+                onUploaded={() => {
+                    setSelected([])
+                    fetchData(data, getQuery())
+                }}
             />
             <DeleteModal
                 open={deleting}
@@ -157,15 +160,15 @@ export const Media = ({ detailId, relatedResource }) => {
                     fetchData(data, getQuery())
                 }}
             />
-            <Heading as="h2" className="mb-5 text-2xl">
+            <Heading as="h2" className="media-mb-5 media-text-2xl">
                 {detailId && relatedField
                     ? relatedField.label
                     : 'Media Library'}
             </Heading>
 
-            <div className="flex flex-wrap justify-between items-center w-full">
-                <div className="flex flex-wrap w-full md:w-auto">
-                    <div className="mr-2 h-10 px-5 flex items-center justify-center bg-white rounded-lg border border-tensei-gray-600">
+            <div className="media-flex media-flex-wrap media-justify-between media-items-center media-w-full">
+                <div className="media-flex media-flex-wrap media-w-full md:media-w-auto">
+                    <div className="media-mr-2 media-h-10 media-px-5 media-flex media-items-center media-justify-center media-bg-white media-rounded-lg media-border media-border-tensei-gray-600">
                         <Checkbox
                             onChange={event => {
                                 if (event.target.checked) {
@@ -181,13 +184,13 @@ export const Media = ({ detailId, relatedResource }) => {
                         />
                     </div>
                     <SearchInput
-                        className="md:mr-5 w-full mb-3 md:mb-0 md:w-96"
+                        className="md:media-mr-5 media-w-full media-mb-3 md:media-mb-0 md:media-w-96"
                         value={search}
                         onChange={event => setSearch(event.target.value)}
                     />
                 </div>
 
-                <div className="flex w-full md:w-auto">
+                <div className="media-flex media-w-full md:media-w-auto">
                     <Button
                         clear={selected.length === 0}
                         danger={selected.length > 0}
@@ -198,7 +201,7 @@ export const Media = ({ detailId, relatedResource }) => {
                     </Button>
                     <Button
                         onClick={() => setUploadOpen(true)}
-                        className="ml-3"
+                        className="media-ml-3"
                         primary
                     >
                         Upload Assets
@@ -207,13 +210,13 @@ export const Media = ({ detailId, relatedResource }) => {
             </div>
 
             {!loading && data.data.length === 0 ? (
-                <div className="w-full h-full flex flex-col items-center justify-center my-8">
+                <div className="media-w-full media-h-full media-flex media-flex-col media-items-center media-justify-center media-my-8">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width={65}
                         height={51}
                         viewBox="0 0 65 51"
-                        className="mb-4 text-tensei-gray-500 fill-current"
+                        className="media-mb-4 media-text-tensei-gray-500 media-fill-current"
                     >
                         <path d="M56 40h2c.552285 0 1 .447715 1 1s-.447715 1-1 1h-2v2c0 .552285-.447715 1-1 1s-1-.447715-1-1v-2h-2c-.552285 0-1-.447715-1-1s.447715-1 1-1h2v-2c0-.552285.447715-1 1-1s1 .447715 1 1v2zm-5.364125-8H38v8h7.049375c.350333-3.528515 2.534789-6.517471 5.5865-8zm-5.5865 10H6c-3.313708 0-6-2.686292-6-6V6c0-3.313708 2.686292-6 6-6h44c3.313708 0 6 2.686292 6 6v25.049375C61.053323 31.5511 65 35.814652 65 41c0 5.522847-4.477153 10-10 10-5.185348 0-9.4489-3.946677-9.950625-9zM20 30h16v-8H20v8zm0 2v8h16v-8H20zm34-2v-8H38v8h16zM2 30h16v-8H2v8zm0 2v4c0 2.209139 1.790861 4 4 4h12v-8H2zm18-12h16v-8H20v8zm34 0v-8H38v8h16zM2 20h16v-8H2v8zm52-10V6c0-2.209139-1.790861-4-4-4H6C3.790861 2 2 3.790861 2 6v4h52zm1 39c4.418278 0 8-3.581722 8-8s-3.581722-8-8-8-8 3.581722-8 8 3.581722 8 8 8z" />
                     </svg>
@@ -225,11 +228,11 @@ export const Media = ({ detailId, relatedResource }) => {
             ) : null}
 
             {loading ? (
-                <div className="w-full py-12 flex justify-center items-center">
-                    <Pulse dotClassName="bg-tensei-primary" />
+                <div className="media-w-full media-py-12 media-flex media-justify-center media-items-center">
+                    <Pulse dotClassName="media-bg-tensei-primary" />
                 </div>
             ) : (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="media-mt-4 media-grid media-grid-cols-1 md:media-grid-cols-5 media-gap-4">
                     {data.data.map(file => {
                         const checked = selected.some(f => f.id === file.id)
 
@@ -248,9 +251,9 @@ export const Media = ({ detailId, relatedResource }) => {
             )}
 
             {!loading && data.data.length !== 0 && (
-                <div className="mt-6 flex flex-wrap items-center justify-between">
+                <div className="media-mt-6 media-flex media-flex-wrap media-items-center media-justify-between">
                     <Select
-                        className="w-full md:w-auto mb-3 md:mb-0"
+                        className="media-w-full md:media-w-auto media-mb-3 md:media-mb-0"
                         roundedFull
                         hideFirstOption
                         value={data.meta.per_page}

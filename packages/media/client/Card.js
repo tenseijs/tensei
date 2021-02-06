@@ -7,10 +7,10 @@ const Card = ({ file, checked, onCheckboxChange }) => {
         <div key={file.id}>
             <div
                 tabIndex={0}
-                className={`cursor-pointer relative h-48 bg-tensei-gray-600 shadow-sm bg-white rounded-lg px-3 py-4 ${
+                className={`media-cursor-pointer media-relative media-h-48 media-bg-tensei-gray-600 media-shadow-sm media-bg-white media-rounded-lg media-px-3 media-py-4 ${
                     checked
-                        ? 'border-2 border-tensei-primary'
-                        : 'border border-tensei-gray-600'
+                        ? 'media-border-2 media-border-tensei-primary'
+                        : 'media-border media-border-tensei-gray-600'
                 }`}
                 style={{
                     wordWrap: 'break-word',
@@ -19,7 +19,7 @@ const Card = ({ file, checked, onCheckboxChange }) => {
             >
                 {onCheckboxChange && (
                     <Checkbox
-                        className="absolute top-0 left-0 mt-3 ml-3 z-30"
+                        className="media-absolute media-top-0 media-left-0 media-mt-3 media-ml-3 media-z-30"
                         checked={checked}
                         onChange={onCheckboxChange}
                     />
@@ -27,13 +27,13 @@ const Card = ({ file, checked, onCheckboxChange }) => {
                 {isImage(file) ? (
                     <img
                         src={getFullAssetPath(file)}
-                        className="max-w-full max-h-full w-auto h-auto m-auto"
+                        className="media-max-w-full media-max-h-full media-w-auto media-h-auto media-m-auto"
                         alt={file.alt_text || file.name}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                    <div className="media-w-full media-h-full media-flex media-items-center media-justify-center">
                         <svg
-                            className="w-24 h-24 fill-current text-tensei-gray-800 opacity-50"
+                            className="media-w-24 media-h-24 media-fill-current media-text-tensei-gray-800 media-opacity-50"
                             version="1.1"
                             id="Capa_1"
                             xmlns="http://www.w3.org/2000/svg"
@@ -118,11 +118,11 @@ const Card = ({ file, checked, onCheckboxChange }) => {
                 )}
             </div>
 
-            <div className="px-3 h-10 mt-3 bg-white border border-tensei-gray-600 rounded-lg flex items-center justify-between">
-                <span className="text-xs font-semibold truncate inline-block w-2/3">
+            <div className="media-px-3 media-h-10 media-mt-3 media-bg-white media-border media-border-tensei-gray-600 media-rounded-lg media-flex media-items-center media-justify-between">
+                <span className="media-text-xs media-font-semibold media-truncate media-inline-block media-w-2/3">
                     {file.name}
                 </span>
-                <span className="text-left text-xs font-extrabold text-tensei-darkest uppercase tracking-wider">
+                <span className="media-text-left media-text-xs media-font-extrabold media-text-tensei-darkest media-uppercase media-tracking-wider">
                     {getFileType(file)}
                 </span>
             </div>

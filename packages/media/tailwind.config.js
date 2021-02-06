@@ -1,9 +1,13 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
+    prefix: 'media-',
     purge: {
         enabled: process.env.NODE_ENV === 'production',
-        content: ['./**/*.js']
+        content: ['./client/*.js']
+    },
+    corePlugins: {
+        preflight: false,
     },
     theme: {
         extend: {

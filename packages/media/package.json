@@ -12,7 +12,7 @@
         "build:server": "tsc --p tsconfig.json",
         "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
         "dev:server": "tsc --watch --p tsconfig.json",
-        "dev:client": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+        "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
         "test": "jest --verbose --runInBand --forceExit",
         "build": "yarn build:server && yarn build:client"
     },
@@ -48,5 +48,11 @@
     },
     "devDependencies": {
         "postcss": "^8.1"
+    },
+    "babelMacros": {
+        "twin": {
+            "config": "./tailwind.config.js",
+            "preset": "styled-components"
+        }
     }
 }

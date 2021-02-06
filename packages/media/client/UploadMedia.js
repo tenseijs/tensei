@@ -86,18 +86,18 @@ const UploadFiles = ({
             open={open}
             setOpen={setOpen}
             title="Upload media"
-            className="align-top sm:my-32 sm:max-w-3xl"
+            className="media-align-top sm:media-my-32 sm:media-max-w-3xl"
         >
             <input
                 ref={file}
                 type="file"
-                className="hidden"
+                className="media-hidden"
                 multiple
                 onChange={onFilesSelected}
             />
 
             {files.length === 0 ? (
-                <div className="w-full py-16 flex justify-center items-center">
+                <div className="media-w-full media-py-16 media-flex media-justify-center media-items-center">
                     <Button secondary onClick={() => file.current.click()}>
                         Select Files
                     </Button>
@@ -105,11 +105,11 @@ const UploadFiles = ({
             ) : null}
 
             {files.length > 0 ? (
-                <div className="w-full py-6">
-                    <div className="relative pt-1">
-                        <div className="flex mb-2 items-center justify-between">
+                <div className="media-w-full media-py-6">
+                    <div className="media-relative media-pt-1">
+                        <div className="media-flex media-mb-2 media-items-center media-justify-between">
                             <Paragraph
-                                className={'font-semibold text-tensei-darkest'}
+                                className={'media-font-semibold media-text-tensei-darkest'}
                             >
                                 Uploading {files.length} files (
                                 {niceBytes(
@@ -120,16 +120,16 @@ const UploadFiles = ({
                                 )}{' '}
                                 in total.)
                             </Paragraph>
-                            <div className="text-right">
-                                <span className="text-sm font-bold inline-block text-tensei-primary-darker">
+                            <div className="media-text-right">
+                                <span className="media-text-sm media-font-bold media-inline-block media-text-tensei-primary-darker">
                                     {progress}%
                                 </span>
                             </div>
                         </div>
-                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-tensei-primary-200">
+                        <div className="media-overflow-hidden media-h-2 media-mb-4 media-text-xs media-flex media-rounded media-bg-tensei-primary-200">
                             <div
                                 style={{ width: `${progress}%` }}
-                                className="shadow-none transition ease-in-out duration-100 flex flex-col text-center whitespace-nowrap text-white justify-center bg-tensei-primary"
+                                className="media-shadow-none media-transition media-ease-in-out media-duration-100 media-flex media-flex-col media-text-center media-whitespace-nowrap media-text-white media-justify-center media-bg-tensei-primary"
                             ></div>
                         </div>
                     </div>

@@ -39,7 +39,7 @@ export const DetailFile = ({ detailId, resource, field }) => {
             dotClassName="bg-tensei-primary"
         />
     ) : data ? (
-        <div className="w-full sm:w-72">
+        <div className="media-w-full sm:media-w-72">
             <Card file={data} />
         </div>
     ) : null
