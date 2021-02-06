@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.1](https://github.com/tenseijs/tensei/compare/v0.6.0...v0.6.1) (2021-02-06)
+
+
+### Bug Fixes
+
+* **cms:** fix cms classes clash from plugins ([eec42f3](https://github.com/tenseijs/tensei/commit/eec42f3e742be4d7d712875c925576ea4b7886e1))
+
+
+
+
+
 # [0.6.0](https://github.com/tenseijs/tensei/compare/v0.5.12...v0.6.0) (2021-02-05)
 
 
