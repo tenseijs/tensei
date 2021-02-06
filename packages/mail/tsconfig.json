@@ -11,5 +11,5 @@
                 "forceConsistentCasingInFileNames": false,
                 "types": ["@types/node"]
         },
-        "exclude": ["build"]
+        "exclude": ["./build"]
 }

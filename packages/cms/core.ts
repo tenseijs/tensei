@@ -8,6 +8,9 @@ import Paginator from './components/Paginator'
 import PageWrapper from './components/PageWrapper'
 import DeleteModal from './components/DeleteModal'
 
+// Home
+import Home from './pages/Home'
+
 // Form
 import IndexID from './index/ID'
 import IndexText from './index/Text'
@@ -86,6 +89,8 @@ class Core {
         theme: 'tensei'
     })
 
+    getPath = (path: string) => `/${this.state.config.dashboardPath}/${path}`
+
     private hooks: Lib.TenseiRegisterFunction[] = []
 
     lib: Lib.Tensei['lib'] = {
@@ -132,7 +137,18 @@ class Core {
         }
     }
 
-    routes: Lib.CmsRoute[] = []
+    routes: Lib.CmsRoute[] = [
+        {
+            path: this.getPath(''),
+            exact: true,
+            settings: false,
+            name: 'Dashboard',
+            requiredPermissions: [],
+            component: Home,
+            icon: 'grid',
+            top: true
+        }
+    ]
 
     route = (route: Lib.CmsRoute) => {
         this.routes.push({
@@ -150,8 +166,6 @@ class Core {
         baseURL: this.state.config.apiPath,
         xsrfCookieName: 'x-csrf-token'
     })
-
-    getPath = (path: string) => `/${this.state.config.dashboardPath}/${path}`
 
     register = (fn: Lib.TenseiRegisterFunction) => {
         this.hooks.push(fn)

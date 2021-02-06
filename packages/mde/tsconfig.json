@@ -2,11 +2,9 @@
     "compilerOptions": {
         "target": "ES5",
         "module": "commonjs",
-        "declaration": true,
+        "declaration": false,
         "jsx": "react",
-        "outDir": "./build",
         "strict": true,
-        "baseUrl": "./src",
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,

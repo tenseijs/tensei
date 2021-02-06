@@ -36,13 +36,11 @@ const Textarea: React.FC<TextareaProps> = ({
                     leaveTo="opacity-0"
                 >
                     {children || (
-                        <Paragraph className={className}>{children}</Paragraph>
+                        <Paragraph className={className}>{value}</Paragraph>
                     )}
                 </Transition>
             ) : (
-                children || (
-                    <Paragraph className={className}>{children}</Paragraph>
-                )
+                children || <Paragraph className={className}>{value}</Paragraph>
             )}
         </div>
     )

@@ -307,8 +307,10 @@ declare module '@tensei/common/config' {
         schemas: any
         name: string
         events: {
-            [key: string]: EventContract<DataPayload>
+            [key: string]: EventContract
         }
+        port: number
+        migrating: boolean
         root: string
         emitter: Emittery
         serverUrl: string

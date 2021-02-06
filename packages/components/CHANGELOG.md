@@ -3,6 +3,59 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/tenseijs/tensei/compare/v0.5.12...v0.6.0) (2021-02-05)
+
+**Note:** Version bump only for package @tensei/components
+
+
+
+
+
+## [0.5.12](https://github.com/tenseijs/tensei/compare/v0.5.11...v0.5.12) (2021-02-04)
+
+
+### Bug Fixes
+
+* **cms:** add new landing page to cms and root screens ([de86d28](https://github.com/tenseijs/tensei/commit/de86d2854e4e4f9dfce1b2324d085246be2ee453))
+
+
+
+
+
+## [0.5.11](https://github.com/tenseijs/tensei/compare/v0.5.10...v0.5.11) (2021-02-03)
+
+
+### Features
+
+* **auth:** move two factor authentication and social authentication to separate packages ([878e0e2](https://github.com/tenseijs/tensei/commit/878e0e2c03561d0790c448b330a4e3a4e72302bd))
+
+
+
+
+
+## [0.5.10](https://github.com/tenseijs/tensei/compare/v0.5.9...v0.5.10) (2021-02-01)
+
+
+### Bug Fixes
+
+* **cms:** fix cms migration when running dev server ([2738c01](https://github.com/tenseijs/tensei/commit/2738c01b772a9e2d351562840eb2462128d4c134))
+
+
+
+
+
+
+## [0.5.9](https://github.com/tenseijs/tensei/compare/v0.5.8...v0.5.9) (2021-02-01)
+
+
+### Features
+
+* **cli:** add generate plugin command to cli ([2b3d00d](https://github.com/tenseijs/tensei/commit/2b3d00db23503c9a2a009eb5cc3f3c03ff29234c))
+
+
+
+
+
 ## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
 
 

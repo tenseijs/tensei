@@ -3,6 +3,57 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/tenseijs/tensei/compare/v0.5.12...v0.6.0) (2021-02-05)
+
+
+### Bug Fixes
+
+* **tensei:** several tiny bug fixes for a better release ([1242abb](https://github.com/tenseijs/tensei/commit/1242abb2aecbd5f784c1f4304435ee43d5b46dd0))
+
+
+
+
+
+## [0.5.12](https://github.com/tenseijs/tensei/compare/v0.5.11...v0.5.12) (2021-02-04)
+
+
+### Bug Fixes
+
+* **cms:** add new landing page to cms and root screens ([de86d28](https://github.com/tenseijs/tensei/commit/de86d2854e4e4f9dfce1b2324d085246be2ee453))
+
+
+
+
+
+## [0.5.11](https://github.com/tenseijs/tensei/compare/v0.5.10...v0.5.11) (2021-02-03)
+
+
+### Features
+
+* **auth:** move two factor authentication and social authentication to separate packages ([878e0e2](https://github.com/tenseijs/tensei/commit/878e0e2c03561d0790c448b330a4e3a4e72302bd))
+* **auth:** remove session-based authentication in favor of JWT and refresh tokens ([20281e1](https://github.com/tenseijs/tensei/commit/20281e16f2453d679f03904e7e2f03c5943c14de))
+
+
+### BREAKING CHANGES
+
+* **auth:** Session-based authentication is no longer a thing.
+
+
+
+
+
+## [0.5.10](https://github.com/tenseijs/tensei/compare/v0.5.9...v0.5.10) (2021-02-01)
+
+
+### Bug Fixes
+
+* **cms:** fix cms migration when running dev server ([2738c01](https://github.com/tenseijs/tensei/commit/2738c01b772a9e2d351562840eb2462128d4c134))
+
+
+
+
+
+
 ## [0.5.8](https://github.com/tenseijs/tensei/compare/v0.5.7...v0.5.8) (2021-01-23)
 
 

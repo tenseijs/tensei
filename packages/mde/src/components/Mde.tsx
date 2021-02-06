@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { Tensei } from '@tensei/components'
 import ReactMde, { ReactMdeProps } from 'react-mde'
+
+declare var Tensei: Tensei
 
 import { FormComponentProps, DetailComponentProps } from '@tensei/components'
 
@@ -56,15 +59,15 @@ const Mde: React.FC<MdeProps> = ({ field, id, name, onChange, value }) => {
 
 const DetailMde: React.FC<DetailComponentProps> = ({ value, ...rest }) => {
     return (
-        <window.Tensei.components.detail.Textarea {...rest}>
+        <Tensei.components.detail.Textarea {...rest}>
             <ReactMarkdown source={value} />
-        </window.Tensei.components.detail.Textarea>
+        </Tensei.components.detail.Textarea>
     )
 }
 
 export default Mde
 
-window.Tensei.register(({ formComponent, detailComponent }) => {
+Tensei.register(({ formComponent, detailComponent }) => {
     formComponent('Mde', Mde)
     detailComponent('Mde', DetailMde)
 })

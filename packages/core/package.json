@@ -1,6 +1,6 @@
 {
     "name": "@tensei/core",
-    "version": "0.5.8",
+    "version": "0.6.0",
     "main": "./build/index.js",
     "types": "./typings/tensei.d.ts",
     "license": "MIT",
@@ -27,14 +27,15 @@
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
         "build": "tsc --p tsconfig.json",
-        "dev": "tsc --watch --p tsconfig.json"
+        "dev": "tsc --watch --p tsconfig.json",
+        "copy:files": "copyfiles welcome.html build/"
     },
     "dependencies": {
         "@mikro-orm/core": "^4.3.2",
         "@slynova/flydrive": "^1.0.3",
-        "@tensei/auth": "^0.5.8",
-        "@tensei/common": "^0.5.8",
-        "@tensei/mail": "^0.5.8",
+        "@tensei/auth": "^0.6.0",
+        "@tensei/common": "^0.6.0",
+        "@tensei/mail": "^0.6.0",
         "@types/cookie-parser": "^1.4.2",
         "@types/pino": "^6.3.4",
         "@types/signale": "^1.4.1",

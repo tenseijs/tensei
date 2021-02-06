@@ -30,6 +30,7 @@ module.exports = {
                 'tensei-gray-400': '#F0F1F4',
                 'tensei-gray-300': '#EAEBEF',
                 'tensei-gray-100': '#F7F9FA',
+                'tensei-gray-bg': '#EEF1F4',
 
                 'tensei-warning': '#F0B103',
                 'tensei-success': '#00976E',

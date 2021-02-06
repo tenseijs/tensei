@@ -4,7 +4,8 @@ import { BooleanFieldContract } from '@tensei/core'
 export class BooleanField extends Field implements BooleanFieldContract {
     private booleanConfig = {
         trueLabel: 'Yes',
-        falseLabel: 'No'
+        falseLabel: 'No',
+        positiveValues: ['true', true]
     }
 
     public component = {
@@ -42,11 +43,18 @@ export class BooleanField extends Field implements BooleanFieldContract {
         return this
     }
 
+    public positiveValues(values: any[]) {
+        this.booleanConfig.positiveValues = values
+
+        return this
+    }
+
     public serialize() {
         return {
             ...super.serialize(),
             trueLabel: this.booleanConfig.trueLabel,
-            falseLabel: this.booleanConfig.falseLabel
+            falseLabel: this.booleanConfig.falseLabel,
+            positiveValues: this.booleanConfig.positiveValues
         }
     }
 }

@@ -5,7 +5,6 @@
 </div>
 
 <br />
-
 <br />
 
 <div align="center">
@@ -32,7 +31,7 @@
       Website
     </a>
     <span> | </span>
-    <a href="https://tenseijs.com/docs">
+    <a href="https://tenseijs.com/docs/getting-started">
       Guides
     </a>
     <span> | </span>

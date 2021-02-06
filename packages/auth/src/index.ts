@@ -1,11 +1,8 @@
 import Dayjs from 'dayjs'
-import Uniqid from 'uniqid'
+import crypto from 'crypto'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
-import Randomstring from 'randomstring'
-import ExpressSession from 'express-session'
 import { validateAll } from 'indicative/validator'
-import ExpressSessionMikroORMStore from 'express-session-mikro-orm'
 import {
     plugin,
     resource,
@@ -40,11 +37,9 @@ import {
     SupportedSocialProviders,
     defaultProviderScopes
 } from './config'
-import SocialAuthCallbackController from './controllers/SocialAuthCallbackController'
 
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
-import { createCsurfToken, checkCsurfToken } from './csrf'
 
 type JwtPayload = {
     id: string
@@ -57,16 +52,11 @@ class Auth {
     private config: AuthPluginConfig & {
         setupFn: AuthSetupFn
     } = {
-        cms: false,
         prefix: '',
-        jwtEnabled: false,
-        profilePictures: false,
-        csrfEnabled: true,
         tokenResource: 'Token',
-        disableAutoLoginAfterRegistration: false,
+        enableRefreshTokens: false,
         userResource: 'User',
         roleResource: 'Role',
-        disableCookies: false,
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
         fields: [],
@@ -80,15 +70,15 @@ class Auth {
         cookieOptions: {
             secure: process.env.NODE_ENV === 'production'
         },
-        refreshTokenCookieName: '___refresh__token',
-        teams: false,
-        teamFields: [],
+        refreshTokenHeaderName: 'x-tensei-refresh-token',
         twoFactorAuth: false,
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
         providers: {}
     }
+
+    private TwoFactorAuth: any = null
 
     private resources: AuthResources = {} as any
 
@@ -102,14 +92,18 @@ class Auth {
         return this
     }
 
+    public refreshTokens() {
+        this.config.enableRefreshTokens = true
+
+        return this
+    }
+
     private refreshResources() {
         this.resources.user = this.userResource()
-        this.resources.team = this.teamResource()
         this.resources.role = this.roleResource()
         this.resources.token = this.tokenResource()
         this.resources.oauthIdentity = this.oauthResource()
         this.resources.permission = this.permissionResource()
-        this.resources.teamInvite = this.teamInviteResource()
         this.resources.passwordReset = this.passwordResetResource()
 
         this.config.setupFn(this.resources)
@@ -117,31 +111,6 @@ class Auth {
 
     public afterUpdateUser(hook: HookFunction) {
         this.config.afterUpdateUser = hook
-
-        return this
-    }
-
-    public noCookies() {
-        this.config.disableCookies = true
-
-        return this
-    }
-
-    public jwt() {
-        this.config.jwtEnabled = true
-
-        return this
-    }
-
-    private useTokens() {
-        return (
-            this.config.jwtEnabled ||
-            (this.config.disableCookies && !this.config.jwtEnabled)
-        )
-    }
-
-    public csrf(csrfEnabled = false) {
-        this.config.csrfEnabled = csrfEnabled
 
         return this
     }
@@ -197,13 +166,8 @@ class Auth {
         return this
     }
 
-    public teamFields(fields: AuthPluginConfig['teamFields']) {
-        this.config.teamFields = fields
-
-        return this
-    }
-
     public twoFactorAuth() {
+        this.TwoFactorAuth = require('@tensei/two-factor-auth')
         this.config.twoFactorAuth = true
 
         return this
@@ -223,12 +187,6 @@ class Auth {
 
     public permission(name: string) {
         this.config.permissionResource = name
-
-        return this
-    }
-
-    public teams() {
-        this.config.teams = true
 
         return this
     }
@@ -274,6 +232,9 @@ class Auth {
                 boolean('Blocked')
                     .nullable()
                     .default(false)
+                    .trueLabel('No')
+                    .falseLabel('Yes')
+                    .positiveValues(['false', false])
                     .defaultFormValue(false)
                     .hideOnApi(),
                 ...socialFields,
@@ -289,17 +250,13 @@ class Auth {
                           boolean('Two Factor Enabled')
                               .hideOnCreate()
                               .hideOnUpdate()
-                              .hideOnIndex()
-                              .hideOnDetail()
-                              .hideOnApi()
                               .nullable(),
                           text('Two Factor Secret')
-                              .hidden()
                               .hideOnApi()
+                              .hideOnDetail()
                               .hideOnIndex()
                               .hideOnCreate()
                               .hideOnUpdate()
-                              .hideOnDetail()
                               .nullable()
                       ]
                     : []),
@@ -352,52 +309,26 @@ class Auth {
     }
 
     private tokenResource() {
+        const tokenTypes = []
+
+        if (this.config.enableRefreshTokens) {
+            tokenTypes.push({
+                label: 'Refresh Token',
+                value: TokenTypes.REFRESH
+            })
+        }
+
         return resource(this.config.tokenResource)
             .fields([
                 text('Token').notNullable().hidden().searchable().unique(),
                 text('Name').searchable().nullable(),
-                select('Type')
-                    .options([
-                        {
-                            label: 'Refresh Token',
-                            value: 'REFRESH'
-                        },
-                        {
-                            label: 'API Token',
-                            value: 'API'
-                        }
-                    ])
-                    .searchable()
-                    .nullable(),
+                select('Type').options(tokenTypes).searchable().nullable(),
                 dateTime('Last Used At').nullable(),
                 dateTime('Compromised At').nullable(),
                 dateTime('Expires At').hidden(),
                 belongsTo(this.config.userResource).nullable()
             ])
             .hideOnApi()
-    }
-
-    private teamResource() {
-        return resource('Team')
-            .fields([
-                text('Name').unique(),
-                belongsTo(this.config.userResource),
-                belongsToMany(this.config.userResource),
-                ...this.config.teamFields
-            ])
-            .hideFromNavigation()
-    }
-
-    private teamInviteResource() {
-        return resource('Team Invite')
-            .fields([
-                text('Email'),
-                text('Role'),
-                text('Token').unique().rules('required'),
-                belongsTo(this.resources.team.data.name),
-                belongsTo(this.config.userResource)
-            ])
-            .hideOnFetchApi()
     }
 
     private permissionResource() {
@@ -502,7 +433,6 @@ class Auth {
 
                     extendResources([
                         this.resources.user,
-                        this.resources.token,
                         this.resources.passwordReset
                     ])
 
@@ -513,21 +443,15 @@ class Auth {
                         ])
                     }
 
-                    if (this.config.teams) {
-                        extendResources([
-                            this.resources.team,
-                            this.resources.teamInvite
-                        ])
+                    if (this.config.enableRefreshTokens) {
+                        extendResources([this.resources.token])
                     }
 
                     if (Object.keys(this.config.providers).length > 0) {
                         extendResources([this.resources.oauthIdentity])
                     }
 
-                    if (
-                        !this.config.disableCookies ||
-                        this.socialAuthEnabled()
-                    ) {
+                    if (this.socialAuthEnabled()) {
                         databaseConfig.entities = [
                             ...(databaseConfig.entities || []),
                             require('express-session-mikro-orm').generateSessionEntity(
@@ -549,6 +473,20 @@ class Auth {
             .boot(async config => {
                 this.refreshResources()
 
+                if (this.config.twoFactorAuth) {
+                    config.app.use((request, response, next) => {
+                        request.verifyTwoFactorAuthToken = (
+                            token: string | number
+                        ) =>
+                            this.TwoFactorAuth.verifyTwoFactorAuthToken(
+                                request,
+                                token
+                            )
+
+                        next()
+                    })
+                }
+
                 if (this.config.rolesAndPermissions) {
                     await setup(config, [
                         this.resources.role,
@@ -558,78 +496,20 @@ class Auth {
 
                 const { app, serverUrl, clientUrl, currentCtx, routes } = config
 
-                const Store = ExpressSessionMikroORMStore(ExpressSession, {
-                    entityName: `${this.resources.user.data.pascalCaseName}Session`,
-                    tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
-                    collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
-                })
-
                 this.forceRemoveInsertUserQueries(config.graphQlQueries)
 
-                app.use(
-                    ExpressSession({
-                        store: new Store({
-                            orm: config.orm
-                        }) as any,
-                        resave: false,
-                        saveUninitialized: false,
-                        cookie: this.config.cookieOptions,
-                        secret:
-                            process.env.SESSION_SECRET || '__sessions__secret__'
-                    })
-                )
-
-                if (!this.useTokens() && this.config.csrfEnabled) {
-                    app.use((request, response, next) => {
-                        const query = request.body?.query
-                            ?.replace(/(\r\n|\n|\r)/gm, '')
-                            ?.replace(/\s/g, '')
-
-                        const queryAccepted =
-                            query === '{csrf_token}' ||
-                            (query?.startsWith('query') &&
-                                query?.endsWith('{csrf_token}'))
-
-                        if (
-                            request.method === 'POST' &&
-                            typeof query === 'string' &&
-                            queryAccepted
-                        ) {
-                            return createCsurfToken()(request, response, next)
-                        }
-
-                        return checkCsurfToken()(request, response, next)
-                    })
-                }
-
                 if (this.socialAuthEnabled()) {
-                    const grant = require('grant')
+                    const { register } = require('@tensei/social-auth')
 
-                    Object.keys(this.config.providers).forEach(provider => {
-                        const providerConfig = this.config.providers[provider]
-                        const clientCallback =
-                            providerConfig.clientCallback || ''
-
-                        this.config.providers[provider] = {
-                            ...providerConfig,
-                            redirect_uri: `${serverUrl}/connect/${provider}/callback`,
-                            clientCallback: clientCallback.startsWith('http')
-                                ? clientCallback
-                                : `${clientUrl}${
-                                      clientCallback.startsWith('/') ? '/' : ''
-                                  }${clientCallback}`
-                        }
+                    register({
+                        app,
+                        clientUrl,
+                        serverUrl,
+                        orm: config.orm,
+                        authConfig: this.config,
+                        resources: this.resources,
+                        apiPath: this.config.apiPath
                     })
-
-                    app.use(grant.express()(this.config.providers))
-
-                    app.get(
-                        `/${this.config.apiPath}/:provider/callback`,
-                        SocialAuthCallbackController.connect({
-                            ...this.config,
-                            resources: this.resources
-                        })
-                    )
                 }
 
                 currentCtx().graphQlQueries.forEach(query => {
@@ -877,7 +757,6 @@ class Auth {
                     try {
                         return ok(await this.login(request as any))
                     } catch (error) {
-                        console.log('_________', request.session, error)
                         return unprocess(error)
                     }
                 }),
@@ -928,25 +807,13 @@ class Auth {
                         }
                     }
                 ),
-            ...(this.useTokens()
-                ? []
-                : [
-                      route(`Logout ${name}`)
-                          .path(this.getApiPath('logout'))
-                          .id(this.getRouteId(`logout_${name}`))
-                          .post()
-                          .handle(async (request, response) => {
-                              request.session.destroy(error => {
-                                  if (error) {
-                                      return response.formatter.noContent({})
-                                  }
-
-                                  response.clearCookie('connect.sid')
-
-                                  return response.formatter.noContent({})
-                              })
-                          })
-                  ]),
+            route(`Logout ${name}`)
+                .path(this.getApiPath('logout'))
+                .id(this.getRouteId(`logout_${name}`))
+                .post()
+                .handle(async (request, response) => {
+                    return response.formatter.noContent({})
+                }),
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
                 .post()
@@ -1040,7 +907,9 @@ class Auth {
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
                               response.formatter.ok(
-                                  await this.enableTwoFactorAuth(request as any)
+                                  await this.TwoFactorAuth.enableTwoFactorAuth(
+                                      request as any
+                                  )
                               )
                           ),
                       route(`Confirm Enable Two Factor Auth`)
@@ -1056,7 +925,7 @@ class Auth {
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
                               response.formatter.ok(
-                                  await this.confirmEnableTwoFactorAuth(
+                                  await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
                                       request as any
                                   )
                               )
@@ -1074,7 +943,7 @@ class Auth {
                           .authorize(({ user }) => !!user)
                           .handle(async (request, response) =>
                               response.formatter.ok(
-                                  await this.disableTwoFactorAuth(
+                                  await this.TwoFactorAuth.disableTwoFactorAuth(
                                       request as any
                                   )
                               )
@@ -1178,76 +1047,33 @@ class Auth {
                           )
                   ]
                 : []),
-            route('Refresh Token')
-                .path(this.getApiPath('refresh-token'))
-                .post()
-                .id(this.getRouteId(`refresh_token_${name}`))
-                .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Request a new (access token) using a refresh token.`,
-                        description: `The refresh token is set in cookies response for all endpoints that return an access token (login, register).`,
-                        parameters: [
-                            {
-                                name: this.config.refreshTokenCookieName,
-                                required: true,
-                                in: 'cookie'
-                            }
-                        ]
-                    }
-                })
-                .handle(
-                    async (request, { formatter: { ok, unauthorized } }) => {
-                        try {
-                            return ok(
-                                await this.handleRefreshTokens(request as any)
-                            )
-                        } catch (error) {
-                            return unauthorized({
-                                message:
-                                    error.message || 'Invalid refresh token.'
-                            })
-                        }
-                    }
-                ),
-            route('Remove refresh Token')
-                .path(this.getApiPath('refresh-token'))
-                .delete()
-                .id(this.getRouteId(`remove_refresh_token_${name}`))
-                .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Invalidate a refresh token.`,
-                        description: `Sets the refresh token cookie to an invalid value and expires it.`,
-                        parameters: [
-                            {
-                                name: this.config.refreshTokenCookieName,
-                                required: true,
-                                in: 'cookie'
-                            }
-                        ]
-                    }
-                })
-                .handle(async (request, response) =>
-                    response.formatter.ok(
-                        await this.removeRefreshTokens(request as any)
-                    )
-                ),
-            ...(this.config.csrfEnabled && !this.useTokens()
+            ...(this.config.enableRefreshTokens
                 ? [
-                      route('Get CSRF Token')
-                          .id(this.getRouteId(`csrf_token_${name}`))
-                          .path(this.getApiPath('csrf'))
-                          .handle(async (request, response) => {
-                              response.cookie(
-                                  'x-csrf-token',
-                                  request.csrfToken()
-                              )
-
-                              return response.formatter.noContent([])
-                          })
+                      route('Refresh Token')
+                          .path(this.getApiPath('refresh-token'))
+                          .post()
+                          .id(this.getRouteId(`refresh_token_${name}`))
+                          .authorize(({ user }) => user && !user.public)
+                          .handle(
+                              async (
+                                  request,
+                                  { formatter: { ok, unauthorized } }
+                              ) => {
+                                  try {
+                                      return ok(
+                                          await this.handleRefreshTokens(
+                                              request as any
+                                          )
+                                      )
+                                  } catch (error) {
+                                      return unauthorized({
+                                          message:
+                                              error.message ||
+                                              'Invalid refresh token.'
+                                      })
+                                  }
+                              }
+                          )
                   ]
                 : [])
         ]
@@ -1294,26 +1120,12 @@ class Auth {
                         [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
-            ...(this.useTokens()
-                ? []
-                : [
-                      graphQlQuery(`Logout ${name}`)
-                          .path(`logout_${name}`)
-                          .mutation()
-                          .handle(async (_, args, ctx) => {
-                              return new Promise(resolve => {
-                                  ctx.req.session.destroy(error => {
-                                      if (error) {
-                                          return resolve(false)
-                                      }
-
-                                      ctx.res.clearCookie('connect.sid')
-
-                                      return resolve(true)
-                                  })
-                              })
-                          })
-                  ]),
+            graphQlQuery(`Logout ${name}`)
+                .path(`logout_${name}`)
+                .mutation()
+                .handle(async (_, args, ctx) => {
+                    return true
+                }),
             graphQlQuery(`Register ${name}`)
                 .path(`register_${name}`)
                 .mutation()
@@ -1372,14 +1184,16 @@ class Auth {
                           .path(`enable_${name}_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
-                              this.enableTwoFactorAuth(ctx)
+                              this.TwoFactorAuth.enableTwoFactorAuth(ctx)
                           )
                           .authorize(({ user }) => user && !user.public),
                       graphQlQuery('Confirm Enable Two Factor Auth')
                           .path(`confirm_${name}_enable_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
-                              await this.confirmEnableTwoFactorAuth(ctx)
+                              await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
+                                  ctx
+                              )
 
                               const { user } = ctx
 
@@ -1400,7 +1214,7 @@ class Auth {
                           .path(`disable_${name}_two_factor_auth`)
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
-                              await this.disableTwoFactorAuth(ctx)
+                              await this.TwoFactorAuth.disableTwoFactorAuth(ctx)
 
                               const { user } = ctx
 
@@ -1490,7 +1304,7 @@ class Auth {
                           })
                   ]
                 : []),
-            ...(this.useTokens()
+            ...(this.config.enableRefreshTokens
                 ? [
                       graphQlQuery('Refresh token')
                           .path(`refresh_${name}_token`)
@@ -1499,44 +1313,21 @@ class Auth {
                               this.handleRefreshTokens(ctx)
                           )
                   ]
-                : []),
-            ...(this.config.csrfEnabled && !this.useTokens()
-                ? [
-                      graphQlQuery('Get CSRF Token')
-                          .path(`csrf_token`)
-                          .query()
-                          .handle(async (_, args, ctx, info) => {
-                              ctx.res.cookie(
-                                  'x-csrf-token',
-                                  ctx.req.csrfToken()
-                              )
-
-                              return true
-                          })
-                  ]
                 : [])
         ]
     }
 
-    private async removeRefreshTokens(ctx: ApiContext) {
-        ctx.res.cookie(this.config.refreshTokenCookieName, '', {
-            ...this.config.cookieOptions,
-            httpOnly: true,
-            maxAge: 0
-        })
-
-        return true
-    }
-
     private async handleRefreshTokens(ctx: ApiContext) {
+        if (!this.config.enableRefreshTokens) {
+            return undefined
+        }
+
         const { body } = ctx
         const userField = this.resources.user.data.snakeCaseName
         const tokenName = this.resources.token.data.pascalCaseName
 
         const refreshToken =
-            (ctx.req.cookies
-                ? ctx.req.cookies[this.config.refreshTokenCookieName]
-                : undefined) ||
+            ctx.req.headers[this.config.refreshTokenHeaderName] ||
             (body
                 ? body.object
                     ? body.object.refresh_token
@@ -1615,14 +1406,15 @@ class Auth {
             [this.resources.user.data.snakeCaseName]: ctx.user
         }
 
-        if (this.useTokens()) {
-            userPayload.access_token = this.generateJwt({
-                id: ctx.user.id
-            })
+        userPayload.access_token = this.generateJwt({
+            id: ctx.user.id
+        })
 
+        if (this.config.enableRefreshTokens) {
             userPayload.refresh_token = refreshToken
-            userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
         }
+
+        userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
 
         return userPayload
     }
@@ -1632,28 +1424,16 @@ class Auth {
 
         return gql`
         type register_${snakeCaseName}_response {
-            ${
-                this.useTokens()
-                    ? `
-                access_token: String!
-                refresh_token: String
-                expires_in: Int!
-            `
-                    : ''
-            }
+            access_token: String!
+            ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
+            expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_${snakeCaseName}_response {
-            ${
-                this.useTokens()
-                    ? `
-                access_token: String!
-                refresh_token: String
-                expires_in: Int!
-            `
-                    : ''
-            }
+            access_token: String!
+            ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
+            expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
@@ -1726,7 +1506,7 @@ class Auth {
         }
 
         ${
-            this.useTokens()
+            this.config.enableRefreshTokens
                 ? `
         input refresh_${snakeCaseName}_token_input {
             refresh_token: String
@@ -1737,13 +1517,7 @@ class Auth {
 
         extend type Mutation {
             login_${snakeCaseName}(object: login_${snakeCaseName}_input!): login_${snakeCaseName}_response!
-            ${
-                !this.config.disableCookies
-                    ? `
             logout_${snakeCaseName}: Boolean!
-            `
-                    : ``
-            }
             register_${snakeCaseName}(object: insert_${snakeCaseName}_input!): register_${snakeCaseName}_response!
             request_${snakeCaseName}_password_reset(object: request_${snakeCaseName}_password_reset_input!): Boolean!
             reset_${snakeCaseName}_password(object: reset_${snakeCaseName}_password_input!): Boolean!
@@ -1773,7 +1547,7 @@ class Auth {
                     : ''
             }
             ${
-                this.useTokens()
+                this.config.enableRefreshTokens
                     ? `
             refresh_${snakeCaseName}_token(object: refresh_${snakeCaseName}_token_input): login_${snakeCaseName}_response!
             `
@@ -1783,13 +1557,6 @@ class Auth {
 
         extend type Query {
             authenticated_${snakeCaseName}: ${snakeCaseName}!
-            ${
-                this.config.csrfEnabled && !this.useTokens()
-                    ? `
-            csrf_token: Boolean!
-            `
-                    : ''
-            }
         }
     `
     }
@@ -1868,15 +1635,6 @@ class Auth {
         }
 
         ctx.user = user
-
-        if (
-            !this.config.disableCookies &&
-            !this.config.disableAutoLoginAfterRegistration
-        ) {
-            ctx.req.session.user = {
-                id: user.id
-            }
-        }
 
         if (this.config.registered) {
             await this.config.registered(ctx)
@@ -2080,12 +1838,6 @@ class Auth {
             }
         }
 
-        if (!this.config.disableCookies) {
-            ctx.req.session.user = {
-                id: user.id
-            }
-        }
-
         if (this.config.rolesAndPermissions) {
             await manager.populate([user], [this.getRolesAndPermissionsNames()])
         }
@@ -2138,24 +1890,19 @@ class Auth {
 
     private populateContextFromToken = async (
         token: string,
-        ctx: ApiContext,
-        userId?: number
+        ctx: ApiContext
     ) => {
         const { manager } = ctx
 
         try {
             let id
 
-            if (token) {
-                const payload = Jwt.verify(
-                    token,
-                    this.config.tokensConfig.secretKey
-                ) as JwtPayload
+            const payload = Jwt.verify(
+                token,
+                this.config.tokensConfig.secretKey
+            ) as JwtPayload
 
-                id = payload.id
-            } else {
-                id = userId
-            }
+            id = payload.id
 
             if (!id) {
                 return
@@ -2205,120 +1952,9 @@ class Auth {
         const { headers } = req
         const [, token] = (headers['authorization'] || '').split('Bearer ')
 
-        let userId = ctx.req.session.user?.id
+        if (!token) return
 
-        if (!token && !userId) return
-
-        return this.populateContextFromToken(token, ctx, userId)
-    }
-
-    private disableTwoFactorAuth = async ({
-        manager,
-        body,
-        user,
-        userInputError
-    }: ApiContext) => {
-        if (!user.two_factor_enabled) {
-            throw userInputError(
-                `You do not have two factor authentication enabled.`
-            )
-        }
-
-        const Speakeasy = require('speakeasy')
-
-        const verified = Speakeasy.totp.verify({
-            encoding: 'base32',
-            token: body.object ? body.object.token : body.token,
-            secret: user.two_factor_secret
-        })
-
-        if (!verified) {
-            throw userInputError(`Invalid two factor authentication code.`)
-        }
-
-        manager.assign(user, {
-            two_factor_secret: null,
-            two_factor_enabled: false
-        })
-
-        await manager.persistAndFlush(user)
-
-        return user.toJSON()
-    }
-
-    private confirmEnableTwoFactorAuth = async ({
-        user,
-        body,
-        manager,
-        userInputError
-    }: ApiContext) => {
-        const Speakeasy = require('speakeasy')
-
-        const payload = await validateAll(body.object ? body.object : body, {
-            token: 'required|number'
-        })
-
-        if (!user.two_factor_secret) {
-            throw userInputError(
-                `You must enable two factor authentication first.`
-            )
-        }
-
-        const verified = Speakeasy.totp.verify({
-            encoding: 'base32',
-            token: payload.token,
-            secret: user.two_factor_secret
-        })
-
-        if (!verified) {
-            throw userInputError(`Invalid two factor token.`)
-        }
-
-        manager.assign(user, {
-            two_factor_enabled: true
-        })
-
-        await manager.persistAndFlush(user)
-
-        return user.toJSON()
-    }
-
-    private enableTwoFactorAuth = async ({ user, manager }: ApiContext) => {
-        const Qr = require('qrcode')
-        const Speakeasy = require('speakeasy')
-
-        const { base32, ascii } = Speakeasy.generateSecret()
-
-        manager.assign(user, {
-            two_factor_secret: base32,
-            two_factor_enabled: null
-        })
-
-        await manager.persistAndFlush(user!)
-
-        return new Promise((resolve, reject) =>
-            Qr.toDataURL(
-                Speakeasy.otpauthURL({
-                    secret: ascii,
-                    label: user.email,
-                    issuer: process.env.APP_NAME || 'Tensei'
-                }),
-                (error: null | Error, dataURL: string) => {
-                    if (error) {
-                        reject({
-                            status: 500,
-                            message: `Error generating qr code.`,
-                            error
-                        })
-                    }
-
-                    return resolve({
-                        dataURL,
-                        user: user.toJSON()
-                    })
-                }
-            )
-        )
+        return this.populateContextFromToken(token, ctx)
     }
 
     protected forgotPassword = async ({
@@ -2472,9 +2108,9 @@ class Auth {
     public async generateRefreshToken(
         ctx: GraphQLPluginContext,
         previousTokenExpiry?: string
-    ): Promise<string> {
-        if (!this.config.disableCookies) {
-            return ''
+    ): Promise<string | undefined> {
+        if (!this.config.enableRefreshTokens) {
+            return undefined
         }
 
         const plainTextToken = this.generateRandomToken(64)
@@ -2496,7 +2132,7 @@ class Auth {
             {
                 token: plainTextToken,
                 [this.resources.user.data.snakeCaseName]: ctx.user.id,
-                type: 'REFRESH',
+                type: TokenTypes.REFRESH,
                 expires_at: previousTokenExpiry
                     ? previousTokenExpiry
                     : Dayjs().add(
@@ -2508,6 +2144,13 @@ class Auth {
 
         await ctx.manager.persistAndFlush(entity)
 
+        // TODO:
+        // 1. Encrypt the token using application key
+        // 2. Create JWT with token as payload
+        // 3. Save Token to database.
+        // 4. To verify token, decode JWT
+        // 5. Decrypt token from JWT
+        // 6. Query the database for the refresh token
         return plainTextToken
     }
 
@@ -2526,11 +2169,7 @@ class Auth {
     }
 
     public generateRandomToken(length = 32) {
-        return (
-            Randomstring.generate(length) +
-            Uniqid() +
-            Randomstring.generate(length)
-        )
+        return crypto.randomBytes(length).toString('hex')
     }
 
     public social(provider: SupportedSocialProviders, config: GrantConfig) {
@@ -2545,12 +2184,6 @@ class Auth {
                     ? config.scope
                     : defaultProviderScopes(provider)
         }
-
-        return this
-    }
-
-    public skipLoginAfterRegistration() {
-        this.config.disableAutoLoginAfterRegistration = true
 
         return this
     }

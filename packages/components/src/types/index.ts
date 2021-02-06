@@ -26,9 +26,10 @@ export interface User {
 export interface CmsRoute {
     settings: boolean
     path: string
-    group: string
+    group?: string
     name: string
     exact?: boolean
+    top?: boolean
     icon?: React.ReactChild
     component: React.FC<any>
     requiredPermissions: string[]
@@ -46,7 +47,9 @@ export interface TenseiCtxInterface {
 export interface TenseiState {
     admin: User
     config: {
+        name: string
         apiPath: string
+        serverUrl: string
         dashboardPath: string
     }
     permissions: {
@@ -161,6 +164,7 @@ export interface FieldContract {
     snakeCaseName: string
     snakeCaseNamePlural: string
     [key: string]: any
+    positiveValues?: any[]
 }
 
 export interface ResourceContract {
@@ -198,7 +202,7 @@ export interface ResourceContract {
 }
 
 interface TenseiRegisterParams {
-    route: (route: CmsRoute) => void
+    route: (route: Partial<CmsRoute>) => void
     formComponent: (name: string, Component: React.FC<any>) => void
     indexComponent: (name: string, Component: React.FC<any>) => void
     detailComponent: (name: string, Component: React.FC<any>) => void

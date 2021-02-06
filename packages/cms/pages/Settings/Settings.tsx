@@ -12,7 +12,9 @@ const getGroups = () => {
     const routes = window.Tensei.ctx.routes.filter(r => r.settings)
 
     routes.forEach(route => {
-        groups[route.group] = [...(groups[route.group] || []), route]
+        if (route.group) {
+            groups[route.group] = [...(groups[route.group] || []), route]
+        }
     })
 
     return groups

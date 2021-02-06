@@ -6,7 +6,7 @@ export interface BooleanProps extends DetailComponentProps {
 }
 
 const BooleanDetail: React.FC<BooleanProps> = ({ value, field }) => {
-    const isTrue = value || value === 'true'
+    const isTrue = (field.positiveValues || []).includes(value)
 
     return (
         <div className="flex items-center">

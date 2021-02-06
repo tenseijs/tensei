@@ -1,0 +1,21 @@
+{
+    "name": "@tensei/social-auth",
+    "version": "0.6.0",
+    "main": "./src/index.js",
+    "license": "MIT",
+    "files": [
+        "src/"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@purest/providers": "^1.0.1",
+        "@types/express-session": "^1.17.3",
+        "express-session": "^1.17.1",
+        "express-session-mikro-orm": "^0.6.0",
+        "grant": "^5.4.4",
+        "purest": "^3.1.0",
+        "request": "^2.88.2"
+    }
+}

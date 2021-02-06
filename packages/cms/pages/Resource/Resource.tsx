@@ -12,10 +12,9 @@ import {
     Heading,
     ResourceContract,
     PaginatedData,
-    AbstractData
+    AbstractData,
+    DeleteModal
 } from '@tensei/components'
-
-import DeleteModal from '../../components/DeleteModal'
 
 export interface ResourceProps {
     detailId?: string

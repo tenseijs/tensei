@@ -98,6 +98,7 @@ class MediaLibrary {
         return plugin('Media Library').register(
             ({
                 app,
+                style,
                 script,
                 currentCtx,
                 extendRoutes,
@@ -106,6 +107,7 @@ class MediaLibrary {
                 extendGraphQlTypeDefs,
                 extendGraphQlQueries
             }) => {
+                style('media.css', Path.resolve(__dirname, 'public/app.css'))
                 script('media.js', Path.resolve(__dirname, 'public/app.js'))
 
                 if (!this.config.disk) {

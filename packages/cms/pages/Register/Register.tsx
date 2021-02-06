@@ -60,14 +60,19 @@ const Register = () => {
                 setState({
                     ...state,
                     is_loading: false,
-                    submitted: true
+                    submitted: true,
+                    errors: {}
                 })
             })
             .catch(({ response }) => {
                 setState({
                     ...state,
                     is_loading: false,
-                    errors: formatErrors(response.data?.error?.errors || [])
+                    errors: formatErrors(
+                        Array.isArray(response.data)
+                            ? response.data
+                            : response.data?.error?.errors || []
+                    )
                 })
             })
     }

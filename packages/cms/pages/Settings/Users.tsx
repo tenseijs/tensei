@@ -1,8 +1,8 @@
 import Qs from 'qs'
 import Paginate from 'react-paginate'
 import { throttle } from 'throttle-debounce'
+import { Redirect } from 'react-router-dom'
 import React, { useState, useCallback, useEffect } from 'react'
-import { Link, useHistory, useLocation, Redirect } from 'react-router-dom'
 import {
     Table,
     SearchInput,
@@ -11,9 +11,7 @@ import {
     Heading,
     ResourceContract,
     PaginatedData,
-    AbstractData,
-    Modal,
-    TextInput
+    AbstractData
 } from '@tensei/components'
 
 import ManageUser from './ManageUser'

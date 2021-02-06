@@ -8,10 +8,9 @@ import {
     AbstractData,
     Modal,
     TextInput,
-    Checkbox
+    Checkbox,
+    DeleteModal
 } from '@tensei/components'
-
-import DeleteModal from '../../components/DeleteModal'
 
 export interface ResourceProps {
     onDelete?: () => void
@@ -99,6 +98,12 @@ const ManageUser: React.FC<ResourceProps> = ({
             })
         }
     }, [editing])
+
+    useEffect(() => {
+        if (Boolean(editing) === false) {
+            setForm({})
+        }
+    }, [creating, editing])
 
     return (
         <>

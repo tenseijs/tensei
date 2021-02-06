@@ -26,7 +26,7 @@ export default (config: Config, cmsConfig: any) => {
     }
 
     const getApiPath = (path: string) => {
-        return `${cmsConfig.apiPath}/${path}`
+        return `/api/${path}`
     }
 
     const { resources } = config
@@ -393,7 +393,22 @@ export default (config: Config, cmsConfig: any) => {
                             )
                         }
 
-                        await modelRepository.removeAndFlush(entity)
+                        try {
+                            await manager.removeAndFlush(entity)
+                        } catch (e) {
+                            console.log(e.name)
+
+                            return response.formatter.badRequest(
+                                `Failed deleting ${modelName} with ID ${
+                                    params.id
+                                }. ${
+                                    e.name ===
+                                    'ForeignKeyConstraintViolationException'
+                                        ? 'Foreign key constraint violated.'
+                                        : ''
+                                }`
+                            )
+                        }
 
                         config.emitter.emit(`${singular}::deleted`, entity)
 

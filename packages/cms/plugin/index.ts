@@ -1,12 +1,11 @@
 import Fs from 'fs'
 import Path from 'path'
 import Csurf from 'csurf'
-import Uniqid from 'uniqid'
+import crypto from 'crypto'
 import Mustache from 'mustache'
 import { DateTime } from 'luxon'
-import Randomstring from 'randomstring'
 import AsyncHandler from 'express-async-handler'
-import { Router, RequestHandler } from 'express'
+import { Router, RequestHandler, static as Static } from 'express'
 import { responseEnhancer } from 'express-response-formatter'
 import ExpressSession, { CookieOptions } from 'express-session'
 import ExpressSessionMikroORMStore, {
@@ -19,6 +18,7 @@ import {
     Asset,
     resource,
     text,
+    event,
     boolean,
     belongsToMany,
     dateTime,
@@ -102,7 +102,7 @@ class CmsPlugin {
     }
 
     private getApiPath = (path: string) => {
-        return `/${this.config.apiPath}/${path}`
+        return `/api/${path}`
     }
 
     private resources = {
@@ -112,7 +112,10 @@ class CmsPlugin {
         permission: this.permissionResource()
     }
 
-    private async sendEmail(user: User, { mailer, orm, serverUrl }: Config) {
+    private async sendEmail(
+        user: User,
+        { mailer, orm, serverUrl, name }: Config
+    ) {
         const token = this.generateRandomToken()
 
         await orm?.em.persistAndFlush(
@@ -121,28 +124,49 @@ class CmsPlugin {
                 admin_user: user.id,
                 type: 'PASSWORDLESS',
                 expires_at: DateTime.local().plus({
-                    minutes: 10
+                    minutes: 15
                 })
             })
         )
+
+        const url = `${serverUrl}/${this.config.apiPath}/passwordless/token/${token}`
 
         mailer.send(message => {
             message
                 .to(user.email)
                 .from(user.email)
-                .subject('Login with this link')
+                .subject(`Sign-in link for ${name}.`)
                 .html(
-                    `This is an example. ${serverUrl}/${this.config.apiPath}/passwordless/token/${token}`
+                    `
+<p>Hi! 👋</p>
+
+<p>You asked us to send you a sign-in link for ${name}.</p>
+
+<ul>
+    <li>
+        This link expires in 13 minutes. After that you will need to request another link.
+    </li>
+    <li>
+        This link can only be used once. After you click the link it will no longer work.
+    </li>
+
+    <li>
+      You can always request another link!
+    </li>
+</ul>
+
+<p>
+==> <a href="${url}">Click here to access the ${name} cms dashboard</a>
+</p>
+
+<b><i>Note: This link expires in 13 minutes and can only be used once. You can always request another link to be sent if this one has been used or is expired.</i></b>
+`
                 )
         })
     }
 
     public generateRandomToken(length = 32) {
-        return (
-            Randomstring.generate(length) +
-            Uniqid() +
-            Randomstring.generate(length)
-        )
+        return crypto.randomBytes(length).toString('hex')
     }
 
     private routes = () => [
@@ -194,35 +218,6 @@ class CmsPlugin {
                 }
 
                 return response.redirect(`/${this.config.path}`)
-            }),
-        route('Get CMS Dashboard')
-            .get()
-            .id('get_cms_dashboard')
-            .path(`${this.config.path}(/*)?`)
-            .handle(async (request, response) => {
-                response.send(
-                    Mustache.render(indexFileContent, {
-                        styles: request.styles,
-                        scripts: request.scripts,
-                        user: request.user
-                            ? JSON.stringify({
-                                  ...request.user
-                              })
-                            : null,
-                        resources: JSON.stringify(
-                            request.config.resources.map(r => r.serialize())
-                        ),
-                        ctx: JSON.stringify({
-                            dashboardPath: this.config.path,
-                            apiPath: `/${this.config.path}/api`,
-                            serverUrl: request.config.serverUrl
-                        }),
-                        shouldShowRegistrationScreen:
-                            (await request.manager.count(
-                                this.resources.user.data.pascalCaseName
-                            )) === 0
-                    })
-                )
             }),
         route('Passwordless Email Registration')
             .post()
@@ -397,6 +392,7 @@ class CmsPlugin {
                 belongsToMany(this.config.userResource),
                 belongsToMany(this.config.permissionResource).owner()
             ])
+            .hideOnApi()
             .displayField('Name')
             .hideFromNavigation()
     }
@@ -426,6 +422,7 @@ class CmsPlugin {
             ])
             .displayField('Full name')
             .secondaryDisplayField('Email')
+            .hideOnApi()
             .hideFromNavigation()
     }
 
@@ -508,28 +505,24 @@ class CmsPlugin {
     plugin() {
         return plugin('CMS')
             .id('cms')
-            .register(
-                ({ app, script, style, extendResources, databaseConfig }) => {
-                    this.scripts.forEach(s => script(s.name, s.path))
-                    this.styles.forEach(s => style(s.name, s.path))
+            .register(({ script, style, extendResources, databaseConfig }) => {
+                this.scripts.forEach(s => script(s.name, s.path))
+                this.styles.forEach(s => style(s.name, s.path))
 
-                    // this.router.use(Csurf())
+                databaseConfig.entities = [
+                    ...(databaseConfig.entities || []),
+                    generateSessionEntity(this.sessionMikroOrmOptions)
+                ]
 
-                    databaseConfig.entities = [
-                        ...(databaseConfig.entities || []),
-                        generateSessionEntity(this.sessionMikroOrmOptions)
-                    ]
-
-                    extendResources([
-                        this.resources.user,
-                        this.resources.role,
-                        this.resources.token,
-                        this.resources.permission
-                    ])
-                }
-            )
+                extendResources([
+                    this.resources.user,
+                    this.resources.role,
+                    this.resources.token,
+                    this.resources.permission
+                ])
+            })
             .boot(async config => {
-                const { app, orm } = config
+                const { app, orm, extendEvents } = config
                 const Store = ExpressSessionMikroORMStore(
                     ExpressSession,
                     this.sessionMikroOrmOptions
@@ -583,7 +576,52 @@ class CmsPlugin {
                     }
                 )
 
-                app.use(this.router)
+                app.use(`/${this.config.path}`, this.router)
+
+                app.get(
+                    `/${this.config.path}(/*)?`,
+                    async (request, response) => {
+                        response.send(
+                            Mustache.render(indexFileContent, {
+                                styles: request.styles,
+                                scripts: request.scripts,
+                                user: request.user
+                                    ? JSON.stringify({
+                                          ...request.user
+                                      })
+                                    : null,
+                                resources: JSON.stringify(
+                                    request.config.resources.map(r =>
+                                        r.serialize()
+                                    )
+                                ),
+                                ctx: JSON.stringify({
+                                    name: request.config.name,
+                                    dashboardPath: this.config.path,
+                                    apiPath: `/${this.config.path}/api`,
+                                    serverUrl: request.config.serverUrl
+                                }),
+                                shouldShowRegistrationScreen:
+                                    (await request.manager.count(
+                                        this.resources.user.data.pascalCaseName
+                                    )) === 0
+                            })
+                        )
+                    }
+                )
+
+                app.use(
+                    '/tensei-assets',
+                    Static(Path.resolve(__dirname, '..', 'default-assets'))
+                )
+
+                extendEvents([
+                    event('tensei::listening').listen(({ ctx }) => {
+                        ctx.logger.info(
+                            `🦄 Access your cms dashboard ${ctx.serverUrl}/${this.config.path}`
+                        )
+                    })
+                ])
             })
     }
 }
