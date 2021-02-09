@@ -23,7 +23,8 @@ import {
     SupportedStorageDrivers,
     ExtendMailCallback,
     EventContract,
-    DataPayload
+    DataPayload,
+    ApiContext
 } from '@tensei/common'
 import Database from './database'
 import {
@@ -241,6 +242,8 @@ export class Tensei implements TenseiContract {
         await this.callPluginHook('boot')
         await this.ctx.rootBoot(this.getPluginArguments())
 
+        this.registerRoutes()
+
         this.registerEmitteryListeners()
 
         this.registerAsyncErrorHandler()
@@ -250,6 +253,53 @@ export class Tensei implements TenseiContract {
         this.ctx.emitter.emit('tensei::booted')
 
         return this
+    }
+
+    private authorizeResolver = async (
+        ctx: ApiContext,
+        query: RouteContract
+    ) => {
+        const authorized = await Promise.all(
+            query.config.authorize.map(fn => fn(ctx))
+        )
+
+        if (
+            authorized.filter(result => result).length !==
+            query.config.authorize.length
+        ) {
+            throw ctx.forbiddenError('Unauthorized.')
+        }
+    }
+
+    private registerRoutes() {
+        this.ctx.routes.forEach(route => {
+            const path = route.config.path.startsWith('/')
+                ? route.config.path
+                : `/${route.config.path}`
+
+            ;(this.app as any)[route.config.type.toLowerCase()](
+                path,
+
+                ...route.config.middleware.map(fn => AsyncHandler(fn)),
+                AsyncHandler(
+                    async (
+                        request: Express.Request,
+                        response: Express.Response,
+                        next: Express.NextFunction
+                    ) => {
+                        await this.authorizeResolver(request as any, route)
+
+                        return next()
+                    }
+                ),
+                AsyncHandler(
+                    async (
+                        request: Express.Request,
+                        response: Express.Response
+                    ) => route.config.handler(request, response)
+                )
+            )
+        })
     }
 
     private registerEmitteryListeners() {
@@ -677,11 +727,16 @@ export class Tensei implements TenseiContract {
         events.forEach(event => {
             const eventExists = this.ctx.events[event.config.name]
 
-            if (eventExists) {
-                event.config.listeners.concat(eventExists.config.listeners)
+            this.ctx.events[event.config.name] = {
+                ...event,
+                config: {
+                    ...event.config,
+                    listeners: [
+                        ...event.config.listeners,
+                        ...(eventExists ? eventExists.config.listeners : [])
+                    ]
+                }
             }
-
-            this.ctx.events[event.config.name] = event
         })
 
         return this

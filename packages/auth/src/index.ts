@@ -507,7 +507,7 @@ class Auth {
                         serverUrl,
                         orm: config.orm,
                         authConfig: this.config,
-                        resources: this.resources,
+                        resourcesMap: this.resources,
                         apiPath: this.config.apiPath
                     })
                 }
@@ -516,6 +516,8 @@ class Auth {
                     query.middleware(
                         async (resolve, parent, args, context, info) => {
                             await this.getAuthUserFromContext(context)
+
+                            await this.setAuthUserForPublicRoutes(context)
 
                             await this.ensureAuthUserIsNotBlocked(context)
 
@@ -753,13 +755,9 @@ class Auth {
                         }
                     }
                 })
-                .handle(async (request, { formatter: { ok, unprocess } }) => {
-                    try {
-                        return ok(await this.login(request as any))
-                    } catch (error) {
-                        return unprocess(error)
-                    }
-                }),
+                .handle(async (request, { formatter: { ok } }) =>
+                    ok(await this.login(request as any))
+                ),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
                 .post()
@@ -1788,9 +1786,17 @@ class Auth {
 
     private login = async (ctx: ApiContext) => {
         const { manager, body } = ctx
-        const { email, password, token } = await this.validate(
+        const [passed, payload] = await this.validate(
             body.object ? body.object : body
         )
+
+        if (!passed) {
+            throw ctx.userInputError('Validation failed.', {
+                errors: payload
+            })
+        }
+
+        const { email, password, token } = payload
 
         const user: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,
@@ -1860,7 +1866,7 @@ class Auth {
                 slug: 'public'
             },
             {
-                populate: [this.resources.permission.data.snakeCaseName],
+                populate: [this.getPermissionUserKey()],
                 refresh: true
             }
         )
@@ -2098,11 +2104,17 @@ class Auth {
             password: 'required|min:8'
         }
 
-        return await validateAll(data, rules, {
-            'email.required': 'The email is required.',
-            'password.required': 'The password is required.',
-            'name.required': 'The name is required.'
-        })
+        try {
+            const payload = await validateAll(data, rules, {
+                'email.required': 'The email is required.',
+                'password.required': 'The password is required.',
+                'name.required': 'The name is required.'
+            })
+
+            return [true, payload]
+        } catch (errors) {
+            return [false, errors]
+        }
     }
 
     public async generateRefreshToken(

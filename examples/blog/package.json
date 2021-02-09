@@ -1,27 +1,20 @@
 {
     "name": "@examples/blog",
-    "version": "0.6.0",
+    "version": "1.0.0",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
-        "@jackfranklin/test-data-bot": "^1.3.0",
-        "@mikro-orm/mysql": "^4.3.0",
-        "@mikro-orm/postgresql": "^4.3.0",
-        "@slynova/flydrive-s3": "^1.0.3",
-        "aws-sdk": "^2.811.0",
-        "dotenv": "^8.2.0",
-        "faker": "^4.1.0",
-        "graphql-redis-subscriptions": "^2.3.1",
-        "pg": "^8.3.3"
-    },
-    "devDependencies": {
-        "@types/swagger-ui-express": "^4.1.2",
-        "nodemon": "^2.0.4",
-        "prettier": "^2.0.5"
+        "@mikro-orm/sqlite": "^4.4.0",
+        "@tensei/cms": "^0.6.0",
+        "@tensei/core": "^0.6.0",
+        "@tensei/graphql": "^0.6.0",
+        "@tensei/media": "^0.6.1",
+        "@tensei/social-auth": "^0.6.0"
     },
     "scripts": {
-        "watch": "nodemon --watch ../../node_modules index.js",
-        "prettier": "prettier --write './**/*.{js,json,css}'"
+        "example:dev": "nodemon src/index"
     },
-    "private": true
+    "devDependencies": {
+        "nodemon": "^2.0.7"
+    }
 }

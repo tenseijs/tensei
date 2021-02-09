@@ -16,6 +16,7 @@ import {
     defaultPlaygroundOptions
 } from 'apollo-server-express'
 import {
+    event,
     plugin,
     FieldContract,
     ResourceContract,
@@ -673,7 +674,13 @@ input id_where_query {
                 )
             })
             .boot(async config => {
-                const { currentCtx, app, graphQlMiddleware, serverUrl } = config
+                const {
+                    currentCtx,
+                    app,
+                    graphQlMiddleware,
+                    serverUrl,
+                    extendEvents
+                } = config
 
                 const typeDefs = [
                     gql(this.schemaString),
@@ -818,6 +825,14 @@ input id_where_query {
                 if (this.subscriptionsEnabled) {
                     graphQlServer.installSubscriptionHandlers(config.server)
                 }
+
+                extendEvents([
+                    event('tensei::listening').listen(({ ctx }) => {
+                        ctx.logger.info(
+                            `📉 Access your graphql playground on ${playgroundEndpoint}`
+                        )
+                    })
+                ])
             })
     }
 }

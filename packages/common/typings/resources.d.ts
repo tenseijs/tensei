@@ -97,6 +97,7 @@ declare module '@tensei/common/resources' {
         }
         data: ResourceDataWithFields
         hideOnApi(): this
+        icon(icon: SupportedIcons): this
         isHiddenOnApi(): boolean
         hideOnInsertApi(): this
         hideOnUpdateApi(): this

@@ -46,6 +46,7 @@ export class DateField extends Field {
 
         this.property.type = 'date'
         this.property.columnTypes = ['date']
+        this.validationRules = ['date']
         this.defaultFormValue(Dayjs().format(this.config.dateFormat))
     }
 

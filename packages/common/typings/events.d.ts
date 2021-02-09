@@ -1,7 +1,7 @@
 declare module '@tensei/common/events' {
     import { DataPayload, Config } from '@tensei/common/config'
 
-    type EventListener<Payload> = (data: {
+    type EventListener<Payload = DataPayload> = (data: {
         payload: Payload
         ctx: Config
     }) => void | Promise<void>

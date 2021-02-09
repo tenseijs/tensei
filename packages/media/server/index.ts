@@ -138,7 +138,13 @@ class MediaLibrary {
 
                 extendResources([MediaResource])
 
-                extendRoutes(routes(this.config, relatedResources))
+                const [mainUploadRoute, ...specificUploadRoutes] = routes(
+                    this.config,
+                    relatedResources
+                )
+
+                extendRoutes([mainUploadRoute])
+                extendRoutes(specificUploadRoutes)
 
                 if (this.usesGraphQl) {
                     extendGraphQlQueries(queries(this.config))

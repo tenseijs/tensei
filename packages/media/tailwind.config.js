@@ -7,7 +7,7 @@ module.exports = {
         content: ['./client/*.js']
     },
     corePlugins: {
-        preflight: false,
+        preflight: false
     },
     theme: {
         extend: {

@@ -91,7 +91,7 @@ class SocialAuthCallbackController {
             }
         })
 
-    getTemporalToken() {
+    getTemporalToken(length = 32) {
         return crypto.randomBytes(length).toString('hex')
     }
 
@@ -245,7 +245,7 @@ module.exports = {
         authConfig,
         resourcesMap,
     }) => {
-        const Store = ExpressSessionMikroORMStore(ExpressSession, {
+        const Store = ExpressSessionMikroORMStore.default(ExpressSession, {
             entityName: `${resourcesMap.user.data.pascalCaseName}Session`,
             tableName: `${resourcesMap.user.data.snakeCaseNamePlural}_sessions`,
             collection: `${resourcesMap.user.data.snakeCaseNamePlural}_sessions`
@@ -268,7 +268,7 @@ module.exports = {
             const clientCallback =
                 providerConfig.clientCallback || ''
 
-            providers[provider] = {
+            authConfig.providers[provider] = {
                 ...providerConfig,
                 redirect_uri: `${serverUrl}/connect/${provider}/callback`,
                 clientCallback: clientCallback.startsWith('http')
@@ -283,7 +283,7 @@ module.exports = {
 
         app.get(
             `/${apiPath}/:provider/callback`,
-            SocialAuthCallbackController.connect({
+            (new SocialAuthCallbackController()).connect({
                 ...authConfig,
                 resources: resourcesMap
             })

@@ -2,7 +2,7 @@ const Qr = require('qrcode')
 const Speakeasy = require('speakeasy')
 
 module.exports = {
-    verifyTwoFactorAuthToken: async ({ userInputError, manager, body, user }, token) => {
+    verifyTwoFactorAuthToken: async ({ userInputError, user }, token) => {
         if (!user.two_factor_enabled) {
             throw userInputError(
                 `You do not have two factor authentication enabled.`

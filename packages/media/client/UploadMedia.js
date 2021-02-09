@@ -109,7 +109,9 @@ const UploadFiles = ({
                     <div className="media-relative media-pt-1">
                         <div className="media-flex media-mb-2 media-items-center media-justify-between">
                             <Paragraph
-                                className={'media-font-semibold media-text-tensei-darkest'}
+                                className={
+                                    'media-font-semibold media-text-tensei-darkest'
+                                }
                             >
                                 Uploading {files.length} files (
                                 {niceBytes(

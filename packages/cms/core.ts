@@ -104,8 +104,10 @@ class Core {
     components: Lib.Tensei['components'] = {
         form: {
             Text: FormText,
-            Date: FormDate,
             Slug: FormSlug,
+            Date: FormDate,
+            DateTime: FormDate,
+            Timestamp: FormDate,
             Select: FormSelect,
             Boolean: FormBoolean,
             Textarea: FormTextarea,

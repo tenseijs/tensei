@@ -137,8 +137,8 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
                 <div className="flex flex-wrap md:flex-nowrap mt-6">
                     <div
                         className={`flex flex-col flex-wrap w-full ${
-                            sidebarVisible ? 'md:w-4/6' : ''
-                        } bg-white border border-tensei-gray-600 rounded-lg p-8 md:mr-8`}
+                            sidebarVisible ? 'md:w-4/6 md:mr-8' : ''
+                        } bg-white border border-tensei-gray-600 rounded-lg p-8`}
                     >
                         {mainbarFields.map(field => {
                             const Component =
