@@ -1,4 +1,3 @@
-import Path from 'path'
 import pino from 'pino'
 import Emittery from 'emittery'
 import BodyParser from 'body-parser'
@@ -416,7 +415,6 @@ export class Tensei implements TenseiContract {
             storageDriver: this.storageDriver.bind(this),
             getQuery: this.getQuery.bind(this),
             getRoute: this.getRoute.bind(this),
-            getPlugin: this.getPlugin.bind(this),
             extendMailer: this.extendMailer.bind(this),
             extendEvents: this.events.bind(this),
             extendPlugins: this.plugins.bind(this)
@@ -460,10 +458,6 @@ export class Tensei implements TenseiContract {
 
     private getRoute(id: string) {
         return this.ctx.routes.find(route => route.config.id === id)
-    }
-
-    private getPlugin(id: string) {
-        // return this.ctx.plugins.find(plugin => plugin.data.)
     }
 
     private async callPluginHook(
