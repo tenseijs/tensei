@@ -15121,6 +15121,15 @@ postcss-loader@^4.0.4:
     schema-utils "^3.0.0"
     semver "^7.3.2"
 
+postcss-loader@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-loader/-/postcss-loader-5.0.0.tgz#bea95363dcb550d72ceb612ce44663356b7782d7"
+  integrity sha512-bOvyWP5VHCJbThbv7wrBwCBc3DsVpyCfd+k/wHOL3wTAMMHmSSfNts90EADf8bHa6I810ird1JBEKmBRgJu3cg==
+  dependencies:
+    cosmiconfig "^7.0.0"
+    klona "^2.0.4"
+    semver "^7.3.4"
+
 postcss-merge-longhand@^4.0.11:
   version "4.0.11"
   resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-4.0.11.tgz#62f49a13e4a0ee04e7b98f42bb16062ca2549e24"
