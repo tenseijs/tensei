@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/tenseijs/tensei/compare/v0.7.0...v0.7.1) (2021-02-11)
+
+
+### Bug Fixes
+
+* **core:** remove dev deps from dependencies lists ([b5f449b](https://github.com/tenseijs/tensei/commit/b5f449bcabed4639d9d4197a15e52b51895e9c9b))
+* **media:** fix media build on ci ([aa02ee1](https://github.com/tenseijs/tensei/commit/aa02ee188c9965ee4005234675108c2682975945))
+
+
+
+
+
 # [0.7.0](https://github.com/tenseijs/tensei/compare/v0.6.3...v0.7.0) (2021-02-10)
 
 **Note:** Version bump only for package @tensei/media
