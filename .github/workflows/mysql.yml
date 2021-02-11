@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn
+        run: yarn install --production=false
       - name: Build packages
         run: yarn build
       - name: Run package tests on mysql database
