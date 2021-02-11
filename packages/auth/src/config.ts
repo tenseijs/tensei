@@ -1,9 +1,4 @@
-import {
-    User,
-    HookFunction,
-    FieldContract,
-    ResourceContract
-} from '@tensei/common'
+import { HookFunction, FieldContract, ResourceContract } from '@tensei/common'
 import { CookieOptions } from 'express'
 import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'

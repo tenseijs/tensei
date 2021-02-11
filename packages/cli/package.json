@@ -25,8 +25,6 @@
         "@types/listr": "^0.14.2",
         "@types/node": "^14.14.10",
         "@types/nodemon": "^1.19.0",
-        "@types/signale": "^1.4.1",
-        "@types/terminal-link": "^1.2.0",
         "@types/yargs": "^15.0.12",
         "chalk": "^4.1.0",
         "change-case": "^4.1.1",
@@ -38,16 +36,10 @@
         "execa": "^5.0.0",
         "fs-extra": "^9.1.0",
         "hygen": "^6.0.4",
-        "kill-port": "^1.6.1",
         "latest-version": "^5.1.0",
         "listr": "^0.14.3",
         "nodemon": "^2.0.7",
-        "ora": "^5.1.0",
-        "signale": "^1.4.0",
-        "terminal-link": "^2.1.1",
-        "yargs": "^16.2.0",
-        "youch": "^2.1.1",
-        "youch-terminal": "^1.0.1"
+        "yargs": "^16.2.0"
     },
     "config": {
         "commitizen": {

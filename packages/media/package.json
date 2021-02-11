@@ -22,15 +22,11 @@
         "@types/fs-capacitor": "^2.0.0",
         "@types/http-errors": "^1.8.0",
         "@types/mime-types": "^2.1.0",
-        "@types/object-path": "^0.11.0",
         "@types/sharp": "^0.27.1",
         "busboy": "^0.3.1",
         "fs-capacitor": "^6.2.0",
         "http-errors": "^1.8.0",
-        "isobject": "^4.0.0",
-        "laravel-mix": "^6.0.10",
         "mime-types": "^2.1.28",
-        "object-path": "^0.11.5",
         "sharp": "^0.27.0"
     },
     "config": {
@@ -48,11 +44,5 @@
     },
     "devDependencies": {
         "postcss": "^8.1"
-    },
-    "babelMacros": {
-        "twin": {
-            "config": "./tailwind.config.js",
-            "preset": "styled-components"
-        }
     }
 }

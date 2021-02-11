@@ -30,14 +30,12 @@
         "@tensei/mail": "^0.7.0",
         "@types/luxon": "^1.25.0",
         "@types/pluralize": "^0.0.29",
-        "@types/signale": "^1.4.1",
         "change-case": "^4.1.1",
         "csstype": "^3.0.2",
         "indicative": "^7.4.4",
         "luxon": "^1.25.0",
         "pluralize": "^8.0.0",
-        "react-flatpickr": "^3.10.6",
-        "signale": "^1.4.0"
+        "qs": "^6.9.4"
     },
     "publishConfig": {
         "access": "public"

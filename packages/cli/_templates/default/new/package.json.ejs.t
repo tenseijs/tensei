@@ -21,8 +21,8 @@ to: <%= h.changeCase.param(name) %>/package.json
         "build": "yarn build:server && yarn build:client"
     },
     "devDependencies": {
-        "@tensei/common": "^0.6.3",
-        "@tensei/components": "^0.6.3",
+        "@tensei/common": "^0.7.1",
+        "@tensei/components": "^0.7.1",
         "autoprefixer": "^10.2.4",
         "cross-env": "^7.0.3",
         "laravel-mix": "^6.0.5",

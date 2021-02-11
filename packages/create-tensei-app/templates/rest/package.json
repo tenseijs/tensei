@@ -5,11 +5,11 @@
     "license": "MIT",
     "dependencies": {
         "@mikro-orm/sqlite": "^4.4.0",
-        "@tensei/auth": "^0.6.3",
-        "@tensei/cms": "^0.6.3",
-        "@tensei/core": "^0.6.3",
-        "@tensei/media": "^0.6.3",
-        "@tensei/rest": "^0.6.3"
+        "@tensei/auth": "^0.7.1",
+        "@tensei/cms": "^0.7.1",
+        "@tensei/core": "^0.7.1",
+        "@tensei/media": "^0.7.1",
+        "@tensei/rest": "^0.7.1"
     },
     "scripts": {
         "dev": "nodemon src/index"

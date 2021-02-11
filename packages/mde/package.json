@@ -16,7 +16,8 @@
         "jest": "^26.1.0",
         "react": "^16.13.1",
         "ts-loader": "^8.0.12",
-        "typescript": "^3.9.7"
+        "typescript": "^3.9.7",
+        "laravel-mix": "^6.0.5"
     },
     "scripts": {
         "test": "jest --verbose",
@@ -33,7 +34,6 @@
         "access": "public"
     },
     "dependencies": {
-        "laravel-mix": "^6.0.5",
         "react-markdown": "^5.0.3",
         "react-mde": "^11.0.0"
     }

@@ -26,7 +26,7 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build": "tsc --p tsconfig.json",
+        "build": "tsc --p tsconfig.json && yarn copy:files",
         "dev": "tsc --watch --p tsconfig.json",
         "copy:files": "copyfiles welcome.html build/"
     },
@@ -53,8 +53,7 @@
         "mustache": "^4.0.1",
         "pino": "^6.8.0",
         "pino-pretty": "^4.3.0",
-        "pluralize": "^8.0.0",
-        "signale": "^1.4.0"
+        "pluralize": "^8.0.0"
     },
     "config": {
         "commitizen": {

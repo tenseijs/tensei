@@ -36,11 +36,7 @@
         "fs-extra": "^9.1.0",
         "latest-version": "^5.1.0",
         "listr": "^0.14.3",
-        "ora": "^5.1.0",
-        "signale": "^1.4.0",
-        "yargs": "^16.2.0",
-        "youch": "^2.1.1",
-        "youch-terminal": "^1.0.1"
+        "yargs": "^16.2.0"
     },
     "config": {
         "commitizen": {
