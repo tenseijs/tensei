@@ -194,6 +194,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         this.data.hideOnFetchApi = true
         this.data.hideOnDeleteApi = true
         this.data.hideOnUpdateApi = true
+        this.data.hideOnApi = true
 
         return this
     }

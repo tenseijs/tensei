@@ -1,8 +1,8 @@
 import Qs from 'qs'
 import Paginate from 'react-paginate'
+import { Redirect } from 'react-router-dom'
 import { throttle } from 'throttle-debounce'
 import React, { useState, useCallback, useEffect } from 'react'
-import { useHistory, useLocation, Redirect } from 'react-router-dom'
 import {
     Table,
     SearchInput,
@@ -17,18 +17,12 @@ import {
 import ManageRole from './ManageRole'
 
 export interface RolesProps {
-    detailId?: string
-    baseResource: ResourceContract
-    relatedResource?: ResourceContract
+    resource?: ResourceContract
 }
 
 const Roles: React.FC<RolesProps> = ({
-    baseResource,
-    relatedResource,
-    detailId
+    resource = window.Tensei.state.resourcesMap['admin-roles']
 }) => {
-    const resource = window.Tensei.state.resourcesMap['admin-roles']
-    const location = useLocation()
     const [search, setSearch] = useState('')
     const [creating, setCreating] = useState(false)
     const [deleting, setDeleting] = useState<AbstractData | null>(null)
@@ -38,7 +32,7 @@ const Roles: React.FC<RolesProps> = ({
 
     const searchableFields = resource.fields.filter(field => field.isSearchable)
 
-    if (!window.Tensei.state.permissions['index:admin-roles']) {
+    if (!window.Tensei.state.permissions[`index:${resource.slug}`]) {
         return <Redirect to={window.Tensei.getPath('404')} />
     }
 
@@ -93,7 +87,11 @@ const Roles: React.FC<RolesProps> = ({
 
         parameters.page = data.meta.page
         parameters.per_page = data.meta.per_page
-        parameters.populate = 'admin_permissions'
+        parameters.populate =
+            resource.slug === 'admin-roles'
+                ? 'admin_permissions'
+                : window.Tensei.state.config.pluginsConfig.auth.permission
+                      .snakeCaseNamePlural
 
         return Qs.stringify(parameters, { encodeValuesOnly: true })
     }
@@ -105,11 +103,7 @@ const Roles: React.FC<RolesProps> = ({
                 setLoading(true)
 
                 window.Tensei.client
-                    .get(
-                        relatedResource
-                            ? `${baseResource.slug}/${detailId}/${relatedResource.slug}?${query}`
-                            : `${slug}?${query}`
-                    )
+                    .get(`${slug}?${query}`)
                     .then(({ data: payload }) => {
                         setData({
                             ...currentData,
@@ -160,14 +154,16 @@ const Roles: React.FC<RolesProps> = ({
                 )
             }
         })),
-        (window.Tensei.state.permissions['update:admin-roles'] ||
-            window.Tensei.state.permissions['delete:admin-roles']) && {
+        (window.Tensei.state.permissions[`update:${resource.slug}`] ||
+            window.Tensei.state.permissions[`delete:${resource.slug}`]) && {
             title: <span className="sr-only">View</span>,
             field: 'actions',
 
             render: (value: string, row: any) => (
                 <div className="flex items-center">
-                    {window.Tensei.state.permissions['update:admin-roles'] && (
+                    {window.Tensei.state.permissions[
+                        `update:${resource.slug}`
+                    ] && (
                         <Button
                             onClick={() => setEditing(row)}
                             className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
@@ -185,7 +181,9 @@ const Roles: React.FC<RolesProps> = ({
                             </svg>
                         </Button>
                     )}
-                    {window.Tensei.state.permissions['delete:admin-roles'] && (
+                    {window.Tensei.state.permissions[
+                        `delete:${resource.slug}`
+                    ] && (
                         <button
                             onClick={() => setDeleting(row)}
                             className="flex items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
@@ -212,6 +210,7 @@ const Roles: React.FC<RolesProps> = ({
         <>
             <ManageRole
                 editing={editing}
+                resource={resource}
                 setEditing={setEditing}
                 onUpdate={() => fetchData(data, resource.slug, getQuery())}
                 onDelete={() => fetchData(data, resource.slug, getQuery())}

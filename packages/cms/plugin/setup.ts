@@ -47,6 +47,8 @@ export const setupCms = async (
             em.create(RoleResource.data.pascalCaseName, {
                 name: 'Super Admin',
                 slug: 'super-admin',
+                description:
+                    'Manage the access and level of responsibility of all users on this network.',
                 admin_permissions: allPermissions
             })
     )

@@ -51,6 +51,9 @@ export interface TenseiState {
         apiPath: string
         serverUrl: string
         dashboardPath: string
+        pluginsConfig: {
+            [key: string]: any
+        }
     }
     permissions: {
         [key: string]: boolean
@@ -180,13 +183,14 @@ export interface ResourceContract {
     group: string
     icon: string
     groupSlug: string
-    hideOnDeleteApi: false
-    hideOnDeleteSubscription: true
-    hideOnFetchApi: false
-    hideOnInsertApi: false
-    hideOnInsertSubscription: true
-    hideOnUpdateApi: false
-    hideOnUpdateSubscription: true
+    hideOnApi: boolean
+    hideOnDeleteApi: boolean
+    hideOnDeleteSubscription: boolean
+    hideOnFetchApi: boolean
+    hideOnInsertApi: boolean
+    hideOnInsertSubscription: boolean
+    hideOnUpdateApi: boolean
+    hideOnUpdateSubscription: boolean
     label: string
     name: string
     noTimestamps: boolean

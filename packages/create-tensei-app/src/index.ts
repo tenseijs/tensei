@@ -106,10 +106,15 @@ const installNodeModulesTasks = ({ newAppDir }: { newAppDir: string }) => {
                 (useYarn ? 'yarn' : 'npm') +
                 ' install`... (This could take a while)',
             task: () => {
-                return execa(useYarn ? 'yarn install --production --no-optional' : 'npm install --production --no-optional', {
-                    shell: true,
-                    cwd: newAppDir
-                })
+                return execa(
+                    useYarn
+                        ? 'yarn install --production --no-optional'
+                        : 'npm install --production --no-optional',
+                    {
+                        shell: true,
+                        cwd: newAppDir
+                    }
+                )
             }
         }
     ]

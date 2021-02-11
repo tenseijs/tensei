@@ -13,7 +13,8 @@ import {
     TextInput,
     Textarea,
     Label,
-    Checkbox
+    Checkbox,
+    ResourceContract
 } from '@tensei/components'
 
 import DeleteModal from '../../components/DeleteModal'
@@ -23,6 +24,7 @@ export interface ResourceProps {
     onCreate?: () => void
     onUpdate?: () => void
     creating: boolean
+    resource?: ResourceContract
     setCreating: (creating: boolean) => void
     deleting: AbstractData | null
     setDeleting: (deleting: any) => void
@@ -58,26 +60,33 @@ const ManageUser: React.FC<ResourceProps> = ({
     onCreate,
     onUpdate,
     creating,
+    resource = window.Tensei.state.resourcesMap['admin-roles'],
     setCreating,
     deleting,
     setDeleting,
     setEditing,
     editing
 }) => {
+    const permissionsInputKey =
+        resource.slug === 'admin-roles'
+            ? 'admin_permissions'
+            : window.Tensei.state.config.pluginsConfig.auth.permission
+                  .snakeCaseNamePlural
+    const descriptionInputKey =
+        resource.slug === 'admin-roles' ? 'description' : 'slug'
     const [loading, setLoading] = useState(false)
     const [form, setForm] = useState<AbstractData>({
         name: '',
-        description: '',
-        admin_permissions: []
+        [descriptionInputKey]: '',
+        [permissionsInputKey]: []
     })
     const [errors, setErrors] = useState<AbstractData>({})
     const [permissionSlugs, setPermissionSlugs] = useState<string[]>([])
     const [permissions, setPermissions] = useState<AbstractData[]>([])
     const [accordions, setAccordions] = useState<number[]>([])
-    const resource = window.Tensei.state.resourcesMap['admin-roles']
 
     const onSubmit = () => {
-        form.admin_permissions = permissionSlugs
+        form[permissionsInputKey] = permissionSlugs
             .map(slug => {
                 const permission = permissions.find(p => p.slug === slug)
 
@@ -103,7 +112,7 @@ const ManageUser: React.FC<ResourceProps> = ({
                 }
 
                 window.Tensei.success(
-                    `Admin role ${editing ? 'updated' : 'created'}.`
+                    `${resource.label} ${editing ? 'updated' : 'created'}.`
                 )
 
                 if (editing) {
@@ -130,7 +139,9 @@ const ManageUser: React.FC<ResourceProps> = ({
 
                 setLoading(false)
                 window.Tensei.error(
-                    `Failed ${editing ? 'updating' : 'creating'} admin role.`
+                    `Failed ${
+                        editing ? 'updating' : 'creating'
+                    } ${resource.name.toLowerCase()}.`
                 )
             })
     }
@@ -139,18 +150,26 @@ const ManageUser: React.FC<ResourceProps> = ({
         if (editing) {
             setForm({
                 name: editing.name,
-                description: editing.description
+                [descriptionInputKey]: editing[descriptionInputKey]
             })
+
             setPermissionSlugs(
-                editing.admin_permissions.map((p: any) => p.slug)
+                editing[permissionsInputKey].map((p: any) => p.slug)
             )
         }
     }, [editing])
 
     useEffect(() => {
-        window.Tensei.client.get('admin-permissions').then(({ data }) => {
-            setPermissions(data.data)
-        })
+        window.Tensei.client
+            .get(
+                resource.slug === 'admin-roles'
+                    ? 'admin-permissions'
+                    : window.Tensei.state.config.pluginsConfig.auth.permission
+                          .slug
+            )
+            .then(({ data }) => {
+                setPermissions(data.data)
+            })
     }, [])
 
     useEffect(() => {
@@ -169,7 +188,9 @@ const ManageUser: React.FC<ResourceProps> = ({
         }
     }
 
-    const resources = window.Tensei.state.resources
+    const resources = window.Tensei.state.resources.filter(r =>
+        resource.slug === 'admin-roles' ? r : !r.hideOnApi
+    )
 
     return (
         <>
@@ -206,22 +227,24 @@ const ManageUser: React.FC<ResourceProps> = ({
                             }
                         />
                     </div>
-                    <div className="mb-5">
-                        <Textarea
-                            label="Description"
-                            name="description"
-                            id="description"
-                            placeholder="Description"
-                            value={form.description}
-                            error={errors.description as string}
-                            onChange={event =>
-                                setForm({
-                                    ...form,
-                                    description: event.target.value
-                                })
-                            }
-                        />
-                    </div>
+                    {descriptionInputKey === 'description' ? (
+                        <div className="mb-5">
+                            <Textarea
+                                label="Description"
+                                name="description"
+                                id="description"
+                                placeholder="Description"
+                                value={form.description}
+                                error={errors.description as string}
+                                onChange={event =>
+                                    setForm({
+                                        ...form,
+                                        description: event.target.value
+                                    })
+                                }
+                            />
+                        </div>
+                    ) : null}
                     <div className="mb-8">
                         <Label label="Select Permissions" id="permissions" />
 
@@ -392,7 +415,9 @@ const ManageUser: React.FC<ResourceProps> = ({
                             className="ml-3"
                             success
                         >
-                            {editing ? 'Update' : 'Create Role'}
+                            {editing
+                                ? 'Update'
+                                : `Create ${resource.name.toLowerCase()}`}
                         </Button>
                     </div>
                 </div>

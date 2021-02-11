@@ -12,7 +12,12 @@ class Migrator {
 
         await schemaGenerator.ensureDatabase()
 
-        await schemaGenerator.updateSchema(true, true, false, false)
+        await schemaGenerator.updateSchema(
+            true,
+            process.env.NODE_ENV !== 'production',
+            false,
+            false
+        )
     }
 }
 

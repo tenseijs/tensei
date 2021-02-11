@@ -47,6 +47,7 @@ declare module '@tensei/common/plugins' {
             storageImplementation: StorageConstructor<StorageDriverImplementation>
         ): void
         manager: EntityManager | null
+        setPluginConfig: (name: string, config: any) => void
         gql: (types: string | TemplateStringsArray) => DocumentNode
         style: (name: Asset['name'], path: Asset['path']) => void
         script: (name: Asset['name'], path: Asset['path']) => void

@@ -345,6 +345,7 @@ class Auth {
             .displayField('Name')
             .hideOnDeleteApi()
             .hideOnUpdateApi()
+            .hideFromNavigation()
             .group('Users & Permissions')
     }
 
@@ -366,6 +367,8 @@ class Auth {
                 belongsToMany(this.config.permissionResource).owner()
             ])
             .displayField('Name')
+            .hideFromNavigation()
+            .hideOnUpdateApi()
             .group('Users & Permissions')
     }
 
@@ -494,9 +497,23 @@ class Auth {
                     ])
                 }
 
-                const { app, serverUrl, clientUrl, currentCtx, routes } = config
+                const {
+                    app,
+                    serverUrl,
+                    clientUrl,
+                    currentCtx,
+                    routes,
+                    setPluginConfig
+                } = config
 
                 this.forceRemoveInsertUserQueries(config.graphQlQueries)
+
+                setPluginConfig('auth', {
+                    rolesAndPermissions: this.config.rolesAndPermissions,
+                    user: this.resources.user.serialize(),
+                    role: this.resources.role.serialize(),
+                    permission: this.resources.permission.serialize()
+                })
 
                 if (this.socialAuthEnabled()) {
                     const { register } = require('@tensei/social-auth')
@@ -586,7 +603,7 @@ class Auth {
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
-                                        `fetch:${slug}`
+                                        `index:${slug}`
                                     )
                             )
                         }
@@ -652,12 +669,12 @@ class Auth {
                             )
                         }
 
-                        if (id === `fetch_${slugPlural}`) {
+                        if (id === `index_${slugPlural}`) {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
                                     user[this.getPermissionUserKey()]?.includes(
-                                        `fetch:${slugPlural}`
+                                        `index:${slugPlural}`
                                     )
                             )
                         }

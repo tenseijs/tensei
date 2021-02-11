@@ -9,6 +9,8 @@ export class Double extends Integer {
     }
 
     public afterConfigSet() {
+        super.afterConfigSet()
+
         if (this.tenseiConfig?.databaseConfig.type === 'postgresql') {
             this.property.columnTypes = ['double precision']
         }

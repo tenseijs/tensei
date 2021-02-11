@@ -19,7 +19,7 @@ tensei()
             .displayField('Title'),
             resource('Category')
                 .fields([
-                    text('Name'),
+                    text('Name').notNullable().rules('required'),
                     textarea('Description'),
                     hasMany('Post')
                 ])
@@ -32,5 +32,10 @@ tensei()
         media().plugin(),
         graphql().plugin(),
     ])
+    .databaseConfig({
+        type: 'sqlite',
+        debug: true,
+        dbName: 'tensei'
+    })
     .start()
     .catch(console.error)

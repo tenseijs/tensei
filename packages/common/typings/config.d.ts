@@ -309,6 +309,7 @@ declare module '@tensei/common/config' {
         events: {
             [key: string]: EventContract
         }
+        inProduction: boolean
         port: number
         migrating: boolean
         root: string
@@ -332,6 +333,9 @@ declare module '@tensei/common/config' {
         >(
             ...middleware: GraphQlMiddleware<TSource, TContext, TArgs>[]
         ): void
+        pluginsConfig: {
+            [key: string]: any
+        }
         plugins: PluginContract[]
         dashboards: DashboardContract[]
         resources: ResourceContract[]

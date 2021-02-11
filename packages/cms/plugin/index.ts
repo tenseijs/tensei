@@ -522,7 +522,7 @@ class CmsPlugin {
                 ])
             })
             .boot(async config => {
-                const { app, orm, extendEvents } = config
+                const { app, orm, extendEvents, currentCtx } = config
                 const Store = ExpressSessionMikroORMStore(
                     ExpressSession,
                     this.sessionMikroOrmOptions
@@ -599,7 +599,8 @@ class CmsPlugin {
                                     name: request.config.name,
                                     dashboardPath: this.config.path,
                                     apiPath: `/${this.config.path}/api`,
-                                    serverUrl: request.config.serverUrl
+                                    serverUrl: request.config.serverUrl,
+                                    pluginsConfig: currentCtx().pluginsConfig
                                 }),
                                 shouldShowRegistrationScreen:
                                     (await request.manager.count(

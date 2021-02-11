@@ -28,6 +28,7 @@ declare module '@tensei/common/resources' {
         label: string
         groupSlug: string
         valueField: string
+        hideOnApi?: boolean
         hideOnInsertApi: boolean
         hideOnFetchApi: boolean
         hideOnUpdateApi: boolean

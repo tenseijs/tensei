@@ -97,7 +97,7 @@ export default (config: Config, cmsConfig: any) => {
             route(`CMS: Fetch multiple ${plural}`)
                 .get()
                 .internal()
-                .id(getRouteId(`fetch_${plural}`))
+                .id(getRouteId(`index_${plural}`))
                 .resource(resource)
                 .path(getApiPath(plural))
                 .extend({
@@ -164,7 +164,7 @@ export default (config: Config, cmsConfig: any) => {
         routes.push(
             route(`Fetch ${singular} relations`)
                 .get()
-                .id(getRouteId(`fetch_${singular}_relations`))
+                .id(getRouteId(`index_${singular}_relations`))
                 .internal()
                 .resource(resource)
                 .extend({

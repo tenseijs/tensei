@@ -39,6 +39,8 @@ export class ID extends Field implements IDContract {
     }
 
     public afterConfigSet() {
+        super.afterConfigSet()
+
         if (this.tenseiConfig?.databaseConfig.type === 'mongo') {
             this.property.type = 'string'
         }

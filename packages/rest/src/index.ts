@@ -147,7 +147,7 @@ class Rest {
                     route(`Fetch multiple ${plural}`)
                         .get()
                         .internal()
-                        .id(this.getRouteId(`fetch_${plural}`))
+                        .id(this.getRouteId(`index_${plural}`))
                         .resource(resource)
                         .path(getApiPath(plural))
                         .extend({
@@ -227,7 +227,7 @@ class Rest {
                 routes.push(
                     route(`Fetch ${singular} relations`)
                         .get()
-                        .id(this.getRouteId(`fetch_${singular}_relations`))
+                        .id(this.getRouteId(`index_${singular}_relations`))
                         .internal()
                         .resource(resource)
                         .extend({

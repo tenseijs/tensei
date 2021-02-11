@@ -440,7 +440,7 @@ test('correctly generates delete_resources resolvers for all registered resource
     )
 })
 
-test('correctly generates fetch_resources resolvers for all registered resources', async () => {
+test('correctly generates index_resources resolvers for all registered resources', async () => {
     const {
         app,
         ctx: { orm, logger }
@@ -567,7 +567,7 @@ test('correctly generates fetch_resources resolvers for all registered resources
     ).toBe(1)
 })
 
-test('correctly generates fetch_resource resolvers for all registered resources', async () => {
+test('correctly generates index_resource resolvers for all registered resources', async () => {
     const {
         app,
         ctx: { orm }

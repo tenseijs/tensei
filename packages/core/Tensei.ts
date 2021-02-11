@@ -118,7 +118,8 @@ export class Tensei implements TenseiContract {
             },
             extendResources: (resources: ResourceContract[]) => {
                 this.resources(resources)
-            }
+            },
+            pluginsConfig: {}
         } as any
 
         this.ctx.mailer = mail(
@@ -411,6 +412,10 @@ export class Tensei implements TenseiContract {
             extendRoutes: (routes: RouteContract[]) => {
                 this.routes(routes)
             },
+            setPluginConfig: (name: string, config: any) => {
+                this.ctx.pluginsConfig[name] = config
+            },
+            inProduction: process.env.NODE_ENV === 'production',
             currentCtx: () => this.ctx,
             storageDriver: this.storageDriver.bind(this),
             getQuery: this.getQuery.bind(this),

@@ -129,7 +129,11 @@ export class Field implements FieldContract {
         }
     }
 
-    public afterConfigSet() {}
+    public afterConfigSet() {
+        if (this.tenseiConfig?.orm?.config.get('type') === 'sqlite') {
+            this.nullable()
+        }
+    }
 
     public onUpdate<T extends FieldContract>(this: T, onCreate: () => any): T {
         this.property.onUpdate = onCreate
@@ -550,6 +554,10 @@ export class Field implements FieldContract {
      *
      */
     public notNullable<T extends FieldContract>(this: T): T {
+        if (this.tenseiConfig?.orm?.config.get('type') === 'sqlite') {
+            return this
+        }
+
         this.isNullable = false
         this.property.nullable = false
         this.relatedProperty.nullable = false

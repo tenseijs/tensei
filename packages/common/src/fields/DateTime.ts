@@ -18,6 +18,8 @@ export class DateTime extends DateField {
     }
 
     public afterConfigSet() {
+        super.afterConfigSet()
+
         if (this.tenseiConfig?.databaseConfig.type === 'postgresql') {
             this.property.columnTypes = ['timestamp without time zone']
         }

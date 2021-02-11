@@ -16,18 +16,13 @@ import {
 
 import ManageUser from './ManageUser'
 
-export interface ResourceProps {
-    detailId?: string
-    baseResource: ResourceContract
-    relatedResource?: ResourceContract
+export interface UsersProps {
+    resource?: ResourceContract
 }
 
-const Users: React.FC<ResourceProps> = ({
-    baseResource,
-    relatedResource,
-    detailId
+const Users: React.FC<UsersProps> = ({
+    resource = window.Tensei.state.resourcesMap['admin-users']
 }) => {
-    const resource = window.Tensei.state.resourcesMap['admin-users']
     const [search, setSearch] = useState('')
     const [creating, setCreating] = useState(false)
     const [deleting, setDeleting] = useState<AbstractData | null>(null)
@@ -37,7 +32,7 @@ const Users: React.FC<ResourceProps> = ({
 
     const searchableFields = resource.fields.filter(field => field.isSearchable)
 
-    if (!window.Tensei.state.permissions['index:admin-users']) {
+    if (!window.Tensei.state.permissions[`index:${resource.slug}`]) {
         return <Redirect to={window.Tensei.getPath('404')} />
     }
 
@@ -71,7 +66,11 @@ const Users: React.FC<ResourceProps> = ({
             parameters.sort = `${data.sort.field}:${data.sort.direction}`
         }
 
-        parameters.populate = 'admin_roles'
+        parameters.populate =
+            resource.slug === 'admin-users'
+                ? 'admin_roles'
+                : window.Tensei.state.config.pluginsConfig.auth.role
+                      .snakeCaseNamePlural
 
         parameters.page = data.meta.page
         parameters.per_page = data.meta.per_page
@@ -86,11 +85,7 @@ const Users: React.FC<ResourceProps> = ({
                 setLoading(true)
 
                 window.Tensei.client
-                    .get(
-                        relatedResource
-                            ? `${baseResource.slug}/${detailId}/${relatedResource.slug}?${query}`
-                            : `${slug}?${query}`
-                    )
+                    .get(`${slug}?${query}`)
                     .then(({ data: payload }) => {
                         setData({
                             ...currentData,
@@ -141,14 +136,16 @@ const Users: React.FC<ResourceProps> = ({
                 )
             }
         })),
-        (window.Tensei.state.permissions['update:admin-users'] ||
-            window.Tensei.state.permissions['delete:admin-users']) && {
+        (window.Tensei.state.permissions[`update:${resource.slug}`] ||
+            window.Tensei.state.permissions[`delete:${resource.slug}`]) && {
             title: <span className="sr-only">View</span>,
             field: 'actions',
 
             render: (value: string, row: any) => (
                 <div className="flex items-center">
-                    {window.Tensei.state.permissions['update:admin-users'] && (
+                    {window.Tensei.state.permissions[
+                        `update:${resource.slug}`
+                    ] && (
                         <button
                             onClick={() => setEditing(row)}
                             className="flex mr-4 items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"
@@ -166,7 +163,9 @@ const Users: React.FC<ResourceProps> = ({
                             </svg>
                         </button>
                     )}
-                    {window.Tensei.state.permissions['delete:admin-users'] && (
+                    {window.Tensei.state.permissions[
+                        `delete:${resource.slug}`
+                    ] && (
                         <button
                             onClick={() => setDeleting(row)}
                             className="flex items-center justify-center bg-tensei-gray-600 h-10 w-10 rounded-full opacity-80 hover:opacity-100 transition duration-100 ease-in-out"

@@ -126,19 +126,25 @@ const getPermissionsToInsert = async (
 ) => {
     const permissions: Permission[] = []
 
-    resources.forEach(resource => {
-        ;['insert', 'fetch', 'show', 'update', 'delete'].forEach(operation => {
-            permissions.push(`${operation}:${resource.data.slug}`)
-        })
+    resources
+        .filter(resource => !resource.data.hideOnApi)
+        .forEach(resource => {
+            ;['insert', 'index', 'show', 'update', 'delete'].forEach(
+                operation => {
+                    permissions.push(`${operation}:${resource.data.slug}`)
+                }
+            )
 
-        resource.data.actions.forEach(action => {
-            permissions.push(`run:${resource.data.slug}:${action.data.slug}`)
-        })
+            resource.data.actions.forEach(action => {
+                permissions.push(
+                    `run:${resource.data.slug}:${action.data.slug}`
+                )
+            })
 
-        resource.data.permissions.forEach(permission => {
-            permissions.push(permission)
+            resource.data.permissions.forEach(permission => {
+                permissions.push(permission)
+            })
         })
-    })
 
     const existingPermissions: any[] = (
         await em.find(permissionResource.data.pascalCaseName, {

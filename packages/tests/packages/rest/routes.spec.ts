@@ -15,7 +15,7 @@ test('Generates types only for resources not hidden from API', async () => {
     expect(responses.map(r => r.status)).toEqual([422, 404])
 })
 
-test('Only resources exposed to API have fetch_resources endpoints', async () => {
+test('Only resources exposed to API have index_resources endpoints', async () => {
     const { app } = await setup()
 
     const client = Supertest(app)
