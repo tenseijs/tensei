@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.2](https://github.com/tenseijs/tensei/compare/v0.7.1...v0.7.2) (2021-02-11)
+
+**Note:** Version bump only for package @tensei/main
+
+
+
+
+
 ## [0.7.1](https://github.com/tenseijs/tensei/compare/v0.7.0...v0.7.1) (2021-02-11)
 
 
