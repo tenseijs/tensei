@@ -11,7 +11,7 @@ jobs:
       fail-fast: true
       max-parallel: 6
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12.x]
 
     steps:
       - name: Checkout code
