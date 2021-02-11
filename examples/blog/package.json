@@ -1,15 +1,15 @@
 {
     "name": "@examples/blog",
-    "version": "0.7.2",
+    "version": "0.7.3",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
         "@mikro-orm/sqlite": "^4.4.0",
-        "@tensei/cms": "^0.7.2",
-        "@tensei/core": "^0.7.2",
-        "@tensei/graphql": "^0.7.2",
-        "@tensei/media": "^0.7.2",
-        "@tensei/social-auth": "^0.7.2"
+        "@tensei/cms": "^0.7.3",
+        "@tensei/core": "^0.7.3",
+        "@tensei/graphql": "^0.7.3",
+        "@tensei/media": "^0.7.3",
+        "@tensei/social-auth": "^0.7.3"
     },
     "scripts": {
         "example:dev": "nodemon src/index"

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.3](https://github.com/tenseijs/tensei/compare/v0.7.2...v0.7.3) (2021-02-11)
+
+
+### Features
+
+* **cms:** add users & roles to the cms sidebar menu ([eda1e3c](https://github.com/tenseijs/tensei/commit/eda1e3ca3716bcb69ecbfec6120ba55a2b4b06dd))
+
+
+
+
+
 ## [0.7.2](https://github.com/tenseijs/tensei/compare/v0.7.1...v0.7.2) (2021-02-11)
 
 **Note:** Version bump only for package @tensei/components
