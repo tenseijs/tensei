@@ -97,22 +97,16 @@ const createProjectTasks = ({ newAppDir }: { newAppDir: string }) => {
 }
 
 const installNodeModulesTasks = ({ newAppDir }: { newAppDir: string }) => {
-    const useYarn = hasYarnInstalled()
-
     return [
         {
             title:
-                'Running `' +
-                (useYarn ? 'yarn' : 'npm') +
-                ' install`... (This could take a while)',
+                'Running `' + 'npm' + ' install`... (This could take a while)',
             task: () => {
-                return execa(
-                    useYarn
-                        ? 'yarn install --production --no-optional'
-                        : 'npm install --production --no-optional',
+                return execa('npm install',
                     {
                         shell: true,
-                        cwd: newAppDir
+                        cwd: newAppDir,
+                        stdin: 'ignore'
                     }
                 )
             }
