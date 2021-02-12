@@ -1,6 +1,6 @@
 {
     "name": "@tensei/rest",
-    "version": "0.7.3",
+    "version": "0.7.4",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -20,7 +20,7 @@
         "test": "jest --verbose --runInBand --forceExit"
     },
     "dependencies": {
-        "@tensei/common": "^0.7.3",
+        "@tensei/common": "^0.7.4",
         "express-response-formatter": "^2.0.2",
         "pluralize": "^8.0.0",
         "qs": "^6.9.4"
