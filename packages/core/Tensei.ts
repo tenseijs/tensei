@@ -128,9 +128,15 @@ export class Tensei implements TenseiContract {
             this.ctx.root
         )
         ;(this.ctx.databaseConfig = {
-            dbName: this.ctx.name.toLowerCase(),
-            type: 'sqlite',
-            entities: []
+            dbName: process.env.DATABASE_NAME || this.ctx.name.toLowerCase(),
+            type: process.env.DATABASE_TYPE as any || 'sqlite',
+            entities: [],
+            clientUrl: process.env.DATABASE_URL,
+            user: process.env.DATABASE_USER,
+            password: process.env.DATABASE_PASSWORD,
+            port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : undefined,
+            host: process.env.DATABASE_HOST,
+            charset: process.env.DATABASE_CHARSET
         }),
             (this.ctx.storage = new StorageManager({
                 default: 'local',
@@ -485,7 +491,10 @@ export class Tensei implements TenseiContract {
     }
 
     public databaseConfig(databaseConfig: DatabaseConfiguration) {
-        this.ctx.databaseConfig = databaseConfig
+        this.ctx.databaseConfig = {
+            ...this.ctx.databaseConfig,
+            ...databaseConfig
+        }
 
         return this
     }
