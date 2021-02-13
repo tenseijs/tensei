@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.5](https://github.com/tenseijs/tensei/compare/v0.7.4...v0.7.5) (2021-02-13)
+
+
+### Bug Fixes
+
+* **graphql:** add graphql to dependencies list ([1f93dd4](https://github.com/tenseijs/tensei/commit/1f93dd4e130a8af42365ae6cef6907fae5c8acc2))
+
+
+
+
+
 ## [0.7.4](https://github.com/tenseijs/tensei/compare/v0.7.3...v0.7.4) (2021-02-12)
 
 **Note:** Version bump only for package @tensei/cli
