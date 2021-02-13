@@ -1,6 +1,6 @@
 {
 	"name": "@tensei/mail",
-	"version": "0.7.8",
+	"version": "0.7.9",
 	"description": "Mail provider for @tensei (derived from @adonisjs mail provider)",
 	"main": "build/src/index.js",
 	"files": [

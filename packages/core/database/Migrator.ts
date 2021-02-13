@@ -11,7 +11,7 @@ class Migrator {
         const schemaGenerator = this.orm.getSchemaGenerator()
 
         await schemaGenerator.updateSchema(
-            true,
+            false,
             process.env.NODE_ENV !== 'production',
             false,
             false
