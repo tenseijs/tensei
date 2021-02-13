@@ -10,8 +10,6 @@ class Migrator {
 
         const schemaGenerator = this.orm.getSchemaGenerator()
 
-        await schemaGenerator.ensureDatabase()
-
         await schemaGenerator.updateSchema(
             true,
             process.env.NODE_ENV !== 'production',

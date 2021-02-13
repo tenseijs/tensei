@@ -126,8 +126,9 @@ export class Tensei implements TenseiContract {
             this.mailerConfig,
             this.ctx.logger,
             this.ctx.root
-        )
-        ;(this.ctx.databaseConfig = {
+        );
+
+        this.ctx.databaseConfig = {
             dbName: process.env.DATABASE_NAME || this.ctx.name.toLowerCase(),
             type: process.env.DATABASE_TYPE as any || 'sqlite',
             entities: [],
@@ -136,20 +137,32 @@ export class Tensei implements TenseiContract {
             password: process.env.DATABASE_PASSWORD,
             port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : undefined,
             host: process.env.DATABASE_HOST,
-            charset: process.env.DATABASE_CHARSET
-        }),
-            (this.ctx.storage = new StorageManager({
-                default: 'local',
-                disks: {
-                    local: {
-                        driver: 'local',
-                        config: {
-                            root: `${this.ctx.root}/storage`,
-                            publicPath: ``
-                        }
+            charset: process.env.DATABASE_CHARSET,
+        }
+
+        if (this.ctx.databaseConfig.type === 'postgresql') {
+            // Add client configurations that facilitate heroku postgres by default.
+            this.ctx.databaseConfig.driverOptions = {
+                connection: {
+                    ssl: {
+                        rejectUnauthorized: false
                     }
                 }
-            }))
+            }
+        }
+
+        this.ctx.storage = new StorageManager({
+            default: 'local',
+            disks: {
+                local: {
+                    driver: 'local',
+                    config: {
+                        root: `${this.ctx.root}/storage`,
+                        publicPath: ``
+                    }
+                }
+            }
+        })
     }
 
     public setConfigOnResourceFields() {
