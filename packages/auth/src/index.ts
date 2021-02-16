@@ -322,7 +322,7 @@ class Auth {
                 em.assign(entity, payload)
             })
             .beforeCreate(async ({ entity, em }, ctx) => {
-                if (this.socialAuthEnabled() && ctx.request.body.object.extra) {
+                if (this.socialAuthEnabled() && ctx.request?.body?.object?.extra) {
                     em.assign(entity, ctx.request.body.object.extra)
                 }
             })
