@@ -3,6 +3,7 @@ import { CookieOptions } from 'express'
 import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'
 import { ApiContext } from '@tensei/common'
+import { DataPayload } from '@tensei/common'
 
 export interface GrantConfig {
     key: string
@@ -35,6 +36,8 @@ export enum TokenTypes {
     PASSWORDLESS = 'PASSWORDLESS'
 }
 
+export type AuthHookFunction<Payload = DataPayload> =  (ctx: ApiContext, payload: Payload) => void|Promise<any>
+
 export interface AuthPluginConfig {
     fields: FieldContract[]
     userResource: string
@@ -52,18 +55,25 @@ export interface AuthPluginConfig {
         accessTokenExpiresIn: number
         refreshTokenExpiresIn: number
     }
+    beforeLogin: AuthHookFunction
+    afterLogin: AuthHookFunction
+    beforeRegister: AuthHookFunction<{
+        roles: string[]
+        email: string
+        password: string
+        email_verified_at?: string
+        email_verification_token?: string|null
+
+        [key: string]: any
+    }>
+    afterRegister: AuthHookFunction<UserEntity>
+    beforePasswordReset: AuthHookFunction
+    afterPasswordReset: AuthHookFunction
     refreshTokenHeaderName: string
     cookieOptions: Omit<CookieOptions, 'httpOnly' | 'maxAge'>
     verifyEmails?: boolean
     skipWelcomeEmail?: boolean
     twoFactorAuth: boolean
-    beforeCreateUser?: HookFunction
-    afterCreateUser?: HookFunction
-    beforeUpdateUser?: HookFunction
-    afterUpdateUser?: HookFunction
-    beforeLoginUser?: HookFunction
-    afterLoginUser?: HookFunction
-    beforeOAuthIdentityCreated?: HookFunction
     providers: {
         [key: string]: GrantConfig
     }

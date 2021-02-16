@@ -1,4 +1,5 @@
 import Field from './Field'
+import { snakeCase } from 'change-case'
 
 export interface Option {
     label: string
@@ -28,9 +29,13 @@ export class Select extends Field {
      * forms
      *
      */
-    public options(options: Array<Option>) {
-        this.selectOptions = options
-        this.property.items = options.map(option => option.value)
+    public options(options: Array<Option|string>) {
+        this.selectOptions = options.map(option => typeof option === 'string' ? ({
+            label: option,
+            value: snakeCase(option)
+        }): option)
+
+        this.property.items = this.selectOptions.map(option => option.value)
 
         return this
     }
