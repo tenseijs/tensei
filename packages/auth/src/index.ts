@@ -35,7 +35,8 @@ import {
     AuthResources,
     AuthPluginConfig,
     SupportedSocialProviders,
-    defaultProviderScopes
+    defaultProviderScopes,
+    AuthHookFunction
 } from './config'
 
 import { setup } from './setup'
@@ -62,6 +63,12 @@ class Auth {
         fields: [],
         apiPath: 'auth',
         setupFn: () => this,
+        beforeLogin: () => {},
+        afterLogin: () => {},
+        beforeRegister: () => {},
+        afterRegister: () => {},
+        beforePasswordReset: () => {},
+        afterPasswordReset: () => {},
         tokensConfig: {
             accessTokenExpiresIn: 60 * 20, // twenty minutes
             secretKey: process.env.JWT_SECRET || 'auth-secret-key',
@@ -109,26 +116,44 @@ class Auth {
         this.config.setupFn(this.resources)
     }
 
-    public afterUpdateUser(hook: HookFunction) {
-        this.config.afterUpdateUser = hook
-
-        return this
-    }
-
-    public beforeLoginUser(hook: HookFunction) {
-        this.config.beforeLoginUser = hook
-
-        return this
-    }
-
-    public afterLoginUser(hook: HookFunction) {
-        this.config.afterLoginUser = hook
-
-        return this
-    }
-
     public setup(fn: AuthSetupFn) {
         this.config.setupFn = fn
+
+        return this
+    }
+
+    public beforeLogin(fn: AuthHookFunction) {
+        this.config.beforeLogin = fn
+
+        return this
+    }
+
+    public afterLogin(fn: AuthHookFunction) {
+        this.config.afterLogin = fn
+
+        return this
+    }
+
+    public beforeRegister(fn: AuthHookFunction) {
+        this.config.beforeRegister = fn
+
+        return this
+    }
+
+    public afterRegister(fn: AuthHookFunction) {
+        this.config.afterRegister = fn
+
+        return this
+    }
+
+    public beforePasswordReset(fn: AuthHookFunction) {
+        this.config.beforePasswordReset = fn
+
+        return this
+    }
+    
+    public afterPasswordReset(fn: AuthHookFunction) {
+        this.config.afterPasswordReset = fn
 
         return this
     }
@@ -296,6 +321,11 @@ class Auth {
 
                 em.assign(entity, payload)
             })
+            .beforeCreate(async ({ entity, em }, ctx) => {
+                if (this.socialAuthEnabled() && ctx.request.body.object.extra) {
+                    em.assign(entity, ctx.request.body.object.extra)
+                }
+            })
             .beforeUpdate(async ({ entity, em, changeSet }) => {
                 if (changeSet?.payload.password) {
                     em.assign(entity, {
@@ -395,6 +425,7 @@ class Auth {
                 text('Provider').rules('required'),
                 text('Provider User ID').hidden().hideOnApi()
             ])
+            .hideFromNavigation()
             .hideOnApi()
     }
 
@@ -1506,6 +1537,7 @@ class Auth {
         input ${snakeCaseName}_social_auth_register_input {
             """ The temporal access token received in query parameter when user is redirected """
             access_token: String!
+            extra: JSONObject
         }
 
         input ${snakeCaseName}_social_auth_login_input {
@@ -1638,6 +1670,8 @@ class Auth {
 
         const UserResource = this.resources.user
 
+        await this.config.beforeRegister(ctx, createUserPayload)
+
         const user: any = manager.create(
             UserResource.data.pascalCaseName,
             createUserPayload
@@ -1651,9 +1685,7 @@ class Auth {
 
         ctx.user = user
 
-        if (this.config.registered) {
-            await this.config.registered(ctx)
-        }
+        await this.config.afterRegister(ctx, user)
 
         emitter.emit(USER_EVENTS.REGISTERED, user)
 
@@ -1779,12 +1811,18 @@ class Auth {
                 createPayload.email_verification_token = null
             }
 
+            await this.config.beforeRegister(ctx, createPayload as any)
+
             user = manager.create(
                 this.resources.user.data.pascalCaseName,
                 createPayload
             )
 
             await manager.persistAndFlush(user)
+
+            await this.config.afterRegister(ctx, user)
+        } else {
+            await this.config.beforeLogin(ctx, oauthPayload)
         }
 
         const belongsToField = this.resources.oauthIdentity.data.fields.find(
@@ -1797,6 +1835,8 @@ class Auth {
         })
 
         await manager.flush()
+
+        await this.config.afterLogin(ctx, user)
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
@@ -1838,6 +1878,8 @@ class Auth {
         if (!Bcrypt.compareSync(password, user.password)) {
             throw ctx.authenticationError('Invalid credentials.')
         }
+        
+        await this.config.beforeLogin(ctx, user)
 
         if (this.config.twoFactorAuth && user.two_factor_enabled) {
             const Speakeasy = require('speakeasy')
@@ -1866,6 +1908,8 @@ class Auth {
         }
 
         ctx.user = user
+
+        await this.config.afterLogin(ctx, user)
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
@@ -2187,14 +2231,6 @@ class Auth {
         return Jwt.sign(payload, this.config.tokensConfig.secretKey, {
             expiresIn: this.config.tokensConfig.accessTokenExpiresIn
         })
-    }
-
-    public beforeOauthIdentityCreated(
-        beforeOAuthIdentityCreated: HookFunction
-    ) {
-        this.config.beforeOAuthIdentityCreated = beforeOAuthIdentityCreated
-
-        return this
     }
 
     public generateRandomToken(length = 32) {

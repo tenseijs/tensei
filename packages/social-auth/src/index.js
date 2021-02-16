@@ -20,13 +20,17 @@ class SocialAuthCallbackController {
                 query.access_token || query.code || query.oauth_token
 
             const redirect = (error, code) =>
-                response.redirect(
-                    `${authConfig.providers[provider].clientCallback}${
-                        error ? `?error=${error}` : ''
-                    }${
-                        code ? `?access_token=${code}` : ''
-                    }&provider=${provider}`
-                )
+                {
+                    const clientRedirect = query.clientCallback ? query.clientCallback: authConfig.providers[provider].clientCallback
+
+                    return response.redirect(
+                        `${clientRedirect}${
+                            error ? `?error=${error}` : ''
+                        }${
+                            code ? `?access_token=${code}` : ''
+                        }&provider=${provider}`
+                    )
+                }
 
             if (!access_token) return redirect(query.error)
 
