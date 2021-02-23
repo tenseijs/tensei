@@ -739,5 +739,17 @@ declare module '@tensei/mail' {
 		plugin(): PluginContract
 	}
 
+	class MailgunPlugin {
+		config: Omit<MailgunConfig, 'driver'> & {
+			driver: string;
+		};
+		constructor(name: string);
+		key(key: string): this;
+		domain(domain: string): this;
+		oDkim(): this;
+		plugin(): import("@tensei/common").PluginContract;
+	}
+
 	export const smtp: (name: string) => SmtpPlugin;
+	export const mailgun: (name: string) => MailgunPlugin;
 }

@@ -11,7 +11,7 @@ class SesPlugin {
         key: process.env.SES_ACCESS_KEY || '',
         secret: process.env.SES_ACCESS_SECRET || '',
         region: process.env.SES_REGION || 'us-east-1',
-        sslEnabled: true,
+        sslEnabled: process.env.SSL_ENABLED === undefined ? true: !!process.env.SSL_ENABLED,
         sendingRate: 10,
         maxConnections: 5,
     }

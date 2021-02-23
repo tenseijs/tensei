@@ -9,6 +9,7 @@
 
 /// <reference path="../types/mail.ts" />
 
+import Fs from 'fs'
 import Path from 'path'
 import fastq from 'fastq'
 import { Edge } from 'edge.js'
@@ -117,6 +118,24 @@ export class MailManager
 			cache: cacheViews,
 		})
 		const supercharged = new Supercharged()
+
+		const file = (name: string) => Fs.readFileSync(Path.resolve(__dirname, `templates/${name}.edge`)).toString('utf8')
+
+		edge.registerTemplate('header', {
+			template: file('header')
+		})
+
+		edge.registerTemplate('paragraph', {
+			template: file('paragraph')
+		})
+
+		edge.registerTemplate('button', {
+			template: file('button')
+		})
+
+		edge.registerTemplate('footer', {
+			template: file('footer')
+		})
 
 		edge.mount(
 			 this.mailsPath || Path.resolve(process.cwd(), 'mails')

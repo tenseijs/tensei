@@ -1,0 +1,25 @@
+@component('header')
+    @slot('preheader')
+        Cool stuff happening at MgSend
+    @endslot
+@endcomponent
+
+@component('paragraph')
+Hey there. My name is {{ user }}
+@endcomponent
+
+@component('paragraph')
+Instant PHP Platforms on DigitalOcean, Linode, and more. Featuring push-to-deploy.
+@endcomponent
+
+@component('button', link = 'https://katifrantz.com')
+Please activate your account
+@endcomponent
+
+@component('paragraph')
+Laravel is a web application framework with expressive, elegant syntax. We’ve already laid the foundation — freeing you to create without sweating the small things.
+@endcomponent
+
+@component('footer')
+7a Barikisu Iyede Street, Onike Yaba, Lagos, Nigeria
+@endcomponent

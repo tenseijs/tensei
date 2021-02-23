@@ -126,21 +126,24 @@ export class Tensei implements TenseiContract {
             this.mailerConfig,
             this.ctx.logger,
             this.ctx.root
-        );
+        )
 
         this.ctx.databaseConfig = {
-            type: process.env.DATABASE_TYPE as any || 'sqlite',
+            type: (process.env.DATABASE_TYPE as any) || 'sqlite',
             entities: [],
             clientUrl: process.env.DATABASE_URL,
             user: process.env.DATABASE_USER,
             password: process.env.DATABASE_PASSWORD,
-            port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : undefined,
+            port: process.env.DATABASE_PORT
+                ? parseInt(process.env.DATABASE_PORT)
+                : undefined,
             host: process.env.DATABASE_HOST,
-            charset: process.env.DATABASE_CHARSET,
+            charset: process.env.DATABASE_CHARSET
         }
 
         if (this.ctx.databaseConfig.type === 'sqlite') {
-            this.ctx.databaseConfig.dbName = process.env.DATABASE_NAME || this.ctx.name.toLowerCase()
+            this.ctx.databaseConfig.dbName =
+                process.env.DATABASE_NAME || this.ctx.name.toLowerCase()
         }
 
         if (this.ctx.databaseConfig.type === 'postgresql') {

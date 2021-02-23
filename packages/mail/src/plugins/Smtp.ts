@@ -8,8 +8,13 @@ class SmtpPlugin {
         driver: string
     } = {
         driver: '',
-        host: '',
-        port: '',
+        host: process.env.SMTP_HOST || '',
+        port: process.env.SMTP_PORT || '',
+        auth: {
+            type: 'login',
+            user: process.env.SMTP_USER || '',
+            pass: process.env.SMTP_PASS || ''
+        }
     }
 
     constructor(name: string) {

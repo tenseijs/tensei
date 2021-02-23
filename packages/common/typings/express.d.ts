@@ -1,6 +1,6 @@
 import { Logger } from 'pino'
 import { Request } from 'express'
-import { Mail } from '@tensei/mail'
+import { MailManagerContract } from '@tensei/mail'
 import { StorageManager } from '@slynova/flydrive'
 import { MikroORM, EntityManager } from '@mikro-orm/core'
 import {
@@ -21,7 +21,7 @@ declare global {
             dashboards: {
                 [key: string]: DashboardContract
             }
-            mailer: Mail
+            mailer: MailManagerContract
             config: Config
             user: User
             orm: MikroORM
