@@ -1,0 +1,30 @@
+{
+    "name": "@tensei/hades",
+    "version": "0.7.11",
+    "main": "./build/server/plugin.js",
+    "license": "MIT",
+    "files": [
+        "build/"
+    ],
+    "scripts": {
+        "prettier": "prettier --write ./**/*.{js,json,ts,tsx,css}",
+        "build:server": "tsc --p tsconfig.server.json",
+        "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "dev:server": "tsc --watch --p tsconfig.server.json",
+        "dev:client": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+        "test": "jest --verbose --runInBand --forceExit",
+        "build": "yarn build:server && yarn build:client && yarn copy:files",
+        "copy:files": "copyfiles index.mustache build/"
+    },
+    "devDependencies": {
+        "@tensei/common": "^0.7.11",
+        "@tensei/components": "^0.7.11",
+        "autoprefixer": "^10.2.4",
+        "cross-env": "^7.0.3",
+        "laravel-mix": "^6.0.5",
+        "postcss": "^8.2.4",
+        "tailwindcss": "^2.0.2",
+        "ts-loader": "^8.0.14",
+        "typescript": "^4.1.3"
+    }
+}

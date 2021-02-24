@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Portal - {{name}}</title>
+        <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet">
+
+    <!-- Scripts -->
+    <script src="https://cdn.paddle.com/paddle/paddle.js"></script>
+    <link media="all" href="/billing.css" rel="stylesheet" />
+</head>
+<body class="font-sans antialiased">
+    <div id="portal"></div>
+        <script>
+            window.__tensei__billing = {
+                plans: '{{{plans}}}',
+            }
+        </script>
+    <script src='/billing.js'></script>
+</body>
+</html>

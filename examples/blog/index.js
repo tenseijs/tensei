@@ -1,6 +1,7 @@
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { media } = require('@tensei/media')
+const { billing, plan } = require('@tensei/hades')
 const { graphql } = require('@tensei/graphql')
 const { tensei, welcome, resource, text, textarea, dateTime, slug, hasMany, belongsTo } = require('@tensei/core')
 
@@ -31,10 +32,22 @@ tensei()
         auth().rolesAndPermissions().plugin(),
         media().plugin(),
         graphql().plugin(),
+        billing()
+            .plans([
+                plan('Standard')
+                    .monthly('646462')
+                    .yearly('646463')
+                    .features([
+                        'Unlimited message archive',
+                        'Unlimited apps',
+                        'Group video calls with screen sharing'
+                    ])
+            ])
+        .plugin()
     ])
     .databaseConfig({
         type: 'sqlite',
-        debug: true,
+        debug: process.env.DEBUG,
         dbName: 'tensei'
     })
     .start()

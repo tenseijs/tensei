@@ -543,6 +543,8 @@ export class Tensei implements TenseiContract {
 
         this.app.disable('x-powered-by')
 
+        this.app.set('trust proxy', true)
+
         if (this.ctx.storageConfig.default === 'local') {
             const rootStorage = (this.ctx.storageConfig.disks?.local
                 ?.config as any).root
