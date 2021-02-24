@@ -12,15 +12,16 @@ import {
     timestamp,
     belongsTo,
     boolean,
-    hasMany,
+    hasMany
 } from '@tensei/common'
 
 const indexFileContent = Fs.readFileSync(
     Path.resolve(__dirname, '..', 'index.mustache')
 ).toString()
 
-import { HadesConfig } from './types'
+import routes from './routes'
 
+import { HadesConfig } from './types'
 import { frontendState } from './FrontendState'
 
 class Hades {
@@ -32,11 +33,17 @@ class Hades {
         cardUpfront: false,
         prorates: true,
         customerResourceName: 'User',
-        stripeKey: process.env.STRIPE_KEY || ''
+        sandbox: process.env.PADDLE_SANDBOX === 'true'
     }
 
     public customerResourceName(name: string) {
         this.config.customerResourceName = name
+
+        return this
+    }
+
+    public sandbox(sandbox: boolean) {
+        this.config.sandbox = sandbox
 
         return this
     }
@@ -65,25 +72,13 @@ class Hades {
         return this
     }
 
-    public monthlyIncentive(incentive: string) {
-        this.config.monthlyIncentive = incentive
-
-        return this
-    }
-
-    public yearlyIncentive(incentive: string) {
-        this.config.yearlyIncentive = incentive
-
-        return this
-    }
-
     private customerFields() {
         return [
             boolean('Has High Risk Payment').nullable().hideOnApi(),
             timestamp('Trial Ends At').nullable(),
             text('Pending Checkout ID').nullable().hideOnApi(),
             hasMany('Subscription'),
-            hasMany('Receipt'),
+            hasMany('Receipt')
         ]
     }
 
@@ -137,12 +132,6 @@ class Hades {
         return this
     }
 
-    public stripeKey(key: string) {
-        this.config.stripeKey = key
-
-        return this
-    }
-
     public cardUpfront() {
         this.config.cardUpfront = true
 
@@ -151,25 +140,40 @@ class Hades {
 
     public plugin() {
         return plugin('Hades')
-            .register(({ extendResources, resources, logger }) => {
-                extendResources([this.subscriptionsResource(), this.receiptsResource()])
+            .register(
+                ({ extendResources, resources, logger, extendRoutes }) => {
+                    extendResources([
+                        this.subscriptionsResource(),
+                        this.receiptsResource()
+                    ])
 
-                const billable = resources.find(resource => resource.data.name === this.config.customerResourceName)
+                    const billable = resources.find(
+                        resource =>
+                            resource.data.name ===
+                            this.config.customerResourceName
+                    )
 
-                if (! billable) {
-                    logger.error(`Billable resource ${this.config.customerResourceName} was not found.`)
-                } else {
-                    billable.fields(this.customerFields())
+                    if (!billable) {
+                        logger.error(
+                            `Billable resource ${this.config.customerResourceName} was not found.`
+                        )
+                    } else {
+                        billable.fields(this.customerFields())
 
-                    const trialDays = this.config.trialDays
+                        const trialDays = this.config.trialDays
 
-                    billable.beforeCreate(({ em, entity }) => {
-                        em.assign(entity, {
-                            trial_ends_at: trialDays ? Dayjs().add(trialDays, 'd').toISOString() : null
+                        billable.beforeCreate(({ em, entity }) => {
+                            em.assign(entity, {
+                                trial_ends_at: trialDays
+                                    ? Dayjs().add(trialDays, 'd').toISOString()
+                                    : null
+                            })
                         })
-                    })
+                    }
+
+                    extendRoutes(routes(this.config))
                 }
-            })
+            )
             .boot(({ resources, app, name }) => {
                 const customerResource = resources.find(
                     resource =>
@@ -191,11 +195,15 @@ class Hades {
                     )
                 )
 
-                app.get(`/${this.config.portalPath}/`, async (request, response) =>
-                    {
+                app.get(
+                    `/${this.config.portalPath}/`,
+                    async (request, response) => {
                         return response.send(
                             Mustache.render(indexFileContent, {
-                                ...(await frontendState(this.config, request).get()),
+                                ...(await frontendState(
+                                    this.config,
+                                    request
+                                ).get()),
                                 name
                             })
                         )

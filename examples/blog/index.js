@@ -35,12 +35,27 @@ tensei()
         billing()
             .plans([
                 plan('Standard')
-                    .monthly('646462')
-                    .yearly('646463')
+                    .monthly('8486')
+                    .yearly('8487')
+                    .description('Get to enjoy the most basic features of Tensei')
                     .features([
                         'Unlimited message archive',
                         'Unlimited apps',
                         'Group video calls with screen sharing'
+                    ])
+                    .yearlyIncentive('Save 80% on the yearly plan.'),
+                plan('Premium')
+                    .monthly('8486')
+                    .yearly('8487')
+                    .description('Powerful lift off of Tensei')
+                    .features([
+                        'Unlimited message archive',
+                        'Unlimited apps',
+                        'Group video calls with screen sharing',
+                        '99.99% guaranteed uptime SLA',
+                        'User provisioning and deprovisioning',
+                        'SAML-based single sign-on (SSO)',
+                        'Data exports for all messages',
                     ])
             ])
         .plugin()

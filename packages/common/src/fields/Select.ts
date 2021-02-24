@@ -29,11 +29,15 @@ export class Select extends Field {
      * forms
      *
      */
-    public options(options: Array<Option|string>) {
-        this.selectOptions = options.map(option => typeof option === 'string' ? ({
-            label: option,
-            value: snakeCase(option)
-        }): option)
+    public options(options: Array<Option | string>) {
+        this.selectOptions = options.map(option =>
+            typeof option === 'string'
+                ? {
+                      label: option,
+                      value: snakeCase(option)
+                  }
+                : option
+        )
 
         this.property.items = this.selectOptions.map(option => option.value)
 

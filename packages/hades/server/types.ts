@@ -3,14 +3,12 @@ import Plan from './Plan'
 export interface HadesConfig {
     customerResourceName: string
     plans: Plan[]
-    stripeKey: string
     cardUpfront: boolean
     logo: string
     trialDays?: number
     portalPath: string
     prorates: boolean
-    monthlyIncentive?: string
-    yearlyIncentive?: string
+    sandbox?: boolean
 }
 
 export enum BILLING_EVENTS {

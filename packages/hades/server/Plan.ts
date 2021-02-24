@@ -8,6 +8,8 @@ export interface PlanConfig {
     yearlyID?: string
     features: string[]
     archived?: boolean
+    monthlyIncentive?: string
+    yearlyIncentive?: string
 }
 
 class Plan {
@@ -35,8 +37,26 @@ class Plan {
         return this
     }
 
+    public monthlyIncentive(incentive: string) {
+        this.config.monthlyIncentive = incentive
+
+        return this
+    }
+
+    public yearlyIncentive(incentive: string) {
+        this.config.yearlyIncentive = incentive
+
+        return this
+    }
+
     public features(features: string[]) {
         this.config.features = features
+
+        return this
+    }
+
+    public description(description: string) {
+        this.config.description = description
 
         return this
     }

@@ -1,8 +1,9 @@
 import React from 'react'
 
 const Feature: React.FC<{
+    feature: string
     className?: string
-}> = ({ children, className }) => {
+}> = ({ feature }) => {
     return (
         <div className="flex items-center">
             <svg
@@ -17,7 +18,9 @@ const Feature: React.FC<{
                 ></path>
             </svg>
 
-            <div className="ml-2 text-sm text-gray-600">feature one</div>
+            <div className="ml-2 text-sm text-gray-600">
+                {feature}
+            </div>
         </div>
     )
 }

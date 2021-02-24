@@ -1,23 +1,37 @@
-import React from 'react'
+import Axios from 'axios'
 import ReactDOM from 'react-dom'
-import { PageWrapper } from '@tensei/components'
+import React, { useState } from 'react'
 
 import Plans from './components/Plans'
 import Button from './components/Button'
+import Switch from './components/Switch'
 import Receipts from './components/Receipts'
 import SectionHeading from './components/SectionHeading'
 
+import { Plan, BillingConfig } from './types'
+
 const getDefaultState = () => {
-    const thisWindow = (window as any)
+    const thisWindow = window as any
+
     return {
-        plans: JSON.parse(thisWindow.__tensei__billing.plans)
+        plans: JSON.parse(thisWindow.__tensei__billing.plans),
+        config: JSON.parse(thisWindow.__tensei__billing.config)
     }
 }
 
 const Hades = () => {
-    const state = getDefaultState()
+    const state: {
+        plans: Plan[]
+        config: BillingConfig
+    } = getDefaultState()
 
-    console.log(state)
+    const [planInterval, setPlanInterval] = useState<'monthly' | 'yearly'>(
+        'monthly'
+    )
+
+    window.axios = Axios.create({
+        baseURL: `/${state.config.portalPath}`
+    })
 
     return (
         <div className="font-sans antialiased min-h-screen bg-gray-100">
@@ -164,7 +178,23 @@ const Hades = () => {
                             </div>
 
                             <div className="mt-6 px-4 sm:px-8">
-                                <Plans />
+                                <Switch
+                                    onPlanIntervalChange={() =>
+                                        setPlanInterval(
+                                            planInterval === 'monthly'
+                                                ? 'yearly'
+                                                : 'monthly'
+                                        )
+                                    }
+                                    planInterval={planInterval}
+                                />
+                            </div>
+
+                            <div className="mt-6 px-4 sm:px-8">
+                                <Plans
+                                    plans={state.plans}
+                                    planInterval={planInterval}
+                                />
                             </div>
 
                             <SectionHeading className="mt-10 px-4 sm:px-8">
@@ -217,7 +247,7 @@ const Hades = () => {
                             </div>
                         </div>
 
-                        <div className='mt-10'>
+                        <div className="mt-10">
                             <SectionHeading className="px-4 sm:px-8">
                                 Resume Subscription
                             </SectionHeading>
