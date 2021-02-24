@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.12](https://github.com/tenseijs/tensei/compare/v0.7.11...v0.7.12) (2021-02-24)
+
+
+### Features
+
+* **mail:** add mailgun plugin and default mailing template components for saas apps ([#75](https://github.com/tenseijs/tensei/issues/75)) ([dcaae4b](https://github.com/tenseijs/tensei/commit/dcaae4b0053f2c0b7da1afc86f1f2617780faac4))
+
+
+
+
+
 ## [0.7.11](https://github.com/tenseijs/tensei/compare/v0.7.10...v0.7.11) (2021-02-16)
 
 **Note:** Version bump only for package @tensei/common
