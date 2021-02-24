@@ -102,13 +102,11 @@ const installNodeModulesTasks = ({ newAppDir }: { newAppDir: string }) => {
             title:
                 'Running `' + 'npm' + ' install`... (This could take a while)',
             task: () => {
-                return execa('npm install',
-                    {
-                        shell: true,
-                        cwd: newAppDir,
-                        stdin: 'ignore'
-                    }
-                )
+                return execa('npm install', {
+                    shell: true,
+                    cwd: newAppDir,
+                    stdin: 'ignore'
+                })
             }
         }
     ]

@@ -36,7 +36,10 @@ export enum TokenTypes {
     PASSWORDLESS = 'PASSWORDLESS'
 }
 
-export type AuthHookFunction<Payload = DataPayload> =  (ctx: ApiContext, payload: Payload) => void|Promise<any>
+export type AuthHookFunction<Payload = DataPayload> = (
+    ctx: ApiContext,
+    payload: Payload
+) => void | Promise<any>
 
 export interface AuthPluginConfig {
     fields: FieldContract[]
@@ -62,7 +65,7 @@ export interface AuthPluginConfig {
         email: string
         password: string
         email_verified_at?: string
-        email_verification_token?: string|null
+        email_verification_token?: string | null
 
         [key: string]: any
     }>
