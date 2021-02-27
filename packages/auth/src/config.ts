@@ -58,6 +58,7 @@ export interface AuthPluginConfig {
         accessTokenExpiresIn: number
         refreshTokenExpiresIn: number
     }
+    separateSocialLoginAndRegister: boolean
     beforeLogin: AuthHookFunction
     afterLogin: AuthHookFunction
     beforeRegister: AuthHookFunction<{

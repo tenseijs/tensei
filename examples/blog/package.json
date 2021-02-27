@@ -8,6 +8,7 @@
         "@tensei/cms": "^0.7.12",
         "@tensei/core": "^0.7.12",
         "@tensei/graphql": "^0.7.12",
+        "@tensei/mde": "^0.7.12",
         "@tensei/media": "^0.7.12",
         "@tensei/social-auth": "^0.7.12"
     },

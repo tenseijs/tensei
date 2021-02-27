@@ -1,5 +1,6 @@
 import { camelCase } from 'change-case'
 import { FilterQuery, Dictionary } from '@mikro-orm/core'
+import { FieldContract } from '@tensei/common'
 import {
     FilterCondition,
     FilterConfig,
@@ -12,7 +13,8 @@ export class Filter<T = any> implements FilterContract {
         shortName: '',
         default: false,
         dashboardView: false,
-        cond: () => ({})
+        cond: () => ({}),
+        fields: []
     }
 
     constructor(name: string, shortName = camelCase(name)) {
@@ -34,6 +36,12 @@ export class Filter<T = any> implements FilterContract {
 
     noArgs() {
         this.config.args = false
+
+        return this
+    }
+
+    fields(fields: FieldContract[]) {
+        this.config.fields = fields
 
         return this
     }

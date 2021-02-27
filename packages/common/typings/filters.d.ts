@@ -1,4 +1,5 @@
 declare module '@tensei/common/filters' {
+    import { FieldContract } from '@tensei/core'
     import { FilterQuery, Dictionary } from '@mikro-orm/core'
 
     interface FilterConfig<T> {
@@ -8,6 +9,7 @@ declare module '@tensei/common/filters' {
         default: boolean
         dashboardView?: boolean
         cond: FilterCondition<T>
+        fields: FieldContract[]
     }
 
     type FilterCondition<T = any> = (

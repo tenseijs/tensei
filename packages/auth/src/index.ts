@@ -61,6 +61,7 @@ class Auth {
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
         fields: [],
+        separateSocialLoginAndRegister: false,
         apiPath: 'auth',
         setupFn: () => this,
         beforeLogin: () => {},
@@ -91,6 +92,12 @@ class Auth {
 
     public constructor() {
         this.refreshResources()
+    }
+
+    public separateSocialLoginAndRegister() {
+        this.config.separateSocialLoginAndRegister = true
+
+        return this
     }
 
     public registered(registered: AuthPluginConfig['registered']) {
@@ -1146,7 +1153,7 @@ class Auth {
 
         return [
             graphQlQuery(`Login ${name}`)
-                .path(`login_${name}`)
+                .path('login')
                 .mutation()
                 .handle(async (_, args, ctx, info) => {
                     const payload = await this.login(ctx)
@@ -1170,13 +1177,13 @@ class Auth {
                     }
                 }),
             graphQlQuery(`Logout ${name}`)
-                .path(`logout_${name}`)
+                .path('logout')
                 .mutation()
                 .handle(async (_, args, ctx) => {
                     return true
                 }),
             graphQlQuery(`Register ${name}`)
-                .path(`register_${name}`)
+                .path('register')
                 .mutation()
                 .handle(async (_, args, ctx, info) => {
                     const payload = await this.register(ctx)
@@ -1200,17 +1207,17 @@ class Auth {
                     }
                 }),
             graphQlQuery(`Request ${name} password reset`)
-                .path(`request_${name}_password_reset`)
+                .path('request_password_reset')
                 .mutation()
                 .handle(async (_, args, ctx, info) => this.forgotPassword(ctx)),
             graphQlQuery(`Reset ${name} password`)
-                .path(`reset_${name}_password`)
+                .path('reset_password')
                 .mutation()
                 .handle(async (_, args, ctx, info) => this.resetPassword(ctx)),
             graphQlQuery(
                 `Get authenticated ${this.resources.user.data.snakeCaseName}`
             )
-                .path(`authenticated_${this.resources.user.data.snakeCaseName}`)
+                .path(`authenticated`)
                 .query()
                 .authorize(({ user }) => user && !user.public)
                 .handle(async (_, args, ctx, info) => {
@@ -1230,14 +1237,14 @@ class Auth {
             ...(this.config.twoFactorAuth
                 ? [
                       graphQlQuery(`Enable Two Factor Auth`)
-                          .path(`enable_${name}_two_factor_auth`)
+                          .path('enable_two_factor_auth')
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.TwoFactorAuth.enableTwoFactorAuth(ctx)
                           )
                           .authorize(({ user }) => user && !user.public),
                       graphQlQuery('Confirm Enable Two Factor Auth')
-                          .path(`confirm_${name}_enable_two_factor_auth`)
+                          .path('confirm_enable_two_factor_auth')
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
                               await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
@@ -1260,7 +1267,7 @@ class Auth {
                           .authorize(({ user }) => user && !user.public),
 
                       graphQlQuery(`Disable Two Factor Auth`)
-                          .path(`disable_${name}_two_factor_auth`)
+                          .path('disable_two_factor_auth')
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
                               await this.TwoFactorAuth.disableTwoFactorAuth(ctx)
@@ -1284,7 +1291,7 @@ class Auth {
             ...(this.config.verifyEmails
                 ? [
                       graphQlQuery(`Confirm ${name} Email`)
-                          .path(`confirm_${name}_email`)
+                          .path('confirm_email')
                           .mutation()
                           .handle(async (_, args, ctx, info) => {
                               await this.confirmEmail(ctx)
@@ -1304,7 +1311,7 @@ class Auth {
                           })
                           .authorize(({ user }) => user && !user.public),
                       graphQlQuery(`Resend ${name} Verification Email`)
-                          .path(`resend_${name}_verification_email`)
+                          .path('resend_verification_email')
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.resendVerificationEmail(ctx)
@@ -1312,51 +1319,91 @@ class Auth {
                   ]
                 : []),
             ...(this.socialAuthEnabled()
-                ? [
-                      graphQlQuery('Social auth login')
-                          .path(`${name}_social_auth_login`)
-                          .mutation()
-                          .handle(async (_, args, ctx, info) => {
-                              await this.socialAuth(ctx, 'login')
+                ? this.config.separateSocialLoginAndRegister
+                    ? [
+                          graphQlQuery('Social auth login')
+                              .path('social_auth_login')
+                              .mutation()
+                              .handle(async (_, args, ctx, info) => {
+                                  const payload = await this.socialAuth(
+                                      ctx,
+                                      'login'
+                                  )
 
-                              const { user } = ctx
+                                  const { user } = ctx
 
-                              await Utils.graphql.populateFromResolvedNodes(
-                                  resources,
-                                  ctx.manager,
-                                  ctx.databaseConfig.type!,
-                                  this.resources.user,
-                                  Utils.graphql.getParsedInfo(info),
-                                  [user]
-                              )
+                                  await Utils.graphql.populateFromResolvedNodes(
+                                      resources,
+                                      ctx.manager,
+                                      ctx.databaseConfig.type!,
+                                      this.resources.user,
+                                      Utils.graphql.getParsedInfo(info),
+                                      [user]
+                                  )
 
-                              return user
-                          }),
-                      graphQlQuery('Social auth register')
-                          .path(`${name}_social_auth_register`)
-                          .mutation()
-                          .handle(async (_, args, ctx, info) => {
-                              await this.socialAuth(ctx, 'register')
+                                  return {
+                                      ...payload,
+                                      [this.resources.user.data
+                                          .snakeCaseName]: user
+                                  }
+                              }),
+                          graphQlQuery('Social auth register')
+                              .path('social_auth_register')
+                              .mutation()
+                              .handle(async (_, args, ctx, info) => {
+                                  const payload = await this.socialAuth(
+                                      ctx,
+                                      'register'
+                                  )
 
-                              const { user } = ctx
+                                  const { user } = ctx
 
-                              await Utils.graphql.populateFromResolvedNodes(
-                                  resources,
-                                  ctx.manager,
-                                  ctx.databaseConfig.type!,
-                                  this.resources.user,
-                                  Utils.graphql.getParsedInfo(info),
-                                  [user]
-                              )
+                                  await Utils.graphql.populateFromResolvedNodes(
+                                      resources,
+                                      ctx.manager,
+                                      ctx.databaseConfig.type!,
+                                      this.resources.user,
+                                      Utils.graphql.getParsedInfo(info),
+                                      [user]
+                                  )
 
-                              return user
-                          })
-                  ]
+                                  return {
+                                      ...payload,
+                                      [this.resources.user.data
+                                          .snakeCaseName]: user
+                                  }
+                              })
+                      ]
+                    : [
+                          graphQlQuery('Social auth confirm')
+                              .path('social_auth_confirm')
+                              .mutation()
+                              .handle(async (_, args, ctx, info) => {
+                                  const payload = await this.socialAuth(ctx)
+
+                                  const { user } = ctx
+
+                                  await Utils.graphql.populateFromResolvedNodes(
+                                      resources,
+                                      ctx.manager,
+                                      ctx.databaseConfig.type!,
+                                      this.resources.user,
+                                      Utils.graphql.getParsedInfo(info),
+                                      [user]
+                                  )
+
+                                  return {
+                                      ...payload,
+                                      [this.resources.user.data
+                                          .snakeCaseName]: user
+                                  }
+                              })
+                      ]
                 : []),
             ...(this.config.enableRefreshTokens
                 ? [
                       graphQlQuery('Refresh token')
-                          .path(`refresh_${name}_token`)
+                          .path('refresh_token')
                           .mutation()
                           .handle(async (_, args, ctx, info) =>
                               this.handleRefreshTokens(ctx)
@@ -1472,30 +1519,30 @@ class Auth {
         const snakeCaseName = this.resources.user.data.snakeCaseName
 
         return gql`
-        type register_${snakeCaseName}_response {
+        type register_response {
             access_token: String!
             ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
             expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
-        type login_${snakeCaseName}_response {
+        type login_response {
             access_token: String!
             ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
             expires_in: Int!
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
-        input login_${snakeCaseName}_input {
+        input login_input {
             email: String!
             password: String!
         }
 
-        input request_${snakeCaseName}_password_reset_input {
+        input request_password_reset_input {
             email: String!
         }
 
-        input reset_${snakeCaseName}_password_input {
+        input reset_password_input {
             email: String!
             """ The reset password token sent to ${snakeCaseName}'s email """
             token: String!
@@ -1505,17 +1552,17 @@ class Auth {
         ${
             this.config.twoFactorAuth
                 ? `
-        type enable_${snakeCaseName}_two_factor_auth_response {
+        type enable_two_factor_auth_response {
             """ The data url for the qr code. Display this in an <img /> tag to be scanned on the authenticator app """
             dataURL: String!
         }
 
-        input confirm_enable_${snakeCaseName}_two_factor_auth_input {
+        input confirm_enable_two_factor_auth_input {
             """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
             token: Int!
         }
 
-        input disable_${snakeCaseName}_two_factor_auth_input {
+        input disable_two_factor_auth_input {
             """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
             token: Int!
         }
@@ -1526,7 +1573,7 @@ class Auth {
         ${
             this.config.verifyEmails
                 ? `
-        input confirm_${snakeCaseName}_email_input {
+        input confirm_email_input {
             """ The email verification token sent to the ${snakeCaseName}'s email """
             email_verification_token: String!
         }
@@ -1536,14 +1583,21 @@ class Auth {
 
         ${
             this.socialAuthEnabled()
-                ? `
-        input ${snakeCaseName}_social_auth_register_input {
+                ? this.config.separateSocialLoginAndRegister
+                    ? `
+        input social_auth_register_input {
             """ The temporal access token received in query parameter when user is redirected """
             access_token: String!
             extra: JSONObject
         }
 
-        input ${snakeCaseName}_social_auth_login_input {
+        input social_auth_login_input {
+            """ The temporal access token received in query parameter when user is redirected """
+            access_token: String!
+        }
+        `
+                    : `
+        input social_auth_confirm {
             """ The temporal access token received in query parameter when user is redirected """
             access_token: String!
         }
@@ -1558,7 +1612,7 @@ class Auth {
         ${
             this.config.enableRefreshTokens
                 ? `
-        input refresh_${snakeCaseName}_token_input {
+        input refresh_token_input {
             refresh_token: String
         }
         `
@@ -1566,47 +1620,51 @@ class Auth {
         }
 
         extend type Mutation {
-            login_${snakeCaseName}(object: login_${snakeCaseName}_input!): login_${snakeCaseName}_response!
-            logout_${snakeCaseName}: Boolean!
-            register_${snakeCaseName}(object: insert_${snakeCaseName}_input!): register_${snakeCaseName}_response!
-            request_${snakeCaseName}_password_reset(object: request_${snakeCaseName}_password_reset_input!): Boolean!
-            reset_${snakeCaseName}_password(object: reset_${snakeCaseName}_password_input!): Boolean!
+            login(object: login_input!): login_response!
+            logout: Boolean!
+            register(object: insert_${snakeCaseName}_input!): register_response!
+            request_password_reset(object: request_password_reset_input!): Boolean!
+            reset_password(object: reset_password_input!): Boolean!
             ${
                 this.config.twoFactorAuth
                     ? `
-            enable_${snakeCaseName}_two_factor_auth: enable_${snakeCaseName}_two_factor_auth_response!
-            disable_${snakeCaseName}_two_factor_auth(object: disable_${snakeCaseName}_two_factor_auth_input!): ${snakeCaseName}!
-            confirm_${snakeCaseName}_enable_two_factor_auth(object: confirm_enable_${snakeCaseName}_two_factor_auth_input!): ${snakeCaseName}!
+            enable_two_factor_auth: enable_two_factor_auth_response!
+            disable_two_factor_auth(object: disable_two_factor_auth_input!): ${snakeCaseName}!
+            confirm_enable_two_factor_auth(object: confirm_enable_two_factor_auth_input!): ${snakeCaseName}!
             `
                     : ''
             }
             ${
                 this.config.verifyEmails
                     ? `
-            confirm_${snakeCaseName}_email(object: confirm_${snakeCaseName}_email_input!): ${snakeCaseName}!
-            resend_${snakeCaseName}_verification_email: Boolean
+            confirm_email(object: confirm_email_input!): ${snakeCaseName}!
+            resend_verification_email: Boolean
             `
                     : ''
             }
             ${
                 this.socialAuthEnabled()
-                    ? `
-            ${snakeCaseName}_social_auth_register(object: ${snakeCaseName}_social_auth_register_input!): register_${snakeCaseName}_response!
-            ${snakeCaseName}_social_auth_login(object: ${snakeCaseName}_social_auth_login_input!): login_${snakeCaseName}_response!
+                    ? this.config.separateSocialLoginAndRegister
+                        ? `
+            social_auth_register(object: social_auth_register_input!): register_response!
+            social_auth_login(object: social_auth_login_input!): login_response!
+            `
+                        : `
+                social_auth_confirm(object: social_auth_confirm): login_response!
             `
                     : ''
             }
             ${
                 this.config.enableRefreshTokens
                     ? `
-            refresh_${snakeCaseName}_token(object: refresh_${snakeCaseName}_token_input): login_${snakeCaseName}_response!
+            refresh_token(object: refresh_token_input): login_response!
             `
                     : ''
             }
         }
 
         extend type Query {
-            authenticated_${snakeCaseName}: ${snakeCaseName}!
+            authenticated: ${snakeCaseName}!
         }
     `
     }
@@ -1741,7 +1799,7 @@ class Auth {
 
     private socialAuth = async (
         ctx: ApiContext,
-        action: 'login' | 'register'
+        action?: 'login' | 'register'
     ) => {
         const { body, manager } = ctx
         const access_token = body.object
@@ -1782,7 +1840,11 @@ class Auth {
             }
         )
 
-        if (!user && action === 'login') {
+        if (
+            !user &&
+            action === 'login' &&
+            this.config.separateSocialLoginAndRegister
+        ) {
             throw ctx.userInputError('Validation failed.', [
                 {
                     field: 'email',
@@ -1791,7 +1853,11 @@ class Auth {
             ])
         }
 
-        if (user && action === 'register') {
+        if (
+            user &&
+            action === 'register' &&
+            this.config.separateSocialLoginAndRegister
+        ) {
             throw ctx.userInputError('Validation failed.', [
                 {
                     field: 'email',
@@ -1802,7 +1868,11 @@ class Auth {
             ])
         }
 
-        if (!user && action === 'register') {
+        if (
+            !user &&
+            (action === 'register' ||
+                !this.config.separateSocialLoginAndRegister)
+        ) {
             let createPayload: DataPayload = {
                 ...oauthPayload
             }
@@ -1840,6 +1910,8 @@ class Auth {
         await manager.flush()
 
         await this.config.afterLogin(ctx, user)
+
+        ctx.user = user
 
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }

@@ -25,7 +25,7 @@ const StoreFactory = (Store: any, sessionConfig?: SessionConfig) => {
 
             this.options = {
                 ...connectOptions,
-                tableName: connectOptions.tableName || 'sessions',
+                tableName: sessionConfig?.tableName || 'sessions',
                 sync:
                     connectOptions.sync === undefined
                         ? true
