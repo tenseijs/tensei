@@ -147,7 +147,7 @@ class Rest {
                     route(`Fetch multiple ${plural}`)
                         .get()
                         .internal()
-                        .id(this.getRouteId(`index_${plural}`))
+                        .id(plural)
                         .resource(resource)
                         .path(getApiPath(plural))
                         .extend({
@@ -187,7 +187,7 @@ class Rest {
                     route(`Fetch single ${singular}`)
                         .get()
                         .internal()
-                        .id(this.getRouteId(`show_${singular}`))
+                        .id(singular)
                         .resource(resource)
                         .extend({
                             docs: {
@@ -227,7 +227,7 @@ class Rest {
                 routes.push(
                     route(`Fetch ${singular} relations`)
                         .get()
-                        .id(this.getRouteId(`index_${singular}_relations`))
+                        .id(`index_${singular}_relations`)
                         .internal()
                         .resource(resource)
                         .extend({
@@ -545,6 +545,40 @@ class Rest {
                 extendRoutes(
                     this.extendRoutes(resources, (path: string) =>
                         this.getApiPath(path)
+                    ).map(route =>
+                        route.middleware([
+                            (request, response, next) => {
+                                // register filters
+                                resources.forEach(resource => {
+                                    resource.data.filters.forEach(filter => {
+                                        request.manager.addFilter(
+                                            filter.config.shortName,
+                                            filter.config.cond,
+                                            resource.data.pascalCaseName,
+                                            filter.config.default
+                                        )
+                                    })
+                                })
+
+                                // set filter parameters
+                                resources.forEach(resource => {
+                                    resource.data.filters.forEach(filter => {
+                                        const filterFromBody = (request.query as any)?.filters?.find(
+                                            (bodyFitler: any) =>
+                                                bodyFitler.name ===
+                                                filter.config.shortName
+                                        )
+
+                                        request.manager.setFilterParams(
+                                            filter.config.shortName,
+                                            filterFromBody?.args || {}
+                                        )
+                                    })
+                                })
+
+                                next()
+                            }
+                        ])
                     )
                 )
             }

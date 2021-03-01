@@ -152,7 +152,15 @@ class Graphql {
 
             if (relatedResource) {
                 FieldType = `[${relatedResource.data.snakeCaseName}]`
-                FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${relatedResource.data.snakeCaseName}_where_query, order_by: ${relatedResource.data.snakeCaseName}_query_order)`
+                FieldKey = `${
+                    field.databaseField
+                }(offset: Int, limit: Int, where: ${
+                    relatedResource.data.snakeCaseName
+                }_where_query, order_by: ${
+                    relatedResource.data.snakeCaseName
+                }_query_order${this.getPossibleResourceFilters(
+                    relatedResource
+                )})`
             }
         }
 
@@ -187,7 +195,13 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query, order_by: ${resource.data.snakeCaseName}_query_order): [${resource.data.snakeCaseName}]`
+  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${
+            resource.data.snakeCaseName
+        }_where_query, order_by: ${
+            resource.data.snakeCaseName
+        }_query_order${this.getPossibleResourceFilters(resource)}): [${
+            resource.data.snakeCaseName
+        }]`
     }
 
     private defineFetchAllCountQueryForResource(
@@ -195,7 +209,9 @@ class Graphql {
         config: PluginSetupConfig
     ) {
         return `
-  ${resource.data.snakeCaseNamePlural}__count(offset: Int, limit: Int, where: ${resource.data.snakeCaseName}_where_query): Int!`
+  ${resource.data.snakeCaseNamePlural}__count(offset: Int, limit: Int, where: ${
+            resource.data.snakeCaseName
+        }_where_query${this.getPossibleResourceFilters(resource)}): Int!`
     }
 
     private defineFetchSingleQueryForResource(
@@ -306,6 +322,19 @@ input ${resource.data.snakeCaseName}_subscription_filter {
                 )}`
         )}
 }
+${
+    resource.data.filters.length > 0
+        ? `
+enum ${resource.data.snakeCaseName}_query_filter_options {
+    ${resource.data.filters.map(filter => `${filter.config.shortName}`)}
+}
+input ${resource.data.snakeCaseName}_filter_query {
+     name: ${resource.data.snakeCaseName}_query_filter_options
+     args: JSONObject
+}
+`
+        : ''
+}
 `
     }
 
@@ -362,7 +391,9 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
        )
        .map(
            field =>
-               `${field.databaseField}__count(where: ${field.snakeCaseName}_where_query): Int`
+               `${field.databaseField}__count(where: ${
+                   field.snakeCaseName
+               }_where_query${this.getPossibleResourceFilters(resource)}): Int`
        )}
 }
 ${
@@ -560,7 +591,9 @@ input id_where_query {
             resource.data.snakeCaseName
         }_where_query!, object: update_${
             resource.data.snakeCaseName
-        }_input!): [${resource.data.snakeCaseName}]!
+        }_input!${this.getPossibleResourceFilters(resource)}): [${
+            resource.data.snakeCaseName
+        }]!
         `
     }
 
@@ -573,8 +606,18 @@ input id_where_query {
         )}: ID!): ${resource.data.snakeCaseName}
         delete_${resource.data.snakeCaseNamePlural}(where: ${
             resource.data.snakeCaseName
-        }_where_query): [${resource.data.snakeCaseName}]
+        }_where_query${this.getPossibleResourceFilters(resource)}): [${
+            resource.data.snakeCaseName
+        }]
         `
+    }
+
+    private getPossibleResourceFilters(resource: ResourceContract) {
+        if (resource.data.filters.length === 0) {
+            return ''
+        }
+
+        return `, filters: [${resource.data.snakeCaseName}_filter_query]`
     }
 
     private getIdKey(config: PluginSetupConfig) {
@@ -679,6 +722,7 @@ input id_where_query {
                     app,
                     graphQlMiddleware,
                     serverUrl,
+                    resources,
                     extendEvents
                 } = config
 
@@ -691,6 +735,34 @@ input id_where_query {
                     async (resolve, parent, args, context, info) => {
                         // set body to equal args
                         context.body = args
+
+                        // register filters
+                        resources.forEach(resource => {
+                            resource.data.filters.forEach(filter => {
+                                context.manager.addFilter(
+                                    filter.config.shortName,
+                                    filter.config.cond,
+                                    resource.data.pascalCaseName,
+                                    filter.config.default
+                                )
+                            })
+                        })
+
+                        // set filter parameters
+                        resources.forEach(resource => {
+                            resource.data.filters.forEach(filter => {
+                                const filterFromBody = context.body?.filters?.find(
+                                    (bodyFitler: any) =>
+                                        bodyFitler.name ===
+                                        filter.config.shortName
+                                )
+
+                                context.manager.setFilterParams(
+                                    filter.config.shortName,
+                                    filterFromBody?.args || {}
+                                )
+                            })
+                        })
 
                         // fork new manager instance for this request
                         context.manager = context.manager.fork()

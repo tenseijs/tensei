@@ -522,7 +522,7 @@ class CmsPlugin {
                 ])
             })
             .boot(async config => {
-                const { app, orm, extendEvents, currentCtx } = config
+                const { app, orm, extendEvents, resources, currentCtx } = config
                 const Store = ExpressSessionMikroORMStore(
                     ExpressSession,
                     this.sessionMikroOrmOptions
@@ -547,6 +547,25 @@ class CmsPlugin {
                 this.router.use(responseEnhancer())
 
                 this.router.use(this.setAuth)
+
+                this.router.use((request, response, next) => {
+                    // set filter parameters
+                    resources.forEach(resource => {
+                        resource.data.filters.forEach(filter => {
+                            const filterFromBody = request.body.filters?.find(
+                                (bodyFitler: any) =>
+                                    bodyFitler.name === filter.config.shortName
+                            )
+
+                            request.manager.setFilterParams(
+                                filter.config.shortName,
+                                filterFromBody?.args || {}
+                            )
+                        })
+                    })
+
+                    next()
+                })
 
                 this.router.use(Csurf())
                 ;[...getRoutes(config, this.config), ...this.routes()].forEach(

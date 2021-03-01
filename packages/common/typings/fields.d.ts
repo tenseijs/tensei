@@ -99,6 +99,7 @@ declare module '@tensei/common/fields' {
         serializedName?: string
         comment?: string
         userDefined?: boolean
+        virtualGetter?: (value: any) => any
     }
 
     interface SerializedField {
@@ -196,7 +197,7 @@ declare module '@tensei/common/fields' {
         isRelationshipField: boolean
         onUpdate(hook: () => any): this
         onCreate(hook: () => any): this
-        shadow(): this
+        virtual(compute: (value: any) => any): this
         removeFromSidebarOnForms(): this
         dockToSidebarOnForms(): this
         formComponent(component: string): this

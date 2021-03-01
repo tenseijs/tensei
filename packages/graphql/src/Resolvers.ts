@@ -1,5 +1,5 @@
 import { Utils } from '@tensei/common'
-import { Configuration } from '@mikro-orm/core'
+import { Configuration, EntityManager } from '@mikro-orm/core'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
     GraphQlQueryContract,
@@ -119,7 +119,7 @@ export const getResolvers = (
                             })
                         }
 
-                        const data = ctx.manager.create(
+                        const data: any = ctx.manager.create(
                             resource.data.pascalCaseName,
                             payload
                         )

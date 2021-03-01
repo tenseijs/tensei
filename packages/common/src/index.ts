@@ -24,7 +24,7 @@ export { oneToMany, OneToMany, hasMany } from './fields/OneToMany'
 export { manyToOne, ManyToOne, belongsTo } from './fields/ManyToOne'
 export { manyToMany, ManyToMany, belongsToMany } from './fields/ManyToMany'
 
-export { filter } from './filters/Filter'
+export { filter, Filter } from './filters/Filter'
 
 export { ResourceHelpers } from './helpers'
 export { card, Card } from './dashboard/Card'

@@ -16,8 +16,8 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
 
     const register_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation register_student($email: String!, $password: String!) {
-                register_student(
+            mutation register($email: String!, $password: String!) {
+                register(
                     object: { email: $email, password: $password }
                 ) {
                     student {
@@ -40,8 +40,8 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation enable_student_two_factor_auth {
-                    enable_student_two_factor_auth {
+                mutation enable_two_factor_auth {
+                    enable_two_factor_auth {
                         dataURL
                     }
                 }
@@ -49,12 +49,12 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         })
         .set(
             'Authorization',
-            `Bearer ${register_response.body.data.register_student.access_token}`
+            `Bearer ${register_response.body.data.register.access_token}`
         )
 
     expect(enable_2fa_response.status).toBe(200)
     expect(
-        enable_2fa_response.body.data.enable_student_two_factor_auth.dataURL
+        enable_2fa_response.body.data.enable_two_factor_auth.dataURL
     ).toMatch('data:image/png;base64')
 
     const user = await ctx.orm.em.findOne<{
@@ -76,8 +76,8 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation confirm_student_enable_two_factor_auth($token: Int!) {
-                    confirm_student_enable_two_factor_auth(
+                mutation confirm_enable_two_factor_auth($token: Int!) {
+                    confirm_enable_two_factor_auth(
                         object: { token: $token }
                     ) {
                         id
@@ -91,13 +91,13 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         })
         .set(
             'Authorization',
-            `Bearer ${register_response.body.data.register_student.access_token}`
+            `Bearer ${register_response.body.data.register.access_token}`
         )
 
     expect(confirm_enable_2fa_response.status).toBe(200)
     expect(
         confirm_enable_2fa_response.body.data
-            .confirm_student_enable_two_factor_auth
+            .confirm_enable_two_factor_auth
     ).toEqual({
         id: user.id.toString(),
         two_factor_enabled: true
@@ -107,8 +107,8 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation disable_student_two_factor_auth($token: Int!) {
-                    disable_student_two_factor_auth(object: { token: $token }) {
+                mutation disable_two_factor_auth($token: Int!) {
+                    disable_two_factor_auth(object: { token: $token }) {
                         id
                         two_factor_enabled
                     }
@@ -120,12 +120,12 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         })
         .set(
             'Authorization',
-            `Bearer ${register_response.body.data.register_student.access_token}`
+            `Bearer ${register_response.body.data.register.access_token}`
         )
 
     expect(disable_2fa_response.status).toBe(200)
     expect(
-        disable_2fa_response.body.data.disable_student_two_factor_auth
+        disable_2fa_response.body.data.disable_two_factor_auth
     ).toEqual({
         id: user.id.toString(),
         two_factor_enabled: false

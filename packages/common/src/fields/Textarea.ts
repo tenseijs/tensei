@@ -13,6 +13,7 @@ export class Textarea extends Text {
         super(name, databaseField)
 
         this.property.columnTypes = ['text']
+        this.hideOnIndex()
     }
 
     alwaysShow() {

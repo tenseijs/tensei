@@ -58,6 +58,7 @@ export interface AuthPluginConfig {
         accessTokenExpiresIn: number
         refreshTokenExpiresIn: number
     }
+    getUserPayloadFromProviderData?: (providerData: DataPayload) => DataPayload
     separateSocialLoginAndRegister: boolean
     beforeLogin: AuthHookFunction
     afterLogin: AuthHookFunction

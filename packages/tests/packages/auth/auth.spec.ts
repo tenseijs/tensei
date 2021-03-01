@@ -120,12 +120,12 @@ test('Can enable email verification for auth', async () => {
 
     const response = await client.post(`/graphql`).send({
         query: gql`
-            mutation register_customer(
+            mutation register(
                 $name: String!
                 $email: String!
                 $password: String!
             ) {
-                register_customer(
+                register(
                     object: { name: $name, email: $email, password: $password }
                 ) {
                     customer {
@@ -150,7 +150,7 @@ test('Can enable email verification for auth', async () => {
     const registeredCustomer: any = await em.findOne('Customer', {
         email: user.email
     })
-    expect(response.body.data.register_customer.customer.id).toBe(
+    expect(response.body.data.register.customer.id).toBe(
         registeredCustomer.id.toString()
     )
     expect(registeredCustomer.email_verification_token).toBeDefined()
@@ -159,10 +159,10 @@ test('Can enable email verification for auth', async () => {
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation confirm_customer_email(
+                mutation confirm_email(
                     $email_verification_token: String!
                 ) {
-                    confirm_customer_email(
+                    confirm_email(
                         object: {
                             email_verification_token: $email_verification_token
                         }
@@ -180,10 +180,10 @@ test('Can enable email verification for auth', async () => {
         })
         .set(
             'Authorization',
-            `Bearer ${response.body.data.register_customer.access_token}`
+            `Bearer ${response.body.data.register.access_token}`
         )
 
-    expect(verify_email_response.body.data.confirm_customer_email).toEqual({
+    expect(verify_email_response.body.data.confirm_email).toEqual({
         id: registeredCustomer.id.toString(),
         email: registeredCustomer.email,
         email_verified_at: expect.any(String)
@@ -215,8 +215,8 @@ test('Can request a password reset and reset password', async () => {
 
     const response = await client.post(`/graphql`).send({
         query: gql`
-            mutation request_student_password_reset($email: String!) {
-                request_student_password_reset(object: { email: $email })
+            mutation request_password_reset($email: String!) {
+                request_password_reset(object: { email: $email })
             }
         `,
         variables: {
@@ -225,7 +225,7 @@ test('Can request a password reset and reset password', async () => {
     })
 
     expect(response.body).toEqual({
-        data: { request_student_password_reset: true }
+        data: { request_password_reset: true }
     })
 
     const passwordReset: any = await em.findOne('PasswordReset', {
@@ -238,12 +238,12 @@ test('Can request a password reset and reset password', async () => {
 
     const reset_password_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation reset_student_password(
+            mutation reset_password(
                 $email: String!
                 $password: String!
                 $token: String!
             ) {
-                reset_student_password(
+                reset_password(
                     object: {
                         email: $email
                         token: $token
@@ -261,13 +261,13 @@ test('Can request a password reset and reset password', async () => {
 
     expect(reset_password_response.status).toBe(200)
     expect(reset_password_response.body).toEqual({
-        data: { reset_student_password: true }
+        data: { reset_password: true }
     })
 
     const login_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation login_student($email: String!, $password: String!) {
-                login_student(object: { email: $email, password: $password }) {
+            mutation login($email: String!, $password: String!) {
+                login(object: { email: $email, password: $password }) {
                     student {
                         id
                         email
@@ -282,7 +282,7 @@ test('Can request a password reset and reset password', async () => {
     })
 
     expect(login_response.status).toBe(200)
-    expect(login_response.body.data.login_student).toEqual({
+    expect(login_response.body.data.login).toEqual({
         student: {
             id: user.id.toString(),
             email: user.email
@@ -323,8 +323,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
     const login_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation login_student($email: String!, $password: String!) {
-                login_student(object: { email: $email, password: $password }) {
+            mutation login($email: String!, $password: String!) {
+                login(object: { email: $email, password: $password }) {
                     access_token
                     refresh_token
                     student {
@@ -341,9 +341,9 @@ test('access tokens and refresh tokens are generated correctly', async done => {
     })
 
     const accessToken: string =
-        login_response.body.data.login_student.access_token
+        login_response.body.data.login.access_token
     const refreshToken: string =
-        login_response.body.data.login_student.refresh_token
+        login_response.body.data.login.refresh_token
 
     setTimeout(async () => {
         // Wait for the jwt to expire, then run a test, make sure its invalid and fails.
@@ -351,8 +351,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .post(`/graphql`)
             .send({
                 query: gql`
-                    query authenticated_student {
-                        authenticated_student {
+                    query authenticated {
+                        authenticated {
                             id
                             name
                             email
@@ -371,8 +371,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
         const refresh_token_response = await client.post(`/graphql`).send({
             query: gql`
-                mutation refresh_student_token($refresh_token: String!) {
-                    refresh_student_token(
+                mutation refresh_token($refresh_token: String!) {
+                    refresh_token(
                         object: { refresh_token: $refresh_token }
                     ) {
                         access_token
@@ -389,7 +389,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             }
         })
 
-        expect(refresh_token_response.body.data.refresh_student_token).toEqual({
+        expect(refresh_token_response.body.data.refresh_token).toEqual({
             access_token: expect.any(String),
             refresh_token: expect.any(String),
             student: {
@@ -403,8 +403,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .post(`/graphql`)
             .send({
                 query: gql`
-                    query authenticated_student {
-                        authenticated_student {
+                    query authenticated {
+                        authenticated {
                             id
                             name
                             email
@@ -414,11 +414,11 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             })
             .set(
                 'Authorization',
-                `Bearer ${refresh_token_response.body.data.refresh_student_token.access_token}`
+                `Bearer ${refresh_token_response.body.data.refresh_token.access_token}`
             )
 
         expect(
-            authenticated_refreshed_response.body.data.authenticated_student
+            authenticated_refreshed_response.body.data.authenticated
         ).toEqual({
             name: null,
             id: user.id.toString(),
@@ -433,8 +433,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
             .post(`/graphql`)
             .send({
                 query: gql`
-                    mutation refresh_student_token($refresh_token: String!) {
-                        refresh_student_token(
+                    mutation refresh_token($refresh_token: String!) {
+                        refresh_token(
                             object: { refresh_token: $refresh_token }
                         ) {
                             access_token
@@ -462,8 +462,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         .post(`/graphql`)
         .send({
             query: gql`
-                query authenticated_student {
-                    authenticated_student {
+                query authenticated {
+                    authenticated {
                         id
                         name
                         email
@@ -477,8 +477,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         .post(`/graphql`)
         .send({
             query: gql`
-                query authenticated_student {
-                    authenticated_student {
+                query authenticated {
+                    authenticated {
                         id
                         name
                         email
@@ -493,7 +493,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         'Unauthorized.'
     )
 
-    expect(authenticated_response.body.data.authenticated_student).toEqual({
+    expect(authenticated_response.body.data.authenticated).toEqual({
         name: null,
         id: user.id.toString(),
         email: user.email
@@ -521,8 +521,8 @@ test('if a refresh token is used twice (compromised), the user is automatically 
 
     const login_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation login_customer($email: String!, $password: String!) {
-                login_customer(object: { email: $email, password: $password }) {
+            mutation login($email: String!, $password: String!) {
+                login(object: { email: $email, password: $password }) {
                     access_token
                     refresh_token
                     customer {
@@ -538,12 +538,12 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         }
     })
 
-    const { refresh_token } = login_response.body.data.login_customer
+    const { refresh_token } = login_response.body.data.login
 
     const refresh_token_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation refresh_customer_token($refresh_token: String!) {
-                refresh_customer_token(
+            mutation refresh_token($refresh_token: String!) {
+                refresh_token(
                     object: { refresh_token: $refresh_token }
                 ) {
                     access_token
@@ -560,7 +560,7 @@ test('if a refresh token is used twice (compromised), the user is automatically 
     })
 
     expect(refresh_token_response.status).toBe(200)
-    expect(refresh_token_response.body.data.refresh_customer_token).toEqual({
+    expect(refresh_token_response.body.data.refresh_token).toEqual({
         access_token: expect.any(String),
         refresh_token: expect.any(String),
         customer: {
@@ -571,8 +571,8 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation refresh_customer_token($refresh_token: String!) {
-                    refresh_customer_token(
+                mutation refresh_token($refresh_token: String!) {
+                    refresh_token(
                         object: { refresh_token: $refresh_token }
                     ) {
                         access_token
@@ -596,8 +596,8 @@ test('if a refresh token is used twice (compromised), the user is automatically 
 
     const login_response_after_blocked = await client.post(`/graphql`).send({
         query: gql`
-            mutation login_customer($email: String!, $password: String!) {
-                login_customer(object: { email: $email, password: $password }) {
+            mutation login($email: String!, $password: String!) {
+                login(object: { email: $email, password: $password }) {
                     access_token
                     refresh_token
                     customer {
@@ -631,8 +631,8 @@ test('registers new users with email/password based authentication', async () =>
 
     const register_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation register_student($email: String!, $password: String!) {
-                register_student(
+            mutation register($email: String!, $password: String!) {
+                register(
                     object: { email: $email, password: $password }
                 ) {
                     student {
@@ -650,7 +650,7 @@ test('registers new users with email/password based authentication', async () =>
     })
 
     expect(register_response.status).toBe(200)
-    expect(register_response.body.data.register_student.student).toEqual({
+    expect(register_response.body.data.register.student).toEqual({
         id: expect.any(String),
         email: user.email,
         email_verified_at: null
@@ -669,8 +669,8 @@ test('authentication works when refresh tokens are disabled', async () => {
 
     const register_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation register_student($email: String!, $password: String!) {
-                register_student(
+            mutation register($email: String!, $password: String!) {
+                register(
                     object: { email: $email, password: $password }
                 ) {
                     student {
@@ -691,8 +691,8 @@ test('authentication works when refresh tokens are disabled', async () => {
 
     const login_response = await client.post(`/graphql`).send({
         query: gql`
-            mutation login_student($email: String!, $password: String!) {
-                login_student(object: { email: $email, password: $password }) {
+            mutation login($email: String!, $password: String!) {
+                login(object: { email: $email, password: $password }) {
                     student {
                         id
                         email
@@ -709,7 +709,7 @@ test('authentication works when refresh tokens are disabled', async () => {
     })
 
     expect(login_response.status).toBe(200)
-    expect(login_response.body.data.login_student.student).toEqual({
+    expect(login_response.body.data.login.student).toEqual({
         id: expect.any(String),
         email: user.email,
         email_verified_at: null

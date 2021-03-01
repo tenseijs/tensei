@@ -83,7 +83,7 @@ class Auth {
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
-        providers: {}
+        providers: {},
     }
 
     private TwoFactorAuth: any = null
@@ -566,7 +566,8 @@ class Auth {
                         orm: config.orm,
                         authConfig: this.config,
                         resourcesMap: this.resources,
-                        apiPath: this.config.apiPath
+                        apiPath: this.config.apiPath,
+                        getUserPayloadFromProviderData: this.config.getUserPayloadFromProviderData
                     })
                 }
 
@@ -1065,11 +1066,11 @@ class Auth {
                   ]
                 : []),
             ...(this.socialAuthEnabled()
-                ? [
+                ? this.config.separateSocialLoginAndRegister ? [
                       route(`Social Auth Login`)
                           .path(this.getApiPath('social/login'))
                           .post()
-                          .id(this.getRouteId(`social_login_${name}`))
+                          .id('social_login')
                           .extend({
                               docs: {
                                   ...extend,
@@ -1084,7 +1085,7 @@ class Auth {
                           ),
                       route(`Social Auth Register`)
                           .path(this.getApiPath('social/register'))
-                          .id(this.getRouteId(`social_register_${name}`))
+                          .id('social_register')
                           .post()
                           .extend({
                               docs: {
@@ -1101,6 +1102,23 @@ class Auth {
                                   )
                               )
                           )
+                  ] : [
+                      route(`Social Auth Confirm`)
+                        .path(this.getApiPath(`social/confirm`))
+                        .id('social_confirm')
+                        .post()
+                        .extend({
+                            docs: {
+                                ...extend,
+                                summary: `Confirm a ${name} (login or register) via a social provider.`,
+                                description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                            }
+                        })
+                        .handle(async (request, response) => response.formatter.ok(
+                            await this.socialAuth(
+                                request as any,
+                            )
+                        ))
                   ]
                 : []),
             ...(this.config.enableRefreshTokens
@@ -1795,6 +1813,12 @@ class Auth {
         }
 
         throw ctx.userInputError('Invalid email verification token.')
+    }
+
+    public getUserPayloadFromProviderData(getUserPayloadFromProviderData: AuthPluginConfig['getUserPayloadFromProviderData']) {
+        this.config.getUserPayloadFromProviderData = getUserPayloadFromProviderData
+
+        return this
     }
 
     private socialAuth = async (

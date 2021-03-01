@@ -124,6 +124,12 @@ class Database {
                     )
                 )
         })
+
+        // Generate entity class getters (for virtual properties)
+        resource.data.fields.filter(field => field.property.persist === false).forEach(field => {
+            entityClass.prototype[field.property.getterName] = field.property.virtualGetter
+        })
+
         return entityClass
     }
 

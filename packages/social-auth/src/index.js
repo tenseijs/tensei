@@ -48,7 +48,7 @@ class SocialAuthCallbackController {
 
                 const payload = {
                     email: providerData.email,
-                    name: providerData.name
+                    ...(authConfig.getUserPayloadFromProviderData ? authConfig.getUserPayloadFromProviderData(providerData) : {})
                 }
 
                 let temporal_token = this.getTemporalToken()
@@ -248,6 +248,7 @@ module.exports = {
         clientUrl,
         authConfig,
         resourcesMap,
+        getUserPayloadFromProviderData
     }) => {
         const Store = ExpressSessionMikroORMStore.default(ExpressSession, {
             entityName: `${resourcesMap.user.data.pascalCaseName}Session`,
@@ -289,6 +290,7 @@ module.exports = {
             `/${apiPath}/:provider/callback`,
             (new SocialAuthCallbackController()).connect({
                 ...authConfig,
+                getUserPayloadFromProviderData,
                 resources: resourcesMap
             })
         )

@@ -1,100 +1,75 @@
-require('dotenv').config()
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
+const { rest } = require('@tensei/rest')
 const { media } = require('@tensei/media')
 const { graphql } = require('@tensei/graphql')
-const { tensei, welcome, select, text, resource, slug, boolean, belongsTo, timestamp, hasMany } = require('@tensei/core')
+const { mailgun } = require('@tensei/mail')
+const {
+    tensei,
+    welcome,
+    resource,
+    text,
+    textarea,
+    dateTime,
+    slug,
+    hasMany,
+    belongsTo,
+    route
+} = require('@tensei/core')
 
 tensei()
     .root(__dirname)
+    .mailer('transactions')
+    .routes([
+        route('Send mail via mailgun')
+            .get()
+            .path('/mailgun')
+            .handle(async ({ mailer }, response) => {
+                const result = await mailer.send(message => {
+                    message
+                        .from('no-reply@sandbox.mgsend.net', 'Emma at Mgsend')
+                        .to('bahdcoder@gmail.com', 'Frantz Kati')
+                        .subject(`Welcome to Crypto Hippo, Emily`)
+                        .htmlView('mails/mailgun', {
+                            user: 'Emily Myers'
+                        })
+                })
+
+                response.json([])
+            })
+    ])
     .resources([
-        resource('Track')
-            .hideOnInsertApi()
-            .hideOnUpdateApi()
-            .hideOnDeleteApi()
+        resource('Post')
             .fields([
-                text('Name'),
-                hasMany('Assignment'),
-                slug('Slug').from('Name'),
-                boolean('Open To Enrolments').default(true),
-            ]).displayField('Name'),
-        resource('Enrolment')
-            .hideOnInsertApi()
-            .hideOnDeleteApi()
-            // .filters([
-            //     filter('Owner')
-            //         .fields([
-            //             text('Slug'),
-            //             boolean('Published')
-            //         ])
-            //         .condition(fields => ({ user: { id: { $eq: fields.slug } } }))
-            //         .default()
-            // ])
-            .fields([
-                belongsTo('User'),
-                belongsTo('Track'),
-            ]),
-        resource('Invite')
-            .hideOnInsertApi()
-            .hideOnUpdateApi()
-            .hideOnDeleteApi()
-            .fields([
-                text('Email').rules('email', 'required'),
-                belongsTo('Track'),
-                timestamp('Expires At'),
-            ]).displayField('Email'),
-        resource('Assignment')
-            .hideOnInsertApi()
-            .hideOnUpdateApi()
-            .hideOnDeleteApi()
-            .fields([
-                text('Repository Prefix').notNullable(),
                 text('Title'),
-                text('Description'),
-                belongsTo('Track'),
-                hasMany('Submission'),
-                text('Template Repository'),
-                text('Pull Request Template'),
-                boolean('Initial Pull Request'),
-            ]).displayField('Title'),
-        resource('Submission')
-            .hideOnInsertApi()
-            .hideOnUpdateApi()
-            .hideOnDeleteApi()
-            .fields([
-                belongsTo('User'),
-                belongsTo('Track'),
-                belongsTo('Assignment'),
-                text('Repository'),
-                boolean('Completed'),
-                belongsTo('User', 'reviewer').label('Reviewer')
+                slug('Slug').from('Title'),
+                textarea('Description'),
+                textarea('Content'),
+                dateTime('Published At'),
+                belongsTo('Category')
             ])
-            .displayField('Repository')
+            .displayField('Title'),
+        resource('Category')
+            .fields([
+                text('Name').notNullable().rules('required'),
+                textarea('Description'),
+                hasMany('Post')
+            ])
+            .displayField('Name')
     ])
     .plugins([
         welcome(),
+        mailgun('transactions').domain(process.env.MAILGUN_DOMAIN).plugin(),
         cms().plugin(),
+        auth().rolesAndPermissions().plugin(),
         media().plugin(),
-        auth()
-        .configureTokens({
-            accessTokenExpiresIn: 60 * 60 * 60 * 24
-        })
-        .setup(({ user }) => {
-            user.fields([
-                text('Avatar').nullable(),
-                select('Role').options(['Student', 'Reviewer']).nullable()
-            ])
-        }).social('github', {
-            key: process.env.GITHUB_API_KEY,
-            secret: process.env.GITHUB_API_SECRET,
-            scope: ['user', 'repo'],
-            clientCallback: 'http://localhost:3000/auth'
-        }).plugin(),
+        rest().plugin(),
         graphql().plugin()
     ])
-    .register(({ getQuery }) => {
-        getQuery('enrolments')
-            .authorize((ctx) => !!ctx.user && ctx.body?.where?.user?.id?._eq === ctx.user.id.toString())
+    .databaseConfig({
+        type: 'sqlite',
+        debug: true,
+        dbName: 'tensei'
     })
     .start()
     .catch(console.error)
