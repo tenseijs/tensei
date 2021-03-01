@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.15](https://github.com/tenseijs/tensei/compare/v0.7.14...v0.7.15) (2021-03-01)
+
+**Note:** Version bump only for package @tensei/mde
+
+
+
+
+
 ## [0.7.14](https://github.com/tenseijs/tensei/compare/v0.7.13...v0.7.14) (2021-03-01)
 
 **Note:** Version bump only for package @tensei/mde
