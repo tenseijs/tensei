@@ -81,6 +81,7 @@ declare module '@tensei/common/config' {
             ) => {
                 [key: string]: string
             }
+            request: (request: Express.Request) => this
             validate: (
                 payload: DataPayload,
                 creationRules?: boolean,

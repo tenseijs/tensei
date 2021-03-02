@@ -159,9 +159,7 @@ test('Can enable email verification for auth', async () => {
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation confirm_email(
-                    $email_verification_token: String!
-                ) {
+                mutation confirm_email($email_verification_token: String!) {
                     confirm_email(
                         object: {
                             email_verification_token: $email_verification_token
@@ -340,10 +338,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         }
     })
 
-    const accessToken: string =
-        login_response.body.data.login.access_token
-    const refreshToken: string =
-        login_response.body.data.login.refresh_token
+    const accessToken: string = login_response.body.data.login.access_token
+    const refreshToken: string = login_response.body.data.login.refresh_token
 
     setTimeout(async () => {
         // Wait for the jwt to expire, then run a test, make sure its invalid and fails.
@@ -372,9 +368,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         const refresh_token_response = await client.post(`/graphql`).send({
             query: gql`
                 mutation refresh_token($refresh_token: String!) {
-                    refresh_token(
-                        object: { refresh_token: $refresh_token }
-                    ) {
+                    refresh_token(object: { refresh_token: $refresh_token }) {
                         access_token
                         refresh_token
                         student {
@@ -543,9 +537,7 @@ test('if a refresh token is used twice (compromised), the user is automatically 
     const refresh_token_response = await client.post(`/graphql`).send({
         query: gql`
             mutation refresh_token($refresh_token: String!) {
-                refresh_token(
-                    object: { refresh_token: $refresh_token }
-                ) {
+                refresh_token(object: { refresh_token: $refresh_token }) {
                     access_token
                     refresh_token
                     customer {
@@ -572,9 +564,7 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         .send({
             query: gql`
                 mutation refresh_token($refresh_token: String!) {
-                    refresh_token(
-                        object: { refresh_token: $refresh_token }
-                    ) {
+                    refresh_token(object: { refresh_token: $refresh_token }) {
                         access_token
                         refresh_token
                         customer {
@@ -632,9 +622,7 @@ test('registers new users with email/password based authentication', async () =>
     const register_response = await client.post(`/graphql`).send({
         query: gql`
             mutation register($email: String!, $password: String!) {
-                register(
-                    object: { email: $email, password: $password }
-                ) {
+                register(object: { email: $email, password: $password }) {
                     student {
                         id
                         email
@@ -670,9 +658,7 @@ test('authentication works when refresh tokens are disabled', async () => {
     const register_response = await client.post(`/graphql`).send({
         query: gql`
             mutation register($email: String!, $password: String!) {
-                register(
-                    object: { email: $email, password: $password }
-                ) {
+                register(object: { email: $email, password: $password }) {
                     student {
                         id
                         email

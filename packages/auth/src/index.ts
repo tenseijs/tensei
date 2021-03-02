@@ -18,6 +18,7 @@ import {
     hasMany,
     boolean,
     select,
+    password,
     graphQlQuery,
     GraphQLPluginContext,
     route,
@@ -83,7 +84,7 @@ class Auth {
         verifyEmails: false,
         skipWelcomeEmail: false,
         rolesAndPermissions: false,
-        providers: {},
+        providers: {}
     }
 
     private TwoFactorAuth: any = null
@@ -230,7 +231,7 @@ class Auth {
     }
 
     private userResource() {
-        let passwordField = text('Password')
+        let passwordField = password('Password')
 
         let socialFields: FieldContract[] = []
 
@@ -259,8 +260,7 @@ class Auth {
                     })
                     .creationRules('required')
                     .onlyOnForms()
-                    .hideOnUpdateApi()
-                    .hideOnUpdate(),
+                    .hideOnUpdateApi(),
                 boolean('Blocked')
                     .nullable()
                     .default(false)
@@ -567,7 +567,8 @@ class Auth {
                         authConfig: this.config,
                         resourcesMap: this.resources,
                         apiPath: this.config.apiPath,
-                        getUserPayloadFromProviderData: this.config.getUserPayloadFromProviderData
+                        getUserPayloadFromProviderData: this.config
+                            .getUserPayloadFromProviderData
                     })
                 }
 
@@ -1066,60 +1067,65 @@ class Auth {
                   ]
                 : []),
             ...(this.socialAuthEnabled()
-                ? this.config.separateSocialLoginAndRegister ? [
-                      route(`Social Auth Login`)
-                          .path(this.getApiPath('social/login'))
-                          .post()
-                          .id('social_login')
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Login a ${name} via a social provider.`,
-                                  description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                              }
-                          })
-                          .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.socialAuth(request as any, 'login')
-                              )
-                          ),
-                      route(`Social Auth Register`)
-                          .path(this.getApiPath('social/register'))
-                          .id('social_register')
-                          .post()
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Register a ${name} via a social provider.`,
-                                  description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                              }
-                          })
-                          .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.socialAuth(
-                                      request as any,
-                                      'register'
+                ? this.config.separateSocialLoginAndRegister
+                    ? [
+                          route(`Social Auth Login`)
+                              .path(this.getApiPath('social/login'))
+                              .post()
+                              .id('social_login')
+                              .extend({
+                                  docs: {
+                                      ...extend,
+                                      summary: `Login a ${name} via a social provider.`,
+                                      description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                                  }
+                              })
+                              .handle(async (request, response) =>
+                                  response.formatter.ok(
+                                      await this.socialAuth(
+                                          request as any,
+                                          'login'
+                                      )
+                                  )
+                              ),
+                          route(`Social Auth Register`)
+                              .path(this.getApiPath('social/register'))
+                              .id('social_register')
+                              .post()
+                              .extend({
+                                  docs: {
+                                      ...extend,
+                                      summary: `Register a ${name} via a social provider.`,
+                                      description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                                  }
+                              })
+                              .handle(async (request, response) =>
+                                  response.formatter.ok(
+                                      await this.socialAuth(
+                                          request as any,
+                                          'register'
+                                      )
                                   )
                               )
-                          )
-                  ] : [
-                      route(`Social Auth Confirm`)
-                        .path(this.getApiPath(`social/confirm`))
-                        .id('social_confirm')
-                        .post()
-                        .extend({
-                            docs: {
-                                ...extend,
-                                summary: `Confirm a ${name} (login or register) via a social provider.`,
-                                description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                            }
-                        })
-                        .handle(async (request, response) => response.formatter.ok(
-                            await this.socialAuth(
-                                request as any,
-                            )
-                        ))
-                  ]
+                      ]
+                    : [
+                          route(`Social Auth Confirm`)
+                              .path(this.getApiPath(`social/confirm`))
+                              .id('social_confirm')
+                              .post()
+                              .extend({
+                                  docs: {
+                                      ...extend,
+                                      summary: `Confirm a ${name} (login or register) via a social provider.`,
+                                      description: `This operation requires an access_token gotten after a redirect from the social provider.`
+                                  }
+                              })
+                              .handle(async (request, response) =>
+                                  response.formatter.ok(
+                                      await this.socialAuth(request as any)
+                                  )
+                              )
+                      ]
                 : []),
             ...(this.config.enableRefreshTokens
                 ? [
@@ -1815,7 +1821,9 @@ class Auth {
         throw ctx.userInputError('Invalid email verification token.')
     }
 
-    public getUserPayloadFromProviderData(getUserPayloadFromProviderData: AuthPluginConfig['getUserPayloadFromProviderData']) {
+    public getUserPayloadFromProviderData(
+        getUserPayloadFromProviderData: AuthPluginConfig['getUserPayloadFromProviderData']
+    ) {
         this.config.getUserPayloadFromProviderData = getUserPayloadFromProviderData
 
         return this

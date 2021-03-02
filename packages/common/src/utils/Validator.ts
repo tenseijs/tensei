@@ -4,6 +4,8 @@ import { EntityManager, ReferenceType } from '@mikro-orm/core'
 import { DataPayload, ResourceContract } from '@tensei/common'
 
 export class Validator {
+    private expressRequest?: Express.Request = undefined
+
     constructor(
         private resource: ResourceContract,
         private manager: EntityManager,
@@ -119,7 +121,13 @@ export class Validator {
 
         this.resource.data.fields.forEach(field => {
             if (Object.keys(payload).includes(field.databaseField)) {
-                validPayload[field.databaseField] = payload[field.databaseField]
+                const value = field.getValueFromPayload(
+                    payload,
+                    this.expressRequest!
+                )
+                if (!['', undefined].includes(value)) {
+                    validPayload[field.databaseField] = value
+                }
             }
         })
 
@@ -148,6 +156,12 @@ export class Validator {
             relationshipFieldsPayload,
             nonRelationshipFieldsPayload
         }
+    }
+
+    request(request: Express.Request) {
+        this.expressRequest = request
+
+        return this
     }
 
     validate = async (

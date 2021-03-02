@@ -17,9 +17,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     const register_response = await client.post(`/graphql`).send({
         query: gql`
             mutation register($email: String!, $password: String!) {
-                register(
-                    object: { email: $email, password: $password }
-                ) {
+                register(object: { email: $email, password: $password }) {
                     student {
                         id
                         email
@@ -77,9 +75,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         .send({
             query: gql`
                 mutation confirm_enable_two_factor_auth($token: Int!) {
-                    confirm_enable_two_factor_auth(
-                        object: { token: $token }
-                    ) {
+                    confirm_enable_two_factor_auth(object: { token: $token }) {
                         id
                         two_factor_enabled
                     }
@@ -96,8 +92,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
 
     expect(confirm_enable_2fa_response.status).toBe(200)
     expect(
-        confirm_enable_2fa_response.body.data
-            .confirm_enable_two_factor_auth
+        confirm_enable_2fa_response.body.data.confirm_enable_two_factor_auth
     ).toEqual({
         id: user.id.toString(),
         two_factor_enabled: true
@@ -124,9 +119,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         )
 
     expect(disable_2fa_response.status).toBe(200)
-    expect(
-        disable_2fa_response.body.data.disable_two_factor_auth
-    ).toEqual({
+    expect(disable_2fa_response.body.data.disable_two_factor_auth).toEqual({
         id: user.id.toString(),
         two_factor_enabled: false
     })
