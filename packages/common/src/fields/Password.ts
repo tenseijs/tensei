@@ -1,4 +1,5 @@
 import Text from './Text'
+import { DataPayload } from '@tensei/core'
 
 export class Password extends Text {
     /**
@@ -12,6 +13,15 @@ export class Password extends Text {
         this.htmlAttributes({
             type: 'password'
         })
+    }
+
+    /**
+     * If the password is empty, ignore it. Don't add it to the payload.
+     */
+    public getValueFromPayload(payload: DataPayload) {
+        if (payload[this.databaseField]) {
+            return payload[this.databaseField]
+        }
     }
 }
 

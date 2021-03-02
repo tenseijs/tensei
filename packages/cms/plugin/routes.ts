@@ -45,52 +45,47 @@ export default (config: Config, cmsConfig: any) => {
                 .id(getRouteId(`insert_${singular}`))
                 .resource(resource)
                 .path(getApiPath(plural))
-                .handle(
-                    async (
-                        {
-                            manager,
-                            body,
-                            resources: resourcesMap,
-                            userInputError,
-                            config,
-                            query
-                        },
-                        response
-                    ) => {
-                        const findOptions = Utils.rest.parseQueryToFindOptions(
-                            query,
-                            resource
-                        )
+                .handle(async (request, response) => {
+                    const {
+                        manager,
+                        body,
+                        resources: resourcesMap,
+                        userInputError,
+                        config,
+                        query
+                    } = request
+                    const findOptions = Utils.rest.parseQueryToFindOptions(
+                        query,
+                        resource
+                    )
 
-                        const [passed, payload] = await Utils.validator(
-                            resource,
-                            manager,
-                            resourcesMap
-                        ).validate(body)
+                    const [passed, payload] = await Utils.validator(
+                        resource,
+                        manager,
+                        resourcesMap
+                    )
+                        .request(request)
+                        .validate(body)
 
-                        if (!passed) {
-                            throw userInputError('Validation failed.', {
-                                errors: payload
-                            })
-                        }
-
-                        const entity = manager.create(
-                            resource.data.pascalCaseName,
-                            body
-                        ) as any
-
-                        await manager.persistAndFlush(entity)
-
-                        await manager.populate(
-                            [entity],
-                            findOptions.populate || []
-                        )
-
-                        config.emitter.emit(`${singular}::inserted`, entity)
-
-                        return response.formatter.created(entity)
+                    if (!passed) {
+                        throw userInputError('Validation failed.', {
+                            errors: payload
+                        })
                     }
-                )
+
+                    const entity = manager.create(
+                        resource.data.pascalCaseName,
+                        body
+                    ) as any
+
+                    await manager.persistAndFlush(entity)
+
+                    await manager.populate([entity], findOptions.populate || [])
+
+                    config.emitter.emit(`${singular}::inserted`, entity)
+
+                    return response.formatter.created(entity)
+                })
         )
 
         routes.push(
@@ -308,58 +303,56 @@ export default (config: Config, cmsConfig: any) => {
                     }
                 })
                 .path(getApiPath(`${plural}/:id`))
-                .handle(
-                    async (
-                        {
-                            manager,
-                            params,
-                            body,
-                            query,
-                            resources: resourcesMap,
-                            userInputError,
-                            config
-                        },
-                        response
-                    ) => {
-                        const [passed, payload] = await Utils.validator(
-                            resource,
-                            manager,
-                            resourcesMap,
-                            params.id
-                        ).validate(body, false)
+                .handle(async (request, response) => {
+                    const {
+                        manager,
+                        params,
+                        body,
+                        query,
+                        resources: resourcesMap,
+                        userInputError,
+                        config
+                    } = request
+                    const [passed, payload] = await Utils.validator(
+                        resource,
+                        manager,
+                        resourcesMap,
+                        params.id
+                    )
+                        .request(request)
+                        .validate(body, false)
 
-                        if (!passed) {
-                            throw userInputError('Validation failed.', {
-                                errors: payload
-                            })
-                        }
-
-                        const findOptions = Utils.rest.parseQueryToFindOptions(
-                            query,
-                            resource
-                        )
-
-                        const entity = await manager.findOne(
-                            resource.data.pascalCaseName,
-                            params.id,
-                            findOptions
-                        )
-
-                        if (!entity) {
-                            return response.formatter.notFound(
-                                `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
-                            )
-                        }
-
-                        manager.assign(entity, body)
-
-                        await manager.persistAndFlush(entity)
-
-                        config.emitter.emit(`${singular}::updated`, entity)
-
-                        return response.formatter.ok(entity)
+                    if (!passed) {
+                        throw userInputError('Validation failed.', {
+                            errors: payload
+                        })
                     }
-                )
+
+                    const findOptions = Utils.rest.parseQueryToFindOptions(
+                        query,
+                        resource
+                    )
+
+                    const entity = await manager.findOne(
+                        resource.data.pascalCaseName,
+                        params.id,
+                        findOptions
+                    )
+
+                    if (!entity) {
+                        return response.formatter.notFound(
+                            `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
+                        )
+                    }
+
+                    manager.assign(entity, payload)
+
+                    await manager.persistAndFlush(entity)
+
+                    config.emitter.emit(`${singular}::updated`, entity)
+
+                    return response.formatter.ok(entity)
+                })
         )
 
         routes.push(

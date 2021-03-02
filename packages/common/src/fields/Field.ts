@@ -7,7 +7,8 @@ import {
     SerializedField,
     FieldHookFunction,
     AuthorizeFunction,
-    SanitizationRules
+    SanitizationRules,
+    DataPayload
 } from '@tensei/common'
 
 export class Field implements FieldContract {
@@ -565,7 +566,10 @@ export class Field implements FieldContract {
         return this
     }
 
-    public virtual<T extends FieldContract>(this: T, compute: (value: any) => any): T {
+    public virtual<T extends FieldContract>(
+        this: T,
+        compute: (value: any) => any
+    ): T {
         this.property.persist = false
         this.property.getter = true
         this.property.getterName = `get_${this.databaseField}`
@@ -590,6 +594,10 @@ export class Field implements FieldContract {
         this.relatedProperty.nullable = true
 
         return this
+    }
+
+    public getValueFromPayload(payload: DataPayload, request: Express.Request) {
+        return payload[this.databaseField]
     }
 
     /**

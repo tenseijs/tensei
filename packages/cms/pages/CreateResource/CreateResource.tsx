@@ -31,14 +31,16 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
         return <Redirect to={window.Tensei.getPath('404')} />
     }
 
-    const creationFields = resource.fields.filter(field => field.showOnCreation)
+    const isEditing = !!params.id
 
-    const sidebarFields = creationFields.filter(field => field.sidebar)
-    const mainbarFields = creationFields.filter(field => !field.sidebar)
+    const formFields = resource.fields.filter(field =>
+        isEditing ? field.showOnUpdate : field.showOnCreation
+    )
+
+    const sidebarFields = formFields.filter(field => field.sidebar)
+    const mainbarFields = formFields.filter(field => !field.sidebar)
 
     const sidebarVisible = sidebarFields.length > 0
-
-    const isEditing = !!params.id
 
     const onErrorCatch = (error: AxiosError) => {
         window.Tensei.error(`Failed saving ${resource.name.toLowerCase()}.`)
@@ -79,7 +81,7 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
         if (!isEditing) {
             let formData: AbstractData = {}
 
-            creationFields.forEach(field => {
+            formFields.forEach(field => {
                 formData[field.inputName] = field.defaultValue
             })
 
@@ -94,9 +96,8 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
             .then(({ data }) => {
                 let formData: AbstractData = {}
 
-                creationFields.forEach(field => {
-                    formData[field.inputName] =
-                        data.data[field.inputName] || field.defaultValue
+                formFields.forEach(field => {
+                    formData[field.inputName] = data.data[field.inputName]
                 })
 
                 setForm(formData)

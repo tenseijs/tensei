@@ -332,7 +332,7 @@ export class Tensei implements TenseiContract {
             const event = this.ctx.events[eventName]
 
             event.config.listeners.forEach(listener => {
-                this.ctx.emitter.on(eventName as any, (data) => {
+                this.ctx.emitter.on(eventName as any, data => {
                     try {
                         listener(data as any)
                     } catch (error) {

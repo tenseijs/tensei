@@ -111,7 +111,9 @@ export const getResolvers = (
                             resource,
                             ctx.manager,
                             ctx.resourcesMap
-                        ).validate(args.object)
+                        )
+                            .request(ctx.request)
+                            .validate(args.object)
 
                         if (!passed) {
                             throw ctx.userInputError('Validation failed.', {
@@ -220,7 +222,9 @@ export const getResolvers = (
                             ctx.manager,
                             ctx.resourcesMap,
                             args.id
-                        ).validate(args.object, false)
+                        )
+                            .request(ctx.request)
+                            .validate(args.object, false)
 
                         if (!passed) {
                             throw ctx.userInputError('Validation failed.', {
@@ -278,7 +282,9 @@ export const getResolvers = (
                             resource,
                             ctx.manager,
                             ctx.resourcesMap
-                        ).validate(args.object, false)
+                        )
+                            .request(ctx.request)
+                            .validate(args.object, false)
 
                         if (!passed) {
                             throw ctx.userInputError('Validation failed.', {

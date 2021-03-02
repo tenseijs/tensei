@@ -2,7 +2,8 @@ declare module '@tensei/common/fields' {
     import {
         FieldHookFunction,
         AuthorizeFunction,
-        Config
+        Config,
+        DataPayload
     } from '@tensei/common/config'
     import {
         ReferenceType,
@@ -203,6 +204,7 @@ declare module '@tensei/common/fields' {
         formComponent(component: string): this
         indexComponent(component: string): this
         detailComponent(component: string): this
+        getValueFromPayload(payload: DataPayload, request: Express.Request): any
         /**
          *
          * The name of the field. Will be used to display table columns,
@@ -465,6 +467,10 @@ declare module '@tensei/common/fields' {
 
     const slug: (name: string, databaseField?: string) => SlugContract
     const text: (
+        name: string,
+        databaseField?: string | undefined
+    ) => TextContract
+    const password: (
         name: string,
         databaseField?: string | undefined
     ) => TextContract

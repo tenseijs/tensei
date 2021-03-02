@@ -1,7 +1,7 @@
 import Supertest from 'supertest'
 import { setup, gql, getFileFixture } from './setup'
 
-test('Can upload files using the graphql plugin', async () => {
+test.skip('Can upload files using the graphql plugin', async () => {
     const {
         app,
         ctx: { storage, orm }
