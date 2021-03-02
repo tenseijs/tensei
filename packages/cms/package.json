@@ -1,6 +1,6 @@
 {
     "name": "@tensei/cms",
-    "version": "0.7.16",
+    "version": "0.7.17",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -18,7 +18,6 @@
         "build": "yarn build:server && cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
-        "@tensei/core": "^0.7.16",
         "@babel/plugin-proposal-class-properties": "^7.12.1",
         "@babel/plugin-proposal-object-rest-spread": "^7.12.1",
         "@babel/preset-react": "^7.12.7",
@@ -28,7 +27,8 @@
         "@tailwindcss/forms": "^0.2.1",
         "@tailwindcss/typography": "^0.3.1",
         "@tailwindcss/ui": "^0.7.2",
-        "@tensei/components": "^0.7.16",
+        "@tensei/components": "^0.7.17",
+        "@tensei/core": "^0.7.17",
         "@types/axios": "^0.14.0",
         "@types/classnames": "^2.2.11",
         "@types/qs": "^6.9.5",
@@ -75,11 +75,11 @@
         "access": "public"
     },
     "dependencies": {
-        "@tensei/mail": "^0.7.16",
+        "@tensei/mail": "^0.7.17",
         "@types/csurf": "^1.11.0",
         "@types/express-session": "^1.17.3",
         "csurf": "^1.11.0",
         "express-session": "^1.17.1",
-        "express-session-mikro-orm": "^0.7.16"
+        "express-session-mikro-orm": "^0.7.17"
     }
 }

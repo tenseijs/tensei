@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.17](https://github.com/tenseijs/tensei/compare/v0.7.16...v0.7.17) (2021-03-02)
+
+
+### Bug Fixes
+
+* **cms:** fix password updated on forms when untouched ([#79](https://github.com/tenseijs/tensei/issues/79)) ([365e6af](https://github.com/tenseijs/tensei/commit/365e6af3fd0e2aaf5a9952eda53a54115f9189a7)), closes [#78](https://github.com/tenseijs/tensei/issues/78)
+
+
+
+
+
 ## [0.7.16](https://github.com/tenseijs/tensei/compare/v0.7.15...v0.7.16) (2021-03-01)
 
 **Note:** Version bump only for package @tensei/core

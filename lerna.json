@@ -3,7 +3,7 @@
     "packages/*",
     "examples/*"
   ],
-  "version": "0.7.16",
+  "version": "0.7.17",
   "npmClient": "yarn",
   "useWorkspaces": true,
   "stream": true,
