@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.18](https://github.com/tenseijs/tensei/compare/v0.7.17...v0.7.18) (2021-03-04)
+
+
+### Features
+
+* **rest:** add simple rest documentation ([#81](https://github.com/tenseijs/tensei/issues/81)) ([8f30635](https://github.com/tenseijs/tensei/commit/8f306355eb091637276fed421ceba38be1d83372))
+
+
+
+
+
 ## [0.7.17](https://github.com/tenseijs/tensei/compare/v0.7.16...v0.7.17) (2021-03-02)
 
 

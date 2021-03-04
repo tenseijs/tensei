@@ -1,6 +1,6 @@
 {
     "name": "@tensei/rest",
-    "version": "0.7.17",
+    "version": "0.7.18",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -8,15 +8,13 @@
         "@types/express": "^4.17.6",
         "@types/jest": "^25.2.3",
         "@types/supertest": "^2.0.9",
+        "autoprefixer": "^10.2.4",
         "jest": "^26.0.1",
         "laravel-mix": "^6.0.13",
         "postcss": "^8.2.7",
-        "postcss-loader": "^5.0.0",
         "prettier": "^2.0.5",
         "supertest": "^4.0.2",
-        "typescript": "^3.9.5",
-        "vue": "^2.6.12",
-        "vue-loader": "^15.9.5"
+        "typescript": "^3.9.5"
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css,tsx}'",
@@ -29,7 +27,7 @@
         "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "dependencies": {
-        "@tensei/common": "^0.7.17",
+        "@tensei/common": "^0.7.18",
         "express-response-formatter": "^2.0.2",
         "pluralize": "^8.0.0",
         "qs": "^6.9.4"
