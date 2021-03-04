@@ -16,6 +16,7 @@ export class NumberField extends Text {
         this.htmlAttributes({
             type: 'number'
         })
+        this.rules('number')
     }
 
     /**

@@ -3,6 +3,7 @@ import {
     RouteConfig,
     AuthorizeFunction,
     RouteContract,
+    RouteParameter,
     ResourceContract,
     RouteExtendContract
 } from '@tensei/common'
@@ -17,13 +18,31 @@ export class Route implements RouteContract {
         name: '',
         cms: false,
         type: 'GET',
+        group: 'Misc',
+        groupSlug: 'misc',
         internal: false,
         middleware: [],
+        parameters: [],
         snakeCaseName: '',
         paramCaseName: '',
         authorize: [],
+        description: '',
         handler: async () => {},
-        extend: {}
+        extend: {},
+        sampleRequest: '',
+        sampleResponse: ''
+    }
+
+    sampleRequest(sample: string) {
+        this.config.sampleRequest = sample
+
+        return this
+    }
+
+    sampleResponse(sample: string) {
+        this.config.sampleResponse = sample
+
+        return this
     }
 
     constructor(name?: string) {
@@ -34,6 +53,25 @@ export class Route implements RouteContract {
         this.config.name = name
         this.config.paramCaseName = paramCase(name)
         this.config.snakeCaseName = snakeCase(name)
+    }
+
+    group(name: string) {
+        this.config.group = name
+        this.config.groupSlug = paramCase(name)
+
+        return this
+    }
+
+    parameters(parameters: RouteParameter[]) {
+        this.config.parameters = [...this.config.parameters, ...parameters]
+
+        return this
+    }
+
+    description(description: string) {
+        this.config.description = description
+
+        return this
     }
 
     path(path: string) {
@@ -118,6 +156,42 @@ export class Route implements RouteContract {
         this.config.extend = extend
 
         return this
+    }
+
+    serialize() {
+        const {
+            id,
+            path,
+            name,
+            type,
+            snakeCaseName,
+            middleware,
+            paramCaseName,
+            authorize,
+            group,
+            groupSlug,
+            parameters,
+            description,
+            sampleRequest,
+            sampleResponse
+        } = this.config
+
+        return {
+            id,
+            path,
+            name,
+            type,
+            group,
+            groupSlug,
+            parameters,
+            description,
+            snakeCaseName,
+            paramCaseName,
+            sampleRequest,
+            sampleResponse,
+            middleware: middleware.length,
+            authorize: authorize.length
+        }
     }
 }
 

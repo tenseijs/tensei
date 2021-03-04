@@ -12,6 +12,7 @@ export class Textarea extends Text {
     public constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
+        this.rules('string')
         this.property.columnTypes = ['text']
         this.hideOnIndex()
     }

@@ -18,12 +18,10 @@ import PageWrapper from '../../components/PageWrapper'
 
 export interface ResourceDetailProps {}
 
-const ResourceDetail: React.FC<
-    ResourceDetailProps &
-        RouteComponentProps<{
-            id: string
-        }>
-> = () => {
+const ResourceDetail: React.FC<ResourceDetailProps &
+    RouteComponentProps<{
+        id: string
+    }>> = () => {
     const history = useHistory()
     const [data, setData] = useState<any>({})
     const [loading, setLoading] = useState(true)

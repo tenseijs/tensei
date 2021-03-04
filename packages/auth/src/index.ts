@@ -782,80 +782,46 @@ class Auth {
                 .path(this.getApiPath('login'))
                 .id(this.getRouteId(`login_${name}`))
                 .post()
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Login an existing ${name}.`,
-                        parameters: [
-                            {
-                                required: true,
-                                type: 'object',
-                                name: 'body',
-                                in: 'body',
-                                schema: {
-                                    $ref: `#/definitions/LoginInput`
-                                }
-                            }
-                        ],
-                        definitions: {
-                            LoginInput: {
-                                type: 'object',
-                                properties: {
-                                    email: {
-                                        required: true,
-                                        type: 'string',
-                                        format: 'email'
-                                    },
-                                    password: {
-                                        required: true,
-                                        type: 'string'
-                                    }
-                                }
-                            }
-                        }
+                .description(`Login an existing ${name}.`)
+                .parameters([
+                    {
+                        in: 'body',
+                        validation: ['required', 'email'],
+                        description: `The email of the ${name}`,
+                        name: 'email',
+                        type: 'string'
+                    },
+                    {
+                        in: 'body',
+                        validation: ['required'],
+                        description: `The password of the ${name}`,
+                        name: 'password',
+                        type: 'string'
                     }
-                })
+                ])
                 .handle(async (request, { formatter: { ok } }) =>
                     ok(await this.login(request as any))
                 ),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
                 .post()
-                .id(this.getRouteId(`register_${name}`))
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Register a new ${name}.`,
-                        parameters: [
-                            {
-                                required: true,
-                                type: 'object',
-                                name: 'body',
-                                in: 'body',
-                                schema: {
-                                    $ref: `#/definitions/RegisterInput`
-                                }
-                            }
-                        ],
-                        definitions: {
-                            RegisterInput: {
-                                type: 'object',
-                                properties: {
-                                    email: {
-                                        required: true,
-                                        type: 'string',
-                                        format: 'email'
-                                    },
-                                    password: {
-                                        required: true,
-                                        type: 'string'
-                                    },
-                                    ...this.getRegistrationFieldsDocs()
-                                }
-                            }
-                        }
+                .parameters([
+                    {
+                        in: 'body',
+                        validation: ['required', 'email'],
+                        description: `The email of the ${name}`,
+                        name: 'email',
+                        type: 'string'
+                    },
+                    {
+                        in: 'body',
+                        validation: ['required'],
+                        description: `The password of the ${name}`,
+                        name: 'password',
+                        type: 'string'
                     }
-                })
+                ])
+                .id(this.getRouteId(`register_${name}`))
                 .handle(
                     async (request, { formatter: { created, unprocess } }) => {
                         try {
@@ -875,35 +841,19 @@ class Auth {
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
                 .post()
-                .id(this.getRouteId(`request_password_reset_${name}`))
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Request a password reset for a ${name} using the ${name} email.`,
-                        parameters: [
-                            {
-                                required: true,
-                                type: 'object',
-                                name: 'body',
-                                in: 'body',
-                                schema: {
-                                    $ref: `#/definitions/RequestPasswordInput`
-                                }
-                            }
-                        ],
-                        definitions: {
-                            RequestPasswordInput: {
-                                properties: {
-                                    email: {
-                                        type: 'string',
-                                        required: true,
-                                        format: 'email'
-                                    }
-                                }
-                            }
-                        }
+                .parameters([
+                    {
+                        in: 'body',
+                        validation: ['required', 'email'],
+                        description: `The email of the ${name}`,
+                        name: 'email',
+                        type: 'string'
                     }
-                })
+                ])
+                .id(this.getRouteId(`request_password_reset_${name}`))
+                .description(
+                    `Request a password reset for a ${name} using the ${name} email.`
+                )
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.forgotPassword(request as any)
@@ -914,38 +864,25 @@ class Auth {
                 .path(this.getApiPath('passwords/reset'))
                 .post()
                 .id(this.getRouteId(`reset_password_${name}`))
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Reset a ${name} password using a password reset token.`,
-                        parameters: [
-                            {
-                                required: true,
-                                type: 'object',
-                                name: 'body',
-                                in: 'body',
-                                schema: {
-                                    $ref: `#/definitions/ResetPasswordInput`
-                                }
-                            }
-                        ],
-                        definitions: {
-                            ResetPasswordInput: {
-                                properties: {
-                                    password: {
-                                        type: 'string',
-                                        required: true
-                                    },
-                                    token: {
-                                        type: 'string',
-                                        required: true,
-                                        description: `This token was sent to the ${name}'s email. Provide it here to reset the ${name}'s password.`
-                                    }
-                                }
-                            }
-                        }
+                .description(
+                    `Reset a ${name} password using a password reset token.`
+                )
+                .parameters([
+                    {
+                        in: 'body',
+                        validation: ['required'],
+                        description: `This token was sent to the ${name}'s email. Provide it here to reset the ${name}'s password.`,
+                        name: 'token',
+                        type: 'string'
+                    },
+                    {
+                        in: 'body',
+                        validation: ['required'],
+                        description: `The password of the ${name}`,
+                        name: 'password',
+                        type: 'string'
                     }
-                })
+                ])
                 .handle(async (request, response) =>
                     response.formatter.ok(
                         await this.resetPassword(request as any)
@@ -956,12 +893,9 @@ class Auth {
                       route(`Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/enable'))
                           .post()
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Enable two factor authentication for an existing ${name}.`
-                              }
-                          })
+                          .description(
+                              `Enable two factor authentication for an existing ${name}.`
+                          )
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
                               response.formatter.ok(
@@ -973,13 +907,18 @@ class Auth {
                       route(`Confirm Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/confirm'))
                           .post()
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Confirm enable two factor authentication for an existing ${name}.`,
-                                  description: `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
+                          .parameters([
+                              {
+                                  in: 'body',
+                                  validation: ['required'],
+                                  description: `The two-factor code from the authentication application such as Google Authenticator ${name}`,
+                                  name: 'password',
+                                  type: 'string'
                               }
-                          })
+                          ])
+                          .description(
+                              `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
+                          )
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
                               response.formatter.ok(
@@ -991,13 +930,19 @@ class Auth {
                       route(`Disable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/disable'))
                           .post()
-                          .authorize(({ user }) => user && !user.public)
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Disable two factor authentication for an existing ${name}.`
+                          .parameters([
+                              {
+                                  in: 'body',
+                                  validation: ['required'],
+                                  description: `The two-factor code from the authentication application such as Google Authenticator ${name}`,
+                                  name: 'password',
+                                  type: 'string'
                               }
-                          })
+                          ])
+                          .description(
+                              `Disable two factor authentication for an existing ${name}.`
+                          )
+                          .authorize(({ user }) => user && !user.public)
                           .authorize(({ user }) => !!user)
                           .handle(async (request, response) =>
                               response.formatter.ok(
@@ -1013,17 +958,7 @@ class Auth {
                 .get()
                 .id(this.getRouteId(`get_authenticated_${name}`))
                 .authorize(({ user }) => user && !user.public)
-                .extend({
-                    docs: {
-                        ...extend,
-                        summary: `Get the authenticated ${name} from a valid JWT.`,
-                        security: [
-                            {
-                                Bearer: []
-                            }
-                        ]
-                    }
-                })
+                .description(`Get the authenticated ${name} from a valid JWT.`)
                 .handle(async ({ user }, { formatter: { ok } }) => ok(user)),
             ...(this.config.verifyEmails
                 ? [
@@ -1036,12 +971,9 @@ class Auth {
                               )
                           )
                           .authorize(({ user }) => user && !user.public)
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Resend verification email to ${name} email.`
-                              }
-                          })
+                          .description(
+                              `Resend verification email to ${name} email.`
+                          )
                           .handle(async (request, response) =>
                               response.formatter.ok(
                                   await this.resendVerificationEmail(
@@ -1052,13 +984,19 @@ class Auth {
                       route(`Confirm ${name} email`)
                           .path(this.getApiPath('emails/verification/confirm'))
                           .post()
-                          .id(this.getRouteId(`confirm_${name}_email`))
-                          .extend({
-                              docs: {
-                                  ...extend,
-                                  summary: `Confirm ${name} email with email verification token.`
+                          .parameters([
+                              {
+                                  in: 'body',
+                                  validation: ['required'],
+                                  description: `This email confirmation token was sent to the ${name}'s email. Provide it here to confirm the ${name}'s email.`,
+                                  name: 'token',
+                                  type: 'string'
                               }
-                          })
+                          ])
+                          .id(this.getRouteId(`confirm_${name}_email`))
+                          .description(
+                              `Confirm ${name} email with email verification token.`
+                          )
                           .handle(async (request, response) =>
                               response.formatter.ok(
                                   await this.confirmEmail(request as any)
@@ -1073,13 +1011,9 @@ class Auth {
                               .path(this.getApiPath('social/login'))
                               .post()
                               .id('social_login')
-                              .extend({
-                                  docs: {
-                                      ...extend,
-                                      summary: `Login a ${name} via a social provider.`,
-                                      description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                                  }
-                              })
+                              .description(
+                                  `Login a ${name} via a social provider.`
+                              )
                               .handle(async (request, response) =>
                                   response.formatter.ok(
                                       await this.socialAuth(
@@ -1092,13 +1026,9 @@ class Auth {
                               .path(this.getApiPath('social/register'))
                               .id('social_register')
                               .post()
-                              .extend({
-                                  docs: {
-                                      ...extend,
-                                      summary: `Register a ${name} via a social provider.`,
-                                      description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                                  }
-                              })
+                              .description(
+                                  `Register a ${name} via a social provider.`
+                              )
                               .handle(async (request, response) =>
                                   response.formatter.ok(
                                       await this.socialAuth(
@@ -1113,13 +1043,9 @@ class Auth {
                               .path(this.getApiPath(`social/confirm`))
                               .id('social_confirm')
                               .post()
-                              .extend({
-                                  docs: {
-                                      ...extend,
-                                      summary: `Confirm a ${name} (login or register) via a social provider.`,
-                                      description: `This operation requires an access_token gotten after a redirect from the social provider.`
-                                  }
-                              })
+                              .description(
+                                  `Confirm a ${name} (login or register) via a social provider. If this user is already registered, it'll login the user. If not, it'll register a new account for the user and login that user.`
+                              )
                               .handle(async (request, response) =>
                                   response.formatter.ok(
                                       await this.socialAuth(request as any)

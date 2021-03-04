@@ -19,6 +19,7 @@ export class Text extends Field {
         super(name, databaseField)
 
         this.defaultFormValue('')
+        this.rules('string')
         this.property.columnTypes = ['varchar(255)']
     }
 

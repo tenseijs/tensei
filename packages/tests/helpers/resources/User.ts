@@ -3,7 +3,9 @@ import { text, resource, hasMany } from '@tensei/common'
 
 export default resource('User')
     .fields([
-        text('Full name').searchable().rules('required'),
+        text('Full name')
+            .searchable()
+            .rules('required'),
         text('Email')
             .unique()
             .searchable()
