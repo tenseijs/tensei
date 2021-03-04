@@ -68,7 +68,6 @@ tensei()
     ])
     .databaseConfig({
         type: 'sqlite',
-        debug: true,
         dbName: 'tensei'
     })
     .start()

@@ -1,15 +1,16 @@
 {
     "compilerOptions": {
-        "target": "ES2017",
+        "jsx": "react",
         "module": "commonjs",
-        "declaration": true,
-        "outDir": "./build",
-        "strict": true,
-        "baseUrl": "./src",
+        "noImplicitAny": true,
+        "outDir": "./build/docs",
+        "preserveConstEnums": true,
+        "removeComments": true,
+        "sourceMap": true,
+        "target": "es5",
+        "baseUrl": "./src/docs",
         "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": false,
-        "types": ["@types/jest"]
+        "declaration": false
     },
-    "exclude": ["__tests__", "build"]
+    "exclude": ["__tests__", "build", "src/index.ts", "src/populate-helpers.ts"]
 }

@@ -9,11 +9,9 @@ import {
     Pulse
 } from '@tensei/components'
 
-const ManyToMany: React.FC<
-    FormComponentProps & {
-        customQuery?: (parameters: AbstractData) => AbstractData
-    }
-> = ({
+const ManyToMany: React.FC<FormComponentProps & {
+    customQuery?: (parameters: AbstractData) => AbstractData
+}> = ({
     field,
     name,
     id,

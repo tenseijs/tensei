@@ -59,12 +59,18 @@ declare module '@tensei/common/config' {
         delete(): this
         internal(): this
         id(id: string): this
+        group(name: string): this
+        description(description: string): this
+        sampleRequest(sample: string): this
+        sampleResponse(sample: string): this
+        parameters(parameters: RouteParameter[]): this
         extend(extend: RouteExtendContract): this
         resource(resource: ResourceContract): this
         middleware(middleware: RequestHandler[]): this
         resource(resource: ResourceContract): this
         authorize(authorize: AuthorizeFunction): this
         handle(handler: RouteConfig['handler']): this
+        serialize(): DataPayload
     }
 
     interface UtilsContract {
@@ -128,15 +134,29 @@ declare module '@tensei/common/config' {
         middleware(...middleware: GraphQlMiddleware[]): this
     }
 
+    interface RouteParameter {
+        name: string
+        type: string | number
+        description: string
+        validation?: string[]
+        in: 'header' | 'body' | 'query' | 'path'
+    }
+
     interface RouteConfig {
         path: string
         name: string
         cms: boolean
         internal: boolean
         id: string
+        group: string
+        groupSlug: string
+        sampleRequest: string
+        sampleResponse: string
+        parameters: RouteParameter[]
         type: EndpointTypes
         snakeCaseName: string
         paramCaseName: string
+        description: string
         resource?: ResourceContract
         middleware: RequestHandler[]
         authorize: AuthorizeFunction[]

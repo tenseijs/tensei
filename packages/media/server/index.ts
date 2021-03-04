@@ -131,7 +131,9 @@ class MediaLibrary {
                         relatedResources.push(resource)
 
                         MediaResource.fields([
-                            belongsTo(resource.data.name).nullable().hidden()
+                            belongsTo(resource.data.name)
+                                .nullable()
+                                .hidden()
                         ])
                     }
                 })

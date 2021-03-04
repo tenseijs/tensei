@@ -17,7 +17,11 @@ test('Registers auth resources when plugin is registered', async () => {
 test('Can customize the name of the authenticator user', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().user('Customer').plugin()])
+    } = await setup([
+        auth()
+            .user('Customer')
+            .plugin()
+    ])
 
     expect(
         resources.find(resource => resource.data.name === 'Customer')
@@ -27,7 +31,11 @@ test('Can customize the name of the authenticator user', async () => {
 test('Enabling roles and permissions registers Role and permission resources', async () => {
     const {
         ctx: { resources }
-    } = await setup([auth().rolesAndPermissions().plugin()])
+    } = await setup([
+        auth()
+            .rolesAndPermissions()
+            .plugin()
+    ])
 
     expect(
         resources.filter(resource =>
@@ -200,7 +208,11 @@ test('Can request a password reset and reset password', async () => {
         },
         app
     } = await setup([
-        auth().verifyEmails().refreshTokens().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .refreshTokens()
+            .user('Student')
+            .plugin(),
         graphql().plugin(),
         setupFakeMailer(mailerMock)
     ])
@@ -503,7 +515,10 @@ test('if a refresh token is used twice (compromised), the user is automatically 
         },
         app
     } = await setup([
-        auth().user('Customer').refreshTokens().plugin(),
+        auth()
+            .user('Customer')
+            .refreshTokens()
+            .plugin(),
         graphql().plugin()
     ])
 
@@ -611,7 +626,10 @@ test('if a refresh token is used twice (compromised), the user is automatically 
 
 test('registers new users with email/password based authentication', async () => {
     const { app } = await setup([
-        auth().verifyEmails().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
         graphql().plugin()
     ])
 
@@ -647,7 +665,10 @@ test('registers new users with email/password based authentication', async () =>
 
 test('authentication works when refresh tokens are disabled', async () => {
     const { app } = await setup([
-        auth().verifyEmails().user('Student').plugin(),
+        auth()
+            .verifyEmails()
+            .user('Student')
+            .plugin(),
         graphql().plugin()
     ])
 

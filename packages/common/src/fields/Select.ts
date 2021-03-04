@@ -21,6 +21,8 @@ export class Select extends Field {
         this.defaultFormValue('')
         this.property.enum = true
         this.property.items = []
+
+        this.rules('string')
     }
 
     /**
@@ -40,6 +42,8 @@ export class Select extends Field {
         )
 
         this.property.items = this.selectOptions.map(option => option.value)
+
+        this.rules(`in:${this.property.items.join(',')}`)
 
         return this
     }

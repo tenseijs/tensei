@@ -27,6 +27,8 @@ export class Timestamp extends DateField {
         this.property.columnTypes = ['timestamp']
         this.property.reference = ReferenceType.SCALAR
 
+        this.rules('date')
+
         this.defaultFormValue(Dayjs().format(this.config.dateFormat))
     }
 

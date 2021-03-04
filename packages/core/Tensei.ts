@@ -301,7 +301,6 @@ export class Tensei implements TenseiContract {
             const path = route.config.path.startsWith('/')
                 ? route.config.path
                 : `/${route.config.path}`
-
             ;(this.app as any)[route.config.type.toLowerCase()](
                 path,
 

@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express'
+import Fs from 'fs'
+import Path from 'path'
 import {
     FindOptions,
     FilterQuery,
@@ -6,6 +7,7 @@ import {
     EntityName,
     ReferenceType
 } from '@mikro-orm/core'
+import Mustache from 'mustache'
 import AsyncHandler from 'express-async-handler'
 import { responseEnhancer } from 'express-response-formatter'
 import {
@@ -14,13 +16,18 @@ import {
     plugin,
     ApiContext,
     RouteContract,
-    ResourceContract
+    ResourceContract,
+    RouteParameter
 } from '@tensei/common'
 
 import {
     parseQueryToFindOptions,
     parseQueryToWhereOptions
 } from './populate-helpers'
+
+const indexFileContent = Fs.readFileSync(
+    Path.resolve(__dirname, 'docs', 'index.mustache')
+).toString()
 
 class Rest {
     private getApiPath = (path: string) => {
@@ -69,6 +76,66 @@ class Rest {
     ) {
         const routes: RouteContract[] = []
 
+        const paginationParameters = (
+            resource: ResourceContract
+        ): RouteParameter[] => {
+            return [
+                {
+                    in: 'query',
+                    name: 'page',
+                    type: 'number',
+                    validation: ['required'],
+                    description: `The page to be fetched.`
+                },
+                {
+                    in: 'query',
+                    name: 'per_page',
+                    type: 'number',
+                    validation: ['required'],
+                    description: `The page to be fetched.`
+                },
+                {
+                    in: 'query',
+                    name: 'fields',
+                    type: 'string',
+                    validation: [
+                        `in:${resource.data.fields
+                            .filter(
+                                field =>
+                                    !field.showHideFieldFromApi.hideOnFetchApi
+                            )
+                            .map(field => field.databaseField)
+                            .join(',')}`
+                    ],
+                    description: `The list of fields to be selected from the database (separated by commas).`
+                },
+                {
+                    in: 'query',
+                    name: 'populate',
+                    type: 'string',
+                    validation: [
+                        `in:${resource.data.fields
+                            .filter(field => field.isRelationshipField)
+                            .map(field => field.databaseField)
+                            .join(',')}`
+                    ],
+                    description: `Populate related resources (separated by commas). Populate nested resources by using the dot(.) notation.`
+                },
+                {
+                    in: 'query',
+                    name: 'sort',
+                    type: 'string',
+                    description: `Sort the results based on one of the available fields of this resource.`
+                },
+                {
+                    in: 'query',
+                    name: 'where',
+                    type: 'string',
+                    description: `Filter results based on a where query.`
+                }
+            ]
+        }
+
         resources.forEach(resource => {
             const {
                 slugSingular: singular,
@@ -82,14 +149,36 @@ class Rest {
                     route(`Insert ${singular}`)
                         .post()
                         .internal()
+                        .group(resource.data.label)
+                        .parameters(
+                            resource.data.fields
+                                .filter(
+                                    field =>
+                                        !field.showHideFieldFromApi
+                                            .hideOnInsertApi &&
+                                        ![
+                                            'id',
+                                            '_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ].includes(field.databaseField)
+                                )
+                                .map(field => ({
+                                    in: 'body',
+                                    name: field.databaseField,
+                                    description: field.helpText,
+                                    validation: field.creationValidationRules.concat(
+                                        field.validationRules
+                                    ),
+                                    type:
+                                        field.relatedProperty.type ||
+                                        field.property.type!
+                                }))
+                        )
                         .id(this.getRouteId(`insert_${singular}`))
                         .resource(resource)
                         .path(getApiPath(plural))
-                        .extend({
-                            docs: {
-                                summary: `Insert a single ${singular}.`
-                            }
-                        })
+                        .description(`Insert a single ${singular}.`)
                         .handle(
                             async (
                                 {
@@ -147,15 +236,14 @@ class Rest {
                     route(`Fetch multiple ${plural}`)
                         .get()
                         .internal()
+                        .group(resource.data.label)
                         .id(plural)
+                        .parameters(paginationParameters(resource))
                         .resource(resource)
                         .path(getApiPath(plural))
-                        .extend({
-                            docs: {
-                                summary: `Fetch multiple ${plural}`,
-                                description: `This endpoint fetches all ${plural} that match an optional where query.`
-                            }
-                        })
+                        .description(
+                            `This endpoint fetches all ${plural} that match an optional where query.`
+                        )
                         .handle(async ({ manager, query }, response) => {
                             const findOptions = parseQueryToFindOptions(
                                 query,
@@ -186,15 +274,22 @@ class Rest {
                 routes.push(
                     route(`Fetch single ${singular}`)
                         .get()
+                        .parameters([
+                            {
+                                in: 'path',
+                                name: 'id',
+                                type: 'number',
+                                validation: ['required'],
+                                description: `The ID of the ${singular} to fetch.`
+                            }
+                        ])
+                        .group(resource.data.label)
                         .internal()
                         .id(singular)
                         .resource(resource)
-                        .extend({
-                            docs: {
-                                summary: `Fetch a single ${singular}`,
-                                description: `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`
-                            }
-                        })
+                        .description(
+                            `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`
+                        )
                         .path(getApiPath(`${plural}/:id`))
                         .handle(
                             async (
@@ -227,15 +322,38 @@ class Rest {
                 routes.push(
                     route(`Fetch ${singular} relations`)
                         .get()
+                        .parameters([
+                            {
+                                in: 'path',
+                                name: 'id',
+                                type: 'number',
+                                validation: ['required'],
+                                description: `The ID of the ${singular} to fetch relations of.`
+                            },
+                            {
+                                in: 'path',
+                                name: 'relatedResource',
+                                type: 'string',
+                                validation: [
+                                    'required',
+                                    `in:${resource.data.fields
+                                        .filter(
+                                            field => field.isRelationshipField
+                                        )
+                                        .map(field => field.databaseField)
+                                        .join(',')}`
+                                ],
+                                description: `The slug path of the related resource you want to fetch.`
+                            },
+                            ...paginationParameters(resource)
+                        ])
+                        .group(resource.data.label)
                         .id(`index_${singular}_relations`)
                         .internal()
                         .resource(resource)
-                        .extend({
-                            docs: {
-                                summary: `Fetch relation to a ${singular}`,
-                                description: `This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.`
-                            }
-                        })
+                        .description(
+                            `This endpoint figures out the relationship passed as /:relatedResource (one-to-one, one-to-many, many-to-many, or many-to-one) and returns all related entities. The result will be a paginated array for many-to-* relations and an object for one-to-* relations.`
+                        )
                         .path(getApiPath(`${plural}/:id/:relatedResource`))
                         .handle(
                             async (
@@ -387,14 +505,37 @@ class Rest {
                     route(`Update single ${singular}`)
                         .patch()
                         .internal()
+                        .parameters(
+                            resource.data.fields
+                                .filter(
+                                    field =>
+                                        !field.showHideFieldFromApi
+                                            .hideOnUpdateApi &&
+                                        ![
+                                            'id',
+                                            '_id',
+                                            'created_at',
+                                            'updated_at'
+                                        ].includes(field.databaseField)
+                                )
+                                .map(field => ({
+                                    in: 'body',
+                                    name: field.databaseField,
+                                    description: field.helpText,
+                                    validation: field.creationValidationRules.concat(
+                                        field.validationRules
+                                    ),
+                                    type:
+                                        field.relatedProperty.type ||
+                                        field.property.type!
+                                }))
+                        )
+                        .group(resource.data.label)
                         .id(this.getRouteId(`update_${singular}`))
                         .resource(resource)
-                        .extend({
-                            docs: {
-                                summary: `Update a single ${singular}`,
-                                description: `This endpoint update a single ${singular}. Provide the primary key ID of the entity you want to delete.`
-                            }
-                        })
+                        .description(
+                            `This endpoint update a single ${singular}. Provide the primary key ID of the ${singular} you want to update.`
+                        )
                         .path(getApiPath(`${plural}/:id`))
                         .handle(
                             async (
@@ -459,6 +600,16 @@ class Rest {
                     route(`Delete single ${singular}`)
                         .delete()
                         .internal()
+                        .parameters([
+                            {
+                                in: 'path',
+                                name: 'id',
+                                type: 'number',
+                                validation: ['required'],
+                                description: `The ID of the ${singular} to delete.`
+                            }
+                        ])
+                        .group(resource.data.label)
                         .id(this.getRouteId(`delete_${singular}`))
                         .resource(resource)
                         .path(getApiPath(`${plural}/:id`))
@@ -504,16 +655,14 @@ class Rest {
                 routes.push(
                     route(`Delete many ${plural}`)
                         .delete()
+                        .group(resource.data.label)
                         .internal()
                         .id(this.getRouteId(`delete_many_${singular}`))
                         .resource(resource)
                         .path(getApiPath(`${plural}`))
-                        .extend({
-                            docs: {
-                                summary: `Delete multiple ${plural}`,
-                                description: `This endpoint deletes multiple ${plural}. Provide a search query to find all ${plural} to be deleted.`
-                            }
-                        })
+                        .description(
+                            `This endpoint deletes multiple ${plural}. Provide a search query to find all ${plural} to be deleted.`
+                        )
                         .handle(
                             async ({ manager, query, config }, response) => {
                                 const entities = await manager.find(
@@ -538,9 +687,18 @@ class Rest {
     }
 
     plugin() {
-        return plugin('Rest API').register(
-            ({ app, resources, extendRoutes }) => {
+        return plugin('Rest API')
+            .register(({ app, resources, extendRoutes }) => {
                 app.use(responseEnhancer())
+
+                app.get('/rest-docs.css', (request, response) =>
+                    response.sendFile(
+                        Path.resolve(__dirname, 'docs', 'app.css')
+                    )
+                )
+                app.get('/rest-docs.js', (request, response) =>
+                    response.sendFile(Path.resolve(__dirname, 'docs', 'app.js'))
+                )
 
                 extendRoutes(
                     this.extendRoutes(resources, (path: string) =>
@@ -581,8 +739,25 @@ class Rest {
                         ])
                     )
                 )
-            }
-        )
+            })
+            .boot(({ app, name, routes }) => {
+                app.get('/rest/routes', (request, response) =>
+                    response.json(
+                        routes.map(route => ({
+                            ...route.serialize(),
+                            path: `/${route.config.path}`
+                        }))
+                    )
+                )
+
+                app.get('/rest-docs(/*)?', (request, response) =>
+                    response.send(
+                        Mustache.render(indexFileContent, {
+                            name
+                        })
+                    )
+                )
+            })
     }
 }
 
