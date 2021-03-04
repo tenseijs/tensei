@@ -3,10 +3,12 @@ import { DetailComponentProps } from '@tensei/components'
 
 import Text from '../Text'
 
-const ID: React.FC<DetailComponentProps & {
-    className?: string
-    onClick?: EventHandler<SyntheticEvent<HTMLParagraphElement>>
-}> = ({ value, values, field, resource, className = '' }) => {
+const ID: React.FC<
+    DetailComponentProps & {
+        className?: string
+        onClick?: EventHandler<SyntheticEvent<HTMLParagraphElement>>
+    }
+> = ({ value, values, field, resource, className = '' }) => {
     return (
         <>
             <Text

@@ -107,7 +107,7 @@ class Database {
     }
 
     private generateEntityClass(resource: ResourceContract) {
-        const entityClass = function() {}
+        const entityClass = function () {}
 
         const config = this.config
 

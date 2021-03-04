@@ -81,8 +81,9 @@ const Modal: React.FC<ModalProps> = ({
                                 aria-labelledby="modal-headline"
                                 className={`inline-block bg-white rounded-lg ${
                                     noPadding ? '' : 'px-4 pt-5 pb-4 sm:p-6'
-                                } text-left overflow-visible shadow-xl transform transition-all w-full ${className ||
-                                    ''}`}
+                                } text-left overflow-visible shadow-xl transform transition-all w-full ${
+                                    className || ''
+                                }`}
                             >
                                 {title ? (
                                     <div className="w-full flex py-5 px-8 justify-between border-b border-tensei-gray-500">

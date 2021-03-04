@@ -343,9 +343,7 @@ class CmsPlugin {
     private permissionResource() {
         return resource(this.config.permissionResource)
             .fields([
-                text('Name')
-                    .searchable()
-                    .rules('required'),
+                text('Name').searchable().rules('required'),
                 text('Slug')
                     .rules('required')
                     .unique()
@@ -390,9 +388,7 @@ class CmsPlugin {
                     .sortable()
                     .searchable()
                     .rules('required'),
-                text('Description')
-                    .nullable()
-                    .rules('max:255'),
+                text('Description').nullable().rules('max:255'),
                 belongsToMany(this.config.userResource),
                 belongsToMany(this.config.permissionResource).owner()
             ])

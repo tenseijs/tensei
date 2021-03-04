@@ -62,28 +62,33 @@ const Button: React.FC<ButtonProps> = ({
     }
 
     if (clear) {
-        props.className = `font-bold h-9 flex items-center ${props.className ||
-            ''} ${classes.clear}`
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.clear}`
     }
 
     if (primary) {
-        props.className = `font-bold h-9 flex items-center ${props.className ||
-            ''} ${classes.primary}`
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.primary}`
     }
 
     if (danger) {
-        props.className = `font-bold h-9 flex items-center ${props.className ||
-            ''} ${classes.danger}`
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.danger}`
     }
 
     if (success) {
-        props.className = `font-bold h-9 flex items-center ${props.className ||
-            ''} ${classes.success}`
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.success}`
     }
 
     if (secondary) {
-        props.className = `font-bold h-9 flex items-center ${props.className ||
-            ''} ${classes.secondary}`
+        props.className = `font-bold h-9 flex items-center ${
+            props.className || ''
+        } ${classes.secondary}`
     }
 
     return (

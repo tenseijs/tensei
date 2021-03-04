@@ -57,8 +57,9 @@ const Checkbox: React.FC<CheckboxProps> = ({
             <input
                 {...props}
                 disabled={disabled}
-                className={`rounded-sm border border-tensei-gray-500 ${checkboxClassName ||
-                    ''} ${disabled ? 'opacity-80 cursor-not-allowed' : ''}`}
+                className={`rounded-sm border border-tensei-gray-500 ${
+                    checkboxClassName || ''
+                } ${disabled ? 'opacity-80 cursor-not-allowed' : ''}`}
             />
 
             {error ? (

@@ -5,9 +5,11 @@ import IDDetail from '../../detail/ID'
 
 import { IndexComponentProps } from '@tensei/components'
 
-const ID: React.FC<IndexComponentProps & {
-    noLink?: boolean
-}> = ({ value, values, field, resource, noLink }) => {
+const ID: React.FC<
+    IndexComponentProps & {
+        noLink?: boolean
+    }
+> = ({ value, values, field, resource, noLink }) => {
     const detail = (
         <IDDetail
             value={value}

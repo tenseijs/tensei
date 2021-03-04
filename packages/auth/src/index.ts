@@ -779,6 +779,7 @@ class Auth {
 
         return [
             route(`Login ${name}`)
+                .group('Auth')
                 .path(this.getApiPath('login'))
                 .id(this.getRouteId(`login_${name}`))
                 .post()
@@ -804,6 +805,7 @@ class Auth {
                 ),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
+                .group('Auth')
                 .post()
                 .parameters([
                     {
@@ -831,16 +833,10 @@ class Auth {
                         }
                     }
                 ),
-            route(`Logout ${name}`)
-                .path(this.getApiPath('logout'))
-                .id(this.getRouteId(`logout_${name}`))
-                .post()
-                .handle(async (request, response) => {
-                    return response.formatter.noContent({})
-                }),
             route(`Request password reset`)
                 .path(this.getApiPath('passwords/email'))
                 .post()
+                .group('Auth')
                 .parameters([
                     {
                         in: 'body',
@@ -863,6 +859,7 @@ class Auth {
             route(`Reset password`)
                 .path(this.getApiPath('passwords/reset'))
                 .post()
+                .group('Auth')
                 .id(this.getRouteId(`reset_password_${name}`))
                 .description(
                     `Reset a ${name} password using a password reset token.`
@@ -893,6 +890,7 @@ class Auth {
                       route(`Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/enable'))
                           .post()
+                          .group('Two Factor Auth')
                           .description(
                               `Enable two factor authentication for an existing ${name}.`
                           )
@@ -907,6 +905,7 @@ class Auth {
                       route(`Confirm Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/confirm'))
                           .post()
+                          .group('Two Factor Auth')
                           .parameters([
                               {
                                   in: 'body',
@@ -930,6 +929,7 @@ class Auth {
                       route(`Disable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/disable'))
                           .post()
+                          .group('Two Factor Auth')
                           .parameters([
                               {
                                   in: 'body',
@@ -955,6 +955,7 @@ class Auth {
                 : []),
             route(`Get authenticated ${name}`)
                 .path(this.getApiPath('me'))
+                .group('Auth')
                 .get()
                 .id(this.getRouteId(`get_authenticated_${name}`))
                 .authorize(({ user }) => user && !user.public)
@@ -963,6 +964,7 @@ class Auth {
             ...(this.config.verifyEmails
                 ? [
                       route(`Resend Verification email`)
+                          .group('Verify Emails')
                           .path(this.getApiPath('emails/verification/resend'))
                           .post()
                           .id(
@@ -984,6 +986,7 @@ class Auth {
                       route(`Confirm ${name} email`)
                           .path(this.getApiPath('emails/verification/confirm'))
                           .post()
+                          .group('Verify Emails')
                           .parameters([
                               {
                                   in: 'body',
@@ -1014,6 +1017,7 @@ class Auth {
                               .description(
                                   `Login a ${name} via a social provider.`
                               )
+                              .group('Social Auth')
                               .handle(async (request, response) =>
                                   response.formatter.ok(
                                       await this.socialAuth(
@@ -1026,6 +1030,7 @@ class Auth {
                               .path(this.getApiPath('social/register'))
                               .id('social_register')
                               .post()
+                              .group('Social Auth')
                               .description(
                                   `Register a ${name} via a social provider.`
                               )
@@ -1058,6 +1063,7 @@ class Auth {
                       route('Refresh Token')
                           .path(this.getApiPath('refresh-token'))
                           .post()
+                          .group('Auth')
                           .id(this.getRouteId(`refresh_token_${name}`))
                           .authorize(({ user }) => user && !user.public)
                           .handle(

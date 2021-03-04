@@ -71,7 +71,7 @@ const App = () => {
             <main className="max-w-6xl mx-auto px-4 lg:px-8">
                 <div className="flex flex-wrap relative">
                     <RouteComponent
-                        path={`/rest-docs/:group`}
+                        path={`/rest-docs/:group?`}
                         component={() => <Page routeGroups={routes} />}
                     />
                 </div>

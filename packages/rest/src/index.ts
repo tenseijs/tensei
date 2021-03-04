@@ -13,6 +13,7 @@ import { responseEnhancer } from 'express-response-formatter'
 import {
     route,
     Utils,
+    event,
     plugin,
     ApiContext,
     RouteContract,
@@ -740,7 +741,7 @@ class Rest {
                     )
                 )
             })
-            .boot(({ app, name, routes }) => {
+            .boot(({ app, name, routes, extendEvents, serverUrl }) => {
                 app.get('/rest/routes', (request, response) =>
                     response.json(
                         routes.map(route => ({
@@ -757,6 +758,14 @@ class Rest {
                         })
                     )
                 )
+
+                extendEvents([
+                    event('tensei::listening').listen(({ ctx }) => {
+                        ctx.logger.info(
+                            `🧘🏽 Access your rest api documentation on ${serverUrl}/rest-docs`
+                        )
+                    })
+                ])
             })
     }
 }

@@ -6,10 +6,7 @@ import { graphql } from '@tensei/graphql'
 
 test('registered user can enable, confirm and disable 2-factor authentication', async () => {
     const { app, ctx } = await setup([
-        auth()
-            .twoFactorAuth()
-            .user('Student')
-            .plugin(),
+        auth().twoFactorAuth().user('Student').plugin(),
         graphql().plugin()
     ])
 
