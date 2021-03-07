@@ -1,0 +1,17 @@
+{
+    "name": "@tensei/cookie-sessions",
+    "version": "0.7.20",
+    "main": "./src/index.js",
+    "license": "MIT",
+    "files": [
+        "src/"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "@types/express-session": "^1.17.3",
+        "express-session": "^1.17.1",
+        "express-session-mikro-orm": "^0.7.20"
+    }
+}
