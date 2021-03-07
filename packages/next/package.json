@@ -1,6 +1,6 @@
 {
     "name": "@tensei/next",
-    "version": "0.7.21",
+    "version": "0.7.22",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -14,7 +14,9 @@
         "test": "jest --verbose --runInBand --forceExit"
     },
     "dependencies": {
-        "next": "^10.0.3"
+        "next": "^10.0.3",
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1"
     },
     "config": {
         "commitizen": {

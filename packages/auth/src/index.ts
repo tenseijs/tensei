@@ -1093,7 +1093,6 @@ class Auth {
                           .post()
                           .group('Auth')
                           .id(this.getRouteId(`refresh_token_${name}`))
-                          .authorize(({ user }) => user && !user.public)
                           .handle(
                               async (
                                   request,
@@ -1503,7 +1502,12 @@ class Auth {
         }
 
         if (this.config.httpOnlyCookiesAuth) {
-            ctx.request.session.user = ctx.user
+            if (ctx.request) {
+                ctx.request.session.user = ctx.user
+            } else {
+                // @ts-ignore
+                ctx.session.user = ctx.user
+            }
         }
 
         return userPayload

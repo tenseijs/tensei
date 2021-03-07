@@ -10,7 +10,7 @@ class NextJSPlugin {
 
             await app.prepare()
 
-            ctx.app.all('*', (request, response) =>
+            ctx.app.get('*', (request, response) =>
                 app.getRequestHandler()(request, response)
             )
         })
