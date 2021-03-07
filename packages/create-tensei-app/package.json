@@ -1,6 +1,6 @@
 {
     "name": "create-tensei-app",
-    "version": "0.7.20",
+    "version": "0.7.21",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",

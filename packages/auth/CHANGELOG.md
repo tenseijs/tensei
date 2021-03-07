@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.21](https://github.com/tenseijs/tensei/compare/v0.7.20...v0.7.21) (2021-03-07)
+
+
+### Features
+
+* **auth:** add cookie sessions authentication ([#86](https://github.com/tenseijs/tensei/issues/86)) ([00f4a11](https://github.com/tenseijs/tensei/commit/00f4a118e17e5da1ccc72c0bc12912d504bbe42d))
+
+
+
+
+
 ## [0.7.20](https://github.com/tenseijs/tensei/compare/v0.7.19...v0.7.20) (2021-03-04)
 
 **Note:** Version bump only for package @tensei/auth
