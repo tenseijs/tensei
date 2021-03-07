@@ -61,7 +61,9 @@ tensei()
         welcome(),
         mailgun('transactions').domain(process.env.MAILGUN_DOMAIN).plugin(),
         cms().plugin(),
-        auth().rolesAndPermissions().plugin(),
+        auth().rolesAndPermissions()
+        .cookieSessions()
+        .plugin(),
         media().plugin(),
         rest().plugin(),
         graphql().plugin()

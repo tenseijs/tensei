@@ -2,10 +2,8 @@ const grant = require('grant')
 const Purest = require('purest')
 const crypto = require('crypto')
 const Request = require('request')
-const ExpressSession = require('express-session')
 const purestConfig = require('@purest/providers')
 const AsyncHandler = require('express-async-handler')
-const ExpressSessionMikroORMStore = require('express-session-mikro-orm')
 
 const purest = Purest({ request: Request })
 
@@ -242,7 +240,6 @@ module.exports = {
     controller: new SocialAuthCallbackController(),
     register: ({
         app,
-        orm,
         apiPath,
         serverUrl,
         clientUrl,
@@ -250,24 +247,6 @@ module.exports = {
         resourcesMap,
         getUserPayloadFromProviderData
     }) => {
-        const Store = ExpressSessionMikroORMStore.default(ExpressSession, {
-            entityName: `${resourcesMap.user.data.pascalCaseName}Session`,
-            tableName: `${resourcesMap.user.data.snakeCaseNamePlural}_sessions`,
-            collection: `${resourcesMap.user.data.snakeCaseNamePlural}_sessions`
-        })
-
-        app.use(
-            ExpressSession({
-                store: new Store({
-                    orm: orm
-                }),
-                resave: false,
-                saveUninitialized: false,
-                secret:
-                    process.env.SESSION_SECRET || '__sessions__secret__'
-            })
-        )
-
         Object.keys(authConfig.providers).forEach(provider => {
             const providerConfig = authConfig.providers[provider]
             const clientCallback =

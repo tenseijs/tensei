@@ -59,6 +59,7 @@ class Auth {
         enableRefreshTokens: false,
         userResource: 'User',
         roleResource: 'Role',
+        httpOnlyCookiesAuth: false,
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
         fields: [],
@@ -97,6 +98,12 @@ class Auth {
 
     public separateSocialLoginAndRegister() {
         this.config.separateSocialLoginAndRegister = true
+
+        return this
+    }
+
+    public cookieSessions() {
+        this.config.httpOnlyCookiesAuth = true
 
         return this
     }
@@ -495,7 +502,7 @@ class Auth {
                         extendResources([this.resources.oauthIdentity])
                     }
 
-                    if (this.socialAuthEnabled()) {
+                    if (this.socialAuthEnabled() || this.config.httpOnlyCookiesAuth) {
                         databaseConfig.entities = [
                             ...(databaseConfig.entities || []),
                             require('express-session-mikro-orm').generateSessionEntity(
@@ -555,6 +562,30 @@ class Auth {
                     role: this.resources.role.serialize(),
                     permission: this.resources.permission.serialize()
                 })
+
+                if (this.config.httpOnlyCookiesAuth || this.socialAuthEnabled()) {
+                    const ExpressSession = require('express-session')
+                    const ExpressSessionMikroORMStore = require('express-session-mikro-orm').default
+
+                    const Store = ExpressSessionMikroORMStore(ExpressSession, {
+                        entityName: `${this.resources.user.data.pascalCaseName}Session`,
+                        tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
+                        collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+                    })
+
+                    app.use(
+                        ExpressSession({
+                            store: new Store({
+                                orm: config.orm
+                            }) as any,
+                            resave: false,
+                            saveUninitialized: false,
+                            cookie: this.config.cookieOptions,
+                            secret:
+                                process.env.SESSION_SECRET || '__sessions__secret__'
+                        })
+                    )
+                }
 
                 if (this.socialAuthEnabled()) {
                     const { register } = require('@tensei/social-auth')
@@ -773,10 +804,6 @@ class Auth {
     private extendRoutes() {
         const name = this.resources.user.data.slugSingular
 
-        const extend = {
-            tags: ['Auth']
-        }
-
         return [
             route(`Login ${name}`)
                 .group('Auth')
@@ -829,6 +856,7 @@ class Auth {
                         try {
                             return created(await this.register(request as any))
                         } catch (error) {
+                            request.logger.error(error)
                             return unprocess(error)
                         }
                     }
@@ -1132,12 +1160,12 @@ class Auth {
                         [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
-            graphQlQuery(`Logout ${name}`)
-                .path('logout')
-                .mutation()
-                .handle(async (_, args, ctx) => {
-                    return true
-                }),
+            ...(this.config.httpOnlyCookiesAuth ? [graphQlQuery(`Logout ${name}`)
+            .path('logout')
+            .mutation()
+            .handle(async (_, args, ctx) => {
+                return true
+            })] : []),
             graphQlQuery(`Register ${name}`)
                 .path('register')
                 .mutation()
@@ -1374,6 +1402,10 @@ class Auth {
             return undefined
         }
 
+        if (this.config.httpOnlyCookiesAuth) {
+            return undefined
+        }
+
         const { body } = ctx
         const userField = this.resources.user.data.snakeCaseName
         const tokenName = this.resources.token.data.pascalCaseName
@@ -1458,15 +1490,21 @@ class Auth {
             [this.resources.user.data.snakeCaseName]: ctx.user
         }
 
-        userPayload.access_token = this.generateJwt({
-            id: ctx.user.id
-        })
+        if (! this.config.httpOnlyCookiesAuth) {
+            userPayload.access_token = this.generateJwt({
+                id: ctx.user.id
+            })
+
+            userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
+        }
 
         if (this.config.enableRefreshTokens) {
             userPayload.refresh_token = refreshToken
         }
 
-        userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
+        if (this.config.httpOnlyCookiesAuth) {
+            ctx.request.session.user = ctx.user
+        }
 
         return userPayload
     }
@@ -1474,18 +1512,25 @@ class Auth {
     private extendGraphQLTypeDefs(gql: any) {
         const snakeCaseName = this.resources.user.data.snakeCaseName
 
+        const cookies = this.config.httpOnlyCookiesAuth
+
         return gql`
         type register_response {
+            ${cookies ? '' : `
             access_token: String!
             ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
             expires_in: Int!
+            `}
+
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_response {
+            ${cookies ? '' : `
             access_token: String!
             ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
             expires_in: Int!
+            `}
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
@@ -1577,7 +1622,9 @@ class Auth {
 
         extend type Mutation {
             login(object: login_input!): login_response!
+            ${cookies ? `
             logout: Boolean!
+            `: ''}
             register(object: insert_${snakeCaseName}_input!): register_response!
             request_password_reset(object: request_password_reset_input!): Boolean!
             reset_password(object: reset_password_input!): Boolean!
@@ -1995,7 +2042,7 @@ class Auth {
     }
 
     private populateContextFromToken = async (
-        token: string,
+        token: string|undefined,
         ctx: ApiContext
     ) => {
         const { manager } = ctx
@@ -2003,12 +2050,16 @@ class Auth {
         try {
             let id
 
-            const payload = Jwt.verify(
-                token,
-                this.config.tokensConfig.secretKey
-            ) as JwtPayload
-
-            id = payload.id
+            if (! this.config.httpOnlyCookiesAuth) {
+                const payload = Jwt.verify(
+                    token!,
+                    this.config.tokensConfig.secretKey
+                ) as JwtPayload
+    
+                id = payload.id
+            } else {
+                id = ctx.req.session?.user?.id
+            }
 
             if (!id) {
                 return
@@ -2057,8 +2108,6 @@ class Auth {
 
         const { headers } = req
         const [, token] = (headers['authorization'] || '').split('Bearer ')
-
-        if (!token) return
 
         return this.populateContextFromToken(token, ctx)
     }
@@ -2222,6 +2271,10 @@ class Auth {
         previousTokenExpiry?: string
     ): Promise<string | undefined> {
         if (!this.config.enableRefreshTokens) {
+            return undefined
+        }
+
+        if (this.config.httpOnlyCookiesAuth) {
             return undefined
         }
 
