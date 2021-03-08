@@ -78,6 +78,7 @@
         "@tensei/mail": "^0.7.22",
         "@types/csurf": "^1.11.0",
         "@types/express-session": "^1.17.3",
+        "autoprefixer": "^10.2.5",
         "csurf": "^1.11.0",
         "express-session": "^1.17.1",
         "express-session-mikro-orm": "^0.7.22"

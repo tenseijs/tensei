@@ -20,11 +20,11 @@ test('correctly gets validation rules for a resource', async () => {
     const isMongo = config.get('type') === 'mongo'
 
     expect(validator.getValidationRules()).toEqual({
-        title: 'required|max:64|unique:title',
-        description: 'required',
-        content: 'required|max:2000|min:12',
-        av_cpc: 'required',
-        category: 'required',
+        title: 'string|required|max:64|unique:title',
+        description: 'string|required',
+        content: 'string|required|max:2000|min:12',
+        av_cpc: 'number|required',
+        category: 'string|in:javascript,angular,mysql,pg|required',
         user: 'required',
         published_at: 'date|required',
         approved: 'boolean',
@@ -36,8 +36,10 @@ test('correctly gets validation rules for a resource', async () => {
     })
 
     expect(commentValidator.getValidationRules()).toEqual({
-        title: 'required',
-        body: 'required',
+        title: 'string|required',
+        body: 'string|required',
+        title_hidden_from_insert_and_fetch_api: 'string',
+        title_hidden_from_update_and_fetch_api: 'string',
         post: isMongo ? 'string' : 'number'
     })
 })
@@ -54,8 +56,10 @@ test('Sanitizes resource fields on create', async () => {
     const validator = Utils.validator(resourcesMap['Comment'], em, resourcesMap)
 
     expect(validator.getValidationRules()).toEqual({
-        title: 'required',
-        body: 'required',
+        title: 'string|required',
+        body: 'string|required',
+        title_hidden_from_insert_and_fetch_api: 'string',
+        title_hidden_from_update_and_fetch_api: 'string',
         post: isMongo ? 'string' : 'number'
     })
 
