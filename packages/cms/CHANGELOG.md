@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.23](https://github.com/tenseijs/tensei/compare/v0.7.22...v0.7.23) (2021-03-08)
+
+
+### Bug Fixes
+
+* **graphql:** fix graphql api validation for insert mutations ([#89](https://github.com/tenseijs/tensei/issues/89)) ([8be659f](https://github.com/tenseijs/tensei/commit/8be659f36cf265c739026e519d06a1f954ca78c0)), closes [#85](https://github.com/tenseijs/tensei/issues/85)
+
+
+
+
+
 ## [0.7.22](https://github.com/tenseijs/tensei/compare/v0.7.21...v0.7.22) (2021-03-07)
 
 **Note:** Version bump only for package @tensei/cms
