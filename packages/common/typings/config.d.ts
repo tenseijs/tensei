@@ -73,6 +73,20 @@ declare module '@tensei/common/config' {
         serialize(): DataPayload
     }
 
+    interface UtilsContractValidator {
+        getValidationRules: (
+            creationRules?: boolean
+        ) => {
+            [key: string]: string
+        }
+        request: (request: Express.Request) => UtilsContractValidator
+        validate: (
+            payload: DataPayload,
+            creationRules?: boolean,
+            modelId?: string | number | undefined
+        ) => Promise<[boolean, DataPayload | array[any]]>
+    }
+
     interface UtilsContract {
         validator: (
             resource: ResourceContract,
@@ -81,19 +95,7 @@ declare module '@tensei/common/config' {
                 [key: string]: ResourceContract
             },
             modelId?: string | number | undefined
-        ) => {
-            getValidationRules: (
-                creationRules?: boolean
-            ) => {
-                [key: string]: string
-            }
-            request: (request: Express.Request) => this
-            validate: (
-                payload: DataPayload,
-                creationRules?: boolean,
-                modelId?: string | number | undefined
-            ) => Promise<[boolean, DataPayload | array[any]]>
-        }
+        ) => UtilsContractValidator
         graphql: {
             getFindOptionsFromArgs: (args: any) => any
             getParsedInfo: (args: any) => any

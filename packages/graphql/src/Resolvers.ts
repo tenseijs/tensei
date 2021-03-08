@@ -1,4 +1,4 @@
-import { Utils } from '@tensei/common'
+import { Utils, DataPayload } from '@tensei/common'
 import { Configuration, EntityManager } from '@mikro-orm/core'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
@@ -171,6 +171,23 @@ export const getResolvers = (
                                 object
                             )
                         )
+
+
+
+                        const validator = await Utils.validator(
+                            resource,
+                            ctx.manager,
+                            ctx.resourcesMap
+                        )
+                            .request(ctx.request)
+
+                        const results: [boolean, DataPayload][] = await Promise.all(args.objects.map((object: any) => validator.validate(object)))
+
+                        if (results.filter(([passed]) => passed).length !== results.length) {
+                            throw ctx.userInputError('Validation failed.', {
+                                errors: results.map(([, payload]) => payload)
+                            })
+                        }
 
                         await ctx.manager.persistAndFlush(data)
 
