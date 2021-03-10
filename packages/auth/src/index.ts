@@ -12,7 +12,6 @@ import {
     belongsTo,
     belongsToMany,
     dateTime,
-    HookFunction,
     DataPayload,
     FieldContract,
     hasMany,
@@ -886,12 +885,7 @@ class Auth {
                 .id(this.getRouteId(`register_${name}`))
                 .handle(
                     async (request, { formatter: { created, unprocess } }) => {
-                        try {
-                            return created(await this.register(request as any))
-                        } catch (error) {
-                            request.logger.error(error)
-                            return unprocess(error)
-                        }
+                        return created(await this.register(request as any))
                     }
                 ),
             route(`Request password reset`)
