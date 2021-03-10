@@ -1,5 +1,5 @@
 {
-    "name": "tensei-awesome-app",
+    "name": "tensei-app",
     "version": "1.0.0",
     "main": "index.js",
     "license": "MIT",
@@ -11,7 +11,7 @@
         "@tensei/graphql": "^0.7.23"
     },
     "scripts": {
-        "dev": "nodemon src/index",
+        "dev": "nodemon index.js",
         "start": "node index.js"
     },
     "devDependencies": {

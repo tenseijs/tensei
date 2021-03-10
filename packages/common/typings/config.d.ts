@@ -1,7 +1,7 @@
 declare module '@tensei/common/config' {
     import { Logger } from 'pino'
     import Emittery from 'emittery'
-    import { Request, Response } from 'express'
+    import { Request, Response, Application } from 'express'
     import { EntityManager } from '@mikro-orm/core'
     import { sanitizer, validator } from 'indicative'
     import { EventContract } from '@tensei/common/events'

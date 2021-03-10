@@ -172,18 +172,25 @@ export const getResolvers = (
                             )
                         )
 
-
-
                         const validator = await Utils.validator(
                             resource,
                             ctx.manager,
                             ctx.resourcesMap
+                        ).request(ctx.request)
+
+                        const results: [
+                            boolean,
+                            DataPayload
+                        ][] = await Promise.all(
+                            args.objects.map((object: any) =>
+                                validator.validate(object)
+                            )
                         )
-                            .request(ctx.request)
 
-                        const results: [boolean, DataPayload][] = await Promise.all(args.objects.map((object: any) => validator.validate(object)))
-
-                        if (results.filter(([passed]) => passed).length !== results.length) {
+                        if (
+                            results.filter(([passed]) => passed).length !==
+                            results.length
+                        ) {
                             throw ctx.userInputError('Validation failed.', {
                                 errors: results.map(([, payload]) => payload)
                             })

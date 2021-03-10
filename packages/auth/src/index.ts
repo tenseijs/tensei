@@ -42,6 +42,7 @@ import {
 
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
+import { Request } from 'express'
 
 type JwtPayload = {
     id: string
@@ -474,6 +475,7 @@ class Auth {
             .register(
                 ({
                     gql,
+                    currentCtx,
                     extendRoutes,
                     databaseConfig,
                     extendResources,
@@ -502,7 +504,10 @@ class Auth {
                         extendResources([this.resources.oauthIdentity])
                     }
 
-                    if (this.socialAuthEnabled() || this.config.httpOnlyCookiesAuth) {
+                    if (
+                        this.socialAuthEnabled() ||
+                        this.config.httpOnlyCookiesAuth
+                    ) {
                         databaseConfig.entities = [
                             ...(databaseConfig.entities || []),
                             require('express-session-mikro-orm').generateSessionEntity(
@@ -563,9 +568,13 @@ class Auth {
                     permission: this.resources.permission.serialize()
                 })
 
-                if (this.config.httpOnlyCookiesAuth || this.socialAuthEnabled()) {
+                if (
+                    this.config.httpOnlyCookiesAuth ||
+                    this.socialAuthEnabled()
+                ) {
                     const ExpressSession = require('express-session')
-                    const ExpressSessionMikroORMStore = require('express-session-mikro-orm').default
+                    const ExpressSessionMikroORMStore = require('express-session-mikro-orm')
+                        .default
 
                     const Store = ExpressSessionMikroORMStore(ExpressSession, {
                         entityName: `${this.resources.user.data.pascalCaseName}Session`,
@@ -582,7 +591,8 @@ class Auth {
                             saveUninitialized: false,
                             cookie: this.config.cookieOptions,
                             secret:
-                                process.env.SESSION_SECRET || '__sessions__secret__'
+                                process.env.SESSION_SECRET ||
+                                '__sessions__secret__'
                         })
                     )
                 }
@@ -631,54 +641,60 @@ class Auth {
                         }
 
                         if (
-                            [`insert_${plural}`, `insert_${singular}`].includes(
-                                path
-                            )
+                            [
+                                `insert_${plural}`,
+                                `insert_${singular}`
+                            ].includes(path)
                         ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `insert:${slug}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`insert:${slug}`)
                             )
                         }
 
                         if (
-                            [`delete_${plural}`, `delete_${singular}`].includes(
-                                path
-                            )
+                            [
+                                `delete_${plural}`,
+                                `delete_${singular}`
+                            ].includes(path)
                         ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `delete:${slug}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`delete:${slug}`)
                             )
                         }
 
                         if (
-                            [`update_${plural}`, `update_${singular}`].includes(
-                                path
-                            )
+                            [
+                                `update_${plural}`,
+                                `update_${singular}`
+                            ].includes(path)
                         ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `update:${slug}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`update:${slug}`)
                             )
                         }
 
-                        if (path === plural || path === `${plural}__count`) {
+                        if (
+                            path === plural ||
+                            path === `${plural}__count`
+                        ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `index:${slug}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`index:${slug}`)
                             )
                         }
 
@@ -686,18 +702,20 @@ class Auth {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `show:${slug}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`show:${slug}`)
                             )
                         }
                     }
                 })
 
-                routes.forEach(route => {
+                currentCtx().routes.forEach(route => {
                     route.middleware([
                         async (request, response, next) => {
-                            await this.getAuthUserFromContext(request as any)
+                            await this.getAuthUserFromContext(
+                                request as any
+                            )
 
                             await this.setAuthUserForPublicRoutes(
                                 request as any
@@ -737,9 +755,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `insert:${slugPlural}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`insert:${slugPlural}`)
                             )
                         }
 
@@ -747,9 +765,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `index:${slugPlural}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`index:${slugPlural}`)
                             )
                         }
 
@@ -757,9 +775,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `show:${slugPlural}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`show:${slugPlural}`)
                             )
                         }
 
@@ -770,9 +788,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]?.includes(
-                                        `update:${slugPlural}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]?.includes(`update:${slugPlural}`)
                             )
                         }
 
@@ -783,9 +801,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[this.getPermissionUserKey()]!.includes(
-                                        `delete:${slugPlural}`
-                                    )
+                                    user[
+                                        this.getPermissionUserKey()
+                                    ]!.includes(`delete:${slugPlural}`)
                             )
                         }
                     }
@@ -830,6 +848,21 @@ class Auth {
                 .handle(async (request, { formatter: { ok } }) =>
                     ok(await this.login(request as any))
                 ),
+            ...(this.config.httpOnlyCookiesAuth
+                ? [
+                      route(`Logout ${name}`)
+                          .group('Auth')
+                          .path(this.getApiPath('logout'))
+                          .id(this.getRouteId(`logout_${name}`))
+                          .post()
+                          .description(`Logout a currently logged in ${name}.`)
+                          .handle(
+                              async (request, { formatter: { noContent } }) => {
+                                  noContent(await this.logout(request as any))
+                              }
+                          )
+                  ]
+                : []),
             route(`Register ${name}`)
                 .path(this.getApiPath('register'))
                 .group('Auth')
@@ -986,8 +1019,14 @@ class Auth {
                 .group('Auth')
                 .get()
                 .id(this.getRouteId(`get_authenticated_${name}`))
-                .authorize(({ user }) => user && !user.public)
-                .description(`Get the authenticated ${name} from a valid JWT.`)
+                .authorize(({ user }) =>
+                    this.config.rolesAndPermissions
+                        ? user && !user.public
+                        : !!user
+                )
+                .description(
+                    `Get the authenticated ${name} from a valid JWT or session.`
+                )
                 .handle(async ({ user }, { formatter: { ok } }) => ok(user)),
             ...(this.config.verifyEmails
                 ? [
@@ -1000,7 +1039,11 @@ class Auth {
                                   `resend_${name}_verification_email`
                               )
                           )
-                          .authorize(({ user }) => user && !user.public)
+                          .authorize(({ user }) =>
+                              this.config.rolesAndPermissions
+                                  ? user && !user.public
+                                  : !!user
+                          )
                           .description(
                               `Resend verification email to ${name} email.`
                           )
@@ -1159,12 +1202,16 @@ class Auth {
                         [this.resources.user.data.snakeCaseName]: user
                     }
                 }),
-            ...(this.config.httpOnlyCookiesAuth ? [graphQlQuery(`Logout ${name}`)
-            .path('logout')
-            .mutation()
-            .handle(async (_, args, ctx) => {
-                return true
-            })] : []),
+            ...(this.config.httpOnlyCookiesAuth
+                ? [
+                      graphQlQuery(`Logout ${name}`)
+                          .path('logout')
+                          .mutation()
+                          .handle(async (_, args, ctx) => {
+                              return true
+                          })
+                  ]
+                : []),
             graphQlQuery(`Register ${name}`)
                 .path('register')
                 .mutation()
@@ -1202,7 +1249,11 @@ class Auth {
             )
                 .path(`authenticated`)
                 .query()
-                .authorize(({ user }) => user && !user.public)
+                .authorize(({ user }) =>
+                    this.config.rolesAndPermissions
+                        ? user && !user.public
+                        : !!user
+                )
                 .handle(async (_, args, ctx, info) => {
                     const { user } = ctx
 
@@ -1225,7 +1276,11 @@ class Auth {
                           .handle(async (_, args, ctx, info) =>
                               this.TwoFactorAuth.enableTwoFactorAuth(ctx)
                           )
-                          .authorize(({ user }) => user && !user.public),
+                          .authorize(({ user }) =>
+                              this.config.rolesAndPermissions
+                                  ? user && !user.public
+                                  : !!user
+                          ),
                       graphQlQuery('Confirm Enable Two Factor Auth')
                           .path('confirm_enable_two_factor_auth')
                           .mutation()
@@ -1247,7 +1302,11 @@ class Auth {
 
                               return user
                           })
-                          .authorize(({ user }) => user && !user.public),
+                          .authorize(({ user }) =>
+                              this.config.rolesAndPermissions
+                                  ? user && !user.public
+                                  : !!user
+                          ),
 
                       graphQlQuery(`Disable Two Factor Auth`)
                           .path('disable_two_factor_auth')
@@ -1268,7 +1327,11 @@ class Auth {
 
                               return user
                           })
-                          .authorize(({ user }) => user && !user.public)
+                          .authorize(({ user }) =>
+                              this.config.rolesAndPermissions
+                                  ? user && !user.public
+                                  : !!user
+                          )
                   ]
                 : []),
             ...(this.config.verifyEmails
@@ -1292,7 +1355,11 @@ class Auth {
 
                               return user
                           })
-                          .authorize(({ user }) => user && !user.public),
+                          .authorize(({ user }) =>
+                              this.config.rolesAndPermissions
+                                  ? user && !user.public
+                                  : !!user
+                          ),
                       graphQlQuery(`Resend ${name} Verification Email`)
                           .path('resend_verification_email')
                           .mutation()
@@ -1489,7 +1556,7 @@ class Auth {
             [this.resources.user.data.snakeCaseName]: ctx.user
         }
 
-        if (! this.config.httpOnlyCookiesAuth) {
+        if (!this.config.httpOnlyCookiesAuth) {
             userPayload.access_token = this.generateJwt({
                 id: ctx.user.id
             })
@@ -1520,21 +1587,29 @@ class Auth {
 
         return gql`
         type register_response {
-            ${cookies ? '' : `
+            ${
+                cookies
+                    ? ''
+                    : `
             access_token: String!
             ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
             expires_in: Int!
-            `}
+            `
+            }
 
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
         type login_response {
-            ${cookies ? '' : `
+            ${
+                cookies
+                    ? ''
+                    : `
             access_token: String!
             ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
             expires_in: Int!
-            `}
+            `
+            }
             ${snakeCaseName}: ${snakeCaseName}!
         }
 
@@ -1626,9 +1701,13 @@ class Auth {
 
         extend type Mutation {
             login(object: login_input!): login_response!
-            ${cookies ? `
+            ${
+                cookies
+                    ? `
             logout: Boolean!
-            `: ''}
+            `
+                    : ''
+            }
             register(object: insert_${snakeCaseName}_input!): register_response!
             request_password_reset(object: request_password_reset_input!): Boolean!
             reset_password(object: reset_password_input!): Boolean!
@@ -1931,6 +2010,22 @@ class Auth {
         return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
     }
 
+    private logout = async (ctx: ApiContext) => {
+        let request = (ctx.req ? ctx.req : ctx) as Request
+
+        return new Promise(resolve => {
+            request.session.destroy(error => {
+                if (error) {
+                    return resolve(false)
+                }
+
+                ctx.res.clearCookie('connect.sid')
+
+                return resolve(true)
+            })
+        })
+    }
+
     private login = async (ctx: ApiContext) => {
         const { manager, body } = ctx
         const [passed, payload] = await this.validate(
@@ -2046,7 +2141,7 @@ class Auth {
     }
 
     private populateContextFromToken = async (
-        token: string|undefined,
+        token: string | undefined,
         ctx: ApiContext
     ) => {
         const { manager } = ctx
@@ -2054,12 +2149,12 @@ class Auth {
         try {
             let id
 
-            if (! this.config.httpOnlyCookiesAuth) {
+            if (!this.config.httpOnlyCookiesAuth) {
                 const payload = Jwt.verify(
                     token!,
                     this.config.tokensConfig.secretKey
                 ) as JwtPayload
-    
+
                 id = payload.id
             } else {
                 id = ctx.req.session?.user?.id
