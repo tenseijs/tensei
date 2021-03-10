@@ -1,6 +1,6 @@
 {
     "name": "@tensei/graphql",
-    "version": "0.7.23",
+    "version": "0.7.24",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -25,7 +25,7 @@
         "test": "jest --verbose --runInBand --forceExit"
     },
     "dependencies": {
-        "@tensei/common": "^0.7.23",
+        "@tensei/common": "^0.7.24",
         "apollo-server-express": "^2.19.0",
         "dataloader": "^2.0.0",
         "graphql": "^15.5.0",
