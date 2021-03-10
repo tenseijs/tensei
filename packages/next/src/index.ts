@@ -1,5 +1,5 @@
 import Next from 'next'
-import { plugin } from '@tensei/common'
+import { plugin, route } from '@tensei/common'
 
 class NextJSPlugin {
     plugin() {
@@ -10,9 +10,14 @@ class NextJSPlugin {
 
             await app.prepare()
 
-            ctx.app.get('*', (request, response) =>
-                app.getRequestHandler()(request, response)
-            )
+            ctx.extendRoutes([
+                route('Next frontend')
+                    .get()
+                    .path('*')
+                    .handle((request, response) =>
+                        app.getRequestHandler()(request, response)
+                    )
+            ])
         })
     }
 }

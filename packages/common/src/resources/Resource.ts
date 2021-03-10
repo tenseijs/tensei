@@ -177,7 +177,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
             email: 'The {{ field }} must be a valid email address.',
             unique: 'This {{ field }} has already been taked.',
             min: 'This {{ field }} .',
-            max: 'This {{ field }} is too long.',
+            max: 'This {{ field }} is too long.'
         },
         displayInNavigation: true,
         perPageOptions: [10, 25, 50]
