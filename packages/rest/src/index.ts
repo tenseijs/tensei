@@ -25,6 +25,7 @@ import {
     parseQueryToFindOptions,
     parseQueryToWhereOptions
 } from './populate-helpers'
+import { DataPayload } from '@tensei/common'
 
 const indexFileContent = Fs.readFileSync(
     Path.resolve(__dirname, 'docs', 'index.mustache')
@@ -712,7 +713,7 @@ class Rest {
                                     resource.data.filters.forEach(filter => {
                                         request.manager.addFilter(
                                             filter.config.shortName,
-                                            filter.config.cond,
+                                            (args: DataPayload, type: 'read' | 'update' | 'delete') => filter.config.cond(args, request, type),
                                             resource.data.pascalCaseName,
                                             filter.config.default
                                         )

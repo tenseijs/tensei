@@ -1,4 +1,5 @@
 declare module '@tensei/common/filters' {
+    import { Request } from 'express'
     import { FieldContract } from '@tensei/core'
     import { FilterQuery, Dictionary } from '@mikro-orm/core'
 
@@ -14,7 +15,8 @@ declare module '@tensei/common/filters' {
 
     type FilterCondition<T = any> = (
         args: Dictionary,
-        type: 'read' | 'update' | 'delete'
+        request: Request,
+        type: 'read' | 'update' | 'delete',
     ) => FilterQuery<any> | Promise<FilterQuery<T>>
 
     export interface FilterContract<T = any> {
