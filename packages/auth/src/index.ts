@@ -1156,7 +1156,7 @@ class Auth {
                           .path(this.getApiPath('csrf'))
                           .handle(async (request, response) => {
                               response.cookie(
-                                  'x-csrf-token',
+                                  'xsrf-token',
                                   // @ts-ignore
                                   request.csrfToken()
                               )
@@ -1474,7 +1474,7 @@ class Auth {
                           .query()
                           .handle(async (_, args, ctx, info) => {
                               ctx.res.cookie(
-                                  'x-csrf-token',
+                                  'xsrf-token',
                                   // @ts-ignore
                                   ctx.req.csrfToken()
                               )
