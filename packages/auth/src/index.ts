@@ -567,6 +567,12 @@ class Auth {
                     permission: this.resources.permission.serialize()
                 })
 
+                if (this.config.httpOnlyCookiesAuth) {
+                    require('@tensei/cookie-sessions').register({
+                        app
+                    })
+                }
+
                 if (
                     this.config.httpOnlyCookiesAuth ||
                     this.socialAuthEnabled()
@@ -640,60 +646,54 @@ class Auth {
                         }
 
                         if (
-                            [
-                                `insert_${plural}`,
-                                `insert_${singular}`
-                            ].includes(path)
+                            [`insert_${plural}`, `insert_${singular}`].includes(
+                                path
+                            )
                         ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`insert:${slug}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `insert:${slug}`
+                                    )
                             )
                         }
 
                         if (
-                            [
-                                `delete_${plural}`,
-                                `delete_${singular}`
-                            ].includes(path)
+                            [`delete_${plural}`, `delete_${singular}`].includes(
+                                path
+                            )
                         ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`delete:${slug}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `delete:${slug}`
+                                    )
                             )
                         }
 
                         if (
-                            [
-                                `update_${plural}`,
-                                `update_${singular}`
-                            ].includes(path)
+                            [`update_${plural}`, `update_${singular}`].includes(
+                                path
+                            )
                         ) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`update:${slug}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `update:${slug}`
+                                    )
                             )
                         }
 
-                        if (
-                            path === plural ||
-                            path === `${plural}__count`
-                        ) {
+                        if (path === plural || path === `${plural}__count`) {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`index:${slug}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `index:${slug}`
+                                    )
                             )
                         }
 
@@ -701,9 +701,9 @@ class Auth {
                             return query.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`show:${slug}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `show:${slug}`
+                                    )
                             )
                         }
                     }
@@ -712,9 +712,7 @@ class Auth {
                 currentCtx().routes.forEach(route => {
                     route.middleware([
                         async (request, response, next) => {
-                            await this.getAuthUserFromContext(
-                                request as any
-                            )
+                            await this.getAuthUserFromContext(request as any)
 
                             await this.setAuthUserForPublicRoutes(
                                 request as any
@@ -754,9 +752,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`insert:${slugPlural}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `insert:${slugPlural}`
+                                    )
                             )
                         }
 
@@ -764,9 +762,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`index:${slugPlural}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `index:${slugPlural}`
+                                    )
                             )
                         }
 
@@ -774,9 +772,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`show:${slugPlural}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `show:${slugPlural}`
+                                    )
                             )
                         }
 
@@ -787,9 +785,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]?.includes(`update:${slugPlural}`)
+                                    user[this.getPermissionUserKey()]?.includes(
+                                        `update:${slugPlural}`
+                                    )
                             )
                         }
 
@@ -800,9 +798,9 @@ class Auth {
                             return route.authorize(
                                 ({ user }) =>
                                     user &&
-                                    user[
-                                        this.getPermissionUserKey()
-                                    ]!.includes(`delete:${slugPlural}`)
+                                    user[this.getPermissionUserKey()]!.includes(
+                                        `delete:${slugPlural}`
+                                    )
                             )
                         }
                     }
@@ -1151,6 +1149,21 @@ class Auth {
                               }
                           )
                   ]
+                : []),
+            ...(this.config.httpOnlyCookiesAuth
+                ? [
+                      route('Get CSRF Token')
+                          .path(this.getApiPath('csrf'))
+                          .handle(async (request, response) => {
+                              response.cookie(
+                                  'x-csrf-token',
+                                  // @ts-ignore
+                                  request.csrfToken()
+                              )
+
+                              return response.formatter.noContent([])
+                          })
+                  ]
                 : [])
         ]
     }
@@ -1453,6 +1466,22 @@ class Auth {
                               this.handleRefreshTokens(ctx)
                           )
                   ]
+                : []),
+            ...(this.config.httpOnlyCookiesAuth
+                ? [
+                      graphQlQuery('Get CSRF Token')
+                          .path(`csrf_token`)
+                          .query()
+                          .handle(async (_, args, ctx, info) => {
+                              ctx.res.cookie(
+                                  'x-csrf-token',
+                                  // @ts-ignore
+                                  ctx.req.csrfToken()
+                              )
+
+                              return true
+                          })
+                  ]
                 : [])
         ]
     }
@@ -1563,8 +1592,8 @@ class Auth {
         }
 
         if (this.config.httpOnlyCookiesAuth) {
-            if (ctx.request) {
-                ctx.request.session.user = ctx.user
+            if (ctx.req) {
+                ctx.req.session.user = ctx.user
             } else {
                 // @ts-ignore
                 ctx.session.user = ctx.user
@@ -1745,6 +1774,13 @@ class Auth {
 
         extend type Query {
             authenticated: ${snakeCaseName}!
+            ${
+                this.config.httpOnlyCookiesAuth
+                    ? `
+            csrf_token: Boolean!
+            `
+                    : ''
+            }
         }
     `
     }

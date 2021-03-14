@@ -4,7 +4,7 @@ to: <%= h.changeCase.param(name) %>/tailwind.config.js
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
-    prefix: '<%= h.changeCase.param(name) %>', // Change to your preferred prefix. This is important so your styles do not clash with the styles from the main cms.
+    prefix: '<%= h.changeCase.param(name) %>-', // Change to your preferred prefix. This is important so your styles do not clash with the styles from the main cms.
     corePlugins: {
         preflight: false,
     },

@@ -713,7 +713,18 @@ class Rest {
                                     resource.data.filters.forEach(filter => {
                                         request.manager.addFilter(
                                             filter.config.shortName,
-                                            (args: DataPayload, type: 'read' | 'update' | 'delete') => filter.config.cond(args, request, type),
+                                            (
+                                                args: DataPayload,
+                                                type:
+                                                    | 'read'
+                                                    | 'update'
+                                                    | 'delete'
+                                            ) =>
+                                                filter.config.cond(
+                                                    args,
+                                                    request,
+                                                    type
+                                                ),
                                             resource.data.pascalCaseName,
                                             filter.config.default
                                         )

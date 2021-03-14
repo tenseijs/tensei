@@ -16,7 +16,7 @@ declare module '@tensei/common/filters' {
     type FilterCondition<T = any> = (
         args: Dictionary,
         request: Request,
-        type: 'read' | 'update' | 'delete',
+        type: 'read' | 'update' | 'delete'
     ) => FilterQuery<any> | Promise<FilterQuery<T>>
 
     export interface FilterContract<T = any> {

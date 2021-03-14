@@ -879,7 +879,15 @@ input id_where_query {
                     `/${this.getMiddlewareOptions.path || 'graphql'}`,
                     (request, response, next) =>
                         expressPlayground({
-                            endpoint: playgroundEndpoint,
+                            endpoint: `${playgroundEndpoint}?headers=${encodeURIComponent(
+                                JSON.stringify({
+                                    // @ts-ignore
+                                    'x-xsrf-token': request.csrfToken
+                                        ? // @ts-ignore
+                                          request.csrfToken()
+                                        : undefined
+                                })
+                            )}`,
                             settings: {
                                 ...defaultPlaygroundOptions.settings,
                                 'request.credentials': 'same-origin',
