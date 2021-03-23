@@ -1,0 +1,24 @@
+{
+    "name": "@tensei/cloudinary",
+    "version": "0.7.30",
+    "main": "./build/index.js",
+    "license": "MIT",
+    "files": [
+        "build/"
+    ],
+    "scripts": {
+        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+        "build": "tsc --p tsconfig.server.json",
+        "dev": "tsc --watch --p tsconfig.server.json",
+        "dev:client": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+        "test": "jest --verbose --runInBand --forceExit"
+    },
+    "devDependencies": {
+        "@tensei/common": "^0.7.30",
+        "typescript": "^4.1.3"
+    },
+    "dependencies": {
+        "@slynova/flydrive": "^1.0.3",
+        "cloudinary": "^1.25.0"
+    }
+}

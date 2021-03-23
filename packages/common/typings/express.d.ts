@@ -25,6 +25,7 @@ declare global {
             config: Config
             user: User
             orm: MikroORM
+            storage: StorageManager
             manager: EntityManager
             scripts: Asset[]
             styles: Asset[]

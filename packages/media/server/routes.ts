@@ -50,6 +50,7 @@ export const routes = (
         .id('upload_files')
         .post()
         .path(config.path)
+        .noCsrf()
         .middleware(uploadMiddleware(config))
         .handle(async (request, response) => {
             const entities = await handle(request as any, config)

@@ -298,6 +298,7 @@ export class Tensei implements TenseiContract {
 
     private registerRoutes() {
         this.ctx.routes.forEach(route => {
+            console.log('@@@@@@@@@----->', route.config)
             const path = route.config.path.startsWith('/')
                 ? route.config.path
                 : `/${route.config.path}`
@@ -492,7 +493,7 @@ export class Tensei implements TenseiContract {
     }
 
     private getRoute(id: string) {
-        return this.ctx.routes.find(route => route.config.id === id)
+        return this.ctx.routes.find(route => (route.config.id === id) || (route.config.path === id))
     }
 
     private async callPluginHook(

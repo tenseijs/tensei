@@ -1,4 +1,5 @@
 const Csurf = require('csurf')
+const PathToRegex = require('path-to-regexp')
 
 const Middleware = Csurf({
     cookie: true
@@ -24,7 +25,9 @@ const createCsurfToken = () => (
 const checkCsurfToken = () => Middleware
 
 module.exports = {
-    register: ({ app }) => {
+    register: ({ app, excludedPaths }) => {
+        const excludedPathsRegex = (excludedPaths || []).map(path => PathToRegex(path.startsWith('/') ? path : `/${path}`))
+
         app.use((request, response, next) => {
             const query = request.body?.query
                 ?.replace(/(\r\n|\n|\r)/gm, '')
@@ -35,10 +38,13 @@ module.exports = {
                 (query?.startsWith('query') &&
                     query?.endsWith('{csrf_token}'))
 
+                    const pathIsExcluded = excludedPathsRegex.find(regex => regex.test(request.path) === true)
             if (
-                request.method === 'POST' &&
-                typeof query === 'string' &&
-                queryAccepted
+                (
+                    request.method === 'POST' &&
+                    typeof query === 'string' &&
+                    queryAccepted
+                ) || pathIsExcluded
             ) {
                 return createCsurfToken()(request, response, next)
             }

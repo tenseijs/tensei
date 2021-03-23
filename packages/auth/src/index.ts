@@ -59,6 +59,7 @@ class Auth {
         enableRefreshTokens: false,
         userResource: 'User',
         roleResource: 'Role',
+        excludedPathsFromCsrf: [],
         httpOnlyCookiesAuth: false,
         permissionResource: 'Permission',
         passwordResetResource: 'Password Reset',
@@ -468,6 +469,12 @@ class Auth {
         }
     }
 
+    public excludePathsFromCsrf(paths: string[]) {
+        this.config.excludedPathsFromCsrf = paths
+
+        return this
+    }
+
     public plugin() {
         return plugin('Auth')
             .extra(this.config)
@@ -568,8 +575,16 @@ class Auth {
                 })
 
                 if (this.config.httpOnlyCookiesAuth) {
+                    const excludedRoutes = routes.filter(route => ! route.config.csrf)
+
+                    this.config.excludedPathsFromCsrf = [
+                        ...this.config.excludedPathsFromCsrf,
+                        ...excludedRoutes.map(route => route.config.path)
+                    ]
+
                     require('@tensei/cookie-sessions').register({
-                        app
+                        app,
+                        excludedPaths: this.config.excludedPathsFromCsrf
                     })
                 }
 
@@ -1156,7 +1171,7 @@ class Auth {
                           .path(this.getApiPath('csrf'))
                           .handle(async (request, response) => {
                               response.cookie(
-                                  'xsrf-token',
+                                  'XSRF-TOKEN',
                                   // @ts-ignore
                                   request.csrfToken()
                               )

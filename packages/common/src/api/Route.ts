@@ -16,6 +16,7 @@ export class Route implements RouteContract {
         id: '',
         path: '',
         name: '',
+        csrf: true,
         cms: false,
         type: 'GET',
         group: 'Misc',
@@ -58,6 +59,12 @@ export class Route implements RouteContract {
     group(name: string) {
         this.config.group = name
         this.config.groupSlug = paramCase(name)
+
+        return this
+    }
+
+    noCsrf() {
+        this.config.csrf = false
 
         return this
     }

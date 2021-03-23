@@ -274,7 +274,7 @@ export const handle = async (
     ) as unknown) as [[UploadFile, string, sharp.Sharp][]]
 
     const storedFiles = await Promise.all(
-        files.map(file => ctx.storage.disk().getStat(file.storage_filename))
+        files.map(file => ctx.storage.disk(config.disk).getStat(file.storage_filename))
     )
 
     const storedTransforms = await Promise.all(
@@ -284,7 +284,7 @@ export const handle = async (
                 : Promise.all(
                       transforms.map(([file, name]) =>
                           ctx.storage
-                              .disk()
+                              .disk(config.disk)
                               .getStat(`${file.path}${name}.${file.extension}`)
                               .catch(() => null)
                       )

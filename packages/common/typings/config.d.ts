@@ -57,6 +57,7 @@ declare module '@tensei/common/config' {
         put(): this
         patch(): this
         delete(): this
+        noCsrf(): this
         internal(): this
         id(id: string): this
         group(name: string): this
@@ -150,6 +151,7 @@ declare module '@tensei/common/config' {
         cms: boolean
         internal: boolean
         id: string
+        csrf: boolean
         group: string
         groupSlug: string
         sampleRequest: string
