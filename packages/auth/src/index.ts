@@ -1173,7 +1173,8 @@ class Auth {
                               response.cookie(
                                   'XSRF-TOKEN',
                                   // @ts-ignore
-                                  request.csrfToken()
+                                  request.csrfToken(),
+                                  this.config.cookieOptions
                               )
 
                               return response.formatter.noContent([])

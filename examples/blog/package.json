@@ -1,16 +1,16 @@
 {
     "name": "@examples/blog",
-    "version": "0.7.32",
+    "version": "0.7.33",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
         "@mikro-orm/sqlite": "^4.4.0",
-        "@tensei/cms": "^0.7.32",
-        "@tensei/core": "^0.7.32",
-        "@tensei/graphql": "^0.7.32",
-        "@tensei/mde": "^0.7.32",
-        "@tensei/media": "^0.7.32",
-        "@tensei/social-auth": "^0.7.32",
+        "@tensei/cms": "^0.7.33",
+        "@tensei/core": "^0.7.33",
+        "@tensei/graphql": "^0.7.33",
+        "@tensei/mde": "^0.7.33",
+        "@tensei/media": "^0.7.33",
+        "@tensei/social-auth": "^0.7.33",
         "marked": "^2.0.1"
     },
     "scripts": {
