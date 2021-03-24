@@ -16,7 +16,7 @@ const createCsurfToken = () => (
     const _middleware = Middleware(request, response, _nextWithoutCheck(next))
 
     response.cookie('x-csrf-token', request.csrfToken(), {
-        secure: process.env.NODE_ENV === 'production'
+        secure: false
     })
 
     return _middleware

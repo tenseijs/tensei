@@ -57,7 +57,7 @@ class SocialAuthCallbackController {
                 const existingOauthIdentity = await db.findOne(
                     {
                         provider: provider,
-                        provider_user_id: providerData.provider_user_id
+                        provider_user_id: providerData.provider_user_id.toString()
                     },
                     {
                         fields: ['temporal_token', 'id']
@@ -79,7 +79,7 @@ class SocialAuthCallbackController {
                             temporal_token,
                             email: payload.email,
                             payload: JSON.stringify(payload),
-                            provider_user_id: providerData.provider_user_id
+                            provider_user_id: providerData.provider_user_id.toString()
                         })
                     )
                 }

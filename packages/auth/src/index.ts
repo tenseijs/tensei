@@ -79,7 +79,7 @@ class Auth {
             refreshTokenExpiresIn: 60 * 60 * 24 * 30 * 6 // 6 months
         },
         cookieOptions: {
-            secure: process.env.NODE_ENV === 'production'
+            secure: false
         },
         refreshTokenHeaderName: 'x-tensei-refresh-token',
         twoFactorAuth: false,
