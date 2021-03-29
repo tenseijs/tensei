@@ -136,8 +136,8 @@ export class Field implements FieldContract {
         }
     }
 
-    public onUpdate<T extends FieldContract>(this: T, onCreate: () => any): T {
-        this.property.onUpdate = onCreate
+    public onUpdate<T extends FieldContract>(this: T, onUpdate: () => any): T {
+        this.property.onUpdate = onUpdate
 
         return this
     }

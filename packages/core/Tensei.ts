@@ -134,6 +134,7 @@ export class Tensei implements TenseiContract {
             clientUrl: process.env.DATABASE_URL,
             user: process.env.DATABASE_USER,
             password: process.env.DATABASE_PASSWORD,
+            dbName: process.env.DATABASE_NAME,
             port: process.env.DATABASE_PORT
                 ? parseInt(process.env.DATABASE_PORT)
                 : undefined,
@@ -146,7 +147,7 @@ export class Tensei implements TenseiContract {
                 process.env.DATABASE_NAME || this.ctx.name.toLowerCase()
         }
 
-        if (this.ctx.databaseConfig.type === 'postgresql') {
+        if (this.ctx.databaseConfig.type === 'postgresql' && process.env.NODE_ENV === 'production') {
             // Add client configurations that facilitate heroku postgres by default.
             this.ctx.databaseConfig.driverOptions = {
                 connection: {

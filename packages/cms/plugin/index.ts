@@ -134,7 +134,7 @@ class CmsPlugin {
         mailer.send(message => {
             message
                 .to(user.email)
-                .from(user.email)
+                .from(process.env.ADMIN_SUPPORT_MAIL || `no-reply@${new URL(serverUrl).host}`)
                 .subject(`Sign-in link for ${name}.`)
                 .html(
                     `

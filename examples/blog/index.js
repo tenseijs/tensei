@@ -1,8 +1,8 @@
+require('dotenv').config()
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
-const { mailgun } = require('@tensei/mail')
 
 const {
     tensei,
@@ -39,7 +39,6 @@ tensei()
     ])
     .plugins([
         welcome(),
-        mailgun('transactions').domain(process.env.MAILGUN_DOMAIN).plugin(),
         cms().plugin(),
         auth().rolesAndPermissions()
         .cookieSessions()
@@ -48,8 +47,8 @@ tensei()
         graphql().plugin()
     ])
     .databaseConfig({
-        type: 'sqlite',
-        dbName: 'tensei'
+        debug: true,
+        forceUtcTimezone: true
     })
     .start()
     .catch(console.error)
