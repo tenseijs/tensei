@@ -117,7 +117,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     public data: ResourceDataWithFields = {
         fields: [
-            id('ID').searchable(),
+            id('ID'),
             timestamp('Created At')
                 .defaultToNow()
                 .nullable()

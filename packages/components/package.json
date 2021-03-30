@@ -1,6 +1,6 @@
 {
     "name": "@tensei/components",
-    "version": "0.7.34",
+    "version": "0.7.35",
     "main": "lib/index.js",
     "license": "MIT",
     "files": [
