@@ -12,6 +12,7 @@ const {
     textarea,
     dateTime,
     slug,
+    array,
     hasMany,
     belongsTo,
 } = require('@tensei/core')
@@ -21,12 +22,15 @@ tensei()
     .resources([
         resource('Post')
             .fields([
-                text('Title'),
+                text('Title').rules('required'),
                 slug('Slug').from('Title'),
-                textarea('Description'),
+                textarea('Description').rules('required', 'max:255'),
                 textarea('Content'),
-                dateTime('Published At'),
-                belongsTo('Category')
+                dateTime('Published At').rules('required'),
+                belongsTo('Category'),
+                array('Procedure')
+                    .of('string')
+                    .rules('required', 'min:3', 'max:10')
             ])
             .displayField('Title'),
         resource('Category')

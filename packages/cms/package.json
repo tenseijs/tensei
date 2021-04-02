@@ -40,7 +40,7 @@
         "@types/react-select": "^3.1.2",
         "@types/speakingurl": "^13.0.2",
         "@types/throttle-debounce": "^2.1.0",
-        "autoprefixer": "^10.2.4",
+        "autoprefixer": "^10.2.5",
         "axios": "^0.21.1",
         "classnames": "^2.2.6",
         "copyfiles": "^2.4.1",
@@ -78,7 +78,6 @@
         "@tensei/mail": "^0.7.35",
         "@types/csurf": "^1.11.0",
         "@types/express-session": "^1.17.3",
-        "autoprefixer": "^10.2.5",
         "csurf": "^1.11.0",
         "express-session": "^1.17.1",
         "express-session-mikro-orm": "^0.7.35"

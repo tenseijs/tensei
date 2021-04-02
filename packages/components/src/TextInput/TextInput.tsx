@@ -5,7 +5,7 @@ export interface TextInputProps {
     id: string
     name: string
     type?: string
-    label: string
+    label?: string
     error?: string
     value?: string
     className?: string

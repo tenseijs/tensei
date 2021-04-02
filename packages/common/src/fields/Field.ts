@@ -156,6 +156,16 @@ export class Field implements FieldContract {
      */
     public validationRules: Array<string> = []
 
+    /**
+     *
+     * Validation rules for fields that are in array format
+     */
+    public arrayValidationRules: Array<string> = []
+
+    /**
+     *
+     * Rules for sanitizing data for a field
+     */
     public sanitizeRules: Array<SanitizationRules> = []
 
     /**
@@ -665,11 +675,32 @@ export class Field implements FieldContract {
 
     /**
      *
+     * Set validation rules. These rules will be applied on both create
+     * and update
+     *
      * @param this
      */
     public rules<T extends FieldContract>(this: T, ...rules: Array<string>): T {
         this.validationRules = Array.from(
             new Set([...this.validationRules, ...rules])
+        )
+
+        return this
+    }
+
+    /**
+     *
+     * Set validation rules. These rules will be applied on both create
+     * and update
+     *
+     * @param this
+     */
+    public arrayRules<T extends FieldContract>(
+        this: T,
+        ...rules: Array<string>
+    ): T {
+        this.arrayValidationRules = Array.from(
+            new Set([...this.arrayValidationRules, ...rules])
         )
 
         return this

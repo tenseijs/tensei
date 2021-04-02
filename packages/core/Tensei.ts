@@ -147,7 +147,10 @@ export class Tensei implements TenseiContract {
                 process.env.DATABASE_NAME || this.ctx.name.toLowerCase()
         }
 
-        if (this.ctx.databaseConfig.type === 'postgresql' && process.env.NODE_ENV === 'production') {
+        if (
+            this.ctx.databaseConfig.type === 'postgresql' &&
+            process.env.NODE_ENV === 'production'
+        ) {
             // Add client configurations that facilitate heroku postgres by default.
             this.ctx.databaseConfig.driverOptions = {
                 connection: {
@@ -493,7 +496,9 @@ export class Tensei implements TenseiContract {
     }
 
     private getRoute(id: string) {
-        return this.ctx.routes.find(route => (route.config.id === id) || (route.config.path === id))
+        return this.ctx.routes.find(
+            route => route.config.id === id || route.config.path === id
+        )
     }
 
     private async callPluginHook(

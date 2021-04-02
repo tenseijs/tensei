@@ -217,6 +217,8 @@ declare module '@tensei/common/fields' {
          * this field on forms
          */
         validationRules: Array<string>
+
+        arrayValidationRules: Array<string>
         /**
          *
          * Define validation rules to be used to validate
@@ -419,6 +421,7 @@ declare module '@tensei/common/fields' {
          * @param this
          */
         rules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+        arrayRules<T extends FieldContract>(this: T, ...rules: Array<string>): T
         sanitize<T extends FieldContract>(this: T, rule: SanitizationRules): T
         /**
          * Set the validation rules to be used when
@@ -586,7 +589,7 @@ declare module '@tensei/common/fields' {
         databaseField?: string
     ) => RelationshipField
     interface ArrayContract extends FieldContract {
-        of(arrayOf: 'string' | 'number'): this
+        of(arrayOf: 'string' | 'number' | 'decimal' | 'date'): this
     }
     interface BooleanFieldContract extends FieldContract {
         trueLabel(value: string): this

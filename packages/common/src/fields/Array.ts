@@ -5,15 +5,34 @@ type ArrayTypes = 'string' | 'number' | 'decimal' | 'date'
 export class ArrayField extends Field {
     protected arrayOf: ArrayTypes = 'string'
 
+    public component = {
+        form: 'Array',
+        index: 'Array',
+        detail: 'Array'
+    }
+
     constructor(name: string, databaseField?: string) {
         super(name, databaseField)
 
-        this.property.type = 'string[]'
+        this.property.type = 'json'
+
+        this.rules('array')
+        this.arrayRules('string')
+
+        this.hideOnIndex()
     }
 
     public of(arrayOf: ArrayTypes) {
         this.arrayOf = arrayOf
-        this.property.type = `${arrayOf}[]`
+        this.arrayValidationRules = []
+        this.arrayRules(
+            {
+                string: 'string',
+                decimal: 'number',
+                date: 'date',
+                number: 'number'
+            }[arrayOf]
+        )
 
         return this
     }

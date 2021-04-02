@@ -84,6 +84,8 @@ export class Validator {
                 ])
             ).join('|')
 
+            console.log('_________________', field.arrayValidationRules)
+
             if (field.relatedProperty.reference) {
                 const relatedResource = this.resourcesMap[
                     field.relatedProperty.type!
@@ -110,6 +112,13 @@ export class Validator {
 
             if (fieldValidationRules) {
                 rules[field.databaseField] = fieldValidationRules
+            }
+
+            // Add the validation rules for any array fields.
+            if (field.arrayValidationRules.length > 0) {
+                rules[
+                    `${field.databaseField}.*`
+                ] = field.arrayValidationRules.join('|')
             }
         })
 

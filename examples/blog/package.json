@@ -14,7 +14,7 @@
         "marked": "^2.0.1"
     },
     "scripts": {
-        "example:dev": "nodemon --watch node_modules/ src/index"
+        "example:dev": "nodemon --watch ../../node_modules/ index.js"
     },
     "devDependencies": {
         "nodemon": "^2.0.7"

@@ -175,9 +175,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         validationMessages: {
             required: 'The {{ field }} is required.',
             email: 'The {{ field }} must be a valid email address.',
-            unique: 'This {{ field }} has already been taked.',
-            min: 'This {{ field }} .',
-            max: 'This {{ field }} is too long.'
+            unique: 'This {{ field }} has already been taked.'
         },
         displayInNavigation: true,
         perPageOptions: [10, 25, 50]

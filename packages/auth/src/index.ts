@@ -575,7 +575,9 @@ class Auth {
                 })
 
                 if (this.config.httpOnlyCookiesAuth) {
-                    const excludedRoutes = routes.filter(route => ! route.config.csrf)
+                    const excludedRoutes = routes.filter(
+                        route => !route.config.csrf
+                    )
 
                     this.config.excludedPathsFromCsrf = [
                         ...this.config.excludedPathsFromCsrf,

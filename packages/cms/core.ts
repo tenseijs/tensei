@@ -15,10 +15,11 @@ import Home from './pages/Home'
 import IndexID from './index/ID'
 import IndexText from './index/Text'
 
-// Form
+// Details
 import DetailID from './detail/ID'
 import DetailDate from './detail/Date'
 import DetailText from './detail/Text'
+import DetailArray from './detail/Array'
 import DetailBoolean from './detail/Boolean'
 import DetailOneToOne from './detail/OneToOne'
 import DetailTextarea from './detail/Textarea'
@@ -27,6 +28,7 @@ import DetailManyToMany from './detail/ManyToMany'
 // Form
 import FormText from './form/Text'
 import FormSlug from './form/Slug'
+import FormArray from './form/Array'
 import FormSelect from './form/Select'
 import FormBoolean from './form/Boolean'
 import FormDate from './form/DatePicker'
@@ -106,6 +108,7 @@ class Core {
             Text: FormText,
             Slug: FormSlug,
             Date: FormDate,
+            Array: FormArray,
             DateTime: FormDate,
             Timestamp: FormDate,
             Select: FormSelect,
@@ -128,6 +131,7 @@ class Core {
             ID: DetailID,
             Text: DetailText,
             Date: DetailDate,
+            Array: DetailArray,
             DateTime: DetailDate,
             Timestamp: DetailDate,
             Boolean: DetailBoolean,
