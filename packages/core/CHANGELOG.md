@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/tenseijs/tensei/compare/v0.7.35...v0.8.0) (2021-04-04)
+
+
+### Features
+
+* **common:** add array field components ([9444865](https://github.com/tenseijs/tensei/commit/9444865034870ef2a446981c8ecfa87dbc782b45))
+
+
+
+
+
 ## [0.7.35](https://github.com/tenseijs/tensei/compare/v0.7.34...v0.7.35) (2021-03-30)
 
 **Note:** Version bump only for package @tensei/core
