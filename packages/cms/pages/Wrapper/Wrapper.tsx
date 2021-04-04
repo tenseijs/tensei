@@ -100,7 +100,7 @@ const Wrapper: React.FC = () => {
                           </PageWrapper>
                       ),
                       settings: false,
-                      icon: 'cog',
+                      icon: 'membership-mgt',
                       group: 'Users & Permissions',
                       name: authPluginConfig.role.label
                   }

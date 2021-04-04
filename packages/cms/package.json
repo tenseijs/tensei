@@ -76,6 +76,7 @@
     },
     "dependencies": {
         "@tensei/mail": "^0.7.35",
+        "@tensei/react-icons": "^1.0.2",
         "@types/csurf": "^1.11.0",
         "@types/express-session": "^1.17.3",
         "csurf": "^1.11.0",

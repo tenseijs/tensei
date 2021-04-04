@@ -1,6 +1,5 @@
 import React from 'react'
-
-import Set, { SupportedIcons } from './set'
+import * as Icons from '@tensei/react-icons'
 
 interface IconProps {
     fill?: string
@@ -9,26 +8,40 @@ interface IconProps {
     active?: boolean
     className?: string
     activeFill?: string
-    icon: SupportedIcons
+    icon: string
+}
+
+function toPascalCase(iconName: string) {
+    return iconName
+        .replace(new RegExp(/[-_]+/, 'g'), ' ')
+        .replace(new RegExp(/[^\w\s]/, 'g'), '')
+        .replace(
+            new RegExp(/\s+(.)(\w+)/, 'g'),
+                // @ts-ignore
+                ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+        )
+        .replace(new RegExp(/\s/, 'g'), '')
+        .replace(new RegExp(/\w/), s => s.toUpperCase());
 }
 
 const Icon: React.FC<IconProps> = ({
     fill = '#525692',
     activeFill = '#2346F8',
     icon,
-    width = 16,
-    height = 16,
+    width = 28,
+    height = 28,
     active = false
 }) => {
-    const el = Set({
-        fill,
-        width,
-        height,
-        active,
-        activeFill
-    })[icon]
+    console.log('@@@@@@->', icon)
+    const iconName = `${toPascalCase(icon)}Icon`
 
-    return el || null
+    const Icon = (Icons as any)[iconName] || (Icons as any)[`${icon}Icon`] || (Icons as any)[icon]
+
+    if (! Icon) {
+        return null
+    }
+
+    return <Icon width={width} height={height} color={active ? activeFill : fill} />
 }
 
 export default Icon

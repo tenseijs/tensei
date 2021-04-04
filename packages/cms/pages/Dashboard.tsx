@@ -6,7 +6,6 @@ import { Route, Switch, Link } from 'react-router-dom'
 import Nav from '../components/Nav'
 
 import FourOhFour from './404'
-import Resource from './Resource'
 import Settings from './Settings'
 import ResourceIndex from './ResourceIndex'
 import ResourceDetail from './ResourceDetail'

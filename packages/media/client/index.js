@@ -11,7 +11,7 @@ window.Tensei.register(({ route, formComponent, detailComponent }) => {
     route({
         path: 'media',
         name: 'Media Library',
-        icon: 'tag',
+        icon: 'camera',
         component: Media,
         requiredPermissions: []
     })

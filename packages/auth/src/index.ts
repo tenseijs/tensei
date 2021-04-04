@@ -351,6 +351,7 @@ class Auth {
                     })
                 }
             })
+            .icon('database-manager')
             .group('Users & Permissions')
 
         return userResource

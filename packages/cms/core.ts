@@ -151,7 +151,7 @@ class Core {
             name: 'Dashboard',
             requiredPermissions: [],
             component: Home,
-            icon: 'grid',
+            icon: 'product',
             top: true
         }
     ]

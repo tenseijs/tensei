@@ -18,7 +18,7 @@ declare module '@tensei/common/resources' {
     export interface ValidationMessages {
         [key: string]: string
     }
-    export type SupportedIcons = 'grid' | 'tag' | 'duplicate'
+    export type SupportedIcons = string
     export interface ResourceData {
         name: string
         table: string

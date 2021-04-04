@@ -32,6 +32,7 @@ tensei()
                     .of('string')
                     .rules('required', 'min:3', 'max:10')
             ])
+            .icon('library')
             .displayField('Title'),
         resource('Category')
             .fields([

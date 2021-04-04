@@ -86,7 +86,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
 
     constructor(name: string, tableName?: string) {
         this.data.name = name
-        this.data.icon = 'grid'
+        this.data.icon = 'category'
         this.data.label = Pluralize(name)
         this.data.snakeCaseName = snakeCase(name)
         this.data.camelCaseName = camelCase(name)
@@ -147,7 +147,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         label: '',
         filters: [],
         extend: {},
-        icon: 'grid',
+        icon: 'category',
         description: '',
         hideOnInsertApi: false,
         hideOnFetchApi: false,

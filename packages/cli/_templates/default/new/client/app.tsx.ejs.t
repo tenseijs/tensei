@@ -19,7 +19,7 @@ Tensei.register(({ route }) => {
     route({
         path: '<%= h.changeCase.param(name) %>',
         name: '<%= h.changeCase.pascal(name) %>',
-        icon: 'cog',
+        icon: 'tools',
         component: <%= h.changeCase.pascal(name) %>,
         requiredPermissions: []
     })
