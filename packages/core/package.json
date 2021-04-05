@@ -1,6 +1,6 @@
 {
     "name": "@tensei/core",
-    "version": "0.8.1",
+    "version": "0.8.2",
     "main": "./build/index.js",
     "types": "./typings/tensei.d.ts",
     "license": "MIT",
@@ -33,9 +33,9 @@
     "dependencies": {
         "@mikro-orm/core": "^4.3.2",
         "@slynova/flydrive": "^1.0.3",
-        "@tensei/auth": "^0.8.1",
-        "@tensei/common": "^0.8.1",
-        "@tensei/mail": "^0.8.1",
+        "@tensei/auth": "^0.8.2",
+        "@tensei/common": "^0.8.2",
+        "@tensei/mail": "^0.8.2",
         "@types/cookie-parser": "^1.4.2",
         "@types/pino": "^6.3.4",
         "@types/signale": "^1.4.1",

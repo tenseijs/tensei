@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.2](https://github.com/tenseijs/tensei/compare/v0.8.1...v0.8.2) (2021-04-05)
+
+
+### Features
+
+* **graphql:** add query authorisation to graphql ([4064f3f](https://github.com/tenseijs/tensei/commit/4064f3fabee79eb60dceba0264da98fff9a26ffd))
+
+
+
+
+
 ## [0.8.1](https://github.com/tenseijs/tensei/compare/v0.8.0...v0.8.1) (2021-04-05)
 
 
