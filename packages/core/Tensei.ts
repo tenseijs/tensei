@@ -289,7 +289,7 @@ export class Tensei implements TenseiContract {
         query: RouteContract
     ) => {
         const authorized = await Promise.all(
-            query.config.authorize.map(fn => fn(ctx as any))
+            query.config.authorize.map(fn => fn(ctx as any, ctx.entity))
         )
 
         if (

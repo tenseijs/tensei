@@ -8,7 +8,7 @@ import {
     ReferenceType
 } from '@mikro-orm/core'
 import Mustache from 'mustache'
-import { RequestHandler } from 'express'
+import { RequestHandler, request } from 'express'
 import { responseEnhancer } from 'express-response-formatter'
 import {
     route,
@@ -141,7 +141,7 @@ class Rest {
         const authorizeMiddleware = (checks: AuthorizeFunction[]) => {
             return (async (request, response, next) => {
                 const authorized = await Promise.all(
-                    checks.map(fn => fn(request))
+                    checks.map(fn => fn(request, request.entity))
                 )
 
                 if (
@@ -151,6 +151,31 @@ class Rest {
                         message: 'Unauthorized.'
                     })
                 }
+
+                return next()
+            }) as RequestHandler
+        }
+
+        const findSingleEntityMiddleware = (resource: ResourceContract) => {
+            return (async (request, response, next) => {
+                const findOptions = parseQueryToFindOptions(
+                    request.query,
+                    resource
+                )
+
+                const entity = await request.manager.findOne(
+                    resource.data.pascalCaseName,
+                    request.params.id,
+                    findOptions
+                )
+
+                if (!entity) {
+                    return response.formatter.notFound(
+                        `Could not find ${resource.data.snakeCaseName} with ID of ${request.params.id}`
+                    )
+                }
+
+                request.entity = entity
 
                 return next()
             }) as RequestHandler
@@ -318,6 +343,7 @@ class Rest {
                         .id(singular)
                         .resource(resource)
                         .middleware([
+                            findSingleEntityMiddleware(resource),
                             authorizeMiddleware(
                                 resource.authorizeCallbacks.authorizedToShow
                             )
@@ -328,25 +354,9 @@ class Rest {
                         .path(getApiPath(`${plural}/:id`))
                         .handle(
                             async (
-                                { manager, params, query, config },
+                                { manager, params, query, entity },
                                 response
                             ) => {
-                                const findOptions = parseQueryToFindOptions(
-                                    query,
-                                    resource
-                                )
-
-                                const entity = await manager.findOne(
-                                    modelName as EntityName<AnyEntity<any>>,
-                                    params.id as FilterQuery<AnyEntity<any>>,
-                                    findOptions
-                                )
-
-                                if (!entity) {
-                                    return response.formatter.notFound(
-                                        `could not find ${modelName} with ID ${params.id}`
-                                    )
-                                }
                                 return response.formatter.ok(entity)
                             }
                         )
@@ -547,6 +557,7 @@ class Rest {
                         .patch()
                         .internal()
                         .middleware([
+                            findSingleEntityMiddleware(resource),
                             authorizeMiddleware(
                                 resource.authorizeCallbacks.authorizedToUpdate
                             )
@@ -609,22 +620,7 @@ class Rest {
                                     })
                                 }
 
-                                const findOptions = parseQueryToFindOptions(
-                                    query,
-                                    resource
-                                )
-
-                                const entity = await manager.findOne(
-                                    resource.data.pascalCaseName,
-                                    params.id,
-                                    findOptions
-                                )
-
-                                if (!entity) {
-                                    return response.formatter.notFound(
-                                        `Could not find ${resource.data.snakeCaseName} with ID of ${params.id}`
-                                    )
-                                }
+                                const { entity } = request
 
                                 manager.assign(entity, body)
 
@@ -647,6 +643,7 @@ class Rest {
                         .delete()
                         .internal()
                         .middleware([
+                            findSingleEntityMiddleware(resource),
                             authorizeMiddleware(
                                 resource.authorizeCallbacks.authorizedToDelete
                             )
@@ -672,23 +669,12 @@ class Rest {
                         })
                         .handle(
                             async (
-                                { manager, params, query, config },
+                                { manager, params, entity, config },
                                 response
                             ) => {
                                 const modelRepository = manager.getRepository(
                                     modelName as EntityName<AnyEntity<any>>
                                 )
-
-                                const entity = await modelRepository.findOne(
-                                    params.id as FilterQuery<AnyEntity<any>>,
-                                    parseQueryToFindOptions(query, resource)
-                                )
-
-                                if (!entity) {
-                                    return response.formatter.notFound(
-                                        `Could not find ${resource.data.pascalCaseName} with ID of ${params.id}`
-                                    )
-                                }
 
                                 await modelRepository.removeAndFlush(entity)
 

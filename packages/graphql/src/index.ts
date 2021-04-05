@@ -678,7 +678,7 @@ input id_where_query {
                             // await middleware(_, args, ctx, info)
                         }
 
-                        await authorizeResolver(ctx, query)
+                        await authorizeResolver(ctx, query.config.authorize)
 
                         return withFilter(
                             () =>
@@ -815,7 +815,7 @@ input id_where_query {
                 currentCtx().graphQlQueries.forEach(query => {
                     query.middleware(
                         async (resolve, parent, args, ctx, info) => {
-                            await authorizeResolver(ctx, query)
+                            await authorizeResolver(ctx, query.config.authorize)
 
                             return resolve(parent, args, ctx, info)
                         }

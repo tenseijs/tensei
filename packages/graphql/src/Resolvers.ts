@@ -1,11 +1,12 @@
-import { Utils, DataPayload } from '@tensei/common'
-import { Configuration, EntityManager } from '@mikro-orm/core'
+import { Utils, DataPayload, GraphQlMiddleware } from '@tensei/common'
+import { Configuration } from '@mikro-orm/core'
 import { parseResolveInfo } from 'graphql-parse-resolve-info'
 import {
     GraphQlQueryContract,
     ResourceContract,
     FilterOperators,
     graphQlQuery,
+    AuthorizeFunction,
     GraphQLPluginContext
 } from '@tensei/common'
 
@@ -21,6 +22,25 @@ export const getResolvers = (
 ) => {
     const resolversList: GraphQlQueryContract[] = []
 
+    const fetchSingleEntityMiddleware: (resource: ResourceContract) => GraphQlMiddleware = (resource) => async (resolve, parent, args, ctx, info) => {
+        const data: any = await ctx.manager.findOneOrFail(
+            resource.data.pascalCaseName,
+            {
+                id: args.id
+            }
+        )
+
+        ctx.entity = data
+
+        return resolve(parent, args, ctx, info)
+    }
+
+    const authorizeResourceMiddleware: (authorizers: AuthorizeFunction[]) => GraphQlMiddleware = (authorizers) => async (resolve, parent, args, ctx, info) => {
+        await authorizeResolver(ctx, authorizers)
+
+        return resolve(parent, args, ctx, info)
+    }
+
     resources.forEach(resource => {
         !resource.isHiddenOnApi() &&
             !resource.data.hideOnFetchApi &&
@@ -29,6 +49,7 @@ export const getResolvers = (
                     .path(resource.data.snakeCaseNamePlural)
                     .query()
                     .internal()
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToFetch))
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any[] = await ctx.manager.find(
@@ -58,6 +79,7 @@ export const getResolvers = (
                     .query()
                     .internal()
                     .resource(resource)
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToFetch))
                     .handle(async (_, args, ctx) => {
                         const count = await ctx.manager.count(
                             resource.data.pascalCaseName,
@@ -76,14 +98,10 @@ export const getResolvers = (
                     .path(resource.data.snakeCaseName)
                     .query()
                     .internal()
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToShow), fetchSingleEntityMiddleware(resource))
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
-                        const data: any = await ctx.manager.findOneOrFail(
-                            resource.data.pascalCaseName,
-                            {
-                                id: args.id
-                            }
-                        )
+                        const data = ctx.entity
 
                         await Utils.graphql.populateFromResolvedNodes(
                             resources,
@@ -106,6 +124,7 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToCreate))
                     .handle(async (_, args, ctx, info) => {
                         const [passed, payload] = await Utils.validator(
                             resource,
@@ -164,6 +183,7 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToCreate))
                     .handle(async (_, args, ctx, info) => {
                         const data: any[] = args.objects.map((object: any) =>
                             ctx.manager.create(
@@ -236,10 +256,9 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
+                    .middleware(fetchSingleEntityMiddleware(resource), authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToUpdate))
                     .handle(async (_, args, ctx, info) => {
-                        const data: any = await ctx.manager
-                            .getRepository<any>(resource.data.pascalCaseName)
-                            .findOneOrFail(args.id)
+                        const data: any = ctx.entity
 
                         const [passed, payload] = await Utils.validator(
                             resource,
@@ -296,6 +315,7 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToUpdate))
                     .handle(async (_, args, ctx, info) => {
                         const data = await ctx.manager.find(
                             resource.data.pascalCaseName,
@@ -356,10 +376,9 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
+                    .middleware(fetchSingleEntityMiddleware(resource), authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToDelete))
                     .handle(async (_, args, ctx, info) => {
-                        const data: any = await ctx.manager
-                            .getRepository<any>(resource.data.pascalCaseName)
-                            .findOneOrFail(args.id)
+                        const data: any = ctx.entity
 
                         await Utils.graphql.populateFromResolvedNodes(
                             resources,
@@ -399,6 +418,7 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
+                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToDelete))
                     .handle(async (_, args, ctx, info) => {
                         const data = await ctx.manager.find(
                             resource.data.pascalCaseName,
@@ -557,15 +577,15 @@ export const allOperators = filterOperators.concat(topLevelOperators)
 
 export const authorizeResolver = async (
     ctx: GraphQLPluginContext,
-    query: GraphQlQueryContract
+    authorizers: AuthorizeFunction[]
 ) => {
     const authorized = await Promise.all(
-        query.config.authorize.map(fn => fn(ctx as any))
+        authorizers.map(fn => fn(ctx as any, ctx.entity))
     )
 
     if (
         authorized.filter(result => result).length !==
-        query.config.authorize.length
+        authorizers.length
     ) {
         throw ctx.forbiddenError('Unauthorized.')
     }

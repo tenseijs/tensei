@@ -2,7 +2,7 @@ declare module '@tensei/common/config' {
     import { Logger } from 'pino'
     import Emittery from 'emittery'
     import { Request, Response, Application } from 'express'
-    import { EntityManager } from '@mikro-orm/core'
+    import { EntityManager, AnyEntity } from '@mikro-orm/core'
     import { sanitizer, validator } from 'indicative'
     import { EventContract } from '@tensei/common/events'
     import { FindOptions, FilterQuery } from '@mikro-orm/core'
@@ -204,6 +204,7 @@ declare module '@tensei/common/config' {
         res: Response
         pubsub: PubSub
         connection?: ExecutionParams
+        entity: AnyEntity
         authenticationError: (message?: string) => unknown
         forbiddenError: (message?: string) => unknown
         validationError: (message?: string) => unknown
@@ -281,7 +282,8 @@ declare module '@tensei/common/config' {
         permissions: string[]
     }
     type AuthorizeFunction<RequestType = Request> = (
-        ctx: RequestType
+        ctx: RequestType,
+        entity: AnyEntity
     ) => boolean | Promise<boolean>
     type HookFunction<EntityType = DataPayload> = (
         payload: EventArgs<EntityType>,
