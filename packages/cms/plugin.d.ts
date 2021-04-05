@@ -1,4 +1,12 @@
-import { SessionData } from 'express-session'
+import { User } from '@tensei/common'
+
+declare global {
+    namespace Express {
+        export interface Request {
+            user: User
+        }
+    }
+}
 
 declare module 'express-session' {
     interface SessionData {

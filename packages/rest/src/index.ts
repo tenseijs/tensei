@@ -8,17 +8,17 @@ import {
     ReferenceType
 } from '@mikro-orm/core'
 import Mustache from 'mustache'
-import AsyncHandler from 'express-async-handler'
+import { RequestHandler } from 'express'
 import { responseEnhancer } from 'express-response-formatter'
 import {
     route,
     Utils,
     event,
     plugin,
-    ApiContext,
     RouteContract,
     ResourceContract,
-    RouteParameter
+    RouteParameter,
+    AuthorizeFunction
 } from '@tensei/common'
 
 import {
@@ -138,6 +138,24 @@ class Rest {
             ]
         }
 
+        const authorizeMiddleware = (checks: AuthorizeFunction[]) => {
+            return (async (request, response, next) => {
+                const authorized = await Promise.all(
+                    checks.map(fn => fn(request))
+                )
+
+                if (
+                    authorized.filter(result => result).length !== checks.length
+                ) {
+                    return response.status(401).json({
+                        message: 'Unauthorized.'
+                    })
+                }
+
+                return next()
+            }) as RequestHandler
+        }
+
         resources.forEach(resource => {
             const {
                 slugSingular: singular,
@@ -152,6 +170,11 @@ class Rest {
                         .post()
                         .internal()
                         .group(resource.data.label)
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToCreate
+                            )
+                        ])
                         .parameters(
                             resource.data.fields
                                 .filter(
@@ -240,6 +263,11 @@ class Rest {
                         .internal()
                         .group(resource.data.label)
                         .id(plural)
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToFetch
+                            )
+                        ])
                         .parameters(paginationParameters(resource))
                         .resource(resource)
                         .path(getApiPath(plural))
@@ -289,6 +317,11 @@ class Rest {
                         .internal()
                         .id(singular)
                         .resource(resource)
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToShow
+                            )
+                        ])
                         .description(
                             `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`
                         )
@@ -324,6 +357,12 @@ class Rest {
                 routes.push(
                     route(`Fetch ${singular} relations`)
                         .get()
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks
+                                    .authorizedToFetchRelation
+                            )
+                        ])
                         .parameters([
                             {
                                 in: 'path',
@@ -507,6 +546,11 @@ class Rest {
                     route(`Update single ${singular}`)
                         .patch()
                         .internal()
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToUpdate
+                            )
+                        ])
                         .parameters(
                             resource.data.fields
                                 .filter(
@@ -602,6 +646,11 @@ class Rest {
                     route(`Delete single ${singular}`)
                         .delete()
                         .internal()
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToDelete
+                            )
+                        ])
                         .parameters([
                             {
                                 in: 'path',
@@ -659,6 +708,11 @@ class Rest {
                         .delete()
                         .group(resource.data.label)
                         .internal()
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToDelete
+                            )
+                        ])
                         .id(this.getRouteId(`delete_many_${singular}`))
                         .resource(resource)
                         .path(getApiPath(`${plural}`))

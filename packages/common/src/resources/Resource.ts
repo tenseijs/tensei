@@ -35,13 +35,15 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         authorizedToUpdate: AuthorizeFunction[]
         authorizedToDelete: AuthorizeFunction[]
         authorizedToRunAction: AuthorizeFunction[]
+        authorizedToFetchRelation: AuthorizeFunction[]
     } = {
         authorizedToShow: [],
         authorizedToFetch: [],
         authorizedToCreate: [],
         authorizedToUpdate: [],
         authorizedToDelete: [],
-        authorizedToRunAction: []
+        authorizedToRunAction: [],
+        authorizedToFetchRelation: []
     }
 
     public dashboardAuthorizeCallbacks: {
@@ -109,8 +111,20 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
+    public disableAutoFilters() {
+        this.data.disableAutoFilters = true
+
+        return this
+    }
+
+    public disableAutoFills() {
+        this.data.disableAutoFills = true
+
+        return this
+    }
+
     public filters(filters: FilterContract[]) {
-        this.data.filters = filters
+        this.data.filters = [...this.data.filters, ...filters]
 
         return this
     }
@@ -140,6 +154,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
                 .hideOnIndex()
                 .hideOnUpdate()
         ],
+        disableAutoFills: false,
+        disableAutoFilters: false,
         actions: [],
         table: '',
         name: '',
@@ -251,7 +267,15 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public canCreate(authorizeFunction: AuthorizeFunction) {
+    public canFetchRelation(authorizeFunction: AuthorizeFunction) {
+        this.authorizeCallbacks.authorizedToFetchRelation.push(
+            authorizeFunction
+        )
+
+        return this
+    }
+
+    public canInsert(authorizeFunction: AuthorizeFunction) {
         this.authorizeCallbacks.authorizedToCreate.push(authorizeFunction)
 
         return this
@@ -291,7 +315,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         return this
     }
 
-    public canCreateOnDashboard(authorizeFunction: AuthorizeFunction) {
+    public canInsertOnDashboard(authorizeFunction: AuthorizeFunction) {
         this.dashboardAuthorizeCallbacks.authorizedToCreate.push(
             authorizeFunction
         )

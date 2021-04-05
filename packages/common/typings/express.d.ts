@@ -23,7 +23,6 @@ declare global {
             }
             mailer: MailManagerContract
             config: Config
-            user: User
             orm: MikroORM
             storage: StorageManager
             manager: EntityManager

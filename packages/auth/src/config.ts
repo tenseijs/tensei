@@ -46,6 +46,8 @@ export interface AuthPluginConfig {
     userResource: string
     tokenResource: string
     prefix: string
+    autoFillUser: boolean
+    autoFilterForUser: boolean
     excludedPathsFromCsrf: string[]
     enableRefreshTokens?: boolean
     registered?: (ctx: ApiContext) => Promise<void> | void

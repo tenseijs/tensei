@@ -280,8 +280,8 @@ declare module '@tensei/common/config' {
         roles: UserRole[]
         permissions: string[]
     }
-    type AuthorizeFunction<ModelType = any> = (
-        ctx: GraphQLPluginContext
+    type AuthorizeFunction<RequestType = Request> = (
+        ctx: RequestType
     ) => boolean | Promise<boolean>
     type HookFunction<EntityType = DataPayload> = (
         payload: EventArgs<EntityType>,

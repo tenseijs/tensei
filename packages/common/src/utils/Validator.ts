@@ -84,8 +84,6 @@ export class Validator {
                 ])
             ).join('|')
 
-            console.log('_________________', field.arrayValidationRules)
-
             if (field.relatedProperty.reference) {
                 const relatedResource = this.resourcesMap[
                     field.relatedProperty.type!

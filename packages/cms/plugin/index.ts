@@ -440,7 +440,7 @@ class CmsPlugin {
         query: RouteContract
     ) => {
         const authorized = await Promise.all(
-            query.config.authorize.map(fn => fn(ctx))
+            query.config.authorize.map(fn => fn(ctx as any))
         )
 
         if (

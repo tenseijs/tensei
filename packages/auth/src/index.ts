@@ -2,6 +2,7 @@ import Dayjs from 'dayjs'
 import crypto from 'crypto'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
+import { ReferenceType } from '@mikro-orm/core'
 import { validateAll } from 'indicative/validator'
 import {
     plugin,
@@ -17,6 +18,7 @@ import {
     hasMany,
     boolean,
     select,
+    filter,
     password,
     graphQlQuery,
     GraphQLPluginContext,
@@ -55,6 +57,8 @@ class Auth {
         setupFn: AuthSetupFn
     } = {
         prefix: '',
+        autoFillUser: true,
+        autoFilterForUser: true,
         tokenResource: 'Token',
         enableRefreshTokens: false,
         userResource: 'User',
@@ -476,6 +480,78 @@ class Auth {
         return this
     }
 
+    public noAutofillUser() {
+        this.config.autoFillUser = false
+
+        return this
+    }
+
+    public noAutoFilters() {
+        this.config.autoFilterForUser = false
+
+        return this
+    }
+
+    private registerAutofillUserHooks(resources: ResourceContract[]) {
+        resources
+            .filter(
+                resource =>
+                    resource.data.fields.find(
+                        field =>
+                            field.relatedProperty.reference ===
+                                ReferenceType.MANY_TO_ONE &&
+                            field.relatedProperty.type ===
+                                this.config.userResource
+                    ) && !resource.data.disableAutoFills
+            )
+            .forEach(resource => {
+                resource.beforeCreate(({ entity, em }, { request }) => {
+                    if (request.user && request.user.id) {
+                        em.assign(entity, {
+                            user: request.user.id
+                        })
+                    }
+                })
+            })
+    }
+
+    private registerAutoFilterUserHooks(resources: ResourceContract[]) {
+        resources
+            .filter(
+                resource =>
+                    resource.data.fields.find(
+                        field =>
+                            field.relatedProperty.reference ===
+                                ReferenceType.MANY_TO_ONE &&
+                            field.relatedProperty.type ===
+                                this.config.userResource
+                    ) && !resource.data.disableAutoFilters
+            )
+            .forEach(resource => {
+                resource.filters([
+                    filter(
+                        `${this.resources.user.data.label} ${resource.data.label}`
+                    )
+                        .default()
+                        .noArgs()
+                        .query((args, request) =>
+                            request.user && request.user.id
+                                ? {
+                                      [this.resources.user.data.snakeCaseName]:
+                                          request.user.id
+                                  }
+                                : resource.data.noTimestamps
+                                ? false
+                                : {
+                                      created_at: Dayjs()
+                                          .add(1, 'month')
+                                          .toDate()
+                                  }
+                        )
+                ])
+            })
+    }
+
     public plugin() {
         return plugin('Auth')
             .extra(this.config)
@@ -530,6 +606,14 @@ class Auth {
                     extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
                     extendGraphQlQueries(this.extendGraphQlQueries())
                     extendRoutes(this.extendRoutes())
+
+                    if (this.config.autoFillUser) {
+                        this.registerAutofillUserHooks(currentCtx().resources)
+                    }
+
+                    if (this.config.autoFilterForUser) {
+                        this.registerAutoFilterUserHooks(currentCtx().resources)
+                    }
                 }
             )
 

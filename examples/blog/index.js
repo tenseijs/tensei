@@ -38,6 +38,7 @@ tensei()
             .fields([
                 text('Name').notNullable().rules('required'),
                 textarea('Description'),
+                belongsTo('User').nullable(),
                 hasMany('Post')
             ])
             .displayField('Name')
@@ -46,7 +47,7 @@ tensei()
         welcome(),
         cms().plugin(),
         auth().rolesAndPermissions()
-        .cookieSessions()
+        // .cookieSessions()
         .plugin(),
         rest().plugin(),
         graphql().plugin()

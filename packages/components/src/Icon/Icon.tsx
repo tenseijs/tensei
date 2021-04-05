@@ -17,11 +17,11 @@ function toPascalCase(iconName: string) {
         .replace(new RegExp(/[^\w\s]/, 'g'), '')
         .replace(
             new RegExp(/\s+(.)(\w+)/, 'g'),
-                // @ts-ignore
-                ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+            // @ts-ignore
+            ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
         )
         .replace(new RegExp(/\s/, 'g'), '')
-        .replace(new RegExp(/\w/), s => s.toUpperCase());
+        .replace(new RegExp(/\w/), s => s.toUpperCase())
 }
 
 const Icon: React.FC<IconProps> = ({
@@ -35,13 +35,22 @@ const Icon: React.FC<IconProps> = ({
     console.log('@@@@@@->', icon)
     const iconName = `${toPascalCase(icon)}Icon`
 
-    const Icon = (Icons as any)[iconName] || (Icons as any)[`${icon}Icon`] || (Icons as any)[icon]
+    const Icon =
+        (Icons as any)[iconName] ||
+        (Icons as any)[`${icon}Icon`] ||
+        (Icons as any)[icon]
 
-    if (! Icon) {
+    if (!Icon) {
         return null
     }
 
-    return <Icon width={width} height={height} color={active ? activeFill : fill} />
+    return (
+        <Icon
+            width={width}
+            height={height}
+            color={active ? activeFill : fill}
+        />
+    )
 }
 
 export default Icon

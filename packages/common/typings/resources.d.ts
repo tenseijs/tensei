@@ -24,6 +24,8 @@ declare module '@tensei/common/resources' {
         table: string
         icon: SupportedIcons
         group: string
+        disableAutoFilters: boolean
+        disableAutoFills: boolean
         slug: string
         label: string
         groupSlug: string
@@ -75,6 +77,7 @@ declare module '@tensei/common/resources' {
             authorizedToUpdate: AuthorizeFunction[]
             authorizedToDelete: AuthorizeFunction[]
             authorizedToRunAction: AuthorizeFunction[]
+            authorizedToFetchRelation: AuthorizeFunction[]
         }
         dashboardAuthorizeCallbacks: {
             authorizedToShow: AuthorizeFunction[]
@@ -104,6 +107,8 @@ declare module '@tensei/common/resources' {
         hideOnUpdateApi(): this
         hideOnDeleteApi(): this
         hideOnFetchApi(): this
+        disableAutoFills(): this
+        disableAutoFilters(): this
         showOnInsertSubscription(): this
         showOnUpdateSubscription(): this
         showOnDeleteSubscription(): this
@@ -116,13 +121,14 @@ declare module '@tensei/common/resources' {
         permissions(permissions: Permission[]): this
         canShow(authorizeFunction: AuthorizeFunction): this
         canFetch(authorizeFunction: AuthorizeFunction): this
-        canCreate(authorizeFunction: AuthorizeFunction): this
+        canFetchRelation(authorizeFunction: AuthorizeFunction): this
+        canInsert(authorizeFunction: AuthorizeFunction): this
         canUpdate(authorizeFunction: AuthorizeFunction): this
         canDelete(authorizeFunction: AuthorizeFunction): this
         canRunAction(authorizeFunction: AuthorizeFunction): this
         canShowOnDashboard(authorizeFunction: AuthorizeFunction): this
         canFetchOnDashboard(authorizeFunction: AuthorizeFunction): this
-        canCreateOnDashboard(authorizeFunction: AuthorizeFunction): this
+        canInsertOnDashboard(authorizeFunction: AuthorizeFunction): this
         canUpdateOnDashboard(authorizeFunction: AuthorizeFunction): this
         canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
         canRunActionOnDashboard(authorizeFunction: AuthorizeFunction): this

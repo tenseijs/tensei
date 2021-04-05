@@ -12,9 +12,10 @@
         "types": [
             "@types/jest",
             "@types/express-session",
-            "express-response-formatter"
+            "express-response-formatter",
         ]
     },
+    "include": ["plugin.d.ts"],
     "exclude": [
         "__tests__",
         "build",
