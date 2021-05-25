@@ -198,12 +198,7 @@ test.skip('Cannot upload files larger than max file size', async () => {
 })
 
 test('Can upload files using the rest plugin', async () => {
-    const {
-        app,
-        ctx: {
-            orm: { em }
-        }
-    } = await setup(100000000, 48)
+    const { app } = await setup(100000000, 48)
 
     const response = await Supertest(app)
         .post('/files/upload')

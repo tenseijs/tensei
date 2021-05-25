@@ -10,6 +10,7 @@
         "faker": "^4.1.0",
         "jest": "^26.0.1",
         "supertest": "^4.0.2",
+        "supertest-session": "^4.1.0",
         "typescript": "^4.2.4"
     },
     "scripts": {

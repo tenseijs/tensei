@@ -4,11 +4,11 @@
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
-        "@tensei/auth": "^0.8.2",
-        "@tensei/cms": "^0.8.2",
-        "@tensei/core": "^0.8.2",
-        "@tensei/media": "^0.8.2",
-        "@tensei/graphql": "^0.8.2"
+        "@tensei/auth": "^0.8.3",
+        "@tensei/cms": "^0.8.3",
+        "@tensei/core": "^0.8.3",
+        "@tensei/media": "^0.8.3",
+        "@tensei/graphql": "^0.8.3"
     },
     "scripts": {
         "dev": "nodemon index.js",

@@ -133,6 +133,11 @@ export const sortArrayById = (items: any[]) =>
 
 export let gql = (t: any) => t.toString()
 
+export const getFakeMailer = () => ({
+    send: jest.fn(),
+    sendRaw: jest.fn()
+})
+
 export const setupFakeMailer = ({ sendRaw, send }) =>
     plugin('Mock mailer').register(async ({ mailer }) => {
         mailer.send = send
