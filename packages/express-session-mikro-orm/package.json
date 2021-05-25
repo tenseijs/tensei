@@ -1,6 +1,6 @@
 {
     "name": "express-session-mikro-orm",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "main": "build/index.js",
     "license": "MIT",
     "files": [
