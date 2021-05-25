@@ -139,7 +139,11 @@ export class Tensei implements TenseiContract {
                 ? parseInt(process.env.DATABASE_PORT)
                 : undefined,
             host: process.env.DATABASE_HOST,
-            charset: process.env.DATABASE_CHARSET
+            charset: process.env.DATABASE_CHARSET,
+            forceUtcTimezone:
+                process.env.FORCE_UTC_TIMEZONE === undefined
+                    ? true
+                    : process.env.FORCE_UTC_TIMEZONE === 'true'
         }
 
         if (this.ctx.databaseConfig.type === 'sqlite') {

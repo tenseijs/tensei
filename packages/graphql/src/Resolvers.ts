@@ -22,7 +22,15 @@ export const getResolvers = (
 ) => {
     const resolversList: GraphQlQueryContract[] = []
 
-    const fetchSingleEntityMiddleware: (resource: ResourceContract) => GraphQlMiddleware = (resource) => async (resolve, parent, args, ctx, info) => {
+    const fetchSingleEntityMiddleware: (
+        resource: ResourceContract
+    ) => GraphQlMiddleware = resource => async (
+        resolve,
+        parent,
+        args,
+        ctx,
+        info
+    ) => {
         const data: any = await ctx.manager.findOneOrFail(
             resource.data.pascalCaseName,
             {
@@ -35,7 +43,15 @@ export const getResolvers = (
         return resolve(parent, args, ctx, info)
     }
 
-    const authorizeResourceMiddleware: (authorizers: AuthorizeFunction[]) => GraphQlMiddleware = (authorizers) => async (resolve, parent, args, ctx, info) => {
+    const authorizeResourceMiddleware: (
+        authorizers: AuthorizeFunction[]
+    ) => GraphQlMiddleware = authorizers => async (
+        resolve,
+        parent,
+        args,
+        ctx,
+        info
+    ) => {
         await authorizeResolver(ctx, authorizers)
 
         return resolve(parent, args, ctx, info)
@@ -49,7 +65,11 @@ export const getResolvers = (
                     .path(resource.data.snakeCaseNamePlural)
                     .query()
                     .internal()
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToFetch))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToFetch
+                        )
+                    )
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data: any[] = await ctx.manager.find(
@@ -79,7 +99,11 @@ export const getResolvers = (
                     .query()
                     .internal()
                     .resource(resource)
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToFetch))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToFetch
+                        )
+                    )
                     .handle(async (_, args, ctx) => {
                         const count = await ctx.manager.count(
                             resource.data.pascalCaseName,
@@ -98,7 +122,12 @@ export const getResolvers = (
                     .path(resource.data.snakeCaseName)
                     .query()
                     .internal()
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToShow), fetchSingleEntityMiddleware(resource))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToShow
+                        ),
+                        fetchSingleEntityMiddleware(resource)
+                    )
                     .resource(resource)
                     .handle(async (_, args, ctx, info) => {
                         const data = ctx.entity
@@ -124,7 +153,11 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToCreate))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToCreate
+                        )
+                    )
                     .handle(async (_, args, ctx, info) => {
                         const [passed, payload] = await Utils.validator(
                             resource,
@@ -183,7 +216,11 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToCreate))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToCreate
+                        )
+                    )
                     .handle(async (_, args, ctx, info) => {
                         const data: any[] = args.objects.map((object: any) =>
                             ctx.manager.create(
@@ -256,7 +293,12 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
-                    .middleware(fetchSingleEntityMiddleware(resource), authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToUpdate))
+                    .middleware(
+                        fetchSingleEntityMiddleware(resource),
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToUpdate
+                        )
+                    )
                     .handle(async (_, args, ctx, info) => {
                         const data: any = ctx.entity
 
@@ -315,7 +357,11 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToUpdate))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToUpdate
+                        )
+                    )
                     .handle(async (_, args, ctx, info) => {
                         const data = await ctx.manager.find(
                             resource.data.pascalCaseName,
@@ -376,7 +422,12 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
-                    .middleware(fetchSingleEntityMiddleware(resource), authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToDelete))
+                    .middleware(
+                        fetchSingleEntityMiddleware(resource),
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToDelete
+                        )
+                    )
                     .handle(async (_, args, ctx, info) => {
                         const data: any = ctx.entity
 
@@ -418,7 +469,11 @@ export const getResolvers = (
                     .mutation()
                     .internal()
                     .resource(resource)
-                    .middleware(authorizeResourceMiddleware(resource.authorizeCallbacks.authorizedToDelete))
+                    .middleware(
+                        authorizeResourceMiddleware(
+                            resource.authorizeCallbacks.authorizedToDelete
+                        )
+                    )
                     .handle(async (_, args, ctx, info) => {
                         const data = await ctx.manager.find(
                             resource.data.pascalCaseName,
@@ -583,10 +638,7 @@ export const authorizeResolver = async (
         authorizers.map(fn => fn(ctx as any, ctx.entity))
     )
 
-    if (
-        authorized.filter(result => result).length !==
-        authorizers.length
-    ) {
+    if (authorized.filter(result => result).length !== authorizers.length) {
         throw ctx.forbiddenError('Unauthorized.')
     }
 }

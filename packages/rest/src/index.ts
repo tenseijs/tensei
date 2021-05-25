@@ -601,6 +601,7 @@ class Rest {
                                     params,
                                     body,
                                     query,
+                                    entity,
                                     resources: resourcesMap,
                                     userInputError,
                                     config
@@ -619,8 +620,6 @@ class Rest {
                                         errors: payload
                                     })
                                 }
-
-                                const { entity } = request
 
                                 manager.assign(entity, body)
 

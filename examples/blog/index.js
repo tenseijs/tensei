@@ -45,8 +45,8 @@ tensei()
     ])
     .plugins([
         welcome(),
-        cms().plugin(),
-        auth().rolesAndPermissions()
+        // cms().plugin(),
+        auth().rolesAndPermissions().refreshTokens()
         // .cookieSessions()
         .plugin(),
         rest().plugin(),
@@ -54,7 +54,6 @@ tensei()
     ])
     .databaseConfig({
         debug: true,
-        forceUtcTimezone: true
     })
     .start()
     .catch(console.error)

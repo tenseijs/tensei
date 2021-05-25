@@ -216,6 +216,7 @@ class CmsPlugin {
 
                 await request.manager.persistAndFlush(token)
 
+                // @ts-ignore
                 request.session.user = {
                     id: token[this.resources.user.data.snakeCaseName].id
                 }
@@ -440,7 +441,7 @@ class CmsPlugin {
         query: RouteContract
     ) => {
         const authorized = await Promise.all(
-            query.config.authorize.map(fn => fn(ctx as any))
+            query.config.authorize.map(fn => fn(ctx as any, ctx.entity))
         )
 
         if (
@@ -476,6 +477,7 @@ class CmsPlugin {
             const user: any = await manager.findOne(
                 this.resources.user.data.pascalCaseName,
                 {
+                    // @ts-ignore
                     id: session.user?.id
                 },
                 {
@@ -499,6 +501,7 @@ class CmsPlugin {
                     )
             }
 
+            // @ts-ignore
             request.user = user
         } catch (error) {}
 
@@ -606,8 +609,10 @@ class CmsPlugin {
                             Mustache.render(indexFileContent, {
                                 styles: request.styles,
                                 scripts: request.scripts,
+                                // @ts-ignore
                                 user: request.user
                                     ? JSON.stringify({
+                                          // @ts-ignore
                                           ...request.user
                                       })
                                     : null,

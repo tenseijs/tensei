@@ -381,6 +381,7 @@ class Auth {
                 dateTime('Expires At').hidden(),
                 belongsTo(this.config.userResource).nullable()
             ])
+            .disableAutoFilters()
             .hideOnApi()
     }
 

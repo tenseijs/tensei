@@ -124,14 +124,12 @@ test('Only resources exposed to PUT AND PATCH API have update_resources endpoint
         title: string
     }>('Post', { title: postPayload.title })
 
-    const { status: updatePostStatus } = await client
-        .patch(`/api/posts/${post.id}`)
-        .send({})
-
     const [
+        { status: updatePostStatus },
         { status: updateUserStatus },
         { status: updateReactionStatus }
     ] = await Promise.all([
+        client.patch(`/api/posts/${post.id}`).send({}),
         client.patch(`/api/users/${user.id}`).send(fakeUser()),
         client
             .patch(`/api/reaction-hidden-from-apis/${reaction.id}`)

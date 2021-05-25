@@ -1,21 +1,19 @@
 {
     "compilerOptions": {
-        "target": "ES5",
+        "target": "ES2017",
         "module": "commonjs",
         "declaration": true,
         "outDir": "./build",
-        "strict": true,
-        "baseUrl": "./plugin",
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
+        "forceConsistentCasingInFileNames": false,
+        "baseUrl": "./plugin",
         "types": [
             "@types/jest",
             "@types/express-session",
-            "express-response-formatter",
+            "express-response-formatter"
         ]
     },
-    "include": ["plugin.d.ts"],
     "exclude": [
         "__tests__",
         "build",

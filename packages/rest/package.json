@@ -18,7 +18,7 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css,tsx}'",
-        "build": "yarn build:server && yarn build:client && yarn copy:files",
+        "build": "rimraf build && yarn build:server && yarn build:client && yarn copy:files",
         "dev:server": "tsc --watch --p tsconfig.server.json",
         "copy:files": "copyfiles -u 1 src/docs/index.mustache build/",
         "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",

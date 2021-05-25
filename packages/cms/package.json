@@ -15,7 +15,7 @@
         "build:server": "tsc --project tsconfig.server.json && yarn copy:files",
         "copy:files": "copyfiles -u 1 plugin/template/index.mustache build/",
         "dev": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
-        "build": "yarn build:server && cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "build": "rimraf build && yarn build:server && cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.12.1",
