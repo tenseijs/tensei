@@ -36,22 +36,23 @@ export const setupCms = async (
         await em.find(PermissionResource.data.pascalCaseName, {})
     ).map((permission: any) => permission.id)
 
+    if (!superAdminRole) {
+        superAdminRole = em.create(RoleResource.data.pascalCaseName, {
+            name: 'Super Admin',
+            slug: 'super-admin',
+            description:
+                'Manage the access and level of responsibility of all users on this network.',
+            admin_permissions: allPermissions
+        })
+    }
+
     if (superAdminRole) {
         em.assign(superAdminRole, {
             admin_permissions: allPermissions
         })
     }
 
-    await em.persistAndFlush(
-        superAdminRole ||
-            em.create(RoleResource.data.pascalCaseName, {
-                name: 'Super Admin',
-                slug: 'super-admin',
-                description:
-                    'Manage the access and level of responsibility of all users on this network.',
-                admin_permissions: allPermissions
-            })
-    )
+    await em.persistAndFlush(superAdminRole)
 }
 
 const getPermissionsToInsert = async (

@@ -201,11 +201,9 @@ class CmsPlugin {
                     !token[this.resources.user.data.snakeCaseName].active ||
                     token.expires_at < new Date()
                 ) {
-                    return response
-                        .status(401)
-                        .redirect(
-                            `/${this.config.path}/auth/login?error=Your login credentials are invalid. Please try again.`
-                        )
+                    return response.redirect(
+                        `/${this.config.path}/auth/login?error=Your login credentials are invalid. Please try again.`
+                    )
                 }
 
                 request.manager.assign(token, {
@@ -249,7 +247,8 @@ class CmsPlugin {
                 }
 
                 let createUserPayload: any = {
-                    email: payload.email
+                    email: payload.email,
+                    active: true
                 }
 
                 let roles = payload.admin_roles

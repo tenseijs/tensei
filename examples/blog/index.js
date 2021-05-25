@@ -45,7 +45,7 @@ tensei()
     ])
     .plugins([
         welcome(),
-        // cms().plugin(),
+        cms().plugin(),
         auth().rolesAndPermissions().refreshTokens()
         // .cookieSessions()
         .plugin(),
