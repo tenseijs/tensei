@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.3](https://github.com/tenseijs/tensei/compare/v0.8.2...v0.8.3) (2021-05-25)
+
+
+### Bug Fixes
+
+* **cms:** fix cms login errors on mongodb and postgresql ([#104](https://github.com/tenseijs/tensei/issues/104)) ([88ff195](https://github.com/tenseijs/tensei/commit/88ff195efb10f981a94da3e7cd5613c87b6c86ec)), closes [#98](https://github.com/tenseijs/tensei/issues/98)
+
+
+
+
+
 ## [0.8.2](https://github.com/tenseijs/tensei/compare/v0.8.1...v0.8.2) (2021-04-05)
 
 **Note:** Version bump only for package @examples/blog
