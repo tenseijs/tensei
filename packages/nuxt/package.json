@@ -1,6 +1,6 @@
 {
     "name": "@tensei/nuxt",
-    "version": "0.8.2",
+    "version": "0.8.3",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
