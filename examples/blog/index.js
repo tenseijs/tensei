@@ -2,6 +2,7 @@ require('dotenv').config()
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
+const { manda } = require('@tensei/manda')
 const { graphql } = require('@tensei/graphql')
 
 const {
@@ -30,7 +31,11 @@ tensei()
                 belongsTo('Category'),
                 array('Procedure')
                     .of('string')
-                    .rules('required', 'min:3', 'max:10')
+                    .rules('required', 'min:3', 'max:10'),
+                array('Prices')
+                    .nullable()
+                    .of('decimal')
+                    .rules('required', 'max:10', 'min:2')
             ])
             .icon('library')
             .displayField('Title'),
@@ -50,7 +55,8 @@ tensei()
         // .cookieSessions()
         .plugin(),
         rest().plugin(),
-        graphql().plugin()
+        graphql().plugin(),
+        manda().plugin()
     ])
     .databaseConfig({
         debug: true,

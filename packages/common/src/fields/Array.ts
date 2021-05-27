@@ -18,6 +18,7 @@ export class ArrayField extends Field {
 
         this.rules('array')
         this.arrayRules('string')
+        this.notFilterable()
 
         this.hideOnIndex()
     }

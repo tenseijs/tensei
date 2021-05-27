@@ -15,6 +15,7 @@ export class Textarea extends Text {
         this.rules('string')
         this.property.columnTypes = ['text']
         this.hideOnIndex()
+        this.notFilterable()
     }
 
     alwaysShow() {

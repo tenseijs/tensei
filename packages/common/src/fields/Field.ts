@@ -236,6 +236,16 @@ export class Field implements FieldContract {
      */
     public isSortable: boolean = false
 
+    /**
+     * Adds database filtering by this field. Will show up
+     * on the index page, on the table headers.
+     * 
+     * Will also expose filtering on the frontend for this
+     * field.
+     * 
+     */
+    public isFilterable: boolean = true
+
     public isSearchable: boolean = false
 
     /**
@@ -467,6 +477,29 @@ export class Field implements FieldContract {
 
         return this
     }
+
+        /**
+     *
+     * Make this field filterable
+     *
+     */
+    public filterable<T extends FieldContract>(this: T): T {
+        this.isFilterable = true
+
+        return this
+    }
+
+
+        /**
+     *
+     * Turn off filtering for this field.
+     *
+     */
+         public notFilterable<T extends FieldContract>(this: T): T {
+            this.isFilterable = false
+    
+            return this
+        }
 
     /**
      *
@@ -814,6 +847,7 @@ export class Field implements FieldContract {
             component: this.component,
             description: this.helpText,
             isNullable: this.isNullable,
+            isFilterable: this.isFilterable,
             isSortable: this.isSortable,
             attributes: this.attributes,
             rules: this.validationRules,
