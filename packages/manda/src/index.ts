@@ -47,7 +47,7 @@ class Manda {
 	private formatContent(content: string) {
 		return Prettier.format(content, {
 			semi: false,
-			parser: 'babel',
+			parser: 'typescript',
 		})
 	}
 
@@ -58,13 +58,13 @@ class Manda {
 					this.config.path = Path.resolve(root, 'client/src') // Todo: Change this to the node_modules of the client folder.
 				}
 			})
-			.boot(async ({ resources }) => {
+			.boot(async (config) => {
 				this.cleanupClientFolder()
 
 				this.createClientFolder()
 
 				this.writeToClientFolder(
-					this.formatContent(await generateResourceInterfaces(resources)),
+					this.formatContent(await generateResourceInterfaces(config)),
 					'interfaces.ts'
 				)
 			})

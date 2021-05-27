@@ -239,10 +239,10 @@ export class Field implements FieldContract {
     /**
      * Adds database filtering by this field. Will show up
      * on the index page, on the table headers.
-     * 
+     *
      * Will also expose filtering on the frontend for this
      * field.
-     * 
+     *
      */
     public isFilterable: boolean = true
 
@@ -478,7 +478,7 @@ export class Field implements FieldContract {
         return this
     }
 
-        /**
+    /**
      *
      * Make this field filterable
      *
@@ -489,17 +489,16 @@ export class Field implements FieldContract {
         return this
     }
 
-
-        /**
+    /**
      *
      * Turn off filtering for this field.
      *
      */
-         public notFilterable<T extends FieldContract>(this: T): T {
-            this.isFilterable = false
-    
-            return this
-        }
+    public notFilterable<T extends FieldContract>(this: T): T {
+        this.isFilterable = false
+
+        return this
+    }
 
     /**
      *
