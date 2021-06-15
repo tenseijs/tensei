@@ -5,6 +5,7 @@ import Prettier from 'prettier'
 import { plugin } from '@tensei/common'
 
 import { generateResourceInterfaces } from './generators/interfaces'
+import { generateFetchWrapperForResources } from './generators/rest'
 
 function writeFileSyncRecursive(filename: string, content: string) {
 	const folders = filename.split(Path.sep).slice(0, -1)
@@ -48,6 +49,7 @@ class Manda {
 		return Prettier.format(content, {
 			semi: false,
 			parser: 'typescript',
+			singleQuote: true,
 		})
 	}
 
@@ -59,6 +61,7 @@ class Manda {
 				}
 			})
 			.boot(async (config) => {
+				console.time('-------------------@mana')
 				this.cleanupClientFolder()
 
 				this.createClientFolder()
@@ -67,6 +70,11 @@ class Manda {
 					this.formatContent(await generateResourceInterfaces(config)),
 					'interfaces.ts'
 				)
+				this.writeToClientFolder(
+					this.formatContent(await generateFetchWrapperForResources(config)),
+					'rest.ts'
+				)
+				console.timeEnd('-------------------@mana')
 			})
 	}
 }

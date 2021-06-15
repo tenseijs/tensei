@@ -22,10 +22,9 @@ export const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
 
 export const allOperators = filterOperators.concat(topLevelOperators)
 
-const resolveFieldTypescriptType = (
+export const resolveFieldTypescriptType = (
 	field: FieldContract,
 	resources: ResourceContract[],
-	forms = false
 ) => {
 	if (
 		['integer', 'bigInteger', 'int', 'number', 'float', 'double'].includes(field.property.type!)
@@ -103,7 +102,75 @@ export enum SortQueryInput {
     DESC_NULLS_LAST = 'desc_nulls_last',
     DESC_NULLS_FIRST = 'desc_nulls_first',
 }
+export interface PaginationOptions {
+	page: number
+	per_page: number
+}
+
+export interface FindResponse<Resource> {
+	data: Resource
+}
+
+export interface PaginatedResponse<Resource> {
+	data: Resource[]
+	meta: {
+		total: number
+		page: number
+		per_page: number
+		page_count: number
+    }
+}
 `
+}
+
+const getRelationshipFieldsForRelatedResource = (relatedResource: ResourceContract) => {
+	return relatedResource.data.fields.filter(
+		(field) =>
+			!field.showHideFieldFromApi.hideOnFetchApi && !field.isHidden && field.isRelationshipField
+	)
+}
+
+const getResourcePopulateFields = (resource: ResourceContract, resources: ResourceContract[]) => {
+	if (resource.data.hideOnFetchApi) {
+		return ``
+	}
+
+	let possiblePopulates: string[] = []
+
+	getRelationshipFieldsForRelatedResource(resource).forEach((field) => {
+		possiblePopulates = [...possiblePopulates, field.relatedProperty.name!]
+
+		const relatedResource = resources.find(
+			(resource) => resource.data.pascalCaseName === field.relatedProperty.type
+		)
+
+		if (relatedResource) {
+			const nestedPopulates = getRelationshipFieldsForRelatedResource(relatedResource).map(
+				(nestedField) => `${field.relatedProperty.name}.${nestedField.relatedProperty.name}`
+			)
+
+			possiblePopulates = [...possiblePopulates, ...nestedPopulates]
+		}
+
+		return possiblePopulates
+	})
+
+	return `
+	export type ${resource.data.pascalCaseName}PopulateFields = ${possiblePopulates
+		.map((field) => `'${field}'`)
+		.join('|')}
+	`
+}
+
+const getResourceFieldsSelectList = (resource: ResourceContract) => {
+	if (resource.data.hideOnFetchApi) {
+		return ``
+	}
+
+	return `export type ${resource.data.pascalCaseName}SelectFields = ${resource.data.fields
+		.filter((field) => !field.showHideFieldFromApi.hideOnFetchApi && !field.isHidden)
+		.map((field) => `'${field.databaseField}'`)
+		.join('|')}`
 }
 
 const getStaticWhereQueryInterfaces = () => {
@@ -111,40 +178,40 @@ const getStaticWhereQueryInterfaces = () => {
     export interface StringWhereQueryInput {
         ${filterOperators.map((operator) => {
 					if (['_in', '_nin'].includes(operator)) {
-						return `${operator}: string[]`
+						return `${operator}?: string[]`
 					}
 
-					return `${operator}: string`
+					return `${operator}?: string`
 				})}
     }
 
     export interface NumberWhereQueryInput {
         ${filterOperators.map((operator) => {
 					if (['_in', '_nin'].includes(operator)) {
-						return `${operator}: number[]`
+						return `${operator}?: number[]`
 					}
 
-					return `${operator}: number`
+					return `${operator}?: number`
 				})}
     }
 
     export interface IDWhereQueryInput {
         ${filterOperators.map((operator) => {
 					if (['_in', '_nin'].includes(operator)) {
-						return `${operator}: ID[]`
+						return `${operator}?: ID[]`
 					}
 
-					return `${operator}: ID`
+					return `${operator}?: ID`
 				})}
     }
 
     export interface DateWhereQueryInput {
         ${filterOperators.map((operator) => {
 					if (['_in', '_nin'].includes(operator)) {
-						return `${operator}: DateString[]`
+						return `${operator}?: DateString[]`
 					}
 
-					return `${operator}: DateString`
+					return `${operator}?: DateString`
 				})}
     }
     `
@@ -195,14 +262,14 @@ const getWhereQueryResourceInterface = (
         export interface ${resource.data.pascalCaseName}WhereQueryInput {
             ${topLevelOperators.map(
 							(operator) =>
-								`${operator}: ${operator === '_not' ? interfaceName : `${interfaceName}[]`}`
+								`${operator}?: ${operator === '_not' ? interfaceName : `${interfaceName}[]`}`
 						)},
             ${resource
 							.getFetchApiExposedFields()
 							.filter((field) => field.isFilterable)
 							.map(
 								(field) =>
-									`${field.databaseField}: ${getFieldWhereQueryInputTypes(field, resources)}`
+									`${field.databaseField}?: ${getFieldWhereQueryInputTypes(field, resources)}`
 							)}
         }
     `
@@ -286,16 +353,20 @@ const getResourceInterface = (resource: ResourceContract, resources: ResourceCon
 }
 
 export const generateResourceInterfaces = async ({ resources }: PluginSetupConfig) => {
-	return resources
-		.map(
-			(resource) => `
+	return `
+    ${resources
+			.map(
+				(resource) => `
+			${getResourcePopulateFields(resource, resources)}
+			${getResourceFieldsSelectList(resource)}
             ${getResourceInterface(resource, resources)}
             ${getWhereQueryResourceInterface(resource, resources)}
             ${getInsertResourceInterface(resource, resources)}
             ${getUpdateResourceInterface(resource, resources)}
             ${getResourceSortOrder(resource)}
         `
-		)
-		.concat([getBaseTypes(), getStaticWhereQueryInterfaces()])
-		.join('')
+			)
+			.concat([getBaseTypes(), getStaticWhereQueryInterfaces()])
+			.join('')}
+    `
 }

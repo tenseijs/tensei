@@ -1,0 +1,619 @@
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+_parcelHelpers.export(exports, "Sdk", function () {
+  return Sdk;
+});
+_parcelHelpers.export(exports, "LocalStorageStore", function () {
+  return LocalStorageStore;
+});
+_parcelHelpers.export(exports, "AuthAPI", function () {
+  return AuthAPI;
+});
+_parcelHelpers.export(exports, "PostAPI", function () {
+  return PostAPI;
+});
+_parcelHelpers.export(exports, "CategoryAPI", function () {
+  return CategoryAPI;
+});
+_parcelHelpers.export(exports, "CustomerAPI", function () {
+  return CustomerAPI;
+});
+_parcelHelpers.export(exports, "RoleAPI", function () {
+  return RoleAPI;
+});
+_parcelHelpers.export(exports, "PermissionAPI", function () {
+  return PermissionAPI;
+});
+var _axios = require('axios');
+var _axiosDefault = _parcelHelpers.interopDefault(_axios);
+var _interfaces = require('./interfaces');
+_parcelHelpers.exportAll(_interfaces, exports);
+class Sdk {
+  constructor(options) {
+    this.options = options;
+    this.instance = options?.axiosInstance || _axiosDefault.default.create({
+      baseURL: this.options?.url || 'http://localhost:8810',
+      ...options?.axiosRequestConfig || ({})
+    });
+    this.auth = new AuthAPI(this.instance);
+    this.posts = new PostAPI(this.options, this.instance);
+    this.categories = new CategoryAPI(this.options, this.instance);
+    this.customers = new CustomerAPI(this.options, this.instance);
+    this.roles = new RoleAPI(this.options, this.instance);
+    this.permissions = new PermissionAPI(this.options, this.instance);
+  }
+}
+class LocalStorageStore {
+  constructor(name) {
+    this.name = name;
+  }
+  set(value) {
+    localStorage.setItem(this.name, JSON.stringify(value));
+  }
+  get() {
+    return JSON.parse(localStorage.getItem(this.name));
+  }
+  clear() {
+    return localStorage.removeItem(this.name);
+  }
+}
+function isBrowser() {
+  return typeof window !== 'undefined' && typeof window.document !== 'undefined';
+}
+class AuthAPI {
+  sessionInterval = null;
+  constructor(instance) {
+    this.instance = instance;
+    this.storage = new LocalStorageStore('___tensei__session___');
+  }
+  /**
+  *
+  * Login an existing customer.
+  *      Example:
+  *          await tensei.auth.login({
+  *              email: 'hey@tenseijs.com',
+  *              password: 'password'
+  *          })
+  *
+  **/
+  async login(payload) {
+    const response = await this.instance.post('auth/login', payload.object);
+    if (payload.skipAuthentication) {
+      return response;
+    }
+    this.authenticateWithRefreshTokens(response.data.data);
+    return response;
+  }
+  /**
+  *
+  * Silently get a new access token for an existing customer session.
+  *      Example:
+  *          await tensei.auth.silentLogin()
+  *
+  **/
+  async silentLogin() {
+    if (!isBrowser()) {
+      return;
+    }
+    const session = this.storage.get();
+    if (!session || !this.isSessionValid(session)) {
+      return this.logout();
+    }
+    const response = await this.refreshToken({
+      token: session.refresh_token
+    });
+    await this.authenticateWithRefreshTokens(response.data.data);
+  }
+  /**
+  *
+  * Authenticate user with refresh token and
+  * Start silent refresh countdown.
+  *
+  **/
+  authenticateWithRefreshTokens(response) {
+    if (!isBrowser()) {
+      return;
+    }
+    const current_time = new Date().toISOString();
+    this.storage.set({
+      current_time,
+      refresh_token: response.refresh_token,
+      access_token_expires_in: response.expires_in
+    });
+    if (this.sessionInterval) {
+      return;
+    }
+    // Trigger a token refresh 10 seconds before the current access token expires.
+    this.sessionInterval = setInterval(() => {
+      console.log('######## @@@@ interval invoked.', '--->current_time', current_time, '--->now', new Date().toISOString());
+      this.silentLogin();
+    }, (response.expires_in - 10) * 1000);
+  }
+  /**
+  *
+  * Call API to get a new access token from valid refresh token.
+  *      Example:
+  *          await tensei.auth.refreshToken({ token: '6582ab8e9957f3d4e331a821823065c2cde0c32c8' })
+  *
+  **/
+  refreshToken(payload) {
+    return this.instance.get('auth' + '/refresh-token', {
+      headers: {
+        'x-tensei-refresh-token': payload.token
+      }
+    });
+  }
+  /**
+  *
+  * Check if a refresh token is still valid
+  *
+  **/
+  isSessionValid(session) {
+    const token_created_at = new Date(session.current_time);
+    token_created_at.setSeconds(token_created_at.getSeconds() + 240);
+    return token_created_at > new Date();
+  }
+  /**
+  *
+  * Logout a currently logged in customer.
+  *      Example:
+  *          await tensei.auth.logout()
+  *
+  **/
+  logout(payload = {}) {
+    if (this.sessionInterval) {
+      clearInterval(this.sessionInterval);
+    }
+  }
+  /**
+  *
+  * Register a customer.
+  *      Example:
+  *          await tensei.auth.register({
+  *              email: 'hey@tenseijs.com',
+  *              password: 'password'
+  *          })
+  **/
+  async register(payload) {
+    const response = await this.instance.post('auth/register', payload.object);
+    if (payload.skipAuthentication) {
+      return response;
+    }
+    this.authenticateWithRefreshTokens(response.data.data);
+    return response;
+  }
+  /**
+  *
+  * Request a password reset for a customer.
+  *      Example:
+  *          await tensei.auth.forgotPassword({
+  *              email: 'hey@tenseijs.com'
+  *          })
+  **/
+  forgotPassword(payload) {
+    return this.instance.post('auth/passwords/email', payload.object);
+  }
+  /**
+  *
+  * Reset a password for a customer using a password reset token.
+  *      Example:
+  *          await tensei.auth.resetPassword({
+  *              token: 'b8e9957f3d4e331a821823065c2cde0c32c8b54c',
+  *              password: 'new-password'
+  *          })
+  **/
+  resetPassword(payload) {
+    return this.instance.post('auth/passwords/reset', payload.object);
+  }
+}
+class PostAPI {
+  constructor(options, instance) {
+    this.options = options;
+    this.instance = instance;
+  }
+  /**
+  *
+  * Fetch a single post from the API.
+  *    Example:
+  *      await tensei.posts().find({ id })
+  *
+  **/
+  find(payload) {
+    return this.instance.get('api/' + 'posts/' + payload.id);
+  }
+  /**
+  *
+  * Fetch a paginated list of posts from the API.
+  *    Example:
+  *      await tensei.posts.findMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          sort: { id: SortQueryInput.ASC },
+  *          pagination: { per_page: 30, page: 1 },
+  *      })
+  *
+  **/
+  findMany(payload = {}) {
+    return this.instance.get('api/' + 'posts', {
+      params: {
+        populate: payload?.populate?.join?.(',') || [],
+        per_page: payload?.pagination?.per_page,
+        page: payload?.pagination?.page,
+        fields: payload?.fields?.join?.(',') || undefined,
+        where: payload?.where
+      }
+    });
+  }
+  /**
+  *
+  * Insert a single post.
+  *    Example:
+  *      await tensei.posts.insert({ object: {...} })
+  *
+  **/
+  insert(payload) {
+    return this.instance.post('api/' + 'posts', payload.object);
+  }
+  /**
+  *
+  * Insert multiple posts.
+  *    Example:
+  *      await tensei.posts.insertMany({ objects: [{...}, {...}] })
+  *
+  **/
+  insertMany(payload) {
+    return this.instance.post('api/' + 'posts/bulk', payload);
+  }
+  /**
+  *
+  * Update a single post.
+  *    Example:
+  *      await tensei.posts.update({ id: 1, object: {...} })
+  *
+  **/
+  update(payload) {
+    return this.instance.patch('api/' + 'posts/' + payload.id, payload.object);
+  }
+  /**
+  *
+  * Update multiple posts.
+  *    Example:
+  *      await tensei.posts.updateMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          object: {...},
+  *      })
+  *
+  **/
+  updateMany(payload) {
+    return this.instance.patch('api/' + 'posts/bulk', payload);
+  }
+  /**
+  *
+  * Delete single posts.
+  *    Example:
+  *      await tensei.posts.delete({
+  *          id: 1
+  *      })
+  *
+  **/
+  delete(payload) {
+    return this.instance.delete('api/' + 'posts' + payload.id);
+  }
+  /**
+  *
+  * Delete multiple posts.
+  *    Example:
+  *      await tensei.posts.deleteMany({
+  *          where: { id: { _in: [1, 2] } },
+  *      })
+  *
+  **/
+  deleteMany(payload) {
+    return this.instance.delete('api/' + 'posts', {
+      params: {
+        where: payload.where
+      }
+    });
+  }
+}
+class CategoryAPI {
+  constructor(options, instance) {
+    this.options = options;
+    this.instance = instance;
+  }
+  /**
+  *
+  * Fetch a single category from the API.
+  *    Example:
+  *      await tensei.categories().find({ id })
+  *
+  **/
+  find(payload) {
+    return this.instance.get('api/' + 'categories/' + payload.id);
+  }
+  /**
+  *
+  * Fetch a paginated list of categories from the API.
+  *    Example:
+  *      await tensei.categories.findMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          sort: { id: SortQueryInput.ASC },
+  *          pagination: { per_page: 30, page: 1 },
+  *      })
+  *
+  **/
+  findMany(payload = {}) {
+    return this.instance.get('api/' + 'categories', {
+      params: {
+        populate: payload?.populate?.join?.(',') || [],
+        per_page: payload?.pagination?.per_page,
+        page: payload?.pagination?.page,
+        fields: payload?.fields?.join?.(',') || undefined,
+        where: payload?.where
+      }
+    });
+  }
+  /**
+  *
+  * Insert a single category.
+  *    Example:
+  *      await tensei.categories.insert({ object: {...} })
+  *
+  **/
+  insert(payload) {
+    return this.instance.post('api/' + 'categories', payload.object);
+  }
+  /**
+  *
+  * Insert multiple categories.
+  *    Example:
+  *      await tensei.categories.insertMany({ objects: [{...}, {...}] })
+  *
+  **/
+  insertMany(payload) {
+    return this.instance.post('api/' + 'categories/bulk', payload);
+  }
+  /**
+  *
+  * Update a single category.
+  *    Example:
+  *      await tensei.categories.update({ id: 1, object: {...} })
+  *
+  **/
+  update(payload) {
+    return this.instance.patch('api/' + 'categories/' + payload.id, payload.object);
+  }
+  /**
+  *
+  * Update multiple categories.
+  *    Example:
+  *      await tensei.categories.updateMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          object: {...},
+  *      })
+  *
+  **/
+  updateMany(payload) {
+    return this.instance.patch('api/' + 'categories/bulk', payload);
+  }
+  /**
+  *
+  * Delete single categories.
+  *    Example:
+  *      await tensei.categories.delete({
+  *          id: 1
+  *      })
+  *
+  **/
+  delete(payload) {
+    return this.instance.delete('api/' + 'categories' + payload.id);
+  }
+  /**
+  *
+  * Delete multiple categories.
+  *    Example:
+  *      await tensei.categories.deleteMany({
+  *          where: { id: { _in: [1, 2] } },
+  *      })
+  *
+  **/
+  deleteMany(payload) {
+    return this.instance.delete('api/' + 'categories', {
+      params: {
+        where: payload.where
+      }
+    });
+  }
+}
+class CustomerAPI {
+  constructor(options, instance) {
+    this.options = options;
+    this.instance = instance;
+  }
+  /**
+  *
+  * Insert a single customer.
+  *    Example:
+  *      await tensei.customers.insert({ object: {...} })
+  *
+  **/
+  insert(payload) {
+    return this.instance.post('api/' + 'customers', payload.object);
+  }
+  /**
+  *
+  * Insert multiple customers.
+  *    Example:
+  *      await tensei.customers.insertMany({ objects: [{...}, {...}] })
+  *
+  **/
+  insertMany(payload) {
+    return this.instance.post('api/' + 'customers/bulk', payload);
+  }
+  /**
+  *
+  * Update a single customer.
+  *    Example:
+  *      await tensei.customers.update({ id: 1, object: {...} })
+  *
+  **/
+  update(payload) {
+    return this.instance.patch('api/' + 'customers/' + payload.id, payload.object);
+  }
+  /**
+  *
+  * Update multiple customers.
+  *    Example:
+  *      await tensei.customers.updateMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          object: {...},
+  *      })
+  *
+  **/
+  updateMany(payload) {
+    return this.instance.patch('api/' + 'customers/bulk', payload);
+  }
+}
+class RoleAPI {
+  constructor(options, instance) {
+    this.options = options;
+    this.instance = instance;
+  }
+  /**
+  *
+  * Fetch a single role from the API.
+  *    Example:
+  *      await tensei.roles().find({ id })
+  *
+  **/
+  find(payload) {
+    return this.instance.get('api/' + 'roles/' + payload.id);
+  }
+  /**
+  *
+  * Fetch a paginated list of roles from the API.
+  *    Example:
+  *      await tensei.roles.findMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          sort: { id: SortQueryInput.ASC },
+  *          pagination: { per_page: 30, page: 1 },
+  *      })
+  *
+  **/
+  findMany(payload = {}) {
+    return this.instance.get('api/' + 'roles', {
+      params: {
+        populate: payload?.populate?.join?.(',') || [],
+        per_page: payload?.pagination?.per_page,
+        page: payload?.pagination?.page,
+        fields: payload?.fields?.join?.(',') || undefined,
+        where: payload?.where
+      }
+    });
+  }
+  /**
+  *
+  * Insert a single role.
+  *    Example:
+  *      await tensei.roles.insert({ object: {...} })
+  *
+  **/
+  insert(payload) {
+    return this.instance.post('api/' + 'roles', payload.object);
+  }
+  /**
+  *
+  * Insert multiple roles.
+  *    Example:
+  *      await tensei.roles.insertMany({ objects: [{...}, {...}] })
+  *
+  **/
+  insertMany(payload) {
+    return this.instance.post('api/' + 'roles/bulk', payload);
+  }
+  /**
+  *
+  * Delete single roles.
+  *    Example:
+  *      await tensei.roles.delete({
+  *          id: 1
+  *      })
+  *
+  **/
+  delete(payload) {
+    return this.instance.delete('api/' + 'roles' + payload.id);
+  }
+  /**
+  *
+  * Delete multiple roles.
+  *    Example:
+  *      await tensei.roles.deleteMany({
+  *          where: { id: { _in: [1, 2] } },
+  *      })
+  *
+  **/
+  deleteMany(payload) {
+    return this.instance.delete('api/' + 'roles', {
+      params: {
+        where: payload.where
+      }
+    });
+  }
+}
+class PermissionAPI {
+  constructor(options, instance) {
+    this.options = options;
+    this.instance = instance;
+  }
+  /**
+  *
+  * Fetch a single permission from the API.
+  *    Example:
+  *      await tensei.permissions().find({ id })
+  *
+  **/
+  find(payload) {
+    return this.instance.get('api/' + 'permissions/' + payload.id);
+  }
+  /**
+  *
+  * Fetch a paginated list of permissions from the API.
+  *    Example:
+  *      await tensei.permissions.findMany({
+  *          where: { id: { _in: [1, 2] } },
+  *          sort: { id: SortQueryInput.ASC },
+  *          pagination: { per_page: 30, page: 1 },
+  *      })
+  *
+  **/
+  findMany(payload = {}) {
+    return this.instance.get('api/' + 'permissions', {
+      params: {
+        populate: payload?.populate?.join?.(',') || [],
+        per_page: payload?.pagination?.per_page,
+        page: payload?.pagination?.page,
+        fields: payload?.fields?.join?.(',') || undefined,
+        where: payload?.where
+      }
+    });
+  }
+  /**
+  *
+  * Insert a single permission.
+  *    Example:
+  *      await tensei.permissions.insert({ object: {...} })
+  *
+  **/
+  insert(payload) {
+    return this.instance.post('api/' + 'permissions', payload.object);
+  }
+  /**
+  *
+  * Insert multiple permissions.
+  *    Example:
+  *      await tensei.permissions.insertMany({ objects: [{...}, {...}] })
+  *
+  **/
+  insertMany(payload) {
+    return this.instance.post('api/' + 'permissions/bulk', payload);
+  }
+}

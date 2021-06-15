@@ -1,4 +1,5 @@
 require('dotenv').config()
+const cors = require('cors')
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
@@ -16,6 +17,8 @@ const {
     array,
     hasMany,
     belongsTo,
+    plugin,
+    boolean,
 } = require('@tensei/core')
 
 tensei()
@@ -24,18 +27,20 @@ tensei()
         resource('Post')
             .fields([
                 text('Title').rules('required'),
-                slug('Slug').from('Title'),
-                textarea('Description').rules('required', 'max:255'),
-                textarea('Content'),
-                dateTime('Published At').rules('required'),
-                belongsTo('Category'),
+                slug('Slug').creationRules('required', 'unique:slug').unique().from('Title'),
+                textarea('Description').creationRules('required', 'max:255'),
+                textarea('Content').nullable().rules('required'),
+                dateTime('Published At').creationRules('required'),
+                belongsTo('Category').alwaysLoad(),
                 array('Procedure')
                     .of('string')
-                    .rules('required', 'min:3', 'max:10'),
+                    .rules('min:3', 'max:10')
+                    .creationRules('required'),
                 array('Prices')
                     .nullable()
                     .of('decimal')
-                    .rules('required', 'max:10', 'min:2')
+                    .rules('max:10', 'min:2')
+                    .creationRules('required')
             ])
             .icon('library')
             .displayField('Title'),
@@ -43,7 +48,7 @@ tensei()
             .fields([
                 text('Name').notNullable().rules('required'),
                 textarea('Description'),
-                belongsTo('User').nullable(),
+                belongsTo('Customer').nullable(),
                 hasMany('Post')
             ])
             .displayField('Name')
@@ -51,15 +56,32 @@ tensei()
     .plugins([
         welcome(),
         cms().plugin(),
-        auth().rolesAndPermissions().refreshTokens()
+        auth()
+            .user('Customer')
+            .configureTokens({
+                accessTokenExpiresIn: 60,
+                refreshTokenExpiresIn: 240
+            })
+            .setup(({ user }) => {
+                user.fields([
+                    hasMany('Category'),
+                    boolean('Accepted Terms And Conditions').rules('required').default(false)
+                ])
+            })
+            .rolesAndPermissions().refreshTokens()
         // .cookieSessions()
         .plugin(),
         rest().plugin(),
         graphql().plugin(),
-        manda().plugin()
+        manda().plugin(),
+        plugin('Cors').register(({ app }) => {
+            app.use(cors())
+        })  
     ])
-    .databaseConfig({
+    .db({
         debug: true,
+        type: 'mongo',
+        dbName: 'example_bloggg'
     })
     .start()
     .catch(console.error)

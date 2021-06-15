@@ -41,6 +41,8 @@ import {
     AuthHookFunction
 } from './config'
 
+export * from './config'
+
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
 import { Request } from 'express'
@@ -52,8 +54,8 @@ type JwtPayload = {
 
 type AuthSetupFn = (resources: AuthResources) => any
 
-class Auth {
-    private config: AuthPluginConfig & {
+export class Auth {
+    public config: AuthPluginConfig & {
         setupFn: AuthSetupFn
     } = {
         prefix: '',
@@ -1228,7 +1230,7 @@ class Auth {
                 ? [
                       route('Refresh Token')
                           .path(this.getApiPath('refresh-token'))
-                          .post()
+                          .get()
                           .group('Auth')
                           .id(this.getRouteId(`refresh_token_${name}`))
                           .handle(
@@ -2345,14 +2347,32 @@ class Auth {
         return this.populateContextFromToken(token, ctx)
     }
 
+    private validateForgotPassword = async (payload: DataPayload) => {
+        try {
+            const { email }  = await validateAll(payload, {
+                email: 'required|email'
+            })
+
+            return [true, { email }]
+        } catch (errors) {
+            return [false, errors]
+        }
+    }
+
     protected forgotPassword = async ({
         body,
         manager,
         userInputError
     }: ApiContext) => {
-        const { email } = await validateAll(body.object ? body.object : body, {
-            email: 'required|email'
-        })
+        const [passed, payload] = await this.validateForgotPassword(body.object ? body.object : body)
+
+        if (! passed) {
+            throw userInputError('Validation failed.', {
+                errors: payload
+            })
+        }
+
+        const { email } = payload
 
         const existingUser: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,
@@ -2408,18 +2428,36 @@ class Auth {
         return true
     }
 
+    private validateResetPassword = async (payload: DataPayload) => {
+        try {
+            const { token, password } = await validateAll(
+                payload,
+                {
+                    token: 'required|string',
+                    password: 'required|string|min:8'
+                }
+            )
+
+            return [true, { token, password }]
+        } catch (errors) {
+            return [false, errors]
+        }
+    }
+
     protected resetPassword = async ({
         body,
         manager,
         userInputError
     }: ApiContext) => {
-        const { token, password } = await validateAll(
-            body.object ? body.object : body,
-            {
-                token: 'required|string',
-                password: 'required|string|min:8'
-            }
-        )
+        const [passed, payload] = await this.validateResetPassword(body.object ? body.object : body)
+
+        if (! passed) {
+            throw userInputError('Validation failed.', {
+                errors: payload
+            })
+        }
+
+        const { token, password } = payload
 
         let existingPasswordReset: any = await manager.findOne(
             this.resources.passwordReset.data.pascalCaseName,
@@ -2490,7 +2528,6 @@ class Auth {
             const payload = await validateAll(data, rules, {
                 'email.required': 'The email is required.',
                 'password.required': 'The password is required.',
-                'name.required': 'The name is required.'
             })
 
             return [true, payload]

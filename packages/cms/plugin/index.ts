@@ -88,10 +88,10 @@ class CmsPlugin {
             name: 'tensei.css',
             path: Path.resolve(__dirname, 'public', 'styles.css')
         },
-        {
-            name: 'main.css',
-            path: Path.resolve(__dirname, 'public', 'main.css')
-        }
+        // {
+        //     name: 'main.css',
+        //     path: Path.resolve(__dirname, 'public', 'main.css')
+        // }
     ]
 
     path(path: string) {
@@ -604,6 +604,8 @@ class CmsPlugin {
                 app.get(
                     `/${this.config.path}(/*)?`,
                     async (request, response) => {
+                        // @ts-ignore
+                        console.log('@@@@@@@@@@@', request.user)
                         response.send(
                             Mustache.render(indexFileContent, {
                                 styles: request.styles,
