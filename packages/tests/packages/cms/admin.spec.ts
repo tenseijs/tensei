@@ -20,6 +20,7 @@ test('can passwordlessly register a new administrator user', async () => {
             orm: { em }
         }
     } = await setup([cms().plugin(), setupFakeMailer(mailerMock)], false)
+    await em.nativeDelete('AdminUserSession', {})
 
     const client = (SupertestSession(app) as unknown) as SI<any>
 
@@ -48,6 +49,21 @@ test('can passwordlessly register a new administrator user', async () => {
 
     expect(loginResponse.status).toBe(302)
     expect(loginResponse.headers['location']).toBe('/cms')
+
+    const session = await em.find<{
+        data: string
+    }>('AdminUserSession', {})
+
+    const authUser = await em.findOne<{
+        id: string,
+        email: string
+    }>('AdminUser', {
+        email
+    })
+
+    const sessionData = JSON.parse(session[0].data)
+    
+    expect(sessionData?.user?.id?.toString()).toBe(authUser.id.toString())
 })
 
 test('cannot register another administrator if a super admin already exists', async () => {
