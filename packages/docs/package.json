@@ -1,6 +1,6 @@
 {
     "name": "@tensei/docs",
-    "version": "0.8.4",
+    "version": "0.8.5",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -14,7 +14,7 @@
         "test": "jest --verbose --runInBand --forceExit"
     },
     "dependencies": {
-        "@tensei/common": "^0.8.4",
+        "@tensei/common": "^0.8.5",
         "@types/swagger-ui-express": "^4.1.2",
         "swagger-ui-express": "^4.1.5"
     },
