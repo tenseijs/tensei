@@ -45,7 +45,8 @@ tensei()
     ])
     .plugins([
         welcome(),
-        cms().plugin(),
+        cms()
+        .plugin(),
         auth().rolesAndPermissions().refreshTokens()
         // .cookieSessions()
         .plugin(),
@@ -54,6 +55,7 @@ tensei()
     ])
     .databaseConfig({
         debug: true,
+        type: 'mongo'
     })
     .start()
     .catch(console.error)
