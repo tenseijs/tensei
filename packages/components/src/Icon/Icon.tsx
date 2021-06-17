@@ -32,7 +32,6 @@ const Icon: React.FC<IconProps> = ({
     height = 28,
     active = false
 }) => {
-    console.log('@@@@@@->', icon)
     const iconName = `${toPascalCase(icon)}Icon`
 
     const Icon =

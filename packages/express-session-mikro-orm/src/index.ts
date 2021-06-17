@@ -98,14 +98,16 @@ const StoreFactory = (Store: any, sessionConfig?: SessionConfig) => {
                 })
                 .then((session: any) => {
                     if (session) {
-                        this.orm.em.assign(session, {
+                        const updates = {
                             data: JSON.stringify(payload),
                             expires
-                        })
+                        }
 
-                        return this.orm.em
-                            .persistAndFlush(session)
-                            .then(() => session)
+                        this.orm.em.assign(session, updates)
+
+                        return this.orm.em.nativeUpdate(this.entityName, {
+                            session_id: session.session_id
+                        }, updates).then(() => session)
                     }
 
                     const newSession = this.orm.em.create(this.entityName, {
