@@ -39,12 +39,6 @@ export interface PostWhereQueryInput {
   _and?: PostWhereQueryInput[]
   _or?: PostWhereQueryInput[]
   _not?: PostWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  title?: StringWhereQueryInput
-  slug?: StringWhereQueryInput
-  published_at?: DateWhereQueryInput
 }
 
 export interface PostInsertInput {
@@ -76,6 +70,7 @@ export interface PostSortQueryInput {
 
 export type CategoryPopulateFields =
   | 'customer'
+  | 'customer.oauth_identities'
   | 'customer.roles'
   | 'customer.categories'
   | 'posts'
@@ -109,10 +104,6 @@ export interface CategoryWhereQueryInput {
   _and?: CategoryWhereQueryInput[]
   _or?: CategoryWhereQueryInput[]
   _not?: CategoryWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  name?: StringWhereQueryInput
 }
 
 export interface CategoryInsertInput {
@@ -153,12 +144,6 @@ export interface AdminUserWhereQueryInput {
   _and?: AdminUserWhereQueryInput[]
   _or?: AdminUserWhereQueryInput[]
   _not?: AdminUserWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  full_name?: StringWhereQueryInput
-  email?: StringWhereQueryInput
-  active?: StringWhereQueryInput
 }
 
 export interface AdminUserSortQueryInput {
@@ -189,12 +174,6 @@ export interface AdminRoleWhereQueryInput {
   _and?: AdminRoleWhereQueryInput[]
   _or?: AdminRoleWhereQueryInput[]
   _not?: AdminRoleWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  name?: StringWhereQueryInput
-  slug?: StringWhereQueryInput
-  description?: StringWhereQueryInput
 }
 
 export interface AdminRoleSortQueryInput {
@@ -223,12 +202,6 @@ export interface AdminTokenWhereQueryInput {
   _and?: AdminTokenWhereQueryInput[]
   _or?: AdminTokenWhereQueryInput[]
   _not?: AdminTokenWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  type?: StringWhereQueryInput
-  token?: StringWhereQueryInput
-  expires_at?: DateWhereQueryInput
 }
 
 export interface AdminTokenSortQueryInput {
@@ -254,11 +227,6 @@ export interface AdminPermissionWhereQueryInput {
   _and?: AdminPermissionWhereQueryInput[]
   _or?: AdminPermissionWhereQueryInput[]
   _not?: AdminPermissionWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  name?: StringWhereQueryInput
-  slug?: StringWhereQueryInput
 }
 
 export interface AdminPermissionSortQueryInput {
@@ -278,7 +246,12 @@ export interface Customer {
   email: string
   password: string
   blocked: boolean
+  oauth_identities: OauthIdentity['id'][]
   roles: Role['id'][]
+  two_factor_enabled: boolean
+  two_factor_secret: string
+  email_verified_at: DateString
+  email_verification_token: string
   categories: Category['id'][]
   accepted_terms_and_conditions: boolean
 }
@@ -287,15 +260,11 @@ export interface CustomerWhereQueryInput {
   _and?: CustomerWhereQueryInput[]
   _or?: CustomerWhereQueryInput[]
   _not?: CustomerWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  email?: StringWhereQueryInput
-  accepted_terms_and_conditions?: StringWhereQueryInput
 }
 
 export interface CustomerInsertInput {
   email?: string
+  two_factor_enabled?: boolean
   categories?: Category['id'][]
   accepted_terms_and_conditions: boolean
 }
@@ -303,6 +272,7 @@ export interface CustomerInsertInput {
 export interface CustomerUpdateInput {
   email?: string
   roles?: Role['id'][]
+  two_factor_enabled?: boolean
   categories?: Category['id'][]
   accepted_terms_and_conditions: boolean
 }
@@ -330,11 +300,6 @@ export interface PasswordResetWhereQueryInput {
   _and?: PasswordResetWhereQueryInput[]
   _or?: PasswordResetWhereQueryInput[]
   _not?: PasswordResetWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  email?: StringWhereQueryInput
-  expires_at?: DateWhereQueryInput
 }
 
 export interface PasswordResetSortQueryInput {
@@ -344,6 +309,7 @@ export interface PasswordResetSortQueryInput {
 
 export type RolePopulateFields =
   | 'customers'
+  | 'customers.oauth_identities'
   | 'customers.roles'
   | 'customers.categories'
   | 'permissions'
@@ -377,11 +343,6 @@ export interface RoleWhereQueryInput {
   _and?: RoleWhereQueryInput[]
   _or?: RoleWhereQueryInput[]
   _not?: RoleWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  name?: StringWhereQueryInput
-  slug?: StringWhereQueryInput
 }
 
 export interface RoleInsertInput {
@@ -427,11 +388,6 @@ export interface PermissionWhereQueryInput {
   _and?: PermissionWhereQueryInput[]
   _or?: PermissionWhereQueryInput[]
   _not?: PermissionWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  name?: StringWhereQueryInput
-  slug?: StringWhereQueryInput
 }
 
 export interface PermissionInsertInput {
@@ -467,16 +423,38 @@ export interface TokenWhereQueryInput {
   _and?: TokenWhereQueryInput[]
   _or?: TokenWhereQueryInput[]
   _not?: TokenWhereQueryInput
-  id?: IDWhereQueryInput
-  created_at?: DateWhereQueryInput
-  updated_at?: DateWhereQueryInput
-  name?: StringWhereQueryInput
-  type?: StringWhereQueryInput
-  last_used_at?: DateWhereQueryInput
-  compromised_at?: DateWhereQueryInput
 }
 
 export interface TokenSortQueryInput {
+  created_at: SortQueryInput
+  updated_at: SortQueryInput
+}
+
+/**
+ *
+ * Type definitions for the Oauth Identity resource.
+ *
+ **/
+export interface OauthIdentity {
+  id: string
+  created_at: DateString
+  updated_at: DateString
+  customer: Customer['id']
+  access_token: string
+  email: string
+  temporal_token: string
+  payload: string
+  provider: string
+  provider_user_id: string
+}
+
+export interface OauthIdentityWhereQueryInput {
+  _and?: OauthIdentityWhereQueryInput[]
+  _or?: OauthIdentityWhereQueryInput[]
+  _not?: OauthIdentityWhereQueryInput
+}
+
+export interface OauthIdentitySortQueryInput {
   created_at: SortQueryInput
   updated_at: SortQueryInput
 }

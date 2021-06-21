@@ -43,6 +43,7 @@ export interface LoginCustomerInput {
 
 export interface RegisterCustomerInput {
   email: string
+  two_factor_enabled: boolean
   categories: Tensei.Category['id'][]
   accepted_terms_and_conditions: boolean
   password: string
@@ -131,7 +132,7 @@ export class AuthAPI {
     skipAuthentication?: boolean
   }) {
     const response = await this.instance.post<DataResponse<AuthResponse>>(
-      'auth/login',
+      'api/login',
       payload.object
     )
 
@@ -152,7 +153,7 @@ export class AuthAPI {
          * 
          **
         me() {
-            return this.instance.get<DataResponse<AuthResponse>>('auth/me')
+            return this.instance.get<DataResponse<AuthResponse>>('api/me')
         }
 
         
@@ -244,7 +245,7 @@ export class AuthAPI {
    *
    **/
   refreshToken(payload: { token: string }) {
-    return this.instance.get('auth' + '/refresh-token', {
+    return this.instance.get('api' + '/refresh-token', {
       headers: {
         'x-tensei-refresh-token': payload.token,
       },
@@ -291,7 +292,7 @@ export class AuthAPI {
     skipAuthentication?: boolean
   }) {
     const response = await this.instance.post<DataResponse<AuthResponse>>(
-      'auth/register',
+      'api/register',
       payload.object
     )
 
@@ -316,7 +317,7 @@ export class AuthAPI {
    **/
   forgotPassword(payload: { object: ForgotPasswordInput }) {
     return this.instance.post<DataResponse<ForgotPasswordResponse>>(
-      'auth/passwords/email',
+      'api/passwords/email',
       payload.object
     )
   }
@@ -332,7 +333,7 @@ export class AuthAPI {
    **/
   resetPassword(payload: { object: ResetPasswordInput }) {
     return this.instance.post<DataResponse<ForgotPasswordResponse>>(
-      'auth/passwords/reset',
+      'api/passwords/reset',
       payload.object
     )
   }

@@ -5,6 +5,7 @@ const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { manda } = require('@tensei/manda')
 const { graphql } = require('@tensei/graphql')
+const { mde, markdown } = require('@tensei/mde')
 
 const {
     tensei,
@@ -28,7 +29,7 @@ tensei()
             .fields([
                 text('Title').rules('required'),
                 slug('Slug').creationRules('required', 'unique:slug').unique().from('Title'),
-                textarea('Description').creationRules('required', 'max:255'),
+                markdown('Description').creationRules('required', 'max:255'),
                 textarea('Content').nullable().rules('required'),
                 dateTime('Published At').creationRules('required'),
                 belongsTo('Category').alwaysLoad(),
@@ -51,6 +52,7 @@ tensei()
                 belongsTo('Customer').nullable(),
                 hasMany('Post')
             ])
+            .disableAutoFilters()
             .displayField('Name')
     ])
     .plugins([
@@ -58,6 +60,13 @@ tensei()
         cms().plugin(),
         auth()
             .user('Customer')
+            .verifyEmails()
+            .twoFactorAuth()
+            .social('google', {
+                key: '76952592334-85on1sgp53df4a1l8lm99n51lg71j7jr.apps.googleusercontent.com',
+                secret: 'JQWpDn95Mv1OnmlUZcR1i9ex',
+                clientCallback: 'http://localhost:1334/'
+            })
             .configureTokens({
                 accessTokenExpiresIn: 60,
                 refreshTokenExpiresIn: 240
@@ -76,12 +85,13 @@ tensei()
         manda().plugin(),
         plugin('Cors').register(({ app }) => {
             app.use(cors())
-        })  
+        }),
+        mde().plugin()
     ])
     .db({
         debug: true,
         type: 'mongo',
-        dbName: 'example_bloggg'
+        dbName: 'example_blogggg'
     })
     .start()
     .catch(console.error)

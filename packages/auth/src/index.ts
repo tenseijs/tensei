@@ -46,6 +46,7 @@ export * from './config'
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
 import { Request } from 'express'
+import { PluginContract } from '@tensei/common/plugins'
 
 type JwtPayload = {
     id: string
@@ -71,7 +72,7 @@ export class Auth {
         passwordResetResource: 'Password Reset',
         fields: [],
         separateSocialLoginAndRegister: false,
-        apiPath: 'auth',
+        apiPath: 'api',
         setupFn: () => this,
         beforeLogin: () => {},
         afterLogin: () => {},
@@ -136,6 +137,14 @@ export class Auth {
         this.resources.passwordReset = this.passwordResetResource()
 
         this.config.setupFn(this.resources)
+    }
+
+    private resolveApiPath(plugins: PluginContract[]) {
+        const restAPiPlugin = plugins.find(plugin => plugin.config.name === 'Rest API')
+
+        if (restAPiPlugin && restAPiPlugin.config.extra?.path && restAPiPlugin.config.extra?.path !== 'api') {
+            this.config.apiPath = restAPiPlugin.config.extra?.path
+        }
     }
 
     public setup(fn: AuthSetupFn) {
@@ -622,6 +631,8 @@ export class Auth {
 
             .boot(async config => {
                 this.refreshResources()
+
+                this.resolveApiPath(config.plugins)
 
                 if (this.config.twoFactorAuth) {
                     config.app.use((request, response, next) => {
@@ -1672,6 +1683,8 @@ export class Auth {
 
         await ctx.manager.persistAndFlush(token)
 
+        // TODO: Delete all refresh tokens older than a 24 hours. This will be custom and calculated in future.
+
         ctx.user = token[userField]
 
         return this.getUserPayload(
@@ -2037,12 +2050,14 @@ export class Auth {
             : body.access_token
 
         if (!access_token) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'access_token',
-                    message: 'Invalid access token provided.'
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'access_token',
+                        message: 'Invalid access token provided.'
+                    }
+                ]
+            })
         }
 
         let oauthIdentity: any = await manager.findOne(
@@ -2053,12 +2068,14 @@ export class Auth {
         )
 
         if (!oauthIdentity) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'access_token',
-                    message: 'Invalid access token provided.'
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'access_token',
+                        message: 'Invalid access token provided.'
+                    }
+                ]
+            })
         }
 
         const oauthPayload = JSON.parse(oauthIdentity.payload)
@@ -2075,12 +2092,14 @@ export class Auth {
             action === 'login' &&
             this.config.separateSocialLoginAndRegister
         ) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'email',
-                    message: 'Cannot find a user with these credentials.'
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'email',
+                        message: 'Cannot find a user with these credentials.'
+                    }
+                ]
+            })
         }
 
         if (
@@ -2088,14 +2107,16 @@ export class Auth {
             action === 'register' &&
             this.config.separateSocialLoginAndRegister
         ) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'email',
-                    message: `A ${this.resources.user.data.snakeCaseName.toLowerCase()} already exists with email ${
-                        oauthIdentity.email
-                    }.`
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'email',
+                        message: `A ${this.resources.user.data.snakeCaseName.toLowerCase()} already exists with email ${
+                            oauthIdentity.email
+                        }.`
+                    }
+                ]
+            })
         }
 
         if (
@@ -2108,9 +2129,7 @@ export class Auth {
             }
 
             if (this.config.verifyEmails) {
-                createPayload.email_verified_at = Dayjs().format(
-                    'YYYY-MM-DD HH:mm:ss'
-                )
+                createPayload.email_verified_at = new Date()
                 createPayload.email_verification_token = null
             }
 
