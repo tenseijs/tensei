@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { ChangeEventHandler } from 'react'
+import { ChangeEventHandler, KeyboardEventHandler } from 'react'
 
 export interface TextInputProps {
     id: string
@@ -15,6 +15,7 @@ export interface TextInputProps {
     addonAfter?: ReactNode
     inputClassName?: string
     onChange?: ChangeEventHandler<HTMLInputElement>
+    onKeyDown?: KeyboardEventHandler<HTMLInputElement>
 }
 
 const TextInput: React.FC<TextInputProps> = ({
@@ -24,6 +25,7 @@ const TextInput: React.FC<TextInputProps> = ({
     error,
     value,
     onChange,
+    onKeyDown,
     roundedFull,
     placeholder,
     hiddenLabel,
@@ -53,6 +55,7 @@ const TextInput: React.FC<TextInputProps> = ({
                 type={type}
                 value={value}
                 onChange={onChange}
+                onKeyDown={onKeyDown}
                 placeholder={placeholder}
                 className={`${
                     roundedFull ? 'rounded-full' : 'rounded-md'
