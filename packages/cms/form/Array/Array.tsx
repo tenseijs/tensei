@@ -98,9 +98,7 @@ const FormArray: React.FC<FormComponentProps> = ({
                         placeholder={`Add a new ${field.name.toLowerCase()}`}
                         value={newItem}
                         onChange={event => setNewItem(event.target.value)}
-                        onKeyDown = {(
-                            event: KeyboardEvent<HTMLInputElement>
-                            ) =>{{
+                        onKeyDown = {(event) =>{{
                             if(event.keyCode === 13 && newItem !== "") {
                                 onListItemAdded()
                             }
