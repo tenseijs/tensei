@@ -113,6 +113,7 @@ export interface FormComponentProps {
     error: string | undefined
     resource: ResourceContract
     onChange: (value: any) => void
+    onKeyDown?: (event: any) => void
 }
 
 export interface IndexComponentProps {
