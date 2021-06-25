@@ -27,6 +27,10 @@ import {
 } from './populate-helpers'
 import { DataPayload } from '@tensei/common'
 
+import { generateResourceInterfaces } from './sdk/generators/interfaces'
+import { generateFetchWrapperForResources } from './sdk/generators/rest'
+import { formatContent } from './sdk/generators/helpers'
+
 const indexFileContent = Fs.readFileSync(
     Path.resolve(__dirname, 'docs', 'index.mustache')
 ).toString()
@@ -975,7 +979,9 @@ class Rest {
             .extra({
                 path: this.path
             })
-            .register(({ app, resources, extendRoutes }) => {
+            .register(config => {
+                const { app, resources, extendRoutes } = config
+
                 app.use(responseEnhancer())
 
                 app.get('/rest-docs.css', (request, response) =>
@@ -1037,8 +1043,27 @@ class Rest {
                         ])
                     )
                 )
+
+                extendRoutes([
+                    route('Fetch SDK Types')
+                        .path('sdk/types')
+                        .handle(async (request, response) => {
+                            return response.json(
+                                (
+                                    await Promise.all([
+                                        generateResourceInterfaces(config),
+                                        generateFetchWrapperForResources(config)
+                                    ])
+                                )
+                                    .map(type => formatContent(type))
+                                    .join('\n')
+                            )
+                        })
+                ])
             })
-            .boot(({ app, name, routes, extendEvents, serverUrl }) => {
+            .boot(config => {
+                const { app, name, routes, extendEvents, serverUrl } = config
+
                 app.get('/rest/routes', (request, response) =>
                     response.json(
                         routes.map(route => ({
@@ -1055,14 +1080,6 @@ class Rest {
                         })
                     )
                 )
-
-                extendEvents([
-                    event('tensei::listening').listen(({ ctx }) => {
-                        ctx.logger.info(
-                            `🧘🏽 Access your rest api documentation on ${serverUrl}/rest-docs`
-                        )
-                    })
-                ])
             })
     }
 }

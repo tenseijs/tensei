@@ -6,3 +6,4 @@ storage/
 mikrotensei
 .next
 tensei
+db.sqlite

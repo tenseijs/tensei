@@ -303,7 +303,7 @@ export class AuthAPI {
 		})
 	}
 
-	isSessionValid(session: AccessTokenStorageValue) {
+	private isSessionValid(session: AccessTokenStorageValue) {
 		const token_expires_at = new Date(session.access_token_expires_at)
 
 		return token_expires_at > new Date()
@@ -370,12 +370,16 @@ export class AuthAPI {
 		const response = await this.instance.post('emails/verification/confirm', payload.object)
 
 		this.updateUser(response.data.data)
+
+		return response
 	}
 
 	async enableTwoFactor() {
 		const response = await this.instance.post('two-factor/enable')
 
 		this.updateUser(response.data.data)
+
+		return response
 	}
 
 	private updateUser(user: any) {
@@ -390,12 +394,14 @@ export class AuthAPI {
 		this.invokeAuthChange()
 	}
 
-	async confirmTwoFactor(payload: { object: any }) {
+	async confirmEnableTwoFactor(payload: { object: any }) {
 		const response = await this.instance.post('two-factor/confirm', {
 			token: payload?.object?.token,
 		})
 
 		this.updateUser(response.data.data)
+
+		return response
 	}
 
 	async disableTwoFactor(payload: { object: any }) {
@@ -404,6 +410,8 @@ export class AuthAPI {
 		})
 
 		this.updateUser(response.data.data)
+
+		return response
 	}
 
 	socialRedirectUrl(provider: string) {

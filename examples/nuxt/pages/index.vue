@@ -16,6 +16,10 @@
 </template>
 
 <script>
+    import { sdk } from '@tensei/sdk'
+
+    const tensei = sdk()
+
     export default {
         async asyncData(ctx) {
             return {
@@ -23,9 +27,12 @@
             }
         },
         mounted() {
-            if (this.user) {
-                fetch('/auth/me')
-            }
+            tensei.auth().lis
+           tensei.auth().login({
+               object: {
+
+               }
+           })
         },
         methods: {
             logout() {

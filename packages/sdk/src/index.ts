@@ -88,3 +88,5 @@ export class Sdk extends BaseSdk {
 		})
 	}
 }
+
+export const sdk = (options?: SdkOptions) => new Sdk(options)

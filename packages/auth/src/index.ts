@@ -2021,9 +2021,7 @@ export class Auth {
         const { manager, body, user } = ctx
         if (
             user.email_verification_token ===
-            (body.object
-                ? body.object.email_verification_token
-                : body.email_verification_token)
+            (body.object ? body.object.token : body.token)
         ) {
             manager.assign(user, {
                 email_verification_token: null,

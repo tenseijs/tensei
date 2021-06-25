@@ -2,7 +2,6 @@ require('dotenv').config()
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
-const { manda } = require('@tensei/manda')
 const { graphql } = require('@tensei/graphql')
 const { mde, markdown } = require('@tensei/mde')
 
@@ -79,13 +78,12 @@ tensei()
         .plugin(),
         rest().plugin(),
         graphql().plugin(),
-        manda().plugin(),
         cors(),
         mde().plugin()
     ])
     .db({
-        type: 'mongo',
-        dbName: 'example_auth_parcel'
+        type: 'sqlite',
+        dbName: 'db.sqlite'
     })
     .start()
     .catch(console.error)
