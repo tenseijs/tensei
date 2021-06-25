@@ -28,3 +28,5 @@ jobs:
         run: cd /home/runner/work/tensei/tensei/packages/express-session-mikro-orm && yarn test
       - name: Run @tensei/mail package tests
         run: cd /home/runner/work/tensei/tensei/packages/mail && yarn test
+      - name: Run @tensei/sdk package tests
+        run: cd /home/runner/work/tensei/tensei/packages/sdk && yarn test

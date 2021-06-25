@@ -1,4 +1,5 @@
 import { AxiosInstance } from 'axios'
+import { SdkOptions } from './config';
 
 export interface LoginCustomerInput {
 	email: string
@@ -35,9 +36,10 @@ export interface TokenStorageValue {
 }
 
 export interface AccessTokenStorageValue {
-	access_token_expires_in: number
+	access_token_expires_at: string
 	access_token: string
 	current_time: string
+	expires_in: number
 }
 
 export interface DataResponse<Response> {
@@ -100,32 +102,67 @@ export class AuthAPI {
 
 	private auth_response?: AuthResponse
 
-	private on_refresh?: (response: AuthResponse) => void
+	private on_auth_update?: (response?: AuthResponse) => void
 
-	constructor(public instance: AxiosInstance) {
+	constructor(public instance: AxiosInstance, public options?: SdkOptions) {
 		this.storage = new LocalStorageStore('___tensei__session___')
 
 		this.loadExistingSession()
 	}
 
 	private async loadExistingSession() {
-		this.silentLogin()
+		if (this.usesRefreshTokens()) {
+			this.silentLogin()
+		}
+
+		if (this.usesAccessTokens()) {
+			await this.me()
+		}
+	}
+
+	public async me() {
+		const session = this.storage.get<AccessTokenStorageValue>()
+
+		if (!session || !this.isSessionValid(session)) {
+			this.logout()
+
+			return null
+		}
+
+		let response
+
+		try {
+			response = await this.instance.get('me', {
+				headers: {
+					Authorization: `Bearer ${session.access_token}`
+				}
+			})
+		} catch (errors) {
+			this.logout()
+
+			throw errors
+		}
+
+		this.auth_response = {
+			access_token: session.access_token,
+			expires_in: session.expires_in,
+		} as any
+
+		this.updateUser(response.data.data)
+
+		this.setAuthorizationHeader()
+
+		return this.auth_response
+	}
+
+	private getUserKey() {
+		return 'user'
 	}
 
 	session() {
 		return this.auth_response
 	}
 
-	/**
-	 *
-	 * Login an existing customer.
-	 *      Example:
-	 *          await tensei.auth().login({
-	 *              email: 'hey@tenseijs.com',
-	 *              password: 'password'
-	 *          })
-	 *
-	 **/
 	async login(payload: { object: LoginCustomerInput; skipAuthentication?: boolean }) {
 		const response = await this.instance.post<DataResponse<AuthResponse>>(
 			'login',
@@ -134,6 +171,8 @@ export class AuthAPI {
 
 		this.auth_response = response.data.data
 
+		this.invokeAuthChange()
+
 		if (payload.skipAuthentication) {
 			return response
 		}
@@ -141,38 +180,19 @@ export class AuthAPI {
 		this.setAuthorizationHeader()
 
 		this.authenticateWithRefreshTokens()
-		this.authenticateWithAcessTokens()
+		this.authenticateWithAccessTokens()
 
 		return response
 	}
 
 	private usesRefreshTokens() {
-		if (this.auth_response?.refresh_token && this.auth_response?.access_token) {
-			return true
-		}
+		return this.options?.refreshTokens
 	}
 
 	private usesAccessTokens() {
-		return this.auth_response?.access_token && ! this.auth_response?.refresh_token
+		return ! this.options?.refreshTokens
 	}
 
-	/**
-           * 
-           * Fetch the authenticated customer details.
-           * 
-           **
-          me() {
-              return this.instance.get<DataResponse<AuthResponse>>('auth/me')
-          }
-  
-          
-          /**
-           * 
-           * Silently get a new access token for an existing customer session.
-           *      Example:
-           *          await tensei.auth().silentLogin()
-           *
-           **/
 	async silentLogin() {
 		if (!isBrowser()) {
 			return
@@ -180,7 +200,7 @@ export class AuthAPI {
 
 		const session = this.storage.get<TokenStorageValue>()
 
-		if (!session || !this.isSessionValid(session)) {
+		if (!session || !this.isRefreshSessionValid(session)) {
 			return this.logout()
 		}
  
@@ -188,26 +208,23 @@ export class AuthAPI {
 			const response = await this.refreshToken({ token: session.refresh_token })
 
 			this.auth_response = response.data.data
+			this.invokeAuthChange()
 
 			this.authenticateWithRefreshTokens()
-
-			if (this.on_refresh && this.auth_response) {
-				this.on_refresh(this.auth_response)
-			}
+			this.authenticateWithAccessTokens()
 		} catch (errors) {
 			this.logout()
 		}
 	}
 
-	/**
-	 *
-	 * Register event listener to be called after token is refreshed.
-	 *      Example:
-	 *          tensei.auth().onRefresh(() => {})
-	 *
-	 **/
-	onRefresh(fn: (auth: AuthResponse) => void) {
-		this.on_refresh = fn
+	listen(fn: (auth?: AuthResponse) => void) {
+		this.on_auth_update = fn
+	}
+
+	private invokeAuthChange() {
+		if (this.on_auth_update) {
+			this.on_auth_update(this.auth_response)
+		}
 	}
 
 	private setAuthorizationHeader() {
@@ -216,39 +233,38 @@ export class AuthAPI {
 		}
 	}
 
-	private authenticateWithAcessTokens() {
+	private authenticateWithAccessTokens() {
 		this.setAuthorizationHeader()
 
 		if (!isBrowser()) {
 			return
 		}
 
-		// if access tokens are not turned on on the API:
-		if (! this.auth_response?.access_token) {
+		if (! this.usesAccessTokens()) {
 			return
 		}
 
-		// if refresh tokens are turned on on the API:
-		if (this.auth_response?.refresh_token) {
+		if (! this.auth_response) {
 			return
 		}
 
-		const current_time = new Date().toISOString()
+		const token_expires_at = new Date()
+
+		token_expires_at.setSeconds(token_expires_at.getSeconds() + this.auth_response.expires_in)
 
 		this.storage.set<AccessTokenStorageValue>({
-			current_time,
+			current_time: new Date().toISOString(),
+			expires_in: this.auth_response.expires_in,
 			access_token: this.auth_response.access_token,
-			access_token_expires_in: this.auth_response.expires_in,
+			access_token_expires_at: token_expires_at.toISOString(),
 		})
 	}
 
-	/**
-	 *
-	 * Authenticate user with refresh token and
-	 * Start silent refresh countdown.
-	 *
-	 **/
 	private authenticateWithRefreshTokens() {
+		if (! this.usesRefreshTokens()) {
+			return
+		}
+
 		this.setAuthorizationHeader()
 
 		if (!isBrowser()) {
@@ -278,13 +294,6 @@ export class AuthAPI {
 		}, (this.auth_response.expires_in - 10) * 1000)
 	}
 
-	/**
-	 *
-	 * Call API to get a new access token from valid refresh token.
-	 *      Example:
-	 *          await tensei.auth().refreshToken({ token: '6582ab8e9957f3d4e331a821823065c2cde0c32c8' })
-	 *
-	 **/
 	refreshToken(payload: { token: string }) {
 		return this.instance.get('refresh-token', {
 			headers: {
@@ -293,26 +302,20 @@ export class AuthAPI {
 		})
 	}
 
-	/**
-	 *
-	 * Check if a refresh token is still valid
-	 *
-	 **/
-	isSessionValid(session: TokenStorageValue|AccessTokenStorageValue) {
+	isSessionValid(session: AccessTokenStorageValue) {
+		const token_expires_at = new Date(session.access_token_expires_at)
+
+		return token_expires_at > new Date()
+	}
+
+	isRefreshSessionValid(session: TokenStorageValue) {
 		const token_created_at = new Date(session.current_time)
 
-		token_created_at.setSeconds(token_created_at.getSeconds() + 240)
+		token_created_at.setSeconds(token_created_at.getSeconds() + session.access_token_expires_in)
 
 		return token_created_at > new Date()
 	}
 
-	/**
-	 *
-	 * Logout a currently logged in customer.
-	 *      Example:
-	 *          await tensei.auth().logout()
-	 *
-	 **/
 	logout() {
 		if (this.session_interval) {
 			clearInterval(this.session_interval)
@@ -322,18 +325,12 @@ export class AuthAPI {
 			this.storage.clear()
 		}
 
+		this.auth_response = undefined
+		this.invokeAuthChange()
+
 		this.instance.defaults.headers.common['Authorization'] = undefined
 	}
 
-	/**
-	 *
-	 * Register a customer.
-	 *      Example:
-	 *          await tensei.auth().register({
-	 *              email: 'hey@tenseijs.com',
-	 *              password: 'password'
-	 *          })
-	 **/
 	async register(payload: { object: any; skipAuthentication?: boolean }) {
 		const response = await this.instance.post<DataResponse<AuthResponse>>(
 			'register',
@@ -341,24 +338,18 @@ export class AuthAPI {
 		)
 
 		this.auth_response = response.data.data
+		this.invokeAuthChange()
 
 		if (payload.skipAuthentication) {
 			return response
 		}
 
 		this.authenticateWithRefreshTokens()
+		this.authenticateWithAccessTokens()
 
 		return response
 	}
 
-	/**
-	 *
-	 * Request a password reset for a customer.
-	 *      Example:
-	 *          await tensei.auth().forgotPassword({
-	 *              email: 'hey@tenseijs.com'
-	 *          })
-	 **/
 	forgotPassword(payload: { object: ForgotPasswordInput }) {
 		return this.instance.post<DataResponse<ForgotPasswordResponse>>(
 			'passwords/email',
@@ -366,40 +357,55 @@ export class AuthAPI {
 		)
 	}
 
-	/**
-	 *
-	 * Reset a password for a customer using a password reset token.
-	 *      Example:
-	 *          await tensei.auth().resetPassword({
-	 *              token: 'b8e9957f3d4e331a821823065c2cde0c32c8b54c',
-	 *              password: 'new-password'
-	 *          })
-	 **/
 	resetPassword(payload: { object: ResetPasswordInput }) {
-		return this.instance.post<DataResponse<ForgotPasswordResponse>>(
+		return this.instance.post(
 			'passwords/reset',
 			payload.object
 		)
 	}
 
-	resendVerificationEmail() {
+	async resendVerificationEmail() {
 		return this.instance.post('emails/verification/resend')
 	}
 
-	confirmEmail(payload: { object: any }) {
-		return this.instance.post('emails/verification/confirm', payload.object)
+	async confirmEmail(payload: { object: any }) {
+		const response = await this.instance.post('emails/verification/confirm', payload.object)
+
+		this.updateUser(response.data.data)
 	}
 
-	enableTwoFactor() {
-		return this.instance.post('two-factor/enable')
+	async enableTwoFactor() {
+		const response = await this.instance.post('two-factor/enable')
+
+		this.updateUser(response.data.data)
 	}
 
-	confirmTwoFactor() {
-		return this.instance.post('two-factor/confirm')
+	private updateUser(user: any) {
+		if (! this.auth_response) {
+			return
+		}
+
+		const key = this.getUserKey()
+
+		;(this.auth_response as any)[key] = user[key] ? user[key] : user
+
+		this.invokeAuthChange()
 	}
 
-	disableTwoFactor() {
-		return this.instance.post('two-factor/disable')
+	async confirmTwoFactor(payload: { object: any }) {
+		const response = await this.instance.post('two-factor/confirm', {
+			token: payload?.object?.token
+		})
+
+		this.updateUser(response.data.data)
+	}
+
+	async disableTwoFactor(payload: { object: any }) {
+		const response = await this.instance.post('two-factor/disable', {
+			token: payload?.object?.token
+		})
+
+		this.updateUser(response.data.data)
 	}
 
 	socialRedirectUrl(provider: string) {
@@ -415,6 +421,7 @@ export class AuthAPI {
 		)
 
 		this.auth_response = response.data.data
+		this.invokeAuthChange()
 
 		if (payload.skipAuthentication) {
 			return response
@@ -423,6 +430,7 @@ export class AuthAPI {
 		this.setAuthorizationHeader()
 
 		this.authenticateWithRefreshTokens()
+		this.authenticateWithAccessTokens()
 
 		return response
 	}
@@ -436,8 +444,9 @@ export class AuthAPI {
 	}
 
 	private getSocialPayload(payload: any) {
-		if (! payload) {
+		if (! payload?.object) {
 			return {
+				...(payload || {}),
 				object: {
 					access_token: getUrlParameter('access_token')
 				},

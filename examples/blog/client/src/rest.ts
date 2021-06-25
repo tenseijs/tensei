@@ -13,9 +13,7 @@ export class Sdk {
   private instance: AxiosInstance
   public posts: PostAPI
   public categories: CategoryAPI
-  public customers: CustomerAPI
-  public roles: RoleAPI
-  public permissions: PermissionAPI
+  public users: UserAPI
 
   public auth: AuthAPI
 
@@ -30,18 +28,16 @@ export class Sdk {
     this.auth = new AuthAPI(this.instance)
     this.posts = new PostAPI(this.options, this.instance)
     this.categories = new CategoryAPI(this.options, this.instance)
-    this.customers = new CustomerAPI(this.options, this.instance)
-    this.roles = new RoleAPI(this.options, this.instance)
-    this.permissions = new PermissionAPI(this.options, this.instance)
+    this.users = new UserAPI(this.options, this.instance)
   }
 }
 
-export interface LoginCustomerInput {
+export interface LoginUserInput {
   email: string
   password: string
 }
 
-export interface RegisterCustomerInput {
+export interface RegisterUserInput {
   email: string
   two_factor_enabled: boolean
   categories: Tensei.Category['id'][]
@@ -76,10 +72,9 @@ export interface DataResponse<Response> {
 }
 
 export interface AuthResponse {
-  customer: Tensei.Customer
+  user: Tensei.User
   access_token: string
   expires_in: number
-  refresh_token: string
 }
 
 export type ResetPasswordResponse = true
@@ -119,7 +114,7 @@ export class AuthAPI {
 
   /**
    *
-   * Login an existing customer.
+   * Login an existing user.
    *      Example:
    *          await tensei.auth.login({
    *              email: 'hey@tenseijs.com',
@@ -128,7 +123,7 @@ export class AuthAPI {
    *
    **/
   async login(payload: {
-    object: LoginCustomerInput
+    object: LoginUserInput
     skipAuthentication?: boolean
   }) {
     const response = await this.instance.post<DataResponse<AuthResponse>>(
@@ -142,14 +137,12 @@ export class AuthAPI {
       return response
     }
 
-    this.authenticateWithRefreshTokens(response.data.data)
-
     return response
   }
 
   /**
          * 
-         * Fetch the authenticated customer details.
+         * Fetch the authenticated user details.
          * 
          **
         me() {
@@ -157,121 +150,14 @@ export class AuthAPI {
         }
 
         
+
         /**
          * 
-         * Silently get a new access token for an existing customer session.
+         * Logout a currently logged in user.
          *      Example:
-         *          await tensei.auth.silentLogin()
+         *          await tensei.auth.logout()
          *
          **/
-  async silentLogin() {
-    if (!isBrowser()) {
-      return
-    }
-
-    const session = this.storage.get<TokenStorageValue>()
-
-    if (!session || !this.isSessionValid(session)) {
-      return this.logout()
-    }
-
-    try {
-      const response = await this.refreshToken({ token: session.refresh_token })
-
-      this.auth_response = response.data.data
-
-      await this.authenticateWithRefreshTokens(response.data.data)
-
-      if (this.on_refresh) {
-        this.on_refresh(this.auth_response)
-      }
-    } catch (errors) {
-      this.logout()
-    }
-  }
-
-  /**
-   *
-   * Register event listener to be called after token is refreshed.
-   *      Example:
-   *          tensei.auth.onRefresh(() => {})
-   *
-   **/
-  onRefresh(fn: (auth: AuthResponse) => void) {
-    this.on_refresh = fn
-  }
-
-  /**
-   *
-   * Authenticate user with refresh token and
-   * Start silent refresh countdown.
-   *
-   **/
-  private authenticateWithRefreshTokens(response: AuthResponse) {
-    if (!isBrowser()) {
-      return
-    }
-
-    const current_time = new Date().toISOString()
-
-    this.storage.set<TokenStorageValue>({
-      current_time,
-      refresh_token: response.refresh_token,
-      access_token_expires_in: response.expires_in,
-    })
-
-    if (this.session_interval) {
-      return
-    }
-
-    // Trigger a token refresh 10 seconds before the current access token expires.
-    this.session_interval = setInterval(() => {
-      console.log(
-        '######## @@@@ interval invoked.',
-        '--->current_time',
-        current_time,
-        '--->now',
-        new Date().toISOString()
-      )
-      this.silentLogin()
-    }, (response.expires_in - 10) * 1000)
-  }
-
-  /**
-   *
-   * Call API to get a new access token from valid refresh token.
-   *      Example:
-   *          await tensei.auth.refreshToken({ token: '6582ab8e9957f3d4e331a821823065c2cde0c32c8' })
-   *
-   **/
-  refreshToken(payload: { token: string }) {
-    return this.instance.get('api' + '/refresh-token', {
-      headers: {
-        'x-tensei-refresh-token': payload.token,
-      },
-    })
-  }
-
-  /**
-   *
-   * Check if a refresh token is still valid
-   *
-   **/
-  isSessionValid(session: TokenStorageValue) {
-    const token_created_at = new Date(session.current_time)
-
-    token_created_at.setSeconds(token_created_at.getSeconds() + 240)
-
-    return token_created_at > new Date()
-  }
-
-  /**
-   *
-   * Logout a currently logged in customer.
-   *      Example:
-   *          await tensei.auth.logout()
-   *
-   **/
   logout(payload: { skipAuthentication?: boolean } = {}) {
     if (this.session_interval) {
       clearInterval(this.session_interval)
@@ -280,7 +166,7 @@ export class AuthAPI {
 
   /**
    *
-   * Register a customer.
+   * Register a user.
    *      Example:
    *          await tensei.auth.register({
    *              email: 'hey@tenseijs.com',
@@ -288,7 +174,7 @@ export class AuthAPI {
    *          })
    **/
   async register(payload: {
-    object: RegisterCustomerInput
+    object: RegisterUserInput
     skipAuthentication?: boolean
   }) {
     const response = await this.instance.post<DataResponse<AuthResponse>>(
@@ -302,14 +188,12 @@ export class AuthAPI {
       return response
     }
 
-    this.authenticateWithRefreshTokens(response.data.data)
-
     return response
   }
 
   /**
    *
-   * Request a password reset for a customer.
+   * Request a password reset for a user.
    *      Example:
    *          await tensei.auth.forgotPassword({
    *              email: 'hey@tenseijs.com'
@@ -324,7 +208,7 @@ export class AuthAPI {
 
   /**
    *
-   * Reset a password for a customer using a password reset token.
+   * Reset a password for a user using a password reset token.
    *      Example:
    *          await tensei.auth.resetPassword({
    *              token: 'b8e9957f3d4e331a821823065c2cde0c32c8b54c',
@@ -638,268 +522,67 @@ export class CategoryAPI {
   }
 }
 
-export class CustomerAPI {
+export class UserAPI {
   constructor(private options: SdkOptions, private instance: AxiosInstance) {}
 
   /**
    *
-   * Insert a single customer.
+   * Insert a single user.
    *    Example:
-   *      await tensei.customers.insert({ object: {...} })
+   *      await tensei.users.insert({ object: {...} })
    *
    **/
-  insert(payload: { object: Tensei.CustomerInsertInput }) {
-    return this.instance.post<Tensei.FindResponse<Tensei.Customer>>(
-      'api/' + 'customers',
+  insert(payload: { object: Tensei.UserInsertInput }) {
+    return this.instance.post<Tensei.FindResponse<Tensei.User>>(
+      'api/' + 'users',
       payload.object
     )
   }
 
   /**
    *
-   * Insert multiple customers.
+   * Insert multiple users.
    *    Example:
-   *      await tensei.customers.insertMany({ objects: [{...}, {...}] })
+   *      await tensei.users.insertMany({ objects: [{...}, {...}] })
    *
    **/
-  insertMany(payload: { objects: Tensei.CustomerInsertInput[] }) {
-    return this.instance.post<Tensei.FindResponse<Tensei.Customer[]>>(
-      'api/' + 'customers/bulk',
+  insertMany(payload: { objects: Tensei.UserInsertInput[] }) {
+    return this.instance.post<Tensei.FindResponse<Tensei.User[]>>(
+      'api/' + 'users/bulk',
       payload
     )
   }
 
   /**
    *
-   * Update a single customer.
+   * Update a single user.
    *    Example:
-   *      await tensei.customers.update({ id: 1, object: {...} })
+   *      await tensei.users.update({ id: 1, object: {...} })
    *
    **/
-  update(payload: {
-    id: Tensei.Customer['id']
-    object: Tensei.CustomerUpdateInput
-  }) {
-    return this.instance.patch<Tensei.FindResponse<Tensei.Customer>>(
-      'api/' + 'customers/' + payload.id,
+  update(payload: { id: Tensei.User['id']; object: Tensei.UserUpdateInput }) {
+    return this.instance.patch<Tensei.FindResponse<Tensei.User>>(
+      'api/' + 'users/' + payload.id,
       payload.object
     )
   }
 
   /**
    *
-   * Update multiple customers.
+   * Update multiple users.
    *    Example:
-   *      await tensei.customers.updateMany({
+   *      await tensei.users.updateMany({
    *          where: { id: { _in: [1, 2] } },
    *          object: {...},
    *      })
    *
    **/
   updateMany(payload: {
-    object: Tensei.CustomerUpdateInput
-    where: Tensei.CustomerWhereQueryInput
+    object: Tensei.UserUpdateInput
+    where: Tensei.UserWhereQueryInput
   }) {
-    return this.instance.patch('api/' + 'customers/bulk', payload) as Promise<
-      Tensei.FindResponse<Tensei.Customer[]>
+    return this.instance.patch('api/' + 'users/bulk', payload) as Promise<
+      Tensei.FindResponse<Tensei.User[]>
     >
-  }
-}
-
-export class RoleAPI {
-  constructor(private options: SdkOptions, private instance: AxiosInstance) {}
-
-  /**
-   *
-   * Fetch a single role from the API.
-   *    Example:
-   *      await tensei.roles().find({ id })
-   *
-   **/
-  find(payload: {
-    id: Tensei.Role['id']
-    select?: Tensei.RoleSelectFields[]
-    populate?: Tensei.RolePopulateFields[]
-  }) {
-    return this.instance.get<Tensei.FindResponse<Tensei.Role>>(
-      'api/' + 'roles/' + payload.id
-    )
-  }
-
-  /**
-   *
-   * Fetch a paginated list of roles from the API.
-   *    Example:
-   *      await tensei.roles.findMany({
-   *          where: { id: { _in: [1, 2] } },
-   *          sort: { id: SortQueryInput.ASC },
-   *          pagination: { per_page: 30, page: 1 },
-   *      })
-   *
-   **/
-  findMany(
-    payload: {
-      where?: Tensei.RoleWhereQueryInput
-      sort?: Tensei.RoleSortQueryInput
-      pagination?: Tensei.PaginationOptions
-      fields?: Tensei.RoleSelectFields[]
-      populate?: Tensei.RolePopulateFields[]
-    } = {}
-  ) {
-    return this.instance.get<Tensei.PaginatedResponse<Tensei.Role>>(
-      'api/' + 'roles',
-      {
-        params: {
-          populate: payload?.populate?.join(',') || [],
-          per_page: payload?.pagination?.per_page,
-          page: payload?.pagination?.page,
-          fields: payload?.fields?.join(',') || undefined,
-          where: payload?.where,
-        },
-      }
-    )
-  }
-
-  /**
-   *
-   * Insert a single role.
-   *    Example:
-   *      await tensei.roles.insert({ object: {...} })
-   *
-   **/
-  insert(payload: { object: Tensei.RoleInsertInput }) {
-    return this.instance.post<Tensei.FindResponse<Tensei.Role>>(
-      'api/' + 'roles',
-      payload.object
-    )
-  }
-
-  /**
-   *
-   * Insert multiple roles.
-   *    Example:
-   *      await tensei.roles.insertMany({ objects: [{...}, {...}] })
-   *
-   **/
-  insertMany(payload: { objects: Tensei.RoleInsertInput[] }) {
-    return this.instance.post<Tensei.FindResponse<Tensei.Role[]>>(
-      'api/' + 'roles/bulk',
-      payload
-    )
-  }
-
-  /**
-   *
-   * Delete single roles.
-   *    Example:
-   *      await tensei.roles.delete({
-   *          id: 1
-   *      })
-   *
-   **/
-  delete(payload: { id: Tensei.Role['id'] }) {
-    return this.instance.delete('api/' + 'roles' + payload.id) as Promise<
-      Tensei.FindResponse<Tensei.Role>
-    >
-  }
-
-  /**
-   *
-   * Delete multiple roles.
-   *    Example:
-   *      await tensei.roles.deleteMany({
-   *          where: { id: { _in: [1, 2] } },
-   *      })
-   *
-   **/
-  deleteMany(payload: { where: Tensei.RoleWhereQueryInput }) {
-    return this.instance.delete('api/' + 'roles', {
-      params: {
-        where: payload.where,
-      },
-    }) as Promise<Tensei.FindResponse<Tensei.Role[]>>
-  }
-}
-
-export class PermissionAPI {
-  constructor(private options: SdkOptions, private instance: AxiosInstance) {}
-
-  /**
-   *
-   * Fetch a single permission from the API.
-   *    Example:
-   *      await tensei.permissions().find({ id })
-   *
-   **/
-  find(payload: {
-    id: Tensei.Permission['id']
-    select?: Tensei.PermissionSelectFields[]
-    populate?: Tensei.PermissionPopulateFields[]
-  }) {
-    return this.instance.get<Tensei.FindResponse<Tensei.Permission>>(
-      'api/' + 'permissions/' + payload.id
-    )
-  }
-
-  /**
-   *
-   * Fetch a paginated list of permissions from the API.
-   *    Example:
-   *      await tensei.permissions.findMany({
-   *          where: { id: { _in: [1, 2] } },
-   *          sort: { id: SortQueryInput.ASC },
-   *          pagination: { per_page: 30, page: 1 },
-   *      })
-   *
-   **/
-  findMany(
-    payload: {
-      where?: Tensei.PermissionWhereQueryInput
-      sort?: Tensei.PermissionSortQueryInput
-      pagination?: Tensei.PaginationOptions
-      fields?: Tensei.PermissionSelectFields[]
-      populate?: Tensei.PermissionPopulateFields[]
-    } = {}
-  ) {
-    return this.instance.get<Tensei.PaginatedResponse<Tensei.Permission>>(
-      'api/' + 'permissions',
-      {
-        params: {
-          populate: payload?.populate?.join(',') || [],
-          per_page: payload?.pagination?.per_page,
-          page: payload?.pagination?.page,
-          fields: payload?.fields?.join(',') || undefined,
-          where: payload?.where,
-        },
-      }
-    )
-  }
-
-  /**
-   *
-   * Insert a single permission.
-   *    Example:
-   *      await tensei.permissions.insert({ object: {...} })
-   *
-   **/
-  insert(payload: { object: Tensei.PermissionInsertInput }) {
-    return this.instance.post<Tensei.FindResponse<Tensei.Permission>>(
-      'api/' + 'permissions',
-      payload.object
-    )
-  }
-
-  /**
-   *
-   * Insert multiple permissions.
-   *    Example:
-   *      await tensei.permissions.insertMany({ objects: [{...}, {...}] })
-   *
-   **/
-  insertMany(payload: { objects: Tensei.PermissionInsertInput[] }) {
-    return this.instance.post<Tensei.FindResponse<Tensei.Permission[]>>(
-      'api/' + 'permissions/bulk',
-      payload
-    )
   }
 }

@@ -2,7 +2,9 @@ const Csurf = require('csurf')
 const PathToRegex = require('path-to-regexp')
 
 const Middleware = Csurf({
-    cookie: true
+    cookie: {
+        key: 'xsrf-token'
+    }
 })
 
 const _nextWithoutCheck = (_next) => (error) =>
@@ -16,7 +18,7 @@ const createCsurfToken = () => (
     const _middleware = Middleware(request, response, _nextWithoutCheck(next))
 
     response.cookie('x-csrf-token', request.csrfToken(), {
-        secure: false
+        secure: process.env.NODE_ENV === 'production'
     })
 
     return _middleware

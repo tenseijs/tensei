@@ -1,16 +1,11 @@
 import 'proxy-polyfill'
 
-import Axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+import Axios, { AxiosInstance } from 'axios'
 
 import { AuthAPI } from './auth'
+import { SdkOptions } from './config'
 
 let dashed = (s: string) => s.replace(/[A-Z]/g, '-$&').toLowerCase()
-
-export interface SdkOptions {
-	url?: string
-	axiosInstance?: AxiosInstance
-	axiosRequestConfig?: Omit<AxiosRequestConfig, 'baseURL'>
-}
 
 class BaseSdk {
 	private authInstance: AuthAPI
@@ -28,7 +23,8 @@ class BaseSdk {
 				baseURL: this.options?.url || 'http://localhost:8810/api',
 				...(options?.axiosRequestConfig || {}),
 			})
-		this.authInstance = new AuthAPI(this.instance)
+		this.authInstance = new AuthAPI(this.instance, this.options)
+		this.instance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 	}
 }
 

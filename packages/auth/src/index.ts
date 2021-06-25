@@ -86,7 +86,7 @@ export class Auth {
             refreshTokenExpiresIn: 60 * 60 * 24 * 30 * 6 // 6 months
         },
         cookieOptions: {
-            secure: false
+            secure: process.env.NODE_ENV === 'production',
         },
         refreshTokenHeaderName: 'x-tensei-refresh-token',
         twoFactorAuth: false,
@@ -1065,11 +1065,16 @@ export class Auth {
                           )
                           .authorize(({ user }) => user && !user.public)
                           .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.TwoFactorAuth.enableTwoFactorAuth(
-                                      request as any
-                                  )
-                              )
+                              {
+                                  const { dataURL, user } = await this.TwoFactorAuth.enableTwoFactorAuth(
+                                    request as any
+                                )
+                            
+                                response.formatter.ok({
+                                    dataURL,
+                                    [this.resources.user.data.snakeCaseName]: user
+                                })
+                              }
                           ),
                       route(`Confirm Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/confirm'))
@@ -1088,12 +1093,13 @@ export class Auth {
                               `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
                           )
                           .authorize(({ user }) => user && !user.public)
-                          .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
-                                      request as any
-                                  )
-                              )
+                          .handle(async (request, response) =>{
+                              const user = await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
+                                request as any
+                            )
+                              response.formatter.ok({
+                                    [this.resources.user.data.snakeCaseName]: user
+                              })}
                           ),
                       route(`Disable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/disable'))
@@ -1114,11 +1120,16 @@ export class Auth {
                           .authorize(({ user }) => user && !user.public)
                           .authorize(({ user }) => !!user)
                           .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.TwoFactorAuth.disableTwoFactorAuth(
-                                      request as any
-                                  )
-                              )
+                              {
+                                  const user = await this.TwoFactorAuth.disableTwoFactorAuth(
+                                    request as any
+                                )
+                                response.formatter.ok(
+                                    {
+                                        [this.resources.user.data.snakeCaseName]: user
+                                    }
+                                )
+                              }
                           )
                   ]
                 : []),
@@ -1270,16 +1281,7 @@ export class Auth {
                 ? [
                       route('Get CSRF Token')
                           .path(this.getApiPath('csrf'))
-                          .handle(async (request, response) => {
-                              response.cookie(
-                                  'XSRF-TOKEN',
-                                  // @ts-ignore
-                                  request.csrfToken(),
-                                  this.config.cookieOptions
-                              )
-
-                              return response.formatter.noContent([])
-                          })
+                          .handle(async (request, { formatter: { noContent } }) => noContent([]))
                   ]
                 : [])
         ]

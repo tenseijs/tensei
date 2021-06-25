@@ -1,5 +1,4 @@
 require('dotenv').config()
-const cors = require('cors')
 const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
@@ -10,6 +9,7 @@ const { mde, markdown } = require('@tensei/mde')
 const {
     tensei,
     welcome,
+    cors,
     resource,
     text,
     textarea,
@@ -18,7 +18,6 @@ const {
     array,
     hasMany,
     belongsTo,
-    plugin,
     boolean,
 } = require('@tensei/core')
 
@@ -49,7 +48,7 @@ tensei()
             .fields([
                 text('Name').notNullable().rules('required'),
                 textarea('Description'),
-                belongsTo('Customer').nullable(),
+                belongsTo('User').nullable(),
                 hasMany('Post')
             ])
             .disableAutoFilters()
@@ -59,13 +58,12 @@ tensei()
         welcome(),
         cms().plugin(),
         auth()
-            .user('Customer')
             .verifyEmails()
             .twoFactorAuth()
             .social('google', {
-                key: '76952592334-85on1sgp53df4a1l8lm99n51lg71j7jr.apps.googleusercontent.com',
-                secret: 'JQWpDn95Mv1OnmlUZcR1i9ex',
-                clientCallback: 'http://localhost:1334/'
+                key: process.env.GOOGLE_KEY,
+                secret: process.env.GOOGLE_SECRET,
+                clientCallback: 'http://localhost:1234/'
             })
             .configureTokens({
                 accessTokenExpiresIn: 60,
@@ -77,21 +75,17 @@ tensei()
                     boolean('Accepted Terms And Conditions').rules('required').default(false)
                 ])
             })
-            .rolesAndPermissions().refreshTokens()
-        // .cookieSessions()
+            // .refreshTokens()
         .plugin(),
         rest().plugin(),
         graphql().plugin(),
         manda().plugin(),
-        plugin('Cors').register(({ app }) => {
-            app.use(cors())
-        }),
+        cors(),
         mde().plugin()
     ])
     .db({
-        debug: true,
         type: 'mongo',
-        dbName: 'example_blogggg'
+        dbName: 'example_auth_parcel'
     })
     .start()
     .catch(console.error)
