@@ -4,7 +4,7 @@ import { FieldContract, ResourceContract } from '@tensei/common'
 export const resolveFieldTypescriptType = (
 	field: FieldContract,
 	resources: ResourceContract[],
-    namespaced = false
+	namespaced = false
 ) => {
 	if (
 		['integer', 'bigInteger', 'int', 'number', 'float', 'double'].includes(field.property.type!)

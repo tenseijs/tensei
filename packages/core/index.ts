@@ -11,16 +11,17 @@ export const welcome = () =>
         )
     })
 
-export const cors = (baseOptions?: Cors.CorsOptions) => plugin('Cors').boot(({ app, clientUrl }) => {
-    const options: Cors.CorsOptions = {
-        ...(baseOptions || {}),
-    }
+export const cors = (baseOptions?: Cors.CorsOptions) =>
+    plugin('Cors').boot(({ app, clientUrl }) => {
+        const options: Cors.CorsOptions = {
+            ...(baseOptions || {})
+        }
 
-    if (clientUrl && ! options.origin) {
-        options.origin = clientUrl
-    }
+        if (clientUrl && !options.origin) {
+            options.origin = clientUrl
+        }
 
-    app.use(Cors(options))
-})
+        app.use(Cors(options))
+    })
 
 export * from '@tensei/common'

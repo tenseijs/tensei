@@ -87,7 +87,7 @@ class CmsPlugin {
         {
             name: 'tensei.css',
             path: Path.resolve(__dirname, 'public', 'styles.css')
-        },
+        }
         // {
         //     name: 'main.css',
         //     path: Path.resolve(__dirname, 'public', 'main.css')

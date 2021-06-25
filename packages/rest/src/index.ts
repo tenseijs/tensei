@@ -362,12 +362,17 @@ class Rest {
                                         .length !== results.length
                                 ) {
                                     throw userInputError('Validation failed.', {
-                                        errors: results.map(([passed, payload], index) => [passed, payload, index]).filter(([passed]) => ! passed).map(
-                                            ([, errors, index]) => ({
+                                        errors: results
+                                            .map(([passed, payload], index) => [
+                                                passed,
+                                                payload,
+                                                index
+                                            ])
+                                            .filter(([passed]) => !passed)
+                                            .map(([, errors, index]) => ({
                                                 errors,
                                                 index
-                                            })
-                                        )
+                                            }))
                                     })
                                 }
 
@@ -758,12 +763,17 @@ class Rest {
                                         .length !== results.length
                                 ) {
                                     throw userInputError('Validation failed.', {
-                                        errors: results.map(([passed, payload], index) => [passed, payload, index]).filter(([passed]) => ! passed).map(
-                                            ([, errors, index]) => ({
+                                        errors: results
+                                            .map(([passed, payload], index) => [
+                                                passed,
+                                                payload,
+                                                index
+                                            ])
+                                            .filter(([passed]) => !passed)
+                                            .map(([, errors, index]) => ({
                                                 errors,
                                                 index
-                                            })
-                                        )
+                                            }))
                                     })
                                 }
 

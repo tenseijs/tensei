@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios'
-import { SdkOptions } from './config';
+import { SdkOptions } from './config'
 
 export interface LoginCustomerInput {
 	email: string
@@ -25,7 +25,7 @@ export interface ResetPasswordInput {
 export interface TokenStorage {
 	name: string
 	set<T>(value: T): void
-	get<T>(): T|null
+	get<T>(): T | null
 	clear: () => void
 }
 
@@ -57,10 +57,10 @@ export type ResetPasswordResponse = true
 export type ForgotPasswordResponse = true
 
 function getUrlParameter(name: string) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    var results = regex.exec(location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]')
+	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)')
+	var results = regex.exec(location.search)
+	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
 }
 
 export class LocalStorageStore implements TokenStorage {
@@ -88,11 +88,15 @@ function isBrowser() {
 }
 
 function getLocation(href: string) {
-    var match = href.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)([\/]{0,1}[^?#]*)(\?[^#]*|)(#.*|)$/);
-    return match && {
-        protocol: match[1],
-        host: match[2],
-    }
+	var match = href.match(
+		/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)([\/]{0,1}[^?#]*)(\?[^#]*|)(#.*|)$/
+	)
+	return (
+		match && {
+			protocol: match[1],
+			host: match[2],
+		}
+	)
 }
 
 export class AuthAPI {
@@ -134,8 +138,8 @@ export class AuthAPI {
 		try {
 			response = await this.instance.get('me', {
 				headers: {
-					Authorization: `Bearer ${session.access_token}`
-				}
+					Authorization: `Bearer ${session.access_token}`,
+				},
 			})
 		} catch (errors) {
 			this.logout()
@@ -164,10 +168,7 @@ export class AuthAPI {
 	}
 
 	async login(payload: { object: LoginCustomerInput; skipAuthentication?: boolean }) {
-		const response = await this.instance.post<DataResponse<AuthResponse>>(
-			'login',
-			payload.object
-		)
+		const response = await this.instance.post<DataResponse<AuthResponse>>('login', payload.object)
 
 		this.auth_response = response.data.data
 
@@ -190,7 +191,7 @@ export class AuthAPI {
 	}
 
 	private usesAccessTokens() {
-		return ! this.options?.refreshTokens
+		return !this.options?.refreshTokens
 	}
 
 	async silentLogin() {
@@ -203,7 +204,7 @@ export class AuthAPI {
 		if (!session || !this.isRefreshSessionValid(session)) {
 			return this.logout()
 		}
- 
+
 		try {
 			const response = await this.refreshToken({ token: session.refresh_token })
 
@@ -229,7 +230,7 @@ export class AuthAPI {
 
 	private setAuthorizationHeader() {
 		this.instance.defaults.headers.common = {
-			'Authorization': `Bearer ${this.auth_response?.access_token}`
+			Authorization: `Bearer ${this.auth_response?.access_token}`,
 		}
 	}
 
@@ -240,11 +241,11 @@ export class AuthAPI {
 			return
 		}
 
-		if (! this.usesAccessTokens()) {
+		if (!this.usesAccessTokens()) {
 			return
 		}
 
-		if (! this.auth_response) {
+		if (!this.auth_response) {
 			return
 		}
 
@@ -261,7 +262,7 @@ export class AuthAPI {
 	}
 
 	private authenticateWithRefreshTokens() {
-		if (! this.usesRefreshTokens()) {
+		if (!this.usesRefreshTokens()) {
 			return
 		}
 
@@ -272,7 +273,7 @@ export class AuthAPI {
 		}
 
 		// if refresh tokens are not turned on on the API:
-		if (! this.auth_response?.refresh_token || ! this.auth_response?.access_token) {
+		if (!this.auth_response?.refresh_token || !this.auth_response?.access_token) {
 			return
 		}
 
@@ -358,10 +359,7 @@ export class AuthAPI {
 	}
 
 	resetPassword(payload: { object: ResetPasswordInput }) {
-		return this.instance.post(
-			'passwords/reset',
-			payload.object
-		)
+		return this.instance.post('passwords/reset', payload.object)
 	}
 
 	async resendVerificationEmail() {
@@ -381,7 +379,7 @@ export class AuthAPI {
 	}
 
 	private updateUser(user: any) {
-		if (! this.auth_response) {
+		if (!this.auth_response) {
 			return
 		}
 
@@ -394,7 +392,7 @@ export class AuthAPI {
 
 	async confirmTwoFactor(payload: { object: any }) {
 		const response = await this.instance.post('two-factor/confirm', {
-			token: payload?.object?.token
+			token: payload?.object?.token,
 		})
 
 		this.updateUser(response.data.data)
@@ -402,7 +400,7 @@ export class AuthAPI {
 
 	async disableTwoFactor(payload: { object: any }) {
 		const response = await this.instance.post('two-factor/disable', {
-			token: payload?.object?.token
+			token: payload?.object?.token,
 		})
 
 		this.updateUser(response.data.data)
@@ -415,10 +413,7 @@ export class AuthAPI {
 	}
 
 	private async handleSocial(type: string, payload: any) {
-		const response = await this.instance.post(
-			`social/${type}`,
-			payload.object
-		)
+		const response = await this.instance.post(`social/${type}`, payload.object)
 
 		this.auth_response = response.data.data
 		this.invokeAuthChange()
@@ -444,11 +439,11 @@ export class AuthAPI {
 	}
 
 	private getSocialPayload(payload: any) {
-		if (! payload?.object) {
+		if (!payload?.object) {
 			return {
 				...(payload || {}),
 				object: {
-					access_token: getUrlParameter('access_token')
+					access_token: getUrlParameter('access_token'),
 				},
 			}
 		}

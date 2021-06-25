@@ -1,4 +1,4 @@
 module.exports = {
-    testRegex: '(/.*\\.spec)\\.(ts|tsx)$',
-    testEnvironment: 'jsdom'
+	testRegex: '(/.*\\.spec)\\.(ts|tsx)$',
+	testEnvironment: 'jsdom',
 }

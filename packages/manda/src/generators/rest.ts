@@ -7,7 +7,7 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
 		return ``
 	}
 
-    const apiPrefix = `${path}/`
+	const apiPrefix = `${path}/`
 
 	return `
         export class ${resource.data.pascalCaseName}API {
@@ -30,10 +30,8 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
                 populate?: Tensei.${resource.data.pascalCaseName}PopulateFields[],
             }) {
                 return this.instance.get<Tensei.FindResponse<Tensei.${
-                    resource.data.pascalCaseName
-              }>>('${apiPrefix}' + '${
-									resource.data.slugPlural
-								}/' + payload.id)
+									resource.data.pascalCaseName
+								}>>('${apiPrefix}' + '${resource.data.slugPlural}/' + payload.id)
             }
 
             /**
@@ -54,9 +52,9 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
                 fields?: Tensei.${resource.data.pascalCaseName}SelectFields[],
                 populate?: Tensei.${resource.data.pascalCaseName}PopulateFields[]
             } = {}) {
-                return this.instance.get<Tensei.PaginatedResponse<Tensei.${resource.data.pascalCaseName}>>('${apiPrefix}' + '${
-									resource.data.slugPlural
-								}', {
+                return this.instance.get<Tensei.PaginatedResponse<Tensei.${
+									resource.data.pascalCaseName
+								}>>('${apiPrefix}' + '${resource.data.slugPlural}', {
                                     params: {
                                         populate: payload?.populate?.join(',') || [],
                                         per_page: payload?.pagination?.per_page,
@@ -84,10 +82,8 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
                 object: Tensei.${resource.data.pascalCaseName}InsertInput
             }) {
                 return this.instance.post<Tensei.FindResponse<Tensei.${
-                    resource.data.pascalCaseName
-              }>>('${apiPrefix}' + '${
-									resource.data.slugPlural
-								}', payload.object)
+									resource.data.pascalCaseName
+								}>>('${apiPrefix}' + '${resource.data.slugPlural}', payload.object)
             }
 
             /**
@@ -103,10 +99,8 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
                 objects: Tensei.${resource.data.pascalCaseName}InsertInput[]
             }) {
                 return this.instance.post<Tensei.FindResponse<Tensei.${
-                    resource.data.pascalCaseName
-              }[]>>('${apiPrefix}' + '${
-									resource.data.slugPlural
-								}/bulk', payload)
+									resource.data.pascalCaseName
+								}[]>>('${apiPrefix}' + '${resource.data.slugPlural}/bulk', payload)
             }
             `
 						}
@@ -129,10 +123,8 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
                 object: Tensei.${resource.data.pascalCaseName}UpdateInput
             }) {
                 return this.instance.patch<Tensei.FindResponse<Tensei.${
-                    resource.data.pascalCaseName
-              }>>('${apiPrefix}' + '${
-									resource.data.slugPlural
-								}/' + payload.id, payload.object)
+									resource.data.pascalCaseName
+								}>>('${apiPrefix}' + '${resource.data.slugPlural}/' + payload.id, payload.object)
             }
 
             /**
@@ -150,8 +142,8 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
                 where: Tensei.${resource.data.pascalCaseName}WhereQueryInput
             }) {
                 return this.instance.patch('${apiPrefix}' + '${
-									resource.data.slugPlural
-								}/bulk', payload) as Promise<Tensei.FindResponse<Tensei.${
+										resource.data.slugPlural
+								  }/bulk', payload) as Promise<Tensei.FindResponse<Tensei.${
 										resource.data.pascalCaseName
 								  }[]>>
             }
@@ -201,10 +193,8 @@ const generateApiClassForResource = (resource: ResourceContract, path: string) =
     `
 }
 
-
-
 const generateAPIClient = (resources: ResourceContract[], plugins: PluginContract[]) => {
-    const authPlugin = plugins.find(plugin => plugin.config.name === 'Auth')
+	const authPlugin = plugins.find((plugin) => plugin.config.name === 'Auth')
 
 	return `
     export interface SdkOptions {
@@ -254,15 +244,15 @@ const generateImports = () => {
 }
 
 export const generateFetchWrapperForResources = (config: PluginSetupConfig) => {
-    const { resources, plugins } = config
+	const { resources, plugins } = config
 
-    const restPlugin = plugins.find(plugin => plugin.config.name === 'Rest API')
+	const restPlugin = plugins.find((plugin) => plugin.config.name === 'Rest API')
 
-    if (! restPlugin) {
-        return ``
-    }
+	if (!restPlugin) {
+		return ``
+	}
 
-    const path = restPlugin.config.extra?.path || 'api'
+	const path = restPlugin.config.extra?.path || 'api'
 
 	return (
 		[generateImports(), generateAPIClient(resources, plugins), generateAuthApi(config)]

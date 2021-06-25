@@ -86,7 +86,7 @@ export class Auth {
             refreshTokenExpiresIn: 60 * 60 * 24 * 30 * 6 // 6 months
         },
         cookieOptions: {
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.NODE_ENV === 'production'
         },
         refreshTokenHeaderName: 'x-tensei-refresh-token',
         twoFactorAuth: false,
@@ -140,9 +140,15 @@ export class Auth {
     }
 
     private resolveApiPath(plugins: PluginContract[]) {
-        const restAPiPlugin = plugins.find(plugin => plugin.config.name === 'Rest API')
+        const restAPiPlugin = plugins.find(
+            plugin => plugin.config.name === 'Rest API'
+        )
 
-        if (restAPiPlugin && restAPiPlugin.config.extra?.path && restAPiPlugin.config.extra?.path !== 'api') {
+        if (
+            restAPiPlugin &&
+            restAPiPlugin.config.extra?.path &&
+            restAPiPlugin.config.extra?.path !== 'api'
+        ) {
             this.config.apiPath = restAPiPlugin.config.extra?.path
         }
     }
@@ -1064,18 +1070,19 @@ export class Auth {
                               `Enable two factor authentication for an existing ${name}.`
                           )
                           .authorize(({ user }) => user && !user.public)
-                          .handle(async (request, response) =>
-                              {
-                                  const { dataURL, user } = await this.TwoFactorAuth.enableTwoFactorAuth(
-                                    request as any
-                                )
-                            
-                                response.formatter.ok({
-                                    dataURL,
-                                    [this.resources.user.data.snakeCaseName]: user
-                                })
-                              }
-                          ),
+                          .handle(async (request, response) => {
+                              const {
+                                  dataURL,
+                                  user
+                              } = await this.TwoFactorAuth.enableTwoFactorAuth(
+                                  request as any
+                              )
+
+                              response.formatter.ok({
+                                  dataURL,
+                                  [this.resources.user.data.snakeCaseName]: user
+                              })
+                          }),
                       route(`Confirm Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/confirm'))
                           .post()
@@ -1093,14 +1100,14 @@ export class Auth {
                               `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
                           )
                           .authorize(({ user }) => user && !user.public)
-                          .handle(async (request, response) =>{
+                          .handle(async (request, response) => {
                               const user = await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
-                                request as any
-                            )
+                                  request as any
+                              )
                               response.formatter.ok({
-                                    [this.resources.user.data.snakeCaseName]: user
-                              })}
-                          ),
+                                  [this.resources.user.data.snakeCaseName]: user
+                              })
+                          }),
                       route(`Disable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/disable'))
                           .post()
@@ -1119,18 +1126,14 @@ export class Auth {
                           )
                           .authorize(({ user }) => user && !user.public)
                           .authorize(({ user }) => !!user)
-                          .handle(async (request, response) =>
-                              {
-                                  const user = await this.TwoFactorAuth.disableTwoFactorAuth(
-                                    request as any
-                                )
-                                response.formatter.ok(
-                                    {
-                                        [this.resources.user.data.snakeCaseName]: user
-                                    }
-                                )
-                              }
-                          )
+                          .handle(async (request, response) => {
+                              const user = await this.TwoFactorAuth.disableTwoFactorAuth(
+                                  request as any
+                              )
+                              response.formatter.ok({
+                                  [this.resources.user.data.snakeCaseName]: user
+                              })
+                          })
                   ]
                 : []),
             route(`Get authenticated ${name}`)
@@ -1281,7 +1284,10 @@ export class Auth {
                 ? [
                       route('Get CSRF Token')
                           .path(this.getApiPath('csrf'))
-                          .handle(async (request, { formatter: { noContent } }) => noContent([]))
+                          .handle(
+                              async (request, { formatter: { noContent } }) =>
+                                  noContent([])
+                          )
                   ]
                 : [])
         ]
@@ -2370,7 +2376,7 @@ export class Auth {
 
     private validateForgotPassword = async (payload: DataPayload) => {
         try {
-            const { email }  = await validateAll(payload, {
+            const { email } = await validateAll(payload, {
                 email: 'required|email'
             })
 
@@ -2385,9 +2391,11 @@ export class Auth {
         manager,
         userInputError
     }: ApiContext) => {
-        const [passed, payload] = await this.validateForgotPassword(body.object ? body.object : body)
+        const [passed, payload] = await this.validateForgotPassword(
+            body.object ? body.object : body
+        )
 
-        if (! passed) {
+        if (!passed) {
             throw userInputError('Validation failed.', {
                 errors: payload
             })
@@ -2451,13 +2459,10 @@ export class Auth {
 
     private validateResetPassword = async (payload: DataPayload) => {
         try {
-            const { token, password } = await validateAll(
-                payload,
-                {
-                    token: 'required|string',
-                    password: 'required|string|min:8'
-                }
-            )
+            const { token, password } = await validateAll(payload, {
+                token: 'required|string',
+                password: 'required|string|min:8'
+            })
 
             return [true, { token, password }]
         } catch (errors) {
@@ -2470,9 +2475,11 @@ export class Auth {
         manager,
         userInputError
     }: ApiContext) => {
-        const [passed, payload] = await this.validateResetPassword(body.object ? body.object : body)
+        const [passed, payload] = await this.validateResetPassword(
+            body.object ? body.object : body
+        )
 
-        if (! passed) {
+        if (!passed) {
             throw userInputError('Validation failed.', {
                 errors: payload
             })
@@ -2548,7 +2555,7 @@ export class Auth {
         try {
             const payload = await validateAll(data, rules, {
                 'email.required': 'The email is required.',
-                'password.required': 'The password is required.',
+                'password.required': 'The password is required.'
             })
 
             return [true, payload]

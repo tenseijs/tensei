@@ -1,10 +1,13 @@
 import { AuthPluginConfig } from '@tensei/auth'
-import { PluginSetupConfig, ResourceContract } from "@tensei/common"
+import { PluginSetupConfig, ResourceContract } from '@tensei/common'
 
 import { resolveFieldTypescriptType } from './helpers'
 
-export const getAuthUserResponseInterface = (userResource: ResourceContract, authConfig: AuthPluginConfig) => {
-    return `
+export const getAuthUserResponseInterface = (
+	userResource: ResourceContract,
+	authConfig: AuthPluginConfig
+) => {
+	return `
     export interface DataResponse<Response> {
         data: Response
     }
@@ -13,7 +16,7 @@ export const getAuthUserResponseInterface = (userResource: ResourceContract, aut
         ${userResource.data.snakeCaseName}: Tensei.${userResource.data.pascalCaseName}
         ${authConfig.httpOnlyCookiesAuth ? '' : 'access_token: string'}
         ${authConfig.httpOnlyCookiesAuth ? '' : 'expires_in: number'}
-        ${authConfig.enableRefreshTokens ? 'refresh_token: string': ''}
+        ${authConfig.enableRefreshTokens ? 'refresh_token: string' : ''}
     }
 
     export type ResetPasswordResponse = true
@@ -22,20 +25,32 @@ export const getAuthUserResponseInterface = (userResource: ResourceContract, aut
 }
 
 export const generateAuthTypes = (authConfig: AuthPluginConfig, config: PluginSetupConfig) => {
-    const interfaces = getInterfaceNames(authConfig)
+	const interfaces = getInterfaceNames(authConfig)
 
-    const userResource = config.resources.find(resource => resource.data.name === authConfig.userResource)
+	const userResource = config.resources.find(
+		(resource) => resource.data.name === authConfig.userResource
+	)
 
-    const fields = userResource?.data.fields.filter(field => ! field.showHideFieldFromApi.hideOnInsertApi && ! field.isHidden && field.databaseField !== 'id')
+	const fields = userResource?.data.fields.filter(
+		(field) =>
+			!field.showHideFieldFromApi.hideOnInsertApi && !field.isHidden && field.databaseField !== 'id'
+	)
 
-    return `
+	return `
         export interface ${interfaces.LoginInput} {
             email: string
             password: string
         }
 
         export interface ${interfaces.RegisterInput} {
-            ${fields?.map(field => `${field.databaseField}: ${resolveFieldTypescriptType(field, config.resources, true)}`)}
+            ${fields?.map(
+							(field) =>
+								`${field.databaseField}: ${resolveFieldTypescriptType(
+									field,
+									config.resources,
+									true
+								)}`
+						)}
             password: string
         }
 
@@ -64,43 +79,48 @@ export const generateAuthTypes = (authConfig: AuthPluginConfig, config: PluginSe
 }
 
 export const getInterfaceNames = (config: AuthPluginConfig) => {
-    return {
-        LoginInput: `Login${config.userResource}Input`,
-        RegisterInput: `Register${config.userResource}Input`,
-        ForgotPasswordInput: `ForgotPasswordInput`,
-        ResetPasswordInput: `ResetPasswordInput`
-    }
+	return {
+		LoginInput: `Login${config.userResource}Input`,
+		RegisterInput: `Register${config.userResource}Input`,
+		ForgotPasswordInput: `ForgotPasswordInput`,
+		ResetPasswordInput: `ResetPasswordInput`,
+	}
 }
 
 export const generateAuthApi = (config: PluginSetupConfig) => {
-    const authPlugin = config.plugins.find(plugin => plugin.config.name === 'Auth')
+	const authPlugin = config.plugins.find((plugin) => plugin.config.name === 'Auth')
 
-    if (! authPlugin) {
-        return ``
-    }
+	if (!authPlugin) {
+		return ``
+	}
 
-    const authConfig = authPlugin.config.extra as AuthPluginConfig
+	const authConfig = authPlugin.config.extra as AuthPluginConfig
 
-    const userResource = config.resources.find(resource => resource.data.name === authConfig.userResource)
+	const userResource = config.resources.find(
+		(resource) => resource.data.name === authConfig.userResource
+	)
 
-    if (! userResource) {
-        return ``
-    }
+	if (!userResource) {
+		return ``
+	}
 
-    const interfaces = getInterfaceNames(authConfig)
+	const interfaces = getInterfaceNames(authConfig)
 
-    const apiPrefix = authConfig.apiPath
-    const { refreshTokenHeaderName, tokensConfig: { refreshTokenExpiresIn } } = authConfig
+	const apiPrefix = authConfig.apiPath
+	const {
+		refreshTokenHeaderName,
+		tokensConfig: { refreshTokenExpiresIn },
+	} = authConfig
 
-    const apiPaths = {
-        me: `${apiPrefix}/me`,
-        login: `${apiPrefix}/login`,
-        register: `${apiPrefix}/register`,
-        forgotPassword: `${apiPrefix}/passwords/email`,
-        resetPassword: `${apiPrefix}/passwords/reset`,
-    }
+	const apiPaths = {
+		me: `${apiPrefix}/me`,
+		login: `${apiPrefix}/login`,
+		register: `${apiPrefix}/register`,
+		forgotPassword: `${apiPrefix}/passwords/email`,
+		resetPassword: `${apiPrefix}/passwords/reset`,
+	}
 
-    return `
+	return `
     ${generateAuthTypes(authConfig, config)}
     ${getAuthUserResponseInterface(userResource!, authConfig)}
     export class LocalStorageStore implements TokenStorage {
@@ -146,7 +166,9 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *
          **/
         async login(payload: { object: ${interfaces.LoginInput}, skipAuthentication?: boolean }) {
-            const response = await this.instance.post<DataResponse<AuthResponse>>('${apiPaths.login}', payload.object)
+            const response = await this.instance.post<DataResponse<AuthResponse>>('${
+							apiPaths.login
+						}', payload.object)
 
             this.auth_response = response.data.data
 
@@ -154,9 +176,13 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
                 return response
             }
 
-            ${authConfig.enableRefreshTokens ? `
+            ${
+							authConfig.enableRefreshTokens
+								? `
             this.authenticateWithRefreshTokens(response.data.data)
-            ` : ``}
+            `
+								: ``
+						}
 
             return response
         }
@@ -170,7 +196,9 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
             return this.instance.get<DataResponse<AuthResponse>>('${apiPaths.me}')
         }
 
-        ${authConfig.enableRefreshTokens ? `
+        ${
+					authConfig.enableRefreshTokens
+						? `
         /**
          * 
          * Silently get a new access token for an existing ${authConfig.userResource.toLowerCase()} session.
@@ -274,7 +302,9 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
 
             return token_created_at > new Date()
         }
-        ` : ``}
+        `
+						: ``
+				}
 
         /**
          * 
@@ -298,8 +328,12 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *              password: 'password'
          *          })
          **/
-        async register(payload: { object: ${interfaces.RegisterInput}, skipAuthentication?: boolean }) {
-            const response = await this.instance.post<DataResponse<AuthResponse>>('${apiPaths.register}', payload.object)
+        async register(payload: { object: ${
+					interfaces.RegisterInput
+				}, skipAuthentication?: boolean }) {
+            const response = await this.instance.post<DataResponse<AuthResponse>>('${
+							apiPaths.register
+						}', payload.object)
 
             this.auth_response = response.data.data
 
@@ -307,9 +341,13 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
                 return response
             }
 
-            ${authConfig.enableRefreshTokens ? `
+            ${
+							authConfig.enableRefreshTokens
+								? `
             this.authenticateWithRefreshTokens(response.data.data)
-            ` : ``}
+            `
+								: ``
+						}
 
             return response
         }
@@ -323,7 +361,9 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *          })
          **/
         forgotPassword(payload: { object: ${interfaces.ForgotPasswordInput} }) {
-            return this.instance.post<DataResponse<ForgotPasswordResponse>>('${apiPaths.forgotPassword}', payload.object)
+            return this.instance.post<DataResponse<ForgotPasswordResponse>>('${
+							apiPaths.forgotPassword
+						}', payload.object)
         }
 
         /**
@@ -336,7 +376,9 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *          })
          **/
         resetPassword(payload: { object: ${interfaces.ResetPasswordInput} }) {
-            return this.instance.post<DataResponse<ForgotPasswordResponse>>('${apiPaths.resetPassword}', payload.object)
+            return this.instance.post<DataResponse<ForgotPasswordResponse>>('${
+							apiPaths.resetPassword
+						}', payload.object)
         }
     }
     `

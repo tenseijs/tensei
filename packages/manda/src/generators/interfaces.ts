@@ -22,10 +22,7 @@ export const topLevelOperators: FilterOperators[] = ['_and', '_or', '_not']
 
 export const allOperators = filterOperators.concat(topLevelOperators)
 
-export const resolveFieldTypescriptType = (
-	field: FieldContract,
-	resources: ResourceContract[],
-) => {
+export const resolveFieldTypescriptType = (field: FieldContract, resources: ResourceContract[]) => {
 	if (
 		['integer', 'bigInteger', 'int', 'number', 'float', 'double'].includes(field.property.type!)
 	) {
