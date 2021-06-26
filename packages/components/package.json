@@ -1,6 +1,6 @@
 {
     "name": "@tensei/components",
-    "version": "0.8.6",
+    "version": "0.8.7",
     "main": "lib/index.js",
     "license": "MIT",
     "files": [
@@ -38,5 +38,6 @@
         "@headlessui/react": "^0.2.0",
         "@types/react-flatpickr": "^3.8.1",
         "react-flatpickr": "^3.10.6"
-    }
+    },
+    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

@@ -1,6 +1,6 @@
 {
     "name": "@tensei/auth",
-    "version": "0.8.6",
+    "version": "0.8.7",
     "main": "./build/index.js",
     "license": "MIT",
     "files": [
@@ -37,11 +37,12 @@
         "access": "public"
     },
     "dependencies": {
-        "@tensei/common": "^0.8.6",
+        "@tensei/common": "^0.8.7",
         "@types/bcryptjs": "^2.4.2",
         "@types/jsonwebtoken": "^8.5.0",
         "bcryptjs": "^2.4.3",
         "dayjs": "^1.8.34",
         "jsonwebtoken": "^8.5.1"
-    }
+    },
+    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

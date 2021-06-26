@@ -1,6 +1,6 @@
 {
     "name": "@tensei/next",
-    "version": "0.8.6",
+    "version": "0.8.7",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -30,5 +30,6 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

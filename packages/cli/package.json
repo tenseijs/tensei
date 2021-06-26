@@ -1,6 +1,6 @@
 {
     "name": "@tensei/cli",
-    "version": "0.8.6",
+    "version": "0.8.7",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -54,5 +54,5 @@
     "publishConfig": {
         "access": "public"
     },
-    "gitHead": "e891d0776360c97f7d8035cb283b296739c29ff8"
+    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

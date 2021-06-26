@@ -1,11 +1,11 @@
 {
     "name": "@examples/nuxt",
-    "version": "0.8.6",
+    "version": "0.8.7",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
-        "@tensei/core": "^0.8.6",
-        "@tensei/nuxt": "^0.8.6"
+        "@tensei/core": "^0.8.7",
+        "@tensei/nuxt": "^0.8.7"
     },
     "scripts": {
         "example:dev": "nodemon --watch node_modules/ index.js"

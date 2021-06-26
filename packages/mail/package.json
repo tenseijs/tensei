@@ -1,6 +1,6 @@
 {
 	"name": "@tensei/mail",
-	"version": "0.8.6",
+	"version": "0.8.7",
 	"description": "Mail provider for @tensei (derived from @adonisjs mail provider)",
 	"main": "build/src/index.js",
 	"files": [
@@ -56,5 +56,6 @@
 	"bugs": {
 		"url": "https://github.com/tenseijs/tensei/issues"
 	},
-	"homepage": "https://github.com/tenseijs/tensei#readme"
+	"homepage": "https://github.com/tenseijs/tensei#readme",
+	"gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }
