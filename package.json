@@ -9,7 +9,7 @@
         "build": "yarn lerna run build",
         "dev": "yarn lerna run dev",
         "prettier": "yarn lerna run prettier",
-        "publish": "yarn lerna publish",
+        "publish:packages": "node scripts/before-publish && yarn lerna publish",
         "commit": "yarn git-cz"
     },
     "config": {

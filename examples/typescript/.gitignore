@@ -1,0 +1,9 @@
+node_modules/
+.env
+connect-session-knex.sqlite
+blog.sqlite
+storage/
+mikrotensei
+.next
+tensei
+db.sqlite

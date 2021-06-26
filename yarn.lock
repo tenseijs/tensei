@@ -4531,6 +4531,26 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@tsconfig/node10@^1.0.7":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.8.tgz#c1e4e80d6f964fbecb3359c43bd48b40f7cadad9"
+  integrity sha512-6XFfSQmMgq0CFLY1MslA/CPUfhIL919M1rMsa5lP2P097N2Wd1sSX0tx1u4olM16fLNhtHZpRhedZJphNJqmZg==
+
+"@tsconfig/node12@^1.0.7":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node12/-/node12-1.0.9.tgz#62c1f6dee2ebd9aead80dc3afa56810e58e1a04c"
+  integrity sha512-/yBMcem+fbvhSREH+s14YJi18sp7J9jpuhYByADT2rypfajMZZN4WQ6zBGgBKp53NKmqI36wFYDb3yaMPurITw==
+
+"@tsconfig/node14@^1.0.0":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node14/-/node14-1.0.1.tgz#95f2d167ffb9b8d2068b0b235302fafd4df711f2"
+  integrity sha512-509r2+yARFfHHE7T6Puu2jjkoycftovhXRqW328PDXTVGKihlb1P8Z9mMZH04ebyajfRY7dedfGynlrFHJUQCg==
+
+"@tsconfig/node16@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.1.tgz#a6ca6a9a0ff366af433f42f5f0e124794ff6b8f1"
+  integrity sha512-FTgBI767POY/lKNDNbIzgAX6miIDBs6NTCbdlDb8TrWovHsSvaVIZDlTqym29C6UqhzwcJx4CYr+AlrMywA0cA==
+
 "@types/accepts@*", "@types/accepts@^1.3.5":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@types/accepts/-/accepts-1.3.5.tgz#c34bec115cfc746e04fe5a059df4ce7e7b391575"
@@ -5213,6 +5233,11 @@
   version "14.14.31"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.31.tgz#72286bd33d137aa0d152d47ec7c1762563d34055"
   integrity sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==
+
+"@types/node@^15.12.4":
+  version "15.12.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-15.12.4.tgz#e1cf817d70a1e118e81922c4ff6683ce9d422e26"
+  integrity sha512-zrNj1+yqYF4WskCMOHwN+w9iuD12+dGm0rQ35HLl9/Ouuq52cEtd0CH9qMgrdNmi5ejC1/V7vKEXYubB+65DkA==
 
 "@types/nodemailer@^6.4.0":
   version "6.4.0"
@@ -19807,11 +19832,6 @@ rechoir@^0.7.0:
   dependencies:
     resolve "^1.9.0"
 
-redaxios@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/redaxios/-/redaxios-0.4.1.tgz#a46fd53b533ed76d8619d9e6d595b95543855195"
-  integrity sha512-+Jhh1j8/H0KBro+Hih/MrDEJ1PICaU10JA6iu5b3+uvgRI+5n2M7qpMNXq7eC/0fspP0tTq49ONXlGWFdRoNLg==
-
 redent@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/redent/-/redent-1.0.0.tgz#cf916ab1fd5f1f16dfb20822dd6ec7f730c2afde"
@@ -22364,6 +22384,22 @@ ts-loader@^8.0.11, ts-loader@^8.0.12:
     micromatch "^4.0.0"
     semver "^7.3.4"
 
+ts-node@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.0.0.tgz#05f10b9a716b0b624129ad44f0ea05dac84ba3be"
+  integrity sha512-ROWeOIUvfFbPZkoDis0L/55Fk+6gFQNZwwKPLinacRl6tsxstTF1DbAcLKkovwnpKMVvOMHP1TIbnwXwtLg1gg==
+  dependencies:
+    "@tsconfig/node10" "^1.0.7"
+    "@tsconfig/node12" "^1.0.7"
+    "@tsconfig/node14" "^1.0.0"
+    "@tsconfig/node16" "^1.0.1"
+    arg "^4.1.0"
+    create-require "^1.1.0"
+    diff "^4.0.1"
+    make-error "^1.1.1"
+    source-map-support "^0.5.17"
+    yn "3.1.1"
+
 ts-node@^9.0.0:
   version "9.1.1"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-9.1.1.tgz#51a9a450a3e959401bda5f004a72d54b936d376d"
@@ -22519,6 +22555,11 @@ typescript@^4.2.4:
   version "4.2.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.4.tgz#8610b59747de028fda898a8aef0e103f156d0961"
   integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
+
+typescript@^4.3.4:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.4.tgz#3f85b986945bcf31071decdd96cf8bfa65f9dcbc"
+  integrity sha512-uauPG7XZn9F/mo+7MrsRjyvbxFpzemRjKEZXS4AK83oP2KKOJPvb+9cO/gmnv8arWZvhnjVOXz7B49m1l0e9Ew==
 
 ua-parser-js@^0.7.24:
   version "0.7.24"

@@ -70,7 +70,7 @@ export const getDatabaseCredentials = () => {
 
     const config: DatabaseConfiguration = {
         type: databaseType,
-        forceUtcTimezone: true,
+        forceUtcTimezone: true
     }
 
     if (databaseType === 'postgresql') {
