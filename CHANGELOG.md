@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.6](https://github.com/tenseijs/tensei/compare/v0.8.4...v0.8.6) (2021-06-26)
+
+
+### Bug Fixes
+
+* **component:** responsive sidebar now closes on backdrop and menu click ([#121](https://github.com/tenseijs/tensei/issues/121)) ([f2ebca7](https://github.com/tenseijs/tensei/commit/f2ebca77f02429f2a08e6d56a4ad5566f860e566))
+* **express-session-mikro-orm:** fix update query for mongodb ([#108](https://github.com/tenseijs/tensei/issues/108)) ([b7b0a22](https://github.com/tenseijs/tensei/commit/b7b0a22f4c42eb7a72eaadf6263f2b1081967f12)), closes [#107](https://github.com/tenseijs/tensei/issues/107)
+
+
+
+
+
 ## [0.8.5](https://github.com/tenseijs/tensei/compare/v0.8.4...v0.8.5) (2021-06-17)
 
 

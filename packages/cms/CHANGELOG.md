@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.6](https://github.com/tenseijs/tensei/compare/v0.8.4...v0.8.6) (2021-06-26)
+
+
+### Bug Fixes
+
+* **component:** responsive sidebar now closes on backdrop and menu click ([#121](https://github.com/tenseijs/tensei/issues/121)) ([f2ebca7](https://github.com/tenseijs/tensei/commit/f2ebca77f02429f2a08e6d56a4ad5566f860e566))
+
+
+
+
+
 ## [0.8.5](https://github.com/tenseijs/tensei/compare/v0.8.4...v0.8.5) (2021-06-17)
 
 **Note:** Version bump only for package @tensei/cms

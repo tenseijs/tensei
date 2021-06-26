@@ -1,6 +1,6 @@
 {
     "name": "@tensei/rest",
-    "version": "0.8.5",
+    "version": "0.8.6",
     "main": "./build/index.js",
     "license": "MIT",
     "types": "./build/index.d.ts",
@@ -27,8 +27,8 @@
         "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "dependencies": {
-        "@tensei/common": "^0.8.5",
-        "@tensei/core": "^0.8.5",
+        "@tensei/common": "^0.8.6",
+        "@tensei/core": "^0.8.6",
         "express-response-formatter": "^2.0.2",
         "pluralize": "^8.0.0",
         "qs": "^6.9.4"
