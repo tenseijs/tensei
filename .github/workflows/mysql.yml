@@ -1,6 +1,9 @@
 name: Mysql 8.0
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
 
 jobs:

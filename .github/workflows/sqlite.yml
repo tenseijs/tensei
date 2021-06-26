@@ -1,6 +1,9 @@
 name: Sqlite v3.4
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
 
 jobs:

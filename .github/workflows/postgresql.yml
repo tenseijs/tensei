@@ -1,6 +1,9 @@
 name: PostgresQL v11.0
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
 
 jobs:

@@ -1,6 +1,9 @@
 name: Other packages
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
 
 jobs:
