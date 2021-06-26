@@ -5,11 +5,6 @@ import { welcome, tensei } from '@tensei/core'
 
 tensei()
     .root(__dirname)
-    .plugins([
-        welcome(),
-        cms().plugin(),
-        auth().plugin(),
-        graphql().plugin()
-    ])
+    .plugins([welcome(), cms().plugin(), auth().plugin(), graphql().plugin()])
     .start()
     .catch(console.error)
