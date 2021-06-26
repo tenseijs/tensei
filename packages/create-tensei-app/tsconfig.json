@@ -11,5 +11,5 @@
         "forceConsistentCasingInFileNames": true,
         "types": ["@types/jest", "node"]
     },
-    "exclude": ["__tests__", "build"]
+    "exclude": ["__tests__", "build", "templates"]
 }
