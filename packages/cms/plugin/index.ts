@@ -282,7 +282,7 @@ class CmsPlugin {
 
                 emitter.emit('ADMIN_REGISTERED', admin)
 
-                this.sendEmail(admin, config)
+                await this.sendEmail(admin, config)
 
                 return response.status(204).json()
             }),
@@ -318,7 +318,7 @@ class CmsPlugin {
 
                     emitter.emit('ADMIN_REGISTERED', user)
 
-                    this.sendEmail(user, config)
+                    await this.sendEmail(user, config)
 
                     return response.status(204).json()
                 } catch (errors) {
