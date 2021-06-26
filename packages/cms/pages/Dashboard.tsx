@@ -36,8 +36,11 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                     className="fixed inset-0"
                                     aria-hidden={!offCanvasOpen}
                                 >
-                                    <div className="absolute inset-0 bg-gray-600 opacity-75" 
-                                        onClick={() =>setOffCanvasOpen(!offCanvasOpen)}
+                                    <div
+                                        className="absolute inset-0 bg-gray-600 opacity-75"
+                                        onClick={() =>
+                                            setOffCanvasOpen(!offCanvasOpen)
+                                        }
                                     />
                                 </div>
                             )}
@@ -92,7 +95,12 @@ const Dashboard: React.FC<DashboardProps> = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="mt-5 flex-1 h-0 overflow-y-auto" onClick={() =>setOffCanvasOpen(!offCanvasOpen)}>
+                                    <div
+                                        className="mt-5 flex-1 h-0 overflow-y-auto"
+                                        onClick={() =>
+                                            setOffCanvasOpen(!offCanvasOpen)
+                                        }
+                                    >
                                         <Nav className="md:px-2 space-y-1" />
                                     </div>
                                 </div>

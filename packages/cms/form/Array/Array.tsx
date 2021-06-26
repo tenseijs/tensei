@@ -79,7 +79,6 @@ const FormArray: React.FC<FormComponentProps> = ({
                             onChange={event =>
                                 onListItemUpdate(event, itemIndex)
                             }
-                            
                             className="flex-1"
                             id={id}
                             name={name}
@@ -98,11 +97,13 @@ const FormArray: React.FC<FormComponentProps> = ({
                         placeholder={`Add a new ${field.name.toLowerCase()}`}
                         value={newItem}
                         onChange={event => setNewItem(event.target.value)}
-                        onKeyDown = {(event) =>{{
-                            if(event.keyCode === 13 && newItem !== "") {
-                                onListItemAdded()
+                        onKeyDown={event => {
+                            {
+                                if (event.keyCode === 13 && newItem !== '') {
+                                    onListItemAdded()
+                                }
                             }
-                        }}}
+                        }}
                         className="flex-1"
                         id={id}
                         name={name}

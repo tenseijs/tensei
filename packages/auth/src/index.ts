@@ -1789,7 +1789,7 @@ export class Auth {
 
         input confirm_enable_two_factor_auth_input {
             """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
-            token: Int!
+            token: String!
         }
 
         input disable_two_factor_auth_input {
@@ -2021,7 +2021,9 @@ export class Auth {
         const { manager, body, user } = ctx
         if (
             user.email_verification_token ===
-            (body.object ? body.object.token : body.token)
+            (body.object
+                ? body.object.email_verification_token
+                : body.email_verification_token)
         ) {
             manager.assign(user, {
                 email_verification_token: null,

@@ -119,7 +119,7 @@ export const generateAuthTypes = (
         }
 
         export interface ConfirmEmailInput {
-            token: string
+            email_verification_token: string
         }
 
         export interface TwoFactorInput {

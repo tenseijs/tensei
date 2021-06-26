@@ -54,13 +54,13 @@ module.exports = {
     confirmEnableTwoFactorAuth: async ({ 
         user,
         body,
-        config,
         manager,
+        indicative,
         userInputError
      }) => {
         const Speakeasy = require('speakeasy')
 
-        const [passed, payload] = await validateTwoFactorToken(() => config.indicative.validator.validateAll(body.object ? body.object : body, {
+        const [passed, payload] = await validateTwoFactorToken(() => indicative.validator.validateAll(body.object ? body.object : body, {
             token: 'required|string'
         }))
 
