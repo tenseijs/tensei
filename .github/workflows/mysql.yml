@@ -1,7 +1,6 @@
 name: Mysql 8.0
 
 on:
-  push:
   pull_request:
 
 jobs:

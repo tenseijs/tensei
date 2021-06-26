@@ -1,7 +1,6 @@
 name: Other packages
 
 on:
-  push:
   pull_request:
 
 jobs:
