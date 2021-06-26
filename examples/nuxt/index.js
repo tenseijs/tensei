@@ -8,8 +8,6 @@ const {
     slug,
     text,
     textarea,
-    dateTime,
-    belongsTo,
     hasMany
 } = require('@tensei/core')
 
@@ -21,10 +19,6 @@ tensei()
             .fields([
                 text('Title'),
                 slug('Slug').from('Title'),
-                textarea('Description'),
-                textarea('Content'),
-                dateTime('Published At'),
-                belongsTo('Category')
             ])
             .displayField('Title'),
         resource('Category')
@@ -36,14 +30,12 @@ tensei()
             .displayField('Name')
     ])
     .plugins([
-        auth()
-            .cookieSessions()
-            .plugin(),
+        auth().twoFactorAuth().verifyEmails().plugin(),
         rest().plugin(),
         nuxt().plugin(),
     ])
     .databaseConfig({
-        type: 'sqlite',
+        type: 'mongo',
         dbName: 'tensei'
     })
     .start()

@@ -87,11 +87,11 @@ class CmsPlugin {
         {
             name: 'tensei.css',
             path: Path.resolve(__dirname, 'public', 'styles.css')
-        },
-        {
-            name: 'main.css',
-            path: Path.resolve(__dirname, 'public', 'main.css')
         }
+        // {
+        //     name: 'main.css',
+        //     path: Path.resolve(__dirname, 'public', 'main.css')
+        // }
     ]
 
     path(path: string) {
@@ -282,7 +282,7 @@ class CmsPlugin {
 
                 emitter.emit('ADMIN_REGISTERED', admin)
 
-                this.sendEmail(admin, config)
+                await this.sendEmail(admin, config)
 
                 return response.status(204).json()
             }),
@@ -318,7 +318,7 @@ class CmsPlugin {
 
                     emitter.emit('ADMIN_REGISTERED', user)
 
-                    this.sendEmail(user, config)
+                    await this.sendEmail(user, config)
 
                     return response.status(204).json()
                 } catch (errors) {
@@ -604,6 +604,8 @@ class CmsPlugin {
                 app.get(
                     `/${this.config.path}(/*)?`,
                     async (request, response) => {
+                        // @ts-ignore
+                        console.log('@@@@@@@@@@@', request.user)
                         response.send(
                             Mustache.render(indexFileContent, {
                                 styles: request.styles,

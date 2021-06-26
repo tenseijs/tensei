@@ -1,5 +1,6 @@
 declare module '@tensei/core' {
     import { Server } from 'http'
+    import { CorsOptions } from 'cors'
     import { Application } from 'express'
     import {
         Config,
@@ -66,6 +67,8 @@ declare module '@tensei/core' {
     export const tensei: () => TenseiContract
 
     export const welcome: () => PluginContract
+
+    export const cors: (baseOptions?: CorsOptions) => PluginContract
 
     export * from '@tensei/common'
 }

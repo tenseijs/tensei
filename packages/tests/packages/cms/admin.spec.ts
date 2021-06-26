@@ -55,14 +55,13 @@ test('can passwordlessly register a new administrator user', async () => {
     }>('AdminUserSession', {})
 
     const authUser = await em.findOne<{
-        id: string,
+        id: string
         email: string
     }>('AdminUser', {
         email
     })
 
     const sessionData = JSON.parse(session[0].data)
-    
     expect(sessionData?.user?.id?.toString()).toBe(authUser.id.toString())
 })
 

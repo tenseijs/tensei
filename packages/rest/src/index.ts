@@ -27,6 +27,10 @@ import {
 } from './populate-helpers'
 import { DataPayload } from '@tensei/common'
 
+import { generateResourceInterfaces } from './sdk/generators/interfaces'
+import { generateFetchWrapperForResources } from './sdk/generators/rest'
+import { formatContent } from './sdk/generators/helpers'
+
 const indexFileContent = Fs.readFileSync(
     Path.resolve(__dirname, 'docs', 'index.mustache')
 ).toString()
@@ -276,6 +280,124 @@ class Rest {
                                 )
 
                                 return response.formatter.created(entity)
+                            }
+                        )
+                )
+
+            !resource.isHiddenOnApi() &&
+                !resource.data.hideOnInsertApi &&
+                routes.push(
+                    route(`Insert ${plural}`)
+                        .post()
+                        .internal()
+                        .group(resource.data.label)
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToCreate
+                            )
+                        ])
+                        .parameters([
+                            {
+                                in: 'body',
+                                name: 'objects',
+                                description: `An array of ${singular} objects to be inserted`,
+                                type: 'array'
+                            }
+                        ])
+                        .id(this.getRouteId(`insert_${plural}`))
+                        .resource(resource)
+                        .path(getApiPath(`${plural}/bulk`))
+                        .description(`Insert multiple ${plural}.`)
+                        .handle(
+                            async (
+                                {
+                                    manager,
+                                    body,
+                                    resources: resourcesMap,
+                                    config,
+                                    query,
+                                    userInputError
+                                },
+                                response
+                            ) => {
+                                const findOptions = parseQueryToFindOptions(
+                                    query,
+                                    resource
+                                )
+
+                                if (!body.objects) {
+                                    throw userInputError('Validation failed.', {
+                                        errors: [
+                                            {
+                                                message:
+                                                    'The objects field is required.',
+                                                validation: 'required',
+                                                field: 'objects'
+                                            }
+                                        ]
+                                    })
+                                }
+
+                                const data: any[] = body.objects.map(
+                                    (object: any) =>
+                                        manager.create(
+                                            resource.data.pascalCaseName,
+                                            object
+                                        )
+                                )
+
+                                const validator = await Utils.validator(
+                                    resource,
+                                    manager,
+                                    resourcesMap
+                                ).request(request)
+
+                                const results: [
+                                    boolean,
+                                    DataPayload
+                                ][] = await Promise.all(
+                                    body.objects.map((object: any) =>
+                                        validator.validate(object)
+                                    )
+                                )
+
+                                if (
+                                    results.filter(([passed]) => passed)
+                                        .length !== results.length
+                                ) {
+                                    throw userInputError('Validation failed.', {
+                                        errors: results
+                                            .map(([passed, payload], index) => [
+                                                passed,
+                                                payload,
+                                                index
+                                            ])
+                                            .filter(([passed]) => !passed)
+                                            .map(([, errors, index]) => ({
+                                                errors,
+                                                index
+                                            }))
+                                    })
+                                }
+
+                                await manager.persistAndFlush(data)
+
+                                await manager.populate(
+                                    data,
+                                    findOptions.populate || []
+                                )
+
+                                config.emitter.emit(
+                                    `${resource.data.snakeCaseNamePlural}::inserted`,
+                                    data
+                                )
+
+                                config.emitter.emit(
+                                    `${singular}::inserted`,
+                                    data
+                                )
+
+                                return response.formatter.created(data)
                             }
                         )
                 )
@@ -553,6 +675,131 @@ class Rest {
             !resource.isHiddenOnApi() &&
                 !resource.data.hideOnUpdateApi &&
                 routes.push(
+                    route(`Update multiple ${plural}`)
+                        .patch()
+                        .internal()
+                        .middleware([
+                            authorizeMiddleware(
+                                resource.authorizeCallbacks.authorizedToUpdate
+                            )
+                        ])
+                        .parameters([
+                            {
+                                in: 'body',
+                                type: 'array',
+                                description: `Array of ${plural} objects`,
+                                name: 'objects'
+                            },
+                            {
+                                in: 'body',
+                                type: 'object',
+                                description: `Where query to find ${plural} to be updated.`,
+                                name: 'where'
+                            }
+                        ])
+                        .group(resource.data.label)
+                        .id(this.getRouteId(`update_${plural}`))
+                        .resource(resource)
+                        .description(
+                            `This endpoint update multiple ${plural}. Provide a where query matching all the objects you want to update.`
+                        )
+                        .path(getApiPath(`${plural}/bulk`))
+                        .handle(
+                            async (
+                                {
+                                    manager,
+                                    body,
+                                    entity,
+                                    resources: resourcesMap,
+                                    userInputError,
+                                    config
+                                },
+                                response
+                            ) => {
+                                if (!body?.object) {
+                                    throw userInputError('Validation failed.', {
+                                        errors: [
+                                            {
+                                                message:
+                                                    'The object field is required.',
+                                                field: 'object',
+                                                validation: 'required'
+                                            }
+                                        ]
+                                    })
+                                }
+
+                                if (!body?.where) {
+                                    throw userInputError('Validation failed.', {
+                                        errors: [
+                                            {
+                                                message:
+                                                    'The where field is required.',
+                                                field: 'where',
+                                                validation: 'required'
+                                            }
+                                        ]
+                                    })
+                                }
+
+                                const data = await manager.find(
+                                    resource.data.pascalCaseName,
+                                    parseQueryToWhereOptions({
+                                        where: body.where
+                                    })
+                                )
+
+                                const results = await Promise.all(
+                                    data.map(row =>
+                                        Utils.validator(
+                                            resource,
+                                            manager,
+                                            resourcesMap,
+                                            row.id
+                                        )
+                                            .request(request)
+                                            .validate(body.object, false)
+                                    )
+                                )
+
+                                if (
+                                    results.filter(([passed]) => passed)
+                                        .length !== results.length
+                                ) {
+                                    throw userInputError('Validation failed.', {
+                                        errors: results
+                                            .map(([passed, payload], index) => [
+                                                passed,
+                                                payload,
+                                                index
+                                            ])
+                                            .filter(([passed]) => !passed)
+                                            .map(([, errors, index]) => ({
+                                                errors,
+                                                index
+                                            }))
+                                    })
+                                }
+
+                                data.forEach(d =>
+                                    manager.assign(d, body.object)
+                                )
+
+                                await manager.persistAndFlush(data)
+
+                                config.emitter.emit(
+                                    `${singular}::updated`,
+                                    data
+                                )
+
+                                return response.formatter.ok(data)
+                            }
+                        )
+                )
+
+            !resource.isHiddenOnApi() &&
+                !resource.data.hideOnUpdateApi &&
+                routes.push(
                     route(`Update single ${singular}`)
                         .patch()
                         .internal()
@@ -689,7 +936,7 @@ class Rest {
             !resource.isHiddenOnApi() &&
                 !resource.data.hideOnDeleteApi &&
                 routes.push(
-                    route(`Delete many ${plural}`)
+                    route(`Delete multiple ${plural}`)
                         .delete()
                         .group(resource.data.label)
                         .internal()
@@ -729,7 +976,12 @@ class Rest {
 
     plugin() {
         return plugin('Rest API')
-            .register(({ app, resources, extendRoutes }) => {
+            .extra({
+                path: this.path
+            })
+            .register(config => {
+                const { app, resources, extendRoutes } = config
+
                 app.use(responseEnhancer())
 
                 app.get('/rest-docs.css', (request, response) =>
@@ -791,8 +1043,27 @@ class Rest {
                         ])
                     )
                 )
+
+                extendRoutes([
+                    route('Fetch SDK Types')
+                        .path('sdk/types')
+                        .handle(async (request, response) => {
+                            return response.json(
+                                (
+                                    await Promise.all([
+                                        generateResourceInterfaces(config),
+                                        generateFetchWrapperForResources(config)
+                                    ])
+                                )
+                                    .map(type => formatContent(type))
+                                    .join('\n')
+                            )
+                        })
+                ])
             })
-            .boot(({ app, name, routes, extendEvents, serverUrl }) => {
+            .boot(config => {
+                const { app, name, routes, extendEvents, serverUrl } = config
+
                 app.get('/rest/routes', (request, response) =>
                     response.json(
                         routes.map(route => ({
@@ -809,14 +1080,6 @@ class Rest {
                         })
                     )
                 )
-
-                extendEvents([
-                    event('tensei::listening').listen(({ ctx }) => {
-                        ctx.logger.info(
-                            `🧘🏽 Access your rest api documentation on ${serverUrl}/rest-docs`
-                        )
-                    })
-                ])
             })
     }
 }

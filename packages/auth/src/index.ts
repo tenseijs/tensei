@@ -41,9 +41,12 @@ import {
     AuthHookFunction
 } from './config'
 
+export * from './config'
+
 import { setup } from './setup'
 import { ResourceContract } from '@tensei/common'
 import { Request } from 'express'
+import { PluginContract } from '@tensei/common/plugins'
 
 type JwtPayload = {
     id: string
@@ -52,8 +55,8 @@ type JwtPayload = {
 
 type AuthSetupFn = (resources: AuthResources) => any
 
-class Auth {
-    private config: AuthPluginConfig & {
+export class Auth {
+    public config: AuthPluginConfig & {
         setupFn: AuthSetupFn
     } = {
         prefix: '',
@@ -69,7 +72,7 @@ class Auth {
         passwordResetResource: 'Password Reset',
         fields: [],
         separateSocialLoginAndRegister: false,
-        apiPath: 'auth',
+        apiPath: 'api',
         setupFn: () => this,
         beforeLogin: () => {},
         afterLogin: () => {},
@@ -83,7 +86,7 @@ class Auth {
             refreshTokenExpiresIn: 60 * 60 * 24 * 30 * 6 // 6 months
         },
         cookieOptions: {
-            secure: false
+            secure: process.env.NODE_ENV === 'production'
         },
         refreshTokenHeaderName: 'x-tensei-refresh-token',
         twoFactorAuth: false,
@@ -134,6 +137,20 @@ class Auth {
         this.resources.passwordReset = this.passwordResetResource()
 
         this.config.setupFn(this.resources)
+    }
+
+    private resolveApiPath(plugins: PluginContract[]) {
+        const restAPiPlugin = plugins.find(
+            plugin => plugin.config.name === 'Rest API'
+        )
+
+        if (
+            restAPiPlugin &&
+            restAPiPlugin.config.extra?.path &&
+            restAPiPlugin.config.extra?.path !== 'api'
+        ) {
+            this.config.apiPath = restAPiPlugin.config.extra?.path
+        }
     }
 
     public setup(fn: AuthSetupFn) {
@@ -621,6 +638,8 @@ class Auth {
             .boot(async config => {
                 this.refreshResources()
 
+                this.resolveApiPath(config.plugins)
+
                 if (this.config.twoFactorAuth) {
                     config.app.use((request, response, next) => {
                         request.verifyTwoFactorAuthToken = (
@@ -1051,13 +1070,19 @@ class Auth {
                               `Enable two factor authentication for an existing ${name}.`
                           )
                           .authorize(({ user }) => user && !user.public)
-                          .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.TwoFactorAuth.enableTwoFactorAuth(
-                                      request as any
-                                  )
+                          .handle(async (request, response) => {
+                              const {
+                                  dataURL,
+                                  user
+                              } = await this.TwoFactorAuth.enableTwoFactorAuth(
+                                  request as any
                               )
-                          ),
+
+                              response.formatter.ok({
+                                  dataURL,
+                                  [this.resources.user.data.snakeCaseName]: user
+                              })
+                          }),
                       route(`Confirm Enable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/confirm'))
                           .post()
@@ -1075,13 +1100,14 @@ class Auth {
                               `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
                           )
                           .authorize(({ user }) => user && !user.public)
-                          .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
-                                      request as any
-                                  )
+                          .handle(async (request, response) => {
+                              const user = await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
+                                  request as any
                               )
-                          ),
+                              response.formatter.ok({
+                                  [this.resources.user.data.snakeCaseName]: user
+                              })
+                          }),
                       route(`Disable Two Factor Auth`)
                           .path(this.getApiPath('two-factor/disable'))
                           .post()
@@ -1100,13 +1126,14 @@ class Auth {
                           )
                           .authorize(({ user }) => user && !user.public)
                           .authorize(({ user }) => !!user)
-                          .handle(async (request, response) =>
-                              response.formatter.ok(
-                                  await this.TwoFactorAuth.disableTwoFactorAuth(
-                                      request as any
-                                  )
+                          .handle(async (request, response) => {
+                              const user = await this.TwoFactorAuth.disableTwoFactorAuth(
+                                  request as any
                               )
-                          )
+                              response.formatter.ok({
+                                  [this.resources.user.data.snakeCaseName]: user
+                              })
+                          })
                   ]
                 : []),
             route(`Get authenticated ${name}`)
@@ -1228,7 +1255,7 @@ class Auth {
                 ? [
                       route('Refresh Token')
                           .path(this.getApiPath('refresh-token'))
-                          .post()
+                          .get()
                           .group('Auth')
                           .id(this.getRouteId(`refresh_token_${name}`))
                           .handle(
@@ -1257,16 +1284,10 @@ class Auth {
                 ? [
                       route('Get CSRF Token')
                           .path(this.getApiPath('csrf'))
-                          .handle(async (request, response) => {
-                              response.cookie(
-                                  'XSRF-TOKEN',
-                                  // @ts-ignore
-                                  request.csrfToken(),
-                                  this.config.cookieOptions
-                              )
-
-                              return response.formatter.noContent([])
-                          })
+                          .handle(
+                              async (request, { formatter: { noContent } }) =>
+                                  noContent([])
+                          )
                   ]
                 : [])
         ]
@@ -1670,6 +1691,8 @@ class Auth {
 
         await ctx.manager.persistAndFlush(token)
 
+        // TODO: Delete all refresh tokens older than a 24 hours. This will be custom and calculated in future.
+
         ctx.user = token[userField]
 
         return this.getUserPayload(
@@ -1766,7 +1789,7 @@ class Auth {
 
         input confirm_enable_two_factor_auth_input {
             """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
-            token: Int!
+            token: String!
         }
 
         input disable_two_factor_auth_input {
@@ -2035,12 +2058,14 @@ class Auth {
             : body.access_token
 
         if (!access_token) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'access_token',
-                    message: 'Invalid access token provided.'
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'access_token',
+                        message: 'Invalid access token provided.'
+                    }
+                ]
+            })
         }
 
         let oauthIdentity: any = await manager.findOne(
@@ -2051,12 +2076,14 @@ class Auth {
         )
 
         if (!oauthIdentity) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'access_token',
-                    message: 'Invalid access token provided.'
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'access_token',
+                        message: 'Invalid access token provided.'
+                    }
+                ]
+            })
         }
 
         const oauthPayload = JSON.parse(oauthIdentity.payload)
@@ -2073,12 +2100,14 @@ class Auth {
             action === 'login' &&
             this.config.separateSocialLoginAndRegister
         ) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'email',
-                    message: 'Cannot find a user with these credentials.'
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'email',
+                        message: 'Cannot find a user with these credentials.'
+                    }
+                ]
+            })
         }
 
         if (
@@ -2086,14 +2115,16 @@ class Auth {
             action === 'register' &&
             this.config.separateSocialLoginAndRegister
         ) {
-            throw ctx.userInputError('Validation failed.', [
-                {
-                    field: 'email',
-                    message: `A ${this.resources.user.data.snakeCaseName.toLowerCase()} already exists with email ${
-                        oauthIdentity.email
-                    }.`
-                }
-            ])
+            throw ctx.userInputError('Validation failed.', {
+                errors: [
+                    {
+                        field: 'email',
+                        message: `A ${this.resources.user.data.snakeCaseName.toLowerCase()} already exists with email ${
+                            oauthIdentity.email
+                        }.`
+                    }
+                ]
+            })
         }
 
         if (
@@ -2106,9 +2137,7 @@ class Auth {
             }
 
             if (this.config.verifyEmails) {
-                createPayload.email_verified_at = Dayjs().format(
-                    'YYYY-MM-DD HH:mm:ss'
-                )
+                createPayload.email_verified_at = new Date()
                 createPayload.email_verification_token = null
             }
 
@@ -2345,14 +2374,34 @@ class Auth {
         return this.populateContextFromToken(token, ctx)
     }
 
+    private validateForgotPassword = async (payload: DataPayload) => {
+        try {
+            const { email } = await validateAll(payload, {
+                email: 'required|email'
+            })
+
+            return [true, { email }]
+        } catch (errors) {
+            return [false, errors]
+        }
+    }
+
     protected forgotPassword = async ({
         body,
         manager,
         userInputError
     }: ApiContext) => {
-        const { email } = await validateAll(body.object ? body.object : body, {
-            email: 'required|email'
-        })
+        const [passed, payload] = await this.validateForgotPassword(
+            body.object ? body.object : body
+        )
+
+        if (!passed) {
+            throw userInputError('Validation failed.', {
+                errors: payload
+            })
+        }
+
+        const { email } = payload
 
         const existingUser: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,
@@ -2408,18 +2457,35 @@ class Auth {
         return true
     }
 
+    private validateResetPassword = async (payload: DataPayload) => {
+        try {
+            const { token, password } = await validateAll(payload, {
+                token: 'required|string',
+                password: 'required|string|min:8'
+            })
+
+            return [true, { token, password }]
+        } catch (errors) {
+            return [false, errors]
+        }
+    }
+
     protected resetPassword = async ({
         body,
         manager,
         userInputError
     }: ApiContext) => {
-        const { token, password } = await validateAll(
-            body.object ? body.object : body,
-            {
-                token: 'required|string',
-                password: 'required|string|min:8'
-            }
+        const [passed, payload] = await this.validateResetPassword(
+            body.object ? body.object : body
         )
+
+        if (!passed) {
+            throw userInputError('Validation failed.', {
+                errors: payload
+            })
+        }
+
+        const { token, password } = payload
 
         let existingPasswordReset: any = await manager.findOne(
             this.resources.passwordReset.data.pascalCaseName,
@@ -2489,8 +2555,7 @@ class Auth {
         try {
             const payload = await validateAll(data, rules, {
                 'email.required': 'The email is required.',
-                'password.required': 'The password is required.',
-                'name.required': 'The name is required.'
+                'password.required': 'The password is required.'
             })
 
             return [true, payload]

@@ -1,6 +1,14 @@
 const Qr = require('qrcode')
 const Speakeasy = require('speakeasy')
 
+const validateTwoFactorToken = async (validator) => {
+    try {
+        return [true, await validator()]
+    } catch (error) {
+        return [false, error]
+    }
+}
+
 module.exports = {
     verifyTwoFactorAuthToken: async ({ userInputError, user }, token) => {
         if (!user.two_factor_enabled) {
@@ -52,9 +60,18 @@ module.exports = {
      }) => {
         const Speakeasy = require('speakeasy')
 
-        const payload = await indicative.validator.validateAll(body.object ? body.object : body, {
-            token: 'required|number'
-        })
+        const [passed, payload] = await validateTwoFactorToken(() => indicative.validator.validateAll(body.object ? body.object : body, {
+            token: 'required|string'
+        }))
+
+        if (! passed) {
+            throw userInputError(
+                `Validation failed.`,
+                {
+                    errors: payload
+                }
+            )
+        }
 
         if (!user.two_factor_secret) {
             throw userInputError(

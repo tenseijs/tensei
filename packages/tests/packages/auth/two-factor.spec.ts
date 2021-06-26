@@ -74,7 +74,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
         .post(`/graphql`)
         .send({
             query: gql`
-                mutation confirm_enable_two_factor_auth($token: Int!) {
+                mutation confirm_enable_two_factor_auth($token: String!) {
                     confirm_enable_two_factor_auth(object: { token: $token }) {
                         id
                         two_factor_enabled
@@ -82,7 +82,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
                 }
             `,
             variables: {
-                token: parseInt(totp)
+                token: totp
             }
         })
         .set(

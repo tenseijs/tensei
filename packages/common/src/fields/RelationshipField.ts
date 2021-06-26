@@ -23,6 +23,7 @@ export class RelationshipField extends Field {
 
         this.hideOnIndex()
         this.dockToSidebarOnForms()
+        this.notFilterable()
 
         this.relationshipLabel = name
     }

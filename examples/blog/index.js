@@ -3,10 +3,12 @@ const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
+const { mde, markdown } = require('@tensei/mde')
 
 const {
     tensei,
     welcome,
+    cors,
     resource,
     text,
     textarea,
@@ -15,6 +17,7 @@ const {
     array,
     hasMany,
     belongsTo,
+    boolean,
 } = require('@tensei/core')
 
 tensei()
@@ -23,14 +26,20 @@ tensei()
         resource('Post')
             .fields([
                 text('Title').rules('required'),
-                slug('Slug').from('Title'),
-                textarea('Description').rules('required', 'max:255'),
-                textarea('Content'),
-                dateTime('Published At').rules('required'),
-                belongsTo('Category'),
+                slug('Slug').creationRules('required', 'unique:slug').unique().from('Title'),
+                markdown('Description').creationRules('required', 'max:255'),
+                textarea('Content').nullable().rules('required'),
+                dateTime('Published At').creationRules('required'),
+                belongsTo('Category').alwaysLoad(),
                 array('Procedure')
                     .of('string')
-                    .rules('required', 'min:3', 'max:10')
+                    .rules('min:3', 'max:10')
+                    .creationRules('required'),
+                array('Prices')
+                    .nullable()
+                    .of('decimal')
+                    .rules('max:10', 'min:2')
+                    .creationRules('required')
             ])
             .icon('library')
             .displayField('Title'),
@@ -41,21 +50,40 @@ tensei()
                 belongsTo('User').nullable(),
                 hasMany('Post')
             ])
+            .disableAutoFilters()
             .displayField('Name')
     ])
     .plugins([
         welcome(),
-        cms()
-        .plugin(),
-        auth().rolesAndPermissions().refreshTokens()
-        // .cookieSessions()
+        cms().plugin(),
+        auth()
+            .verifyEmails()
+            .twoFactorAuth()
+            .social('google', {
+                key: process.env.GOOGLE_KEY,
+                secret: process.env.GOOGLE_SECRET,
+                clientCallback: 'http://localhost:1234/'
+            })
+            .configureTokens({
+                accessTokenExpiresIn: 60,
+                refreshTokenExpiresIn: 240
+            })
+            .setup(({ user }) => {
+                user.fields([
+                    hasMany('Category'),
+                    boolean('Accepted Terms And Conditions').rules('required').default(false)
+                ])
+            })
+            // .refreshTokens()
         .plugin(),
         rest().plugin(),
-        graphql().plugin()
+        graphql().plugin(),
+        cors(),
+        mde().plugin()
     ])
-    .databaseConfig({
-        debug: true,
-        type: 'mongo'
+    .db({
+        type: 'sqlite',
+        dbName: 'db.sqlite'
     })
     .start()
     .catch(console.error)

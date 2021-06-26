@@ -125,5 +125,5 @@ export const USER_EVENTS = {
     FORGOT_PASSWORD: 'user::forgot::password',
     RESET_PASSWORD: 'user::reset::password',
     VERIFIED_EMAIL: 'user::verified::email',
-    RESENT_VERIFICATION_EMAIL: 'user::reset::verification::email'
+    RESENT_VERIFICATION_EMAIL: 'user::resent::verification::email'
 }

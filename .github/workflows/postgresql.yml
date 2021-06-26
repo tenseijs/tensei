@@ -1,7 +1,6 @@
 name: PostgresQL v11.0
 
 on:
-  push:
   pull_request:
 
 jobs:

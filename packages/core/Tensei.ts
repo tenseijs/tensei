@@ -1,12 +1,12 @@
 import pino from 'pino'
 import Emittery from 'emittery'
 import BodyParser from 'body-parser'
+import * as indicative from 'indicative'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
 import Express, { Application } from 'express'
 import { mail, MailConfig } from '@tensei/mail'
 import AsyncHandler from 'express-async-handler'
-import { validator, sanitizer } from 'indicative'
 import { responseEnhancer } from 'express-response-formatter'
 import { StorageManager, Storage } from '@slynova/flydrive'
 
@@ -105,10 +105,7 @@ export class Tensei implements TenseiContract {
                           }
                         : false
             }),
-            indicative: {
-                validator,
-                sanitizer
-            },
+            indicative,
             graphQlExtensions: [],
             extendGraphQlMiddleware: (...middleware: any[]) => {
                 this.ctx.graphQlMiddleware = [
@@ -585,6 +582,7 @@ export class Tensei implements TenseiContract {
                 request.logger = this.ctx.logger
                 request.storage = this.ctx.storage
                 request.emitter = this.ctx.emitter
+                request.indicative = indicative
 
                 // @ts-ignore
                 this.ctx.request = request

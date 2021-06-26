@@ -1,7 +1,6 @@
 name: MongoDB 4.0
 
 on:
-  push:
   pull_request:
 
 jobs:

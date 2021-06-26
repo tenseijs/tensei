@@ -255,8 +255,6 @@ export const getResolvers = (
 
                         await ctx.manager.persistAndFlush(data)
 
-                        await ctx.manager.persistAndFlush(data)
-
                         await Utils.graphql.populateFromResolvedNodes(
                             resources,
                             ctx.manager,

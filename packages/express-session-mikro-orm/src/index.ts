@@ -105,9 +105,15 @@ const StoreFactory = (Store: any, sessionConfig?: SessionConfig) => {
 
                         this.orm.em.assign(session, updates)
 
-                        return this.orm.em.nativeUpdate(this.entityName, {
-                            session_id: session.session_id
-                        }, updates).then(() => session)
+                        return this.orm.em
+                            .nativeUpdate(
+                                this.entityName,
+                                {
+                                    session_id: session.session_id
+                                },
+                                updates
+                            )
+                            .then(() => session)
                     }
 
                     const newSession = this.orm.em.create(this.entityName, {

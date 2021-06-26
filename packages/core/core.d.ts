@@ -1,5 +1,6 @@
 import { Signale } from 'signale'
 import { Mail } from '@tensei/mail'
+import indicative from 'indicative'
 import { ResourceContract, User, Asset } from '@tensei/common'
 
 declare global {
@@ -13,6 +14,7 @@ declare global {
             storage: Config['storage']
             currentCtx: () => Config
             emitter: Config['emitter']
+            indicative: typeof indicative
             scripts: Asset[]
             styles: Asset[]
         }

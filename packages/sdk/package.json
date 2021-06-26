@@ -1,0 +1,35 @@
+{
+	"name": "@tensei/sdk",
+	"version": "0.8.4",
+	"license": "MIT",
+	"main": "./build/index.js",
+	"module": "./build/index.js",
+	"bin": {
+		"tensei-sdk": "./scripts/fetch-types.js"
+	},
+	"files": [
+		"build/",
+		"scripts/"
+	],
+	"scripts": {
+		"prettier": "prettier --write './**/*.{js,json,ts,css}'",
+		"dev": "tsc --watch",
+		"test": "jest --verbose --runInBand --forceExit",
+		"build": "rimraf build/ && siroc build -i src/index.ts -o build/index.js -f cjs && node scripts/build-types.js"
+	},
+	"dependencies": {
+		"@types/axios": "^0.14.0",
+		"axios": "^0.21.1",
+		"consola": "^2.15.3",
+		"proxy-polyfill": "^0.3.2"
+	},
+	"devDependencies": {
+		"@babel/preset-env": "^7.14.5",
+		"@babel/preset-typescript": "^7.14.5",
+		"@types/jest": "^26.0.23",
+		"jest": "^27.0.4",
+		"rimraf": "^3.0.2",
+		"siroc": "^0.11.0",
+		"typescript": "^4.2.4"
+	}
+}

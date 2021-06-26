@@ -109,6 +109,7 @@ declare module '@tensei/common/fields' {
         component: FieldContract['component']
         inputName: string
         isSortable: boolean
+        isFilterable: boolean
         description: string
         rules: string[]
         defaultValue: any
@@ -272,6 +273,7 @@ declare module '@tensei/common/fields' {
          *
          */
         isSortable: boolean
+        isFilterable: boolean
         isSearchable: boolean
         /**
          *
@@ -746,6 +748,7 @@ declare module '@tensei/common/fields' {
          *
          */
         isSortable: boolean
+        isFilterable: boolean
         isSearchable: boolean
         /**
          *
@@ -826,6 +829,8 @@ declare module '@tensei/common/fields' {
          *
          */
         sortable<T extends FieldContract>(this: T): T
+        filterable<T extends FieldContract>(this: T): T
+        notFilterable<T extends FieldContract>(this: T): T
         /**
          *
          * Make this field searchable. will also index
