@@ -1,6 +1,6 @@
 {
     "name": "@tensei/cookie-sessions",
-    "version": "0.8.8",
+    "version": "0.8.9",
     "main": "./src/index.js",
     "license": "MIT",
     "files": [
@@ -13,7 +13,7 @@
         "@types/express-session": "^1.17.3",
         "csurf": "^1.11.0",
         "express-session": "^1.17.1",
-        "express-session-mikro-orm": "^0.8.8"
+        "express-session-mikro-orm": "^0.8.9"
     },
     "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }
