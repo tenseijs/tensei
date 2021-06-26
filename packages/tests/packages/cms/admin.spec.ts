@@ -62,7 +62,6 @@ test('can passwordlessly register a new administrator user', async () => {
     })
 
     const sessionData = JSON.parse(session[0].data)
-
     expect(sessionData?.user?.id?.toString()).toBe(authUser.id.toString())
 })
 

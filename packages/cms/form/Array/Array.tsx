@@ -79,6 +79,7 @@ const FormArray: React.FC<FormComponentProps> = ({
                             onChange={event =>
                                 onListItemUpdate(event, itemIndex)
                             }
+                            
                             className="flex-1"
                             id={id}
                             name={name}
