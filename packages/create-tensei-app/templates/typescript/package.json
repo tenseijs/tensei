@@ -13,7 +13,7 @@
     "@tensei/social-auth": "^0.8.9"
   },
   "scripts": {
-    "example:dev": "nodemon --ext 'ts,js' --exec 'ts-node src/index.ts'",
+    "dev": "nodemon --ext 'ts,js' --exec 'ts-node src/index.ts'",
     "build": "tsc",
     "start": "node build/index.js"
   },
