@@ -1,1 +1,0 @@
-{"version":3,"file":"register.d.ts","sourceRoot":"","sources":["../../src/handlers/register.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,eAAe,EAAE,MAAM,MAAM,CAAA;AAEtC,OAAO,EAAE,eAAe,EAA0D,MAAM,UAAU,CAAA;AAElG,wBAA8B,YAAY,CACxC,OAAO,EAAE,eAAe,EACxB,QAAQ,EAAE,eAAe,GACxB,OAAO,CAAC,IAAI,CAAC,CAkBf"}

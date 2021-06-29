@@ -7,6 +7,7 @@ const login_1 = tslib_1.__importDefault(require("./login"));
 const logout_1 = tslib_1.__importDefault(require("./logout"));
 const signup_1 = tslib_1.__importDefault(require("./signup"));
 const check_session_1 = tslib_1.__importDefault(require("./check-session"));
+const social_callback_1 = tslib_1.__importDefault(require("./social-callback"));
 function handleAuth() {
     return function (request, response) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
@@ -22,6 +23,8 @@ function handleAuth() {
                     return invoke(check_session_1.default);
                 case 'signup':
                     return invoke(signup_1.default);
+                case 'social':
+                    return invoke(social_callback_1.default);
                 default:
                     response.status(404).end();
             }

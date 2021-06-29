@@ -7,6 +7,7 @@ import handleLogin from './login'
 import handleLogout from './logout'
 import handleSignup from './signup'
 import handleCheckSession from './check-session'
+import handleSocialConfirm from './social-callback'
 
 export function handleAuth(): NextIronHandler {
   return async function (request, response): Promise<void> {
@@ -26,6 +27,8 @@ export function handleAuth(): NextIronHandler {
         return invoke(handleCheckSession)
       case 'signup':
         return invoke(handleSignup)
+      case 'social':
+        return invoke(handleSocialConfirm)
       default:
         response.status(404).end()
     }

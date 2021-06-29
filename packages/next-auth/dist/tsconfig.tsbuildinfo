@@ -601,8 +601,13 @@
         "signature": "a08f18ba1e2568d38275a9e1e90ac819306c85bfb5111179b23a540d39d6c99b",
         "affectsGlobalScope": false
       },
+      "../src/handlers/social-callback.ts": {
+        "version": "6f1d4700ec8ee040012128865b676e75faeb9dc7eda7d8bfe3ffd32c424f2cd7",
+        "signature": "ff06f5e927e121180cb25305b859923c8f7310f01c6a1fa8912b0e12594d80d7",
+        "affectsGlobalScope": false
+      },
       "../src/handlers/auth.ts": {
-        "version": "727b6028245bf2b5044f1220cb1c408c75b654e465837e69a17e3760255cff22",
+        "version": "55eee818d8f0fc664ea7c14407ecd1b4d8aa25a3a743caaac4ab70565c5fd018",
         "signature": "84a811d2d6445a854d6444e3eb2b180a22bd5c0353cbaba5779e758c96b4c849",
         "affectsGlobalScope": false
       },
@@ -1065,6 +1070,7 @@
         "../src/handlers/login.ts",
         "../src/handlers/logout.ts",
         "../src/handlers/signup.ts",
+        "../src/handlers/social-callback.ts",
         "../src/utils.ts"
       ],
       "../src/handlers/check-session.ts": [
@@ -1083,6 +1089,11 @@
         "../src/utils.ts"
       ],
       "../src/handlers/signup.ts": [
+        "../../../node_modules/next/types/index.d.ts",
+        "../../../node_modules/tslib/tslib.d.ts",
+        "../src/utils.ts"
+      ],
+      "../src/handlers/social-callback.ts": [
         "../../../node_modules/next/types/index.d.ts",
         "../../../node_modules/tslib/tslib.d.ts",
         "../src/utils.ts"
@@ -1369,6 +1380,7 @@
         "../../../node_modules/next/dist/next-server/lib/router/utils/route-regex.d.ts"
       ],
       "../../../node_modules/next/dist/next-server/lib/utils.d.ts": [
+        "../../../node_modules/@next/env/types/index.d.ts",
         "../../../node_modules/@types/node/http.d.ts",
         "../../../node_modules/@types/node/index.d.ts",
         "../../../node_modules/@types/node/querystring.d.ts",
@@ -1377,7 +1389,6 @@
         "../../../node_modules/next/dist/next-server/lib/router/router.d.ts",
         "../../../node_modules/next/dist/next-server/server/config.d.ts",
         "../../../node_modules/next/dist/next-server/server/get-page-files.d.ts",
-        "../../../node_modules/next/node_modules/@next/env/types/index.d.ts",
         "../../../node_modules/next/types/index.d.ts"
       ],
       "../../../node_modules/next/dist/next-server/server/api-utils.d.ts": [
@@ -1464,6 +1475,10 @@
         "../src/utils.ts"
       ],
       "../src/handlers/signup.ts": [
+        "../../../node_modules/next/types/index.d.ts",
+        "../src/utils.ts"
+      ],
+      "../src/handlers/social-callback.ts": [
         "../../../node_modules/next/types/index.d.ts",
         "../src/utils.ts"
       ],
@@ -1621,6 +1636,7 @@
       "../src/handlers/login.ts",
       "../src/handlers/logout.ts",
       "../src/handlers/signup.ts",
+      "../src/handlers/social-callback.ts",
       "../src/index.ts",
       "../src/instance.ts",
       "../src/must-be-authenticated.ts",
