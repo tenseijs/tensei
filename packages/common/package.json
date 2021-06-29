@@ -35,7 +35,8 @@
         "indicative": "^7.4.4",
         "luxon": "^1.25.0",
         "pluralize": "^8.0.0",
-        "qs": "^6.9.4"
+        "qs": "^6.9.4",
+        "dayjs": "^1.8.34"
     },
     "publishConfig": {
         "access": "public"
