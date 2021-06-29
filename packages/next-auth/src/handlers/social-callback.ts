@@ -1,6 +1,6 @@
 import { NextApiResponse } from 'next'
 
-import { NextIronRequest, tensei, getAccessTokenExpiryTimeStamp, prepareAuthData } from '../utils'
+import { NextIronRequest, tensei, getAccessTokenExpiryTimeStamp, getProfileUrl } from '../utils'
 
 export default async function handleSocialCallback(
   request: NextIronRequest,
@@ -9,7 +9,7 @@ export default async function handleSocialCallback(
   const apiResponse = await tensei.auth().socialConfirm({
     skipAuthentication: true,
     object: {
-        token: request.query.access_token
+      access_token: request.query.access_token,
     },
   })
 
@@ -20,5 +20,9 @@ export default async function handleSocialCallback(
 
   await request.session.save()
 
-  return response.status(200).json(prepareAuthData(apiResponse.data.data))
+  response.writeHead(302, {
+    Location: getProfileUrl(),
+  })
+
+  response.end()
 }

@@ -1,1 +1,0 @@
-{"version":3,"file":"redirect-if-authenticated.d.ts","sourceRoot":"","sources":["../src/redirect-if-authenticated.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,MAAM,OAAO,CAAA;AACrC,OAAO,EAAE,kBAAkB,EAAuD,MAAM,MAAM,CAAA;AAM9F,oBAAY,0BAA0B,GAAG;IACvC,kBAAkB,CAAC,EAAE,kBAAkB,CAAA;CACxC,CAAA;AAED,eAAO,MAAM,uBAAuB,oBACjB,cAAc,GAAG,CAAC,GAAG,0BAA0B,8EA+BjE,CAAA"}

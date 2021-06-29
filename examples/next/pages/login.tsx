@@ -1,4 +1,4 @@
-import { useAuth, redirectIfAuthenticated } from '@tensei/next-auth'
+import { useAuth, redirectIfAuthenticated, tensei } from '@tensei/next-auth'
 
 export default function Login() {
     const { setAuth } = useAuth()
@@ -21,7 +21,11 @@ export default function Login() {
       }
 
     return (
-        <button onClick={login}>Login here</button>
+        <>
+          <button onClick={login}>Login here</button>
+          <br />
+          <a href={tensei.auth().socialRedirectUrl('google')}>Login with google</a>
+        </>
     )
 }
 
