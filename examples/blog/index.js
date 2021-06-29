@@ -64,17 +64,16 @@ tensei()
                 secret: process.env.GOOGLE_SECRET,
                 clientCallback: 'http://localhost:1234/'
             })
-            .configureTokens({
-                accessTokenExpiresIn: 60,
-                refreshTokenExpiresIn: 240
-            })
             .setup(({ user }) => {
                 user.fields([
                     hasMany('Category'),
                     boolean('Accepted Terms And Conditions').rules('required').default(false)
                 ])
             })
-            // .refreshTokens()
+            .configureTokens({
+                accessTokenExpiresIn: 60
+            })
+            .refreshTokens()
         .plugin(),
         rest().plugin(),
         graphql().plugin(),
