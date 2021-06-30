@@ -1,14 +1,14 @@
 {
     "name": "@tensei/mde",
-    "version": "0.8.11",
+    "version": "0.8.12",
     "main": "build/index.js",
     "license": "MIT",
     "files": [
         "build/"
     ],
     "devDependencies": {
-        "@tensei/core": "^0.8.11",
-        "@tensei/mail": "^0.8.9",
+        "@tensei/core": "^0.8.12",
+        "@tensei/mail": "^0.8.12",
         "@testing-library/jest-dom": "^5.11.1",
         "@testing-library/react": "^10.4.7",
         "@types/jest": "^26.0.7",

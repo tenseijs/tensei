@@ -1,6 +1,6 @@
 {
     "name": "@tensei/two-factor-auth",
-    "version": "0.8.9",
+    "version": "0.8.12",
     "license": "MIT",
     "main": "./src/index.js",
     "publishConfig": {
