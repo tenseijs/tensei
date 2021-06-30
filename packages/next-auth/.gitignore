@@ -1,0 +1,4 @@
+build/
+node_modules/
+mix-manifest.json
+dist/

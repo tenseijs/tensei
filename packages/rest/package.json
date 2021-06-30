@@ -31,7 +31,8 @@
         "@tensei/core": "^0.8.9",
         "express-response-formatter": "^2.0.2",
         "pluralize": "^8.0.0",
-        "qs": "^6.9.4"
+        "qs": "^6.9.4",
+        "prettier": "^2.0.5"
     },
     "publishConfig": {
         "access": "public"

@@ -329,7 +329,7 @@ export class AuthAPI {
 		this.auth_response = undefined
 		this.invokeAuthChange()
 
-		this.instance.defaults.headers.common['Authorization'] = undefined
+		delete this.instance.defaults.headers.common['Authorization']
 	}
 
 	async register(payload: { object: any; skipAuthentication?: boolean }) {

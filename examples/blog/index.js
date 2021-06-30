@@ -62,11 +62,7 @@ tensei()
             .social('google', {
                 key: process.env.GOOGLE_KEY,
                 secret: process.env.GOOGLE_SECRET,
-                clientCallback: 'http://localhost:1234/'
-            })
-            .configureTokens({
-                accessTokenExpiresIn: 60,
-                refreshTokenExpiresIn: 240
+                clientCallback: 'http://localhost:3002/api/auth/social'
             })
             .setup(({ user }) => {
                 user.fields([
@@ -74,7 +70,10 @@ tensei()
                     boolean('Accepted Terms And Conditions').rules('required').default(false)
                 ])
             })
-            // .refreshTokens()
+            .configureTokens({
+                accessTokenExpiresIn: 60
+            })
+            .refreshTokens()
         .plugin(),
         rest().plugin(),
         graphql().plugin(),

@@ -1,4 +1,4 @@
-import { AuthPluginConfig } from '@tensei/auth'
+import { auth, AuthPluginConfig } from '@tensei/auth'
 import { PluginSetupConfig, ResourceContract } from '@tensei/common'
 
 import { resolveFieldTypescriptType } from './helpers'
@@ -71,10 +71,22 @@ export const generateAuthTypes = (
             field.databaseField !== 'id'
     )
 
+    const socialProviders = Object.keys(authConfig.providers)
+
     return `
         export interface ${interfaces.LoginInput} {
             email: string
             password: string
+        }
+
+        ${
+            socialProviders.length > 0
+                ? `
+            export type AvailableSocialProviders = ${socialProviders
+                .map(provider => `'${provider}'`)
+                .join('|')}
+        `
+                : ''
         }
 
         export interface ${interfaces.RegisterInput} {
@@ -179,6 +191,32 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
         login(payload: { object: ${
             interfaces.LoginInput
         }, skipAuthentication?: boolean }): Promise<DataResponse<AuthResponse>>
+
+        ${
+            Object.keys(authConfig.providers).length > 0
+                ? `
+        /**
+         * 
+         * Get the redirect url to the tensei API for a
+         * specific social provider:
+         *         Example:
+         *              await tensei.auth().socialRedirectUrl('google')
+         * 
+         **/
+        socialRedirectUrl(provider: AvailableSocialProviders): string
+
+        /**
+         * 
+         * Confirm social authenticated and login a user. If you omit the access token, this method will
+         * try to get the access_token parameter from the window URL.
+         *      Example:
+         *           await tensei.auth().socialConfirm({ object: { access_token: '6582ab8e9957f3d4e331a821823065c2cde0c32c8' } })
+         * 
+         **/
+        socialConfirm(payload?: { object: { access_token: string } }): Promise<DataResponse<AuthResponse>>
+        `
+                : ``
+        }
 
         /**
          * 
