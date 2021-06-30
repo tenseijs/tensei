@@ -1,6 +1,6 @@
 {
   "name": "@tensei/next-auth",
-  "version": "0.8.10",
+  "version": "0.8.11",
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
