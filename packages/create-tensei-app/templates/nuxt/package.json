@@ -1,23 +1,23 @@
 {
-    "name": "tensei-app",
-    "version": "1.0.0",
-    "main": "index.js",
-    "license": "MIT",
-    "dependencies": {
-        "@tensei/auth": "^0.8.9",
-        "@tensei/cms": "^0.8.9",
-        "@tensei/core": "^0.8.9",
-        "@tensei/media": "^0.8.9",
-        "@tensei/nuxt": "^0.8.9",
-        "@tensei/rest": "^0.8.9"
-    },
-    "scripts": {
-        "dev": "nodemon index.js",
-        "start": "node index.js",
-        "build": "nuxt build"
-    },
-    "devDependencies": {
-        "@mikro-orm/sqlite": "^4.4.0",
-        "nodemon": "^2.0.7"
-    }
+  "name": "tensei-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@tensei/auth": "^null",
+    "@tensei/cms": "^null",
+    "@tensei/core": "^null",
+    "@tensei/media": "^null",
+    "@tensei/nuxt": "^null",
+    "@tensei/rest": "^null"
+  },
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "build": "nuxt build"
+  },
+  "devDependencies": {
+    "@mikro-orm/sqlite": "^4.4.0",
+    "nodemon": "^2.0.7"
+  }
 }
