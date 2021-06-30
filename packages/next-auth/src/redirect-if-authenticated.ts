@@ -10,13 +10,13 @@ export type MustBeAuthenticatedOptions = {
 }
 
 export const redirectIfAuthenticated = (
-  optsOrComponent: ComponentType<any> | MustBeAuthenticatedOptions
+  optsOrComponent?: ComponentType<any> | MustBeAuthenticatedOptions
 ) => {
   if (typeof optsOrComponent === 'function') {
     return redirectIfAuthenticatedCsr(optsOrComponent)
   }
 
-  const { getServerSideProps } = optsOrComponent || {}
+  const { getServerSideProps } = (optsOrComponent || {})
 
   return withSession(async function (ctx: any): Promise<GetServerSidePropsResult<any>> {
     const auth = ctx.req.session.get('auth')
