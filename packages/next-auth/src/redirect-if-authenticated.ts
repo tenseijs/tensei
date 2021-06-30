@@ -16,7 +16,7 @@ export const redirectIfAuthenticated = (
     return redirectIfAuthenticatedCsr(optsOrComponent)
   }
 
-  const { getServerSideProps } = (optsOrComponent || {})
+  const { getServerSideProps } = optsOrComponent || {}
 
   return withSession(async function (ctx: any): Promise<GetServerSidePropsResult<any>> {
     const auth = ctx.req.session.get('auth')

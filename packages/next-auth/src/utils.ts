@@ -22,7 +22,8 @@ export const getAccessTokenExpiryTimeStamp = (seconds: number) => {
 
 export const tensei = sdk({
   url: process.env.TENSEI_API_URL,
-})
+  // @ts-ignore -> These types will be generated when the user runs the `yarn tensei-sdk g` command.
+}) as import('@tensei/sdk').SdkContract
 
 export function getLoginUrl() {
   return process.env.NEXT_LOGIN_PATH || '/login'

@@ -1766,6 +1766,7 @@ export class Auth {
         input login_input {
             email: String!
             password: String!
+            two_factor_token: String
         }
 
         input request_password_reset_input {
@@ -2201,7 +2202,7 @@ export class Auth {
             })
         }
 
-        const { email, password, token } = payload
+        const { email, password, two_factor_token } = payload
 
         const user: any = await manager.findOne(
             this.resources.user.data.pascalCaseName,
@@ -2232,14 +2233,17 @@ export class Auth {
         if (this.config.twoFactorAuth && user.two_factor_enabled) {
             const Speakeasy = require('speakeasy')
 
-            if (!token) {
+            if (!two_factor_token) {
                 throw ctx.userInputError(
-                    'The two factor authentication token is required.'
+                    'The two factor authentication token is required.',
+                    {
+                        twoFactorAuthRequired: true
+                    }
                 )
             }
 
             const verified = Speakeasy.totp.verify({
-                token,
+                token: two_factor_token,
                 encoding: 'base32',
                 secret: user.two_factor_secret
             })
@@ -2549,7 +2553,8 @@ export class Auth {
             [key: string]: string
         } = {
             email: 'required|email',
-            password: 'required|min:8'
+            password: 'required|min:8',
+            two_factor_token: 'string|min:6|max:6'
         }
 
         try {

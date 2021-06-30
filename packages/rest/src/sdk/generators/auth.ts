@@ -77,6 +77,7 @@ export const generateAuthTypes = (
         export interface ${interfaces.LoginInput} {
             email: string
             password: string
+            two_factor_token?: string
         }
 
         ${
