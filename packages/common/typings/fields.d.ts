@@ -34,7 +34,7 @@ declare module '@tensei/common/fields' {
     interface FieldProperty {
         name?: string
         entity?: () => any
-        type?: string
+        type?: any
         columnTypes?: string[]
         primary?: boolean
         serializedPrimaryKey?: boolean

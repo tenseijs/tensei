@@ -80,9 +80,10 @@ tensei()
         cors(),
         mde().plugin()
     ])
-    .db({
+    .databaseConfig({
         type: 'sqlite',
-        dbName: 'db.sqlite'
+        dbName: 'db.sqlite',
+        debug: true
     })
     .start()
     .catch(console.error)

@@ -2,7 +2,7 @@ const { cms } = require('@tensei/cms')
 const { auth } = require('@tensei/auth')
 const { media } = require('@tensei/media')
 const { graphql } = require('@tensei/graphql')
-const { tensei, welcome } = require('@tensei/core')
+const { tensei, welcome, cors } = require('@tensei/core')
 
 tensei()
     .root(__dirname)
@@ -11,7 +11,8 @@ tensei()
         cms().plugin(),
         media().plugin(),
         auth().plugin(),
-        graphql().plugin()
+        graphql().plugin(),
+        cors()
     ])
     .start()
     .catch(console.error)

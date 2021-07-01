@@ -131,7 +131,7 @@ export class Field implements FieldContract {
     }
 
     public afterConfigSet() {
-        if (this.tenseiConfig?.orm?.config.get('type') === 'sqlite') {
+        if (this.tenseiConfig?.databaseConfig?.type === 'sqlite') {
             this.nullable()
         }
     }

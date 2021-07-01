@@ -1,8 +1,13 @@
 import { setup, gql, fakeUser, setupFakeMailer } from './setup'
 import Supertest from 'supertest'
 import { auth } from '@tensei/auth'
-import { graphql } from '@tensei/graphql'
+import { rest } from '@tensei/rest'
 import { text } from '@tensei/common'
+import { graphql } from '@tensei/graphql'
+
+jest.mock('purest', () => {
+    return () => {}
+})
 
 test('Registers auth resources when plugin is registered', async () => {
     const {
@@ -700,4 +705,90 @@ test('authentication works when refresh tokens are disabled', async () => {
         email: user.email,
         email_verified_at: null
     })
+})
+
+test('can signup with social authentication', async () => {
+    const githubConfig = {
+        key: 'TEST_KEY',
+        secret: 'TEST_SECRET'
+    }
+    const { app, ctx } = await setup([
+        auth()
+            .verifyEmails()
+            .user('Doctor')
+            .social('github', githubConfig)
+            .plugin(),
+        rest().plugin()
+    ])
+
+    const client = Supertest(app)
+
+    const getResponse = await client.get('/connect/github')
+
+    expect(getResponse.status).toBe(302)
+    expect(getResponse.headers.location).toBe(
+        `https://github.com/login/oauth/authorize?client_id=${githubConfig.key}&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3Aundefined%2Fconnect%2Fgithub%2Fcallback&scope=user%2Cuser%3Aemail`
+    )
+
+    const fakeIdentity = {
+        provider: 'github',
+        access_token: 'TEST_ACCESS_TOKEN',
+        temporal_token: 'TEST_TEMPORAL_TOKEN',
+        email: 'test@email.com',
+        payload: JSON.stringify({
+            email: 'test@email.com'
+        }),
+        provider_user_id: 'TEST_PROVIDER_USER_ID'
+    }
+
+    await ctx.orm.em.persistAndFlush(
+        ctx.orm.em.create('OauthIdentity', fakeIdentity)
+    )
+
+    const postResponse = await client.post('/api/social/confirm').send({
+        access_token: fakeIdentity.temporal_token
+    })
+
+    expect(postResponse.status).toBe(200)
+    expect(postResponse.body).toMatchObject({
+        data: {
+            doctor: {
+                email: fakeIdentity.email,
+                email_verified_at: expect.any(String)
+            }
+        }
+    })
+})
+
+test('can verify registered user email', async () => {
+    const { app, ctx } = await setup([
+        auth().verifyEmails().user('Student').plugin(),
+        rest().plugin()
+    ])
+
+    const client = Supertest(app)
+
+    const user = fakeUser()
+
+    const registerResponse = await client.post('/api/register').send(user)
+
+    const savedUser = await ctx.orm.em.findOne<{
+        email: string
+        email_verification_token: string
+    }>('Student', {
+        email: user.email
+    })
+
+    const response = await client
+        .post('/api/emails/verification/confirm')
+        .send({
+            email_verification_token: savedUser.email_verification_token
+        })
+        .set(
+            'Authorization',
+            `Bearer ${registerResponse.body.data.access_token}`
+        )
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.email_verified_at).toBeDefined()
 })

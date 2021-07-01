@@ -26,7 +26,10 @@ import {
     GraphQlQueryContract,
     ApiContext,
     UserRole,
-    Utils
+    Utils,
+    ResourceContract,
+    PluginContract,
+    timestamp
 } from '@tensei/common'
 
 import {
@@ -44,9 +47,7 @@ import {
 export * from './config'
 
 import { setup } from './setup'
-import { ResourceContract } from '@tensei/common'
 import { Request } from 'express'
-import { PluginContract } from '@tensei/common/plugins'
 
 type JwtPayload = {
     id: string
@@ -324,7 +325,7 @@ export class Auth {
                 ...this.config.fields,
                 ...(this.config.verifyEmails
                     ? [
-                          dateTime('Email Verified At')
+                          timestamp('Email Verified At')
                               .hideOnIndex()
                               .hideOnDetail()
                               .hideOnInsertApi()
@@ -351,8 +352,13 @@ export class Auth {
                 }
 
                 if (this.config.verifyEmails) {
-                    payload.email_verified_at = null
-                    payload.email_verification_token = this.generateRandomToken()
+                    if (!entity.email_verified_at) {
+                        payload.email_verified_at = null
+                    }
+
+                    payload.email_verification_token = this.generateRandomToken(
+                        72
+                    )
                 }
 
                 em.assign(entity, payload)
@@ -1180,6 +1186,11 @@ export class Auth {
                           .path(this.getApiPath('emails/verification/confirm'))
                           .post()
                           .group('Verify Emails')
+                          .authorize(({ user }) =>
+                              this.config.rolesAndPermissions
+                                  ? user && !user.public
+                                  : !!user
+                          )
                           .parameters([
                               {
                                   in: 'body',
@@ -2000,15 +2011,14 @@ export class Auth {
     private resendVerificationEmail = async ({
         manager,
         user,
-        emitter,
-        mailer
+        emitter
     }: ApiContext) => {
         if (!user.email_verification_token) {
             return false
         }
 
         manager.assign(user, {
-            email_verification_token: this.generateRandomToken()
+            email_verification_token: this.generateRandomToken(72)
         })
 
         await manager.persistAndFlush(user)
@@ -2138,7 +2148,7 @@ export class Auth {
             }
 
             if (this.config.verifyEmails) {
-                createPayload.email_verified_at = new Date()
+                createPayload.email_verified_at = Dayjs().format()
                 createPayload.email_verification_token = null
             }
 
@@ -2603,10 +2613,12 @@ export class Auth {
                 type: TokenTypes.REFRESH,
                 expires_at: previousTokenExpiry
                     ? previousTokenExpiry
-                    : Dayjs().add(
-                          this.config.tokensConfig.refreshTokenExpiresIn,
-                          'second'
-                      )
+                    : Dayjs()
+                          .add(
+                              this.config.tokensConfig.refreshTokenExpiresIn,
+                              'second'
+                          )
+                          .format()
             }
         )
 

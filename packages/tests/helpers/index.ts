@@ -72,7 +72,6 @@ export const getDatabaseCredentials = () => {
         type: databaseType,
         forceUtcTimezone: true
     }
-
     if (databaseType === 'postgresql') {
         config.dbName = process.env.DATABASE_NAME || 'postgres'
         config.user = process.env.DATABASE_USER || 'postgres'
