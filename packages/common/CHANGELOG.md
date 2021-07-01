@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.14](https://github.com/tenseijs/tensei/compare/v0.8.13...v0.8.14) (2021-07-01)
+
+
+### Bug Fixes
+
+* **common:** fix date type property definition ([c97d7e2](https://github.com/tenseijs/tensei/commit/c97d7e298b8c5ef5c672d6fc4974d4fca5d56e13))
+
+
+
+
+
 ## [0.8.13](https://github.com/tenseijs/tensei/compare/v0.8.12...v0.8.13) (2021-07-01)
 
 

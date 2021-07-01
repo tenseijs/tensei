@@ -1,6 +1,6 @@
 {
 	"name": "@tensei/sdk",
-	"version": "0.8.13",
+	"version": "0.8.14",
 	"license": "MIT",
 	"main": "./build/index.js",
 	"module": "./build/index.js",
