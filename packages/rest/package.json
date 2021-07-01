@@ -18,10 +18,10 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css,tsx}'",
-        "dev": "tsc --watch --p tsconfig.server.json",
+        "dev": "tsc --watch",
         "copy:files": "copyfiles -u 1 src/docs/index.mustache build/",
         "test": "jest --verbose --runInBand --forceExit",
-        "build": "rimraf build && tsc --p tsconfig.server.json"
+        "build": "rimraf build && tsc"
     },
     "dependencies": {
         "@tensei/common": "^0.8.12",
