@@ -1,6 +1,6 @@
 {
     "name": "@tensei/tests",
-    "version": "0.8.12",
+    "version": "0.8.13",
     "license": "MIT",
     "devDependencies": {
         "@types/faker": "^4.1.12",
@@ -22,8 +22,8 @@
         "@mikro-orm/mysql": "^4.3.0",
         "@mikro-orm/postgresql": "^4.3.0",
         "@mikro-orm/sqlite": "^4.3.0",
-        "@tensei/common": "^0.8.12",
-        "@tensei/core": "^0.8.12"
+        "@tensei/common": "^0.8.13",
+        "@tensei/core": "^0.8.13"
     },
     "config": {
         "commitizen": {
