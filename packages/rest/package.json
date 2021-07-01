@@ -18,13 +18,10 @@
     },
     "scripts": {
         "prettier": "prettier --write './**/*.{js,json,ts,css,tsx}'",
-        "build": "rimraf build && yarn build:server && yarn build:client && yarn copy:files",
-        "dev:server": "tsc --watch --p tsconfig.server.json",
+        "dev": "tsc --watch --p tsconfig.server.json",
         "copy:files": "copyfiles -u 1 src/docs/index.mustache build/",
-        "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
         "test": "jest --verbose --runInBand --forceExit",
-        "build:server": "tsc --p tsconfig.server.json",
-        "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "build": "rimraf build && tsc --p tsconfig.server.json"
     },
     "dependencies": {
         "@tensei/common": "^0.8.12",

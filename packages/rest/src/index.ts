@@ -31,10 +31,6 @@ import { generateResourceInterfaces } from './sdk/generators/interfaces'
 import { generateFetchWrapperForResources } from './sdk/generators/rest'
 import { formatContent } from './sdk/generators/helpers'
 
-const indexFileContent = Fs.readFileSync(
-    Path.resolve(__dirname, 'docs', 'index.mustache')
-).toString()
-
 class Rest {
     private getApiPath = (path: string) => {
         return `/${this.path}/${path}`
@@ -984,15 +980,6 @@ class Rest {
 
                 app.use(responseEnhancer())
 
-                app.get('/rest-docs.css', (request, response) =>
-                    response.sendFile(
-                        Path.resolve(__dirname, 'docs', 'app.css')
-                    )
-                )
-                app.get('/rest-docs.js', (request, response) =>
-                    response.sendFile(Path.resolve(__dirname, 'docs', 'app.js'))
-                )
-
                 extendRoutes(
                     this.extendRoutes(resources, (path: string) =>
                         this.getApiPath(path)
@@ -1060,26 +1047,6 @@ class Rest {
                             )
                         })
                 ])
-            })
-            .boot(config => {
-                const { app, name, routes, extendEvents, serverUrl } = config
-
-                app.get('/rest/routes', (request, response) =>
-                    response.json(
-                        routes.map(route => ({
-                            ...route.serialize(),
-                            path: `/${route.config.path}`
-                        }))
-                    )
-                )
-
-                app.get('/rest-docs(/*)?', (request, response) =>
-                    response.send(
-                        Mustache.render(indexFileContent, {
-                            name
-                        })
-                    )
-                )
             })
     }
 }
