@@ -69,12 +69,8 @@ Object {
         },
       },
       "required": Array [
-        "id",
         "title",
         "body",
-        "title_hidden_from_insert_and_fetch_api",
-        "title_hidden_from_update_and_fetch_api",
-        "post",
       ],
       "type": "object",
     },
@@ -174,8 +170,6 @@ Object {
         },
         "scheduled_for": Object {
           "description": "",
-          "format": "date",
-          "type": "string",
         },
         "tags": Object {
           "description": "",
@@ -195,15 +189,12 @@ Object {
         },
       },
       "required": Array [
-        "id",
-        "title",
         "description",
         "content",
         "av_cpc",
         "category",
         "user",
         "published_at",
-        "approved",
         "scheduled_for",
       ],
       "type": "object",
@@ -245,10 +236,7 @@ Object {
           "type": "boolean",
         },
       },
-      "required": Array [
-        "id",
-        "like",
-      ],
+      "required": Array [],
       "type": "object",
     },
     "Tag": Object {
@@ -307,9 +295,7 @@ Object {
         },
       },
       "required": Array [
-        "id",
         "name",
-        "description",
       ],
       "type": "object",
     },
@@ -369,7 +355,6 @@ Object {
         },
       },
       "required": Array [
-        "id",
         "full_name",
         "email",
         "password",
