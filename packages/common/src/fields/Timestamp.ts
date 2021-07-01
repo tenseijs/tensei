@@ -1,6 +1,6 @@
 import Dayjs from 'dayjs'
 import DateField from './Date'
-import { ReferenceType, DateType } from '@mikro-orm/core'
+import { ReferenceType } from '@mikro-orm/core'
 
 export class Timestamp extends DateField {
     public component = {
