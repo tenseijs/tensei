@@ -1,7 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Modal, Button, Paragraph } from '@tensei/components'
 
+import Tus from '@uppy/tus'
+import Uppy from '@uppy/core'
+import { Dashboard } from '@uppy/react'
+
 import { niceBytes } from './helpers'
+
+import '@uppy/core/dist/style.css'
+import '@uppy/dashboard/dist/style.css'
+import './uppy.css'
 
 const UploadFiles = ({
     open,
@@ -13,6 +21,13 @@ const UploadFiles = ({
     const file = useRef(null)
     const [files, setFiles] = useState([])
     const [progress, setProgress] = useState(0)
+    const [uppy] = useState(new Uppy({
+        id: 'media-upload',
+        autoProceed: false,
+        debug: true,
+    }).use(Tus, {
+        endpoint: 'https://tusd.tusdemo.net/files/'
+    }))
 
     const onFilesSelected = event => {
         setFiles(Array.from(event.target.files))
@@ -88,6 +103,11 @@ const UploadFiles = ({
             title="Upload media"
             className="media-align-top sm:media-my-32 sm:media-max-w-3xl"
         >
+            <div className="mb-12">
+                <Dashboard uppy={uppy} metaFields={[
+                { id: 'name', name: 'Name', placeholder: 'File name' }
+                ]} height='450px' />
+            </div>
             <input
                 ref={file}
                 type="file"
@@ -95,8 +115,11 @@ const UploadFiles = ({
                 multiple
                 onChange={onFilesSelected}
             />
+            <Button secondary onClick={() => file.current.click()}>
+                        Select Files
+                    </Button>
 
-            {files.length === 0 ? (
+            {/* {files.length === 0 ? (
                 <div className="media-w-full media-py-16 media-flex media-justify-center media-items-center">
                     <Button secondary onClick={() => file.current.click()}>
                         Select Files
@@ -136,7 +159,7 @@ const UploadFiles = ({
                         </div>
                     </div>
                 </div>
-            ) : null}
+            ) : null} */}
         </Modal>
     )
 }

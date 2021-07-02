@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.uppy-StatusBar-actionBtn {
+    @apply font-bold h-9 flex items-center  flex items-center justify-center w-full md:w-auto leading-5 px-6 bg-transparent hover:bg-tensei-primary-darker hover:bg-opacity-20 text-white border border-tensei-primary rounded-lg font-medium text-tensei-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out;
+}

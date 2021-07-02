@@ -15,11 +15,13 @@ const { PageWrapper, Paginator, DeleteModal } = window.Tensei.lib
 
 import Card from './Card'
 
-export const Media = ({ detailId, relatedResource }) => {
+export const Media = ({ detailId, relatedResource, hideTitle, selectOnlyOne, selectMultiple, onSelected }) => {
     const resource = window.Tensei.state.resourcesMap['files']
 
     const [selected, setSelected] = useState([])
     const [deleting, setDeleting] = useState(false)
+
+    const selectMode = selectOnlyOne || selectMultiple
 
     const relatedField = relatedResource
         ? relatedResource.fields.find(
@@ -129,6 +131,10 @@ export const Media = ({ detailId, relatedResource }) => {
     }, [search, data.meta.page, data.meta.per_page])
 
     const onCheckboxChange = (row, event) => {
+        if (selectOnlyOne && selected.length === 1 && event.target.checked) {
+            return
+        }
+
         if (event.target.checked) {
             setSelected([...selected, row])
         } else {
@@ -160,29 +166,34 @@ export const Media = ({ detailId, relatedResource }) => {
                     fetchData(data, getQuery())
                 }}
             />
-            <Heading as="h2" className="media-mb-5 media-text-2xl">
-                {detailId && relatedField
-                    ? relatedField.label
-                    : 'Media Library'}
-            </Heading>
+            
+            {hideTitle ? null : (
+                <Heading as="h2" className="media-mb-5 media-text-2xl">
+                    {detailId && relatedField
+                        ? relatedField.label
+                        : 'Media Library'}
+                </Heading>
+            )}
 
             <div className="media-flex media-flex-wrap media-justify-between media-items-center media-w-full">
                 <div className="media-flex media-flex-wrap media-w-full md:media-w-auto">
-                    <div className="media-mr-2 media-h-10 media-px-5 media-flex media-items-center media-justify-center media-bg-white media-rounded-lg media-border media-border-tensei-gray-600">
-                        <Checkbox
-                            onChange={event => {
-                                if (event.target.checked) {
-                                    setSelected(data.data)
-                                } else {
-                                    setSelected([])
+                    {selectOnlyOne ? null : (
+                        <div className="media-mr-2 media-h-10 media-px-5 media-flex media-items-center media-justify-center media-bg-white media-rounded-lg media-border media-border-tensei-gray-600">
+                            <Checkbox
+                                onChange={event => {
+                                    if (event.target.checked) {
+                                        setSelected(data.data)
+                                    } else {
+                                        setSelected([])
+                                    }
+                                }}
+                                checked={
+                                    selected.length !== 0 &&
+                                    selected.length === data.data.length
                                 }
-                            }}
-                            checked={
-                                selected.length !== 0 &&
-                                selected.length === data.data.length
-                            }
-                        />
-                    </div>
+                            />
+                        </div>
+                    )}
                     <SearchInput
                         className="md:media-mr-5 media-w-full media-mb-3 md:media-mb-0 md:media-w-96"
                         value={search}
@@ -191,21 +202,40 @@ export const Media = ({ detailId, relatedResource }) => {
                 </div>
 
                 <div className="media-flex media-w-full md:media-w-auto">
-                    <Button
-                        clear={selected.length === 0}
-                        danger={selected.length > 0}
-                        disabled={selected.length === 0}
-                        onClick={() => setDeleting(true)}
-                    >
-                        Delete
-                    </Button>
-                    <Button
-                        onClick={() => setUploadOpen(true)}
-                        className="media-ml-3"
-                        primary
-                    >
-                        Upload Assets
-                    </Button>
+                    {selectMode ? (
+                        <>
+                            <Button
+                                primary
+                                className="media-ml-3"
+                                onClick={() => {
+                                    if (onSelected) {
+                                        onSelected(selected)
+                                    }
+                                }}
+                                disabled={selected.length !== 1}
+                            >
+                                Select
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                        <Button
+                            clear={selected.length === 0}
+                            danger={selected.length > 0}
+                            disabled={selected.length === 0}
+                            onClick={() => setDeleting(true)}
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            onClick={() => setUploadOpen(true)}
+                            className="media-ml-3"
+                            primary
+                        >
+                            Upload Assets
+                        </Button>
+                        </>
+                    )}
                 </div>
             </div>
 

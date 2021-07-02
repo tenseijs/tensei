@@ -11,6 +11,8 @@ export interface ModalProps {
     open: boolean
     title?: string
     className?: string
+    height?: string
+    width?: string
     noPadding?: boolean
     closeOnBackdropClick?: boolean
     setOpen: (open: boolean) => void
@@ -19,6 +21,8 @@ export interface ModalProps {
 const Modal: React.FC<ModalProps> = ({
     root = '#modal-root',
     open,
+    width,
+    height,
     title,
     setOpen,
     children,
@@ -78,10 +82,11 @@ const Modal: React.FC<ModalProps> = ({
                                 ref={ref}
                                 role="dialog"
                                 aria-modal="true"
+                                style={width && height ? { width, height } : undefined}
                                 aria-labelledby="modal-headline"
                                 className={`inline-block bg-white rounded-lg ${
                                     noPadding ? '' : 'px-4 pt-5 pb-4 sm:p-6'
-                                } text-left overflow-visible shadow-xl transform transition-all w-full ${
+                                } text-left overflow-visible shadow-xl transform transition-all ${width && height ? '' : 'w-full'} ${
                                     className || ''
                                 }`}
                             >

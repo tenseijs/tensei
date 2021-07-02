@@ -97,7 +97,13 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
                 let formData: AbstractData = {}
 
                 formFields.forEach(field => {
-                    formData[field.inputName] = data.data[field.inputName]
+                    let value = data.data[field.inputName]
+
+                    if (typeof value === 'object' && ! Array.isArray(value)) {
+                        value = value.id || value._id
+                    }
+
+                    formData[field.inputName] = value
                 })
 
                 setForm(formData)
@@ -188,6 +194,14 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
                                         field.component.form
                                     ] || window.Tensei.components.form.Text
 
+                                let value = form[field.inputName]
+
+                                if (field.isRelationshipField) {
+                                    if (typeof value === 'object' && ! Array.isArray(value)) {
+                                        value = value.id || value._id
+                                    }
+                                }
+
                                 return (
                                     <div
                                         key={field.inputName}
@@ -206,7 +220,7 @@ const CreateResource: React.FC<CreateResourceProps> = ({}) => {
                                             id={field.inputName}
                                             name={field.inputName}
                                             error={errors[field.inputName]}
-                                            value={form[field.inputName]}
+                                            value={value}
                                             onChange={(value: any) => {
                                                 setForm({
                                                     ...form,

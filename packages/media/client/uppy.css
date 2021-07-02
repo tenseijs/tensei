@@ -1,0 +1,31 @@
+.uppy-Dashboard-AddFiles {
+    border: none !important;
+    margin: 0 !important;
+}
+.uppy-Dashboard-AddFiles-info {
+    display: none !important;
+}
+.uppy-Dashboard-inner {
+    background-color: #fff !important;
+    border: none !important;
+}
+.uppy-StatusBar.is-waiting .uppy-StatusBar-actions {
+    background-color: #fff !important;
+}
+
+.uppy-StatusBar:before {
+    background-color: #fff !important;
+}
+.uppy-StatusBar:not([aria-hidden=true]).is-waiting {
+    border-top: none !important;
+}
+
+.uppy-DashboardContent-bar {
+    background-color: #fff !important;
+    border-bottom: none !important;
+}
+
+.uppy-Root {
+    font-family: 'Nunito' !important;
+    color: #21185A;
+}

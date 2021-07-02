@@ -4,6 +4,7 @@ const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
 const { mde, markdown } = require('@tensei/mde')
+const { media, file, files } = require('@tensei/media')
 
 const {
     tensei,
@@ -26,6 +27,8 @@ tensei()
         resource('Post')
             .fields([
                 text('Title').rules('required'),
+                file('Cover').nullable(),
+                files('Author Avatars'),
                 slug('Slug').creationRules('required', 'unique:slug').unique().from('Title'),
                 markdown('Description').creationRules('required', 'max:255'),
                 textarea('Content').nullable().rules('required'),
@@ -56,6 +59,7 @@ tensei()
     .plugins([
         welcome(),
         cms().plugin(),
+        media().plugin(),
         auth()
             .verifyEmails()
             .twoFactorAuth()

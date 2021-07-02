@@ -561,10 +561,8 @@ export class Tensei implements TenseiContract {
         if (this.ctx.storageConfig.default === 'local') {
             const rootStorage = (this.ctx.storageConfig.disks?.local
                 ?.config as any).root
-            const publicPath = (this.ctx.storageConfig.disks?.local
-                ?.config as any).publicPath
 
-            this.app.use(Express.static(`${rootStorage}`))
+            this.app.use(Express.static(rootStorage))
         }
 
         this.app.use(

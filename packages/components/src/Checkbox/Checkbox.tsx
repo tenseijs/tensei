@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, MouseEvent } from 'react'
+import React, { ChangeEventHandler, MouseEvent, RefObject, forwardRef } from 'react'
 
 export interface CheckboxProps {
     id?: string
@@ -11,11 +11,12 @@ export interface CheckboxProps {
     disabled?: boolean
     labelClassName?: string
     checkboxClassName?: string
+    ref?: RefObject<HTMLInputElement>
     onClick?: (event: MouseEvent<HTMLDivElement>) => void
     onChange?: ChangeEventHandler<HTMLInputElement>
 }
 
-const Checkbox: React.FC<CheckboxProps> = ({
+const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({
     id,
     name,
     label,
@@ -28,7 +29,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
     disabled,
     labelClassName,
     checkboxClassName
-}) => {
+}, ref) => {
     const props: any = {
         label,
         id,
@@ -56,6 +57,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
         <div>
             <input
                 {...props}
+                ref={ref}
                 disabled={disabled}
                 className={`rounded-sm border border-tensei-gray-500 ${
                     checkboxClassName || ''
@@ -85,6 +87,6 @@ const Checkbox: React.FC<CheckboxProps> = ({
             )}
         </div>
     )
-}
+})
 
 export default Checkbox
