@@ -4,7 +4,9 @@ import { BrowserRouter, Route } from 'react-router-dom'
 
 import { TenseiAuthProvider, useAuth, useTensei } from '@tensei/react-auth'
 
-const Auth: React.FunctionComponent = () => {
+console.log(TenseiAuthProvider)
+
+const Auth = () => {
     const tensei = useTensei()
     const { isLoading, user } = useAuth()
 
@@ -51,7 +53,7 @@ const Auth: React.FunctionComponent = () => {
     )
 }
 
-const App: React.FunctionComponent = () => {
+const App = () => {
     return (
         <BrowserRouter>
             <TenseiAuthProvider options={{
