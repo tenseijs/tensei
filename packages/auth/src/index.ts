@@ -308,6 +308,8 @@ export class Auth {
               boolean('Two Factor Enabled')
                 .hideOnCreate()
                 .hideOnUpdate()
+                .hideOnInsertApi()
+                .hideOnUpdateApi()
                 .nullable(),
               text('Two Factor Secret')
                 .hideOnApi()

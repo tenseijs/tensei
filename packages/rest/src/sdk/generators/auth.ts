@@ -279,7 +279,7 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *          await tensei.auth().logout()
          *
          **/
-        logout(payload: { skipAuthentication?: boolean }): void
+        logout(payload?: { skipAuthentication?: boolean }): void
 
         /**
          * 

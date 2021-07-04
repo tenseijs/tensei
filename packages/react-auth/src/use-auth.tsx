@@ -2,7 +2,7 @@ import { sdk } from '@tensei/sdk'
 import React, { createContext, useContext, FunctionComponent, useState, useEffect } from 'react'
 
 
-export interface AuthContextInterface {
+export interface TenseiAuthContextInterface {
     isLoading: boolean
     accessToken?: string
     // @ts-ignore
@@ -13,23 +13,19 @@ export interface AuthContextInterface {
     setAuth: (response?: import('@tensei/sdk').AuthResponse) => void
 }
 
-export const AuthContext = createContext<AuthContextInterface>({
+export const TenseiAuthContext = createContext<TenseiAuthContextInterface>({
     isLoading: true,
     tensei: {} as any,
     user: undefined as any,
     setAuth: () => {},
 })
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(TenseiAuthContext)
 
-export const useTensei = () => {
-    const { tensei } = useAuth()
+export const useTensei: () => TenseiAuthContextInterface['tensei'] = () => useAuth().tensei
 
-    return tensei
-}
-
-export interface AuthContextWrapperProps {
-    tensei?: AuthContextInterface['tensei']
+export interface TenseiAuthProviderProps {
+    tensei?: TenseiAuthContextInterface['tensei']
 
     // @ts-ignore
     options?: import('@tensei/sdk').SdkOptions
@@ -42,11 +38,11 @@ function getUrlParameter(name: string) {
 	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
 }
 
-export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = ({ children, tensei: tenseiInstance, options }) => {
+export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({ children, tensei: tenseiInstance, options }) => {
     const [accessToken, setAccessToken] = useState<string>()
-    const [user, setUser] = useState<AuthContextInterface['user']>()
+    const [user, setUser] = useState<TenseiAuthContextInterface['user']>()
     const [tensei] = useState(tenseiInstance ? tenseiInstance : sdk(options))
-    const [isLoading, setIsLoading] = useState<AuthContextInterface['isLoading']>(true)
+    const [isLoading, setIsLoading] = useState<TenseiAuthContextInterface['isLoading']>(true)
 
     const subscribeToAuthChanges = () => {
         tensei.auth().listen((auth: any) => {
@@ -88,7 +84,7 @@ export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = (
     }, [])
 
     return (
-        <AuthContext.Provider value={{
+        <TenseiAuthContext.Provider value={{
             user,
             tensei,
             setAuth,
@@ -96,6 +92,6 @@ export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = (
             accessToken
         }}>
             {children}
-        </AuthContext.Provider>
+        </TenseiAuthContext.Provider>
     )
 }
