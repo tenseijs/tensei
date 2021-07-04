@@ -1,6 +1,6 @@
 {
   "name": "@tensei/react-auth",
-  "version": "0.8.14",
+  "version": "0.8.15",
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -17,7 +17,7 @@
     "build": "rimraf dist/ && tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@tensei/sdk": "^0.8.14"
+    "@tensei/sdk": "^0.8.15"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
