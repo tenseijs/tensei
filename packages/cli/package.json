@@ -1,6 +1,6 @@
 {
   "name": "@tensei/cli",
-  "version": "0.8.15",
+  "version": "0.8.16",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./build/index.d.ts",
