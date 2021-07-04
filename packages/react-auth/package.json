@@ -27,5 +27,6 @@
     "rimraf": "^3.0.2",
     "siroc": "^0.11.0",
     "typescript": "^4.2.4"
-  }
+  },
+  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
 }

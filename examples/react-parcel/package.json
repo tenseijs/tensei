@@ -3,6 +3,7 @@
   "version": "0.8.15",
   "main": "index.js",
   "license": "MIT",
+  "private": true,
   "devDependencies": {
     "@types/react": "^17.0.13",
     "@types/react-dom": "^17.0.8",
@@ -13,5 +14,6 @@
   },
   "scripts": {
     "example:dev": "parcel index.html"
-  }
+  },
+  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
 }
