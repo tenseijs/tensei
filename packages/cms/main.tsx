@@ -12,10 +12,10 @@ import '@tensei/components/styles/flatpickr.css'
 import Wrapper from './pages/Wrapper'
 
 ReactDOM.render(
-    <BrowserRouter>
-        <Wrapper />
-    </BrowserRouter>,
-    document.querySelector('#app')
+  <BrowserRouter>
+    <Wrapper />
+  </BrowserRouter>,
+  document.querySelector('#app')
 )
 
 window.React = React as any

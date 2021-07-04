@@ -1,32 +1,32 @@
 {
-    "name": "express-session-mikro-orm",
-    "version": "0.8.14",
-    "main": "build/index.js",
-    "license": "MIT",
-    "files": [
-        "build/"
-    ],
-    "scripts": {
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build": "rimraf build && tsc --p tsconfig.json",
-        "dev": "tsc --watch --p tsconfig.json",
-        "test": "mocha -r ts-node/register tests/session.spec.ts --exit"
-    },
-    "devDependencies": {
-        "@mikro-orm/core": "^4.3.0",
-        "@mikro-orm/sqlite": "^4.3.0",
-        "@types/chai": "^4.2.14",
-        "@types/mocha": "^8.0.4",
-        "@types/rimraf": "^3.0.0",
-        "chai": "^4.2.0",
-        "express": "^4.17.1",
-        "express-session": "^1.17.1",
-        "mocha": "^8.2.1",
-        "rimraf": "^3.0.2",
-        "ts-node": "^9.0.0"
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
+  "name": "express-session-mikro-orm",
+  "version": "0.8.14",
+  "main": "build/index.js",
+  "license": "MIT",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "build": "rimraf build && tsc --p tsconfig.json",
+    "dev": "tsc --watch --p tsconfig.json",
+    "test": "mocha -r ts-node/register tests/session.spec.ts --exit"
+  },
+  "devDependencies": {
+    "@mikro-orm/core": "^4.3.0",
+    "@mikro-orm/sqlite": "^4.3.0",
+    "@types/chai": "^4.2.14",
+    "@types/mocha": "^8.0.4",
+    "@types/rimraf": "^3.0.0",
+    "chai": "^4.2.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "mocha": "^8.2.1",
+    "rimraf": "^3.0.2",
+    "ts-node": "^9.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

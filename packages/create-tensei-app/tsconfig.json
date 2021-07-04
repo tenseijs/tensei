@@ -1,15 +1,15 @@
 {
-    "compilerOptions": {
-        "target": "ES2017",
-        "module": "commonjs",
-        "declaration": true,
-        "outDir": "./build",
-        "strict": true,
-        "baseUrl": "./src",
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "types": ["@types/jest", "node"]
-    },
-    "exclude": ["__tests__", "build", "templates"]
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./build",
+    "strict": true,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["@types/jest", "node"]
+  },
+  "exclude": ["__tests__", "build", "templates"]
 }

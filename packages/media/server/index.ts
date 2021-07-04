@@ -2,11 +2,11 @@ import Path from 'path'
 import sharp from 'sharp'
 import { snakeCase } from 'change-case'
 import {
-    plugin,
-    belongsTo,
-    hasMany,
-    hasOne,
-    ResourceContract
+  plugin,
+  belongsTo,
+  hasMany,
+  hasOne,
+  ResourceContract
 } from '@tensei/common'
 
 import { routes } from './routes'
@@ -16,175 +16,173 @@ import { mediaResource } from './resources'
 import { MediaLibraryPluginConfig } from './types'
 
 class MediaLibrary {
-    private config: MediaLibraryPluginConfig = {
-        disk: '',
-        maxFiles: 10,
-        path: 'files/upload',
-        maxFieldSize: 1000000, // 1 MB
-        maxFileSize: 10000000,
-        transformations: [
-            [245, 156, 'thumbnail'],
-            [1000, 1000, 'large'],
-            [750, 750, 'medium'],
-            [500, 500, 'small']
-        ].map(dimensions => [
-            meta => {
-                if (!meta) {
-                    return
-                }
+  private config: MediaLibraryPluginConfig = {
+    disk: '',
+    maxFiles: 10,
+    path: 'files/upload',
+    maxFieldSize: 1000000, // 1 MB
+    maxFileSize: 10000000,
+    transformations: [
+      [245, 156, 'thumbnail'],
+      [1000, 1000, 'large'],
+      [750, 750, 'medium'],
+      [500, 500, 'small']
+    ].map(dimensions => [
+      meta => {
+        if (!meta) {
+          return
+        }
 
-                const { width, height } = meta
+        const { width, height } = meta
 
-                if (!width || !height) {
-                    return
-                }
+        if (!width || !height) {
+          return
+        }
 
-                if (width < dimensions[0] || height < dimensions[0]) {
-                    return
-                }
+        if (width < dimensions[0] || height < dimensions[0]) {
+          return
+        }
 
-                return sharp().resize({
-                    width: dimensions[0] as number,
-                    height: dimensions[1] as number,
-                    fit: 'inside'
-                })
-            },
-            dimensions[2] as string
-        ])
-    }
+        return sharp().resize({
+          width: dimensions[0] as number,
+          height: dimensions[1] as number,
+          fit: 'inside'
+        })
+      },
+      dimensions[2] as string
+    ])
+  }
 
-    private usesGraphQl: boolean = false
+  private usesGraphQl: boolean = false
 
-    disk(disk: string) {
-        this.config.disk = disk
+  disk(disk: string) {
+    this.config.disk = disk
 
-        return this
-    }
+    return this
+  }
 
-    transformations(transforms: MediaLibraryPluginConfig['transformations']) {
-        this.config.transformations = [
-            ...this.config.transformations,
-            ...transforms
-        ]
+  transformations(transforms: MediaLibraryPluginConfig['transformations']) {
+    this.config.transformations = [
+      ...this.config.transformations,
+      ...transforms
+    ]
 
-        return this
-    }
+    return this
+  }
 
-    maxFileSize(max: number) {
-        this.config.maxFileSize = max
+  maxFileSize(max: number) {
+    this.config.maxFileSize = max
 
-        return this
-    }
+    return this
+  }
 
-    maxFiles(max: number) {
-        this.config.maxFiles = max
+  maxFiles(max: number) {
+    this.config.maxFiles = max
 
-        return this
-    }
+    return this
+  }
 
-    path(path: string) {
-        this.config.path = path.startsWith('/') ? path.substring(1) : path
+  path(path: string) {
+    this.config.path = path.startsWith('/') ? path.substring(1) : path
 
-        return this
-    }
+    return this
+  }
 
-    graphql() {
-        this.usesGraphQl = true
+  graphql() {
+    this.usesGraphQl = true
 
-        return this
-    }
+    return this
+  }
 
-    plugin() {
-        return plugin('Media Library').register(
-            ({
-                app,
-                style,
-                script,
-                currentCtx,
-                extendRoutes,
-                storageConfig,
-                extendResources,
-                extendGraphQlTypeDefs,
-                extendGraphQlQueries
-            }) => {
-                style('media.css', Path.resolve(__dirname, 'public/app.css'))
-                script('media.js', Path.resolve(__dirname, 'public/app.js'))
+  plugin() {
+    return plugin('Media Library').register(
+      ({
+        app,
+        style,
+        script,
+        currentCtx,
+        extendRoutes,
+        storageConfig,
+        extendResources,
+        extendGraphQlTypeDefs,
+        extendGraphQlQueries
+      }) => {
+        style('media.css', Path.resolve(__dirname, 'public/app.css'))
+        script('media.js', Path.resolve(__dirname, 'public/app.js'))
 
-                if (!this.config.disk) {
-                    this.config.disk = storageConfig.default!
-                }
+        if (!this.config.disk) {
+          this.config.disk = storageConfig.default!
+        }
 
-                const MediaResource = mediaResource(this.config)
+        const MediaResource = mediaResource(this.config)
 
-                const { resources } = currentCtx()
+        const { resources } = currentCtx()
 
-                let relatedResources: ResourceContract[] = []
+        let relatedResources: ResourceContract[] = []
 
-                resources.forEach(resource => {
-                    const fileFields = resource.data.fields.filter(
-                        f =>
-                            f.relatedProperty.type ===
-                            MediaResource.data.pascalCaseName
-                    )
+        resources.forEach(resource => {
+          const fileFields = resource.data.fields.filter(
+            f => f.relatedProperty.type === MediaResource.data.pascalCaseName
+          )
 
-                    if (fileFields.length) {
-                        relatedResources.push(resource)
+          if (fileFields.length) {
+            relatedResources.push(resource)
 
-                        MediaResource.fields([
-                            belongsTo(resource.data.name).nullable().hidden()
-                        ])
-                    }
-                })
+            MediaResource.fields([
+              belongsTo(resource.data.name).nullable().hidden()
+            ])
+          }
+        })
 
-                extendResources([MediaResource])
+        extendResources([MediaResource])
 
-                const [mainUploadRoute, ...specificUploadRoutes] = routes(
-                    this.config,
-                    relatedResources
-                )
-
-                extendRoutes([mainUploadRoute])
-                extendRoutes(specificUploadRoutes)
-
-                if (this.usesGraphQl) {
-                    extendGraphQlQueries(queries(this.config))
-                    extendGraphQlTypeDefs([
-                        typeDefs(
-                            MediaResource.data.snakeCaseName,
-                            MediaResource.data.snakeCaseNamePlural
-                        )
-                    ])
-
-                    const { graphqlUploadExpress } = require('graphql-upload')
-
-                    app.use((request, response, next) => {
-                        if (request.path.includes(`/${this.config.path}`)) {
-                            return next()
-                        }
-
-                        return graphqlUploadExpress({
-                            maxFiles: this.config.maxFiles,
-                            maxFileSize: this.config.maxFileSize
-                        })(request, response, next)
-                    })
-                }
-            }
+        const [mainUploadRoute, ...specificUploadRoutes] = routes(
+          this.config,
+          relatedResources
         )
-    }
+
+        extendRoutes([mainUploadRoute])
+        extendRoutes(specificUploadRoutes)
+
+        if (this.usesGraphQl) {
+          extendGraphQlQueries(queries(this.config))
+          extendGraphQlTypeDefs([
+            typeDefs(
+              MediaResource.data.snakeCaseName,
+              MediaResource.data.snakeCaseNamePlural
+            )
+          ])
+
+          const { graphqlUploadExpress } = require('graphql-upload')
+
+          app.use((request, response, next) => {
+            if (request.path.includes(`/${this.config.path}`)) {
+              return next()
+            }
+
+            return graphqlUploadExpress({
+              maxFiles: this.config.maxFiles,
+              maxFileSize: this.config.maxFileSize
+            })(request, response, next)
+          })
+        }
+      }
+    )
+  }
 }
 
 export const transform = sharp
 
 export const files = (databaseField?: string) =>
-    hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
-        .label(databaseField || 'Files')
-        .formComponent('Files')
-        .detailComponent('Files')
+  hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
+    .label(databaseField || 'Files')
+    .formComponent('Files')
+    .detailComponent('Files')
 
 export const file = (databaseField?: string) =>
-    hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
-        .label(databaseField || 'File')
-        .formComponent('File')
-        .detailComponent('File')
+  hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
+    .label(databaseField || 'File')
+    .formComponent('File')
+    .detailComponent('File')
 
 export const media = () => new MediaLibrary()

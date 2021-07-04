@@ -1,56 +1,56 @@
 {
-    "name": "@tensei/media",
-    "version": "0.8.14",
-    "main": "./build/index.js",
-    "license": "MIT",
-    "types": "./build/index.d.ts",
-    "files": [
-        "build/"
-    ],
-    "scripts": {
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build:server": "tsc --p tsconfig.json",
-        "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "dev:server": "tsc --watch --p tsconfig.json",
-        "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
-        "test": "jest --verbose --runInBand --forceExit",
-        "build": "yarn build:server && yarn build:client"
-    },
-    "dependencies": {
-        "@tensei/common": "^0.8.14",
-        "@types/busboy": "^0.2.3",
-        "@types/fs-capacitor": "^2.0.0",
-        "@types/http-errors": "^1.8.0",
-        "@types/mime-types": "^2.1.0",
-        "@types/sharp": "^0.27.1",
-        "busboy": "^0.3.1",
-        "fs-capacitor": "^6.2.0",
-        "http-errors": "^1.8.0",
-        "mime-types": "^2.1.28",
-        "sharp": "^0.27.0"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "devDependencies": {
-        "cross-env": "^7.0.3",
-        "jest": "^26.1.0",
-        "laravel-mix": "^6.0.5",
-        "postcss": "^8.1",
-        "postcss-loader": "^5.0.0",
-        "react": "17.0.2",
-        "ts-loader": "^8.0.12",
-        "typescript": "^4.2.4"
-    },
-    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
+  "name": "@tensei/media",
+  "version": "0.8.14",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "build:server": "tsc --p tsconfig.json",
+    "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "dev:server": "tsc --watch --p tsconfig.json",
+    "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+    "test": "jest --verbose --runInBand --forceExit",
+    "build": "yarn build:server && yarn build:client"
+  },
+  "dependencies": {
+    "@tensei/common": "^0.8.14",
+    "@types/busboy": "^0.2.3",
+    "@types/fs-capacitor": "^2.0.0",
+    "@types/http-errors": "^1.8.0",
+    "@types/mime-types": "^2.1.0",
+    "@types/sharp": "^0.27.1",
+    "busboy": "^0.3.1",
+    "fs-capacitor": "^6.2.0",
+    "http-errors": "^1.8.0",
+    "mime-types": "^2.1.28",
+    "sharp": "^0.27.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^26.1.0",
+    "laravel-mix": "^6.0.5",
+    "postcss": "^8.1",
+    "postcss-loader": "^5.0.0",
+    "react": "17.0.2",
+    "ts-loader": "^8.0.12",
+    "typescript": "^4.2.4"
+  },
+  "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

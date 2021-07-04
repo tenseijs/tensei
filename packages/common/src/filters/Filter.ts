@@ -1,57 +1,57 @@
 import { snakeCase } from 'change-case'
 import { FieldContract } from '@tensei/common'
 import {
-    FilterCondition,
-    FilterConfig,
-    FilterContract
+  FilterCondition,
+  FilterConfig,
+  FilterContract
 } from '@tensei/common/filters'
 
 export class Filter<T = any> implements FilterContract {
-    public config: FilterConfig<T> = {
-        name: '',
-        shortName: '',
-        default: false,
-        dashboardView: false,
-        cond: () => ({}),
-        fields: []
-    }
+  public config: FilterConfig<T> = {
+    name: '',
+    shortName: '',
+    default: false,
+    dashboardView: false,
+    cond: () => ({}),
+    fields: []
+  }
 
-    constructor(name: string, shortName = snakeCase(name)) {
-        this.config.name = name
-        this.config.shortName = shortName
-    }
+  constructor(name: string, shortName = snakeCase(name)) {
+    this.config.name = name
+    this.config.shortName = shortName
+  }
 
-    query(condition: FilterCondition<T>) {
-        this.config.cond = condition
+  query(condition: FilterCondition<T>) {
+    this.config.cond = condition
 
-        return this
-    }
+    return this
+  }
 
-    dashboardView() {
-        this.config.dashboardView = true
+  dashboardView() {
+    this.config.dashboardView = true
 
-        return this
-    }
+    return this
+  }
 
-    noArgs() {
-        this.config.args = false
+  noArgs() {
+    this.config.args = false
 
-        return this
-    }
+    return this
+  }
 
-    fields(fields: FieldContract[]) {
-        this.config.fields = fields
+  fields(fields: FieldContract[]) {
+    this.config.fields = fields
 
-        return this
-    }
+    return this
+  }
 
-    default() {
-        this.config.default = true
+  default() {
+    this.config.default = true
 
-        return this
-    }
+    return this
+  }
 }
 
 export function filter<T = any>(name: string, shortName?: string) {
-    return new Filter<T>(name, shortName)
+  return new Filter<T>(name, shortName)
 }

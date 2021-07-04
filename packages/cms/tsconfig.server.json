@@ -1,31 +1,31 @@
 {
-    "compilerOptions": {
-        "target": "ES2017",
-        "module": "commonjs",
-        "declaration": true,
-        "outDir": "./build",
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": false,
-        "baseUrl": "./plugin",
-        "types": [
-            "@types/jest",
-            "@types/express-session",
-            "express-response-formatter"
-        ]
-    },
-    "exclude": [
-        "__tests__",
-        "build",
-        "pages",
-        "detail",
-        "index",
-        "store",
-        "public",
-        "css",
-        "form",
-        "components",
-        "main.tsx",
-        "core.ts"
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./build",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": false,
+    "baseUrl": "./plugin",
+    "types": [
+      "@types/jest",
+      "@types/express-session",
+      "express-response-formatter"
     ]
+  },
+  "exclude": [
+    "__tests__",
+    "build",
+    "pages",
+    "detail",
+    "index",
+    "store",
+    "public",
+    "css",
+    "form",
+    "components",
+    "main.tsx",
+    "core.ts"
+  ]
 }

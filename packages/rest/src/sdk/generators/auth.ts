@@ -4,10 +4,10 @@ import { PluginSetupConfig, ResourceContract } from '@tensei/common'
 import { resolveFieldTypescriptType } from './helpers'
 
 export const getAuthUserResponseInterface = (
-    userResource: ResourceContract,
-    authConfig: AuthPluginConfig
+  userResource: ResourceContract,
+  authConfig: AuthPluginConfig
 ) => {
-    return `
+  return `
     export interface DataResponse<Response> {
         data: Response
     }
@@ -23,8 +23,8 @@ export const getAuthUserResponseInterface = (
     export type ForgotPasswordResponse = true
 
     ${
-        authConfig.twoFactorAuth
-            ? `
+      authConfig.twoFactorAuth
+        ? `
     export interface EnableTwoFactorResponse {
         dataURL: string
         ${userResource.data.snakeCaseName}: ${userResource.data.pascalCaseName}
@@ -38,42 +38,42 @@ export const getAuthUserResponseInterface = (
         ${userResource.data.snakeCaseName}: ${userResource.data.pascalCaseName}
     }
     `
-            : ``
+        : ``
     }
 
     ${
-        authConfig.verifyEmails
-            ? `
+      authConfig.verifyEmails
+        ? `
     export type ResendVerificationEmailResponse = true
     export interface ConfirmEmailResponse {
         ${userResource.data.snakeCaseName}: ${userResource.data.pascalCaseName}
     }
     `
-            : ``
+        : ``
     }
     `
 }
 
 export const generateAuthTypes = (
-    authConfig: AuthPluginConfig,
-    config: PluginSetupConfig
+  authConfig: AuthPluginConfig,
+  config: PluginSetupConfig
 ) => {
-    const interfaces = getInterfaceNames(authConfig)
+  const interfaces = getInterfaceNames(authConfig)
 
-    const userResource = config.resources.find(
-        resource => resource.data.name === authConfig.userResource
-    )
+  const userResource = config.resources.find(
+    resource => resource.data.name === authConfig.userResource
+  )
 
-    const fields = userResource?.data.fields.filter(
-        field =>
-            !field.showHideFieldFromApi.hideOnInsertApi &&
-            !field.isHidden &&
-            field.databaseField !== 'id'
-    )
+  const fields = userResource?.data.fields.filter(
+    field =>
+      !field.showHideFieldFromApi.hideOnInsertApi &&
+      !field.isHidden &&
+      field.databaseField !== 'id'
+  )
 
-    const socialProviders = Object.keys(authConfig.providers)
+  const socialProviders = Object.keys(authConfig.providers)
 
-    return `
+  return `
         export interface ${interfaces.LoginInput} {
             email: string
             password: string
@@ -81,23 +81,23 @@ export const generateAuthTypes = (
         }
 
         ${
-            socialProviders.length > 0
-                ? `
+          socialProviders.length > 0
+            ? `
             export type AvailableSocialProviders = ${socialProviders
-                .map(provider => `'${provider}'`)
-                .join('|')}
+              .map(provider => `'${provider}'`)
+              .join('|')}
         `
-                : ''
+            : ''
         }
 
         export interface ${interfaces.RegisterInput} {
             ${fields?.map(
-                field =>
-                    `${field.databaseField}: ${resolveFieldTypescriptType(
-                        field,
-                        config.resources,
-                        true
-                    )}`
+              field =>
+                `${field.databaseField}: ${resolveFieldTypescriptType(
+                  field,
+                  config.resources,
+                  true
+                )}`
             )}
             password: string
         }
@@ -142,40 +142,40 @@ export const generateAuthTypes = (
 }
 
 export const getInterfaceNames = (config: AuthPluginConfig) => {
-    return {
-        LoginInput: `Login${config.userResource}Input`,
-        RegisterInput: `Register${config.userResource}Input`,
-        ForgotPasswordInput: `ForgotPasswordInput`,
-        ResetPasswordInput: `ResetPasswordInput`,
-        ConfirmEmailInput: `ConfirmEmailInput`,
-        TwoFactorInput: 'TwoFactorInput'
-    }
+  return {
+    LoginInput: `Login${config.userResource}Input`,
+    RegisterInput: `Register${config.userResource}Input`,
+    ForgotPasswordInput: `ForgotPasswordInput`,
+    ResetPasswordInput: `ResetPasswordInput`,
+    ConfirmEmailInput: `ConfirmEmailInput`,
+    TwoFactorInput: 'TwoFactorInput'
+  }
 }
 
 export const generateAuthApi = (config: PluginSetupConfig) => {
-    const authPlugin = config.plugins.find(
-        plugin => plugin.config.name === 'Auth'
-    )
+  const authPlugin = config.plugins.find(
+    plugin => plugin.config.name === 'Auth'
+  )
 
-    if (!authPlugin) {
-        return ``
-    }
+  if (!authPlugin) {
+    return ``
+  }
 
-    const authConfig = authPlugin.config.extra as AuthPluginConfig
+  const authConfig = authPlugin.config.extra as AuthPluginConfig
 
-    const userResource = config.resources.find(
-        resource => resource.data.name === authConfig.userResource
-    )
+  const userResource = config.resources.find(
+    resource => resource.data.name === authConfig.userResource
+  )
 
-    if (!userResource) {
-        return ``
-    }
+  if (!userResource) {
+    return ``
+  }
 
-    const interfaces = getInterfaceNames(authConfig)
+  const interfaces = getInterfaceNames(authConfig)
 
-    const { twoFactorAuth } = authConfig
+  const { twoFactorAuth } = authConfig
 
-    return `
+  return `
     ${generateAuthTypes(authConfig, config)}
     ${getAuthUserResponseInterface(userResource!, authConfig)}
     export interface AuthSdkContract {
@@ -190,12 +190,22 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *
          **/
         login(payload: { object: ${
-            interfaces.LoginInput
+          interfaces.LoginInput
         }, skipAuthentication?: boolean }): Promise<DataResponse<AuthResponse>>
 
+        /**
+         * 
+         * Load an existing session from storage
+         *         Example:
+         *              await tensei.auth().loadExistingSession()
+         * 
+         * 
+         **/
+        loadExistingSession(): Promise<DataResponse<AuthResponse>>
+
         ${
-            Object.keys(authConfig.providers).length > 0
-                ? `
+          Object.keys(authConfig.providers).length > 0
+            ? `
         /**
          * 
          * Get the redirect url to the tensei API for a
@@ -216,7 +226,7 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          **/
         socialConfirm(payload?: { object: { access_token: string } }): Promise<DataResponse<AuthResponse>>
         `
-                : ``
+            : ``
         }
 
         /**
@@ -239,8 +249,8 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
         listen(fn: (auth?: AuthResponse) => void): void
 
         ${
-            authConfig.enableRefreshTokens
-                ? `
+          authConfig.enableRefreshTokens
+            ? `
         /**
          * 
          * Silently get a new access token for an existing ${authConfig.userResource.toLowerCase()} session.
@@ -259,7 +269,7 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          **/
         refreshToken(payload: { token: string }): Promise<DataResponse<AuthResponse>>
         `
-                : ``
+            : ``
         }
 
         /**
@@ -281,7 +291,7 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *          })
          **/
         register(payload: { object: ${
-            interfaces.RegisterInput
+          interfaces.RegisterInput
         }, skipAuthentication?: boolean }): Promise<DataResponse<AuthResponse>>
 
         /**
@@ -293,7 +303,7 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *          })
          **/
         forgotPassword(payload: { object: ${
-            interfaces.ForgotPasswordInput
+          interfaces.ForgotPasswordInput
         } }): Promise<DataResponse<ForgotPasswordResponse>>
 
         /**
@@ -306,12 +316,12 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          *          })
          **/
         resetPassword(payload: { object: ${
-            interfaces.ResetPasswordInput
+          interfaces.ResetPasswordInput
         } }): Promise<DataResponse<ForgotPasswordResponse>>
 
         ${
-            twoFactorAuth
-                ? `
+          twoFactorAuth
+            ? `
         /**
          * 
          * Start the process of enabling two-factor auth. Returns a dataURL QRCode for user to scan with
@@ -340,12 +350,12 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          **/
         disableTwoFactor(payload: { object: TwoFactorInput }): Promise<DataResponse<DisableTwoFactorResponse>>
         `
-                : ``
+            : ``
         }
 
         ${
-            authConfig.verifyEmails
-                ? `
+          authConfig.verifyEmails
+            ? `
         
         /**
          * 
@@ -363,7 +373,7 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          **/
         confirmEmail(payload: { object: ${interfaces.ConfirmEmailInput} }): Promise<DataResponse<ConfirmEmailResponse>>
         `
-                : ``
+            : ``
         }
     }
     `

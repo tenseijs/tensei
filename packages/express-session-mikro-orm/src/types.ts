@@ -1,5 +1,5 @@
 export interface SessionConfig {
-    tableName?: string
-    collection?: string
-    entityName?: string
+  tableName?: string
+  collection?: string
+  entityName?: string
 }

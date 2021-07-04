@@ -1,7 +1,7 @@
 export const typeDefs = (name: string, plural: string) => {
-    const { gql } = require('apollo-server-express')
+  const { gql } = require('apollo-server-express')
 
-    return gql`
+  return gql`
         scalar Upload
 
         input upload_files_input {

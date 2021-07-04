@@ -5,14 +5,14 @@ const { media } = require('@tensei/media')
 const { tensei, welcome, cors } = require('@tensei/core')
 
 tensei()
-    .root(__dirname)
-    .plugins([
-        welcome(),
-        cms().plugin(),
-        media().plugin(),
-        auth().plugin(),
-        rest().plugin(),
-        cors()
-    ])
-    .start()
-    .catch(console.error)
+  .root(__dirname)
+  .plugins([
+    welcome(),
+    cms().plugin(),
+    media().plugin(),
+    auth().plugin(),
+    rest().plugin(),
+    cors()
+  ])
+  .start()
+  .catch(console.error)

@@ -1,9 +1,9 @@
 import { EntitySchema } from '@mikro-orm/core'
 
 export class BaseEntity {
-    constructor() {}
+  constructor() {}
 }
 
 export default new EntitySchema({
-    name: 'BaseEntity'
+  name: 'BaseEntity'
 })

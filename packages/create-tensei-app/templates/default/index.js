@@ -5,14 +5,14 @@ const { graphql } = require('@tensei/graphql')
 const { tensei, welcome, cors } = require('@tensei/core')
 
 tensei()
-    .root(__dirname)
-    .plugins([
-        welcome(),
-        cms().plugin(),
-        media().plugin(),
-        auth().plugin(),
-        graphql().plugin(),
-        cors()
-    ])
-    .start()
-    .catch(console.error)
+  .root(__dirname)
+  .plugins([
+    welcome(),
+    cms().plugin(),
+    media().plugin(),
+    auth().plugin(),
+    graphql().plugin(),
+    cors()
+  ])
+  .start()
+  .catch(console.error)

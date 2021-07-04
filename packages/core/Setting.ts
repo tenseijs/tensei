@@ -49,29 +49,29 @@
 //                 this.resources(resources)
 //             }
 class Setting {
-    config = {
-        name: 'Tensei',
-        server: '',
-        client: ''
-    }
+  config = {
+    name: 'Tensei',
+    server: '',
+    client: ''
+  }
 
-    name(name: string) {
-        this.config.name = name
+  name(name: string) {
+    this.config.name = name
 
-        return this
-    }
+    return this
+  }
 
-    server(path: string) {
-        this.config.server = path
+  server(path: string) {
+    this.config.server = path
 
-        return this
-    }
+    return this
+  }
 
-    client(path: string) {
-        this.config.client = path
+  client(path: string) {
+    this.config.client = path
 
-        return this
-    }
+    return this
+  }
 }
 
 export default Setting

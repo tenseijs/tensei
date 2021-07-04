@@ -1,39 +1,39 @@
 {
-    "name": "@tensei/tests",
-    "version": "0.8.14",
-    "license": "MIT",
-    "devDependencies": {
-        "@types/faker": "^4.1.12",
-        "@types/jest": "^25.2.3",
-        "@types/supertest": "^2.0.9",
-        "babel-jest": "^26.2.2",
-        "faker": "^4.1.0",
-        "jest": "^26.0.1",
-        "supertest": "^4.0.2",
-        "supertest-session": "^4.1.0",
-        "typescript": "^4.2.4"
-    },
-    "scripts": {
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "test": "jest --verbose --runInBand --forceExit"
-    },
-    "dependencies": {
-        "@mikro-orm/mongodb": "^4.3.0",
-        "@mikro-orm/mysql": "^4.3.0",
-        "@mikro-orm/postgresql": "^4.3.0",
-        "@mikro-orm/sqlite": "^4.3.0",
-        "@tensei/common": "^0.8.14",
-        "@tensei/core": "^0.8.14"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "private": true
+  "name": "@tensei/tests",
+  "version": "0.8.14",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/faker": "^4.1.12",
+    "@types/jest": "^25.2.3",
+    "@types/supertest": "^2.0.9",
+    "babel-jest": "^26.2.2",
+    "faker": "^4.1.0",
+    "jest": "^26.0.1",
+    "supertest": "^4.0.2",
+    "supertest-session": "^4.1.0",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "test": "jest --verbose --runInBand --forceExit"
+  },
+  "dependencies": {
+    "@mikro-orm/mongodb": "^4.3.0",
+    "@mikro-orm/mysql": "^4.3.0",
+    "@mikro-orm/postgresql": "^4.3.0",
+    "@mikro-orm/sqlite": "^4.3.0",
+    "@tensei/common": "^0.8.14",
+    "@tensei/core": "^0.8.14"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "private": true
 }

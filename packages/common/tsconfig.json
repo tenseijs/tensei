@@ -1,22 +1,22 @@
 {
-    "compilerOptions": {
-        "target": "ES2019",
-        "module": "commonjs",
-        "lib": [
-            "es2019",
-            "es2020.bigint",
-            "es2020.string",
-            "es2020.symbol.wellknown"
-        ],
-        "declaration": true,
-        "outDir": "./build",
-        "strict": true,
-        "baseUrl": "./src",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "skipLibCheck": true
-    },
-    "include": ["./src"],
-    "exclude": ["./node_modules", "./build/**/*"]
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "lib": [
+      "es2019",
+      "es2020.bigint",
+      "es2020.string",
+      "es2020.symbol.wellknown"
+    ],
+    "declaration": true,
+    "outDir": "./build",
+    "strict": true,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true
+  },
+  "include": ["./src"],
+  "exclude": ["./node_modules", "./build/**/*"]
 }

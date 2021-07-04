@@ -4,13 +4,13 @@ import { graphql } from '@tensei/graphql'
 import { welcome, tensei, cors } from '@tensei/core'
 
 tensei()
-    .root(__dirname)
-    .plugins([
-        welcome(),
-        cms().plugin(),
-        auth().plugin(),
-        graphql().plugin(),
-        cors()
-    ])
-    .start()
-    .catch(console.error)
+  .root(__dirname)
+  .plugins([
+    welcome(),
+    cms().plugin(),
+    auth().plugin(),
+    graphql().plugin(),
+    cors()
+  ])
+  .start()
+  .catch(console.error)

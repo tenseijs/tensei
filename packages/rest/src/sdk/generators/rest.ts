@@ -3,27 +3,27 @@ import { PluginContract } from '@tensei/common/plugins'
 import { generateAuthApi } from './auth'
 
 const generateApiClassForResource = (
-    resource: ResourceContract,
-    path: string
+  resource: ResourceContract,
+  path: string
 ) => {
-    if (resource.data.hideOnApi) {
-        return ``
-    }
+  if (resource.data.hideOnApi) {
+    return ``
+  }
 
-    const apiPrefix = `${path}/`
+  const apiPrefix = `${path}/`
 
-    return `
+  return `
         export interface ${resource.data.pascalCaseName}SdkContract {
             ${
-                resource.data.hideOnFetchApi
-                    ? ''
-                    : `
+              resource.data.hideOnFetchApi
+                ? ''
+                : `
             /**
              * 
              * Fetch a single ${resource.data.pascalCaseName.toLowerCase()} from the API.
              *    Example:
              *      await tensei.${
-                 resource.data.camelCaseNamePlural
+               resource.data.camelCaseNamePlural
              }().find({ id })
              * 
              **/
@@ -36,7 +36,7 @@ const generateApiClassForResource = (
             /**
              * 
              * Fetch a paginated list of ${
-                 resource.data.camelCaseNamePlural
+               resource.data.camelCaseNamePlural
              } from the API.
              *    Example:
              *      await tensei.${resource.data.camelCaseNamePlural}.findMany({
@@ -57,15 +57,15 @@ const generateApiClassForResource = (
             }
 
             ${
-                resource.data.hideOnInsertApi
-                    ? ''
-                    : `
+              resource.data.hideOnInsertApi
+                ? ''
+                : `
             /**
              * 
              * Insert a single ${resource.data.pascalCaseName.toLowerCase()}.
              *    Example:
              *      await tensei.${
-                 resource.data.camelCaseNamePlural
+               resource.data.camelCaseNamePlural
              }.insert({ object: {...} })
              *
              **/
@@ -78,7 +78,7 @@ const generateApiClassForResource = (
              * Insert multiple ${resource.data.camelCaseNamePlural}.
              *    Example:
              *      await tensei.${
-                 resource.data.camelCaseNamePlural
+               resource.data.camelCaseNamePlural
              }.insertMany({ objects: [{...}, {...}] })
              *
              **/
@@ -89,15 +89,15 @@ const generateApiClassForResource = (
             }
 
             ${
-                resource.data.hideOnUpdateApi
-                    ? ''
-                    : `
+              resource.data.hideOnUpdateApi
+                ? ''
+                : `
             /**
              * 
              * Update a single ${resource.data.pascalCaseName.toLowerCase()}.
              *    Example:
              *      await tensei.${
-                 resource.data.camelCaseNamePlural
+               resource.data.camelCaseNamePlural
              }.update({ id: 1, object: {...} })
              *
              **/
@@ -111,7 +111,7 @@ const generateApiClassForResource = (
              * Update multiple ${resource.data.camelCaseNamePlural}.
              *    Example:
              *      await tensei.${
-                 resource.data.camelCaseNamePlural
+               resource.data.camelCaseNamePlural
              }.updateMany({
              *          where: { id: { _in: [1, 2] } },
              *          object: {...},
@@ -126,9 +126,9 @@ const generateApiClassForResource = (
             }
 
             ${
-                resource.data.hideOnDeleteApi
-                    ? ''
-                    : `
+              resource.data.hideOnDeleteApi
+                ? ''
+                : `
             /**
              * 
              * Delete single ${resource.data.camelCaseNamePlural}.
@@ -161,12 +161,12 @@ const generateApiClassForResource = (
 }
 
 const generateAPIClient = (
-    resources: ResourceContract[],
-    plugins: PluginContract[]
+  resources: ResourceContract[],
+  plugins: PluginContract[]
 ) => {
-    const authPlugin = plugins.find(plugin => plugin.config.name === 'Auth')
+  const authPlugin = plugins.find(plugin => plugin.config.name === 'Auth')
 
-    return `
+  return `
     export interface SdkOptions {
         url?: string
         refreshTokens?: boolean
@@ -176,14 +176,15 @@ const generateAPIClient = (
 
     export interface SdkContract {
         ${resources
-            .filter(resource => !resource.data.hideOnApi)
-            .map(
-                resource =>
-                    `${resource.data.camelCaseNamePlural}() : ${resource.data.pascalCaseName}SdkContract\n`
-            )
-            .join('')}
+          .filter(resource => !resource.data.hideOnApi)
+          .map(
+            resource =>
+              `${resource.data.camelCaseNamePlural}() : ${resource.data.pascalCaseName}SdkContract\n`
+          )
+          .join('')}
 
         ${authPlugin ? 'auth(): AuthSdkContract\n' : ''}
+        options?: SdkOptions
     }
 
     export const sdk: (options?: SdkOptions) => SdkContract
@@ -191,36 +192,36 @@ const generateAPIClient = (
 }
 
 const generateImports = () => {
-    return `
+  return `
     import { AxiosInstance, AxiosRequestConfig } from 'axios'
     `
 }
 
 export const generateFetchWrapperForResources = (config: PluginSetupConfig) => {
-    const { resources, plugins } = config
+  const { resources, plugins } = config
 
-    const restPlugin = plugins.find(plugin => plugin.config.name === 'Rest API')
+  const restPlugin = plugins.find(plugin => plugin.config.name === 'Rest API')
 
-    if (!restPlugin) {
-        return ``
-    }
+  if (!restPlugin) {
+    return ``
+  }
 
-    const path = restPlugin.config.extra?.path || 'api'
+  const path = restPlugin.config.extra?.path || 'api'
 
-    return (
-        [
-            generateImports(),
-            generateAPIClient(resources, plugins),
-            generateAuthApi(config)
-        ]
-            .concat(
-                resources.map(
-                    resource => `
+  return (
+    [
+      generateImports(),
+      generateAPIClient(resources, plugins),
+      generateAuthApi(config)
+    ]
+      .concat(
+        resources.map(
+          resource => `
         ${generateApiClassForResource(resource, path)}
     `
-                )
-            )
-            // .concat([generateAPIClient(resources)])
-            .join('')
-    )
+        )
+      )
+      // .concat([generateAPIClient(resources)])
+      .join('')
+  )
 }

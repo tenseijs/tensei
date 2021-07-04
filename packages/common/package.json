@@ -1,45 +1,45 @@
 {
-    "name": "@tensei/common",
-    "version": "0.8.14",
-    "main": "./build/index.js",
-    "license": "MIT",
-    "types": "./typings/index.d.ts",
-    "files": [
-        "build/",
-        "typings/"
-    ],
-    "devDependencies": {
-        "@babel/core": "^7.11.4",
-        "@babel/preset-env": "^7.11.0",
-        "@babel/preset-typescript": "^7.10.4",
-        "@types/faker": "^4.1.12",
-        "babel-jest": "^26.3.0",
-        "faker": "^5.1.0",
-        "jest": "^26.0.1",
-        "prettier": "^2.0.5",
-        "supertest": "^4.0.2",
-        "typescript": "^4.2.4"
-    },
-    "scripts": {
-        "build": "tsc --p tsconfig.json",
-        "dev": "tsc --watch --p tsconfig.json",
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "test": "jest --verbose --runInBand --forceExit"
-    },
-    "dependencies": {
-        "@tensei/mail": "^0.8.14",
-        "@types/luxon": "^1.25.0",
-        "@types/pluralize": "^0.0.29",
-        "change-case": "^4.1.1",
-        "csstype": "^3.0.2",
-        "dayjs": "^1.8.34",
-        "indicative": "^7.4.4",
-        "luxon": "^1.25.0",
-        "pluralize": "^8.0.0",
-        "qs": "^6.9.4"
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
+  "name": "@tensei/common",
+  "version": "0.8.14",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "types": "./typings/index.d.ts",
+  "files": [
+    "build/",
+    "typings/"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.11.4",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/faker": "^4.1.12",
+    "babel-jest": "^26.3.0",
+    "faker": "^5.1.0",
+    "jest": "^26.0.1",
+    "prettier": "^2.0.5",
+    "supertest": "^4.0.2",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "build": "tsc --p tsconfig.json",
+    "dev": "tsc --watch --p tsconfig.json",
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "test": "jest --verbose --runInBand --forceExit"
+  },
+  "dependencies": {
+    "@tensei/mail": "^0.8.14",
+    "@types/luxon": "^1.25.0",
+    "@types/pluralize": "^0.0.29",
+    "change-case": "^4.1.1",
+    "csstype": "^3.0.2",
+    "dayjs": "^1.8.34",
+    "indicative": "^7.4.4",
+    "luxon": "^1.25.0",
+    "pluralize": "^8.0.0",
+    "qs": "^6.9.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

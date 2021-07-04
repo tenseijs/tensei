@@ -1,33 +1,33 @@
 {
-    "name": "@tensei/nuxt",
-    "version": "0.8.14",
-    "main": "./build/index.js",
-    "license": "MIT",
-    "types": "./build/index.d.ts",
-    "files": [
-        "build/"
-    ],
-    "scripts": {
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build": "tsc --p tsconfig.json",
-        "dev": "tsc --watch --p tsconfig.json",
-        "test": "jest --verbose --runInBand --forceExit"
-    },
-    "dependencies": {
-        "nuxt": "^2.15.2"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
+  "name": "@tensei/nuxt",
+  "version": "0.8.14",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "build": "tsc --p tsconfig.json",
+    "dev": "tsc --watch --p tsconfig.json",
+    "test": "jest --verbose --runInBand --forceExit"
+  },
+  "dependencies": {
+    "nuxt": "^2.15.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

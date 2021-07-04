@@ -1,7 +1,9 @@
 const mix = require('laravel-mix')
 
-mix.webpackConfig({
+mix
+  .webpackConfig({
     externals: {
-        react: 'window.React'
+      react: 'window.React'
     }
-}).ts('./src/components/Mde.tsx', 'build/client/app.js')
+  })
+  .ts('./src/components/Mde.tsx', 'build/client/app.js')

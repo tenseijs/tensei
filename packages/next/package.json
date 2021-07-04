@@ -1,35 +1,35 @@
 {
-    "name": "@tensei/next",
-    "version": "0.8.14",
-    "main": "./build/index.js",
-    "license": "MIT",
-    "types": "./build/index.d.ts",
-    "files": [
-        "build/"
-    ],
-    "scripts": {
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build": "tsc --p tsconfig.json",
-        "dev": "tsc --watch --p tsconfig.json",
-        "test": "jest --verbose --runInBand --forceExit"
-    },
-    "dependencies": {
-        "next": "^10.0.3",
-        "react": "17.0.2",
-        "react-dom": "17.0.2"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
+  "name": "@tensei/next",
+  "version": "0.8.14",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "build": "tsc --p tsconfig.json",
+    "dev": "tsc --watch --p tsconfig.json",
+    "test": "jest --verbose --runInBand --forceExit"
+  },
+  "dependencies": {
+    "next": "^10.0.3",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

@@ -6,13 +6,13 @@ const { rest } = require('@tensei/rest')
 const { tensei } = require('@tensei/core')
 
 tensei()
-    .root(__dirname)
-    .plugins([
-        cms().plugin(),
-        media().plugin(),
-        auth().plugin(),
-        rest().plugin(),
-        nuxt().plugin()
-    ])
-    .start()
-    .catch(console.error)
+  .root(__dirname)
+  .plugins([
+    cms().plugin(),
+    media().plugin(),
+    auth().plugin(),
+    rest().plugin(),
+    nuxt().plugin()
+  ])
+  .start()
+  .catch(console.error)

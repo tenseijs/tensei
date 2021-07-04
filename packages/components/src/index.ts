@@ -16,25 +16,25 @@ import { Heading, Paragraph } from './Typography'
 import Modal, { ConfirmModal, DeleteModal } from './Modal'
 
 export {
-    Icon,
-    Table,
-    Pulse,
-    Modal,
-    Label,
-    Select,
-    Button,
-    Heading,
-    Checkbox,
-    Textarea,
-    TextInput,
-    Paragraph,
-    Paginator,
-    DatePicker,
-    PageWrapper,
-    SearchInput,
-    ConfirmModal,
-    DeleteModal,
-    StackedList
+  Icon,
+  Table,
+  Pulse,
+  Modal,
+  Label,
+  Select,
+  Button,
+  Heading,
+  Checkbox,
+  Textarea,
+  TextInput,
+  Paragraph,
+  Paginator,
+  DatePicker,
+  PageWrapper,
+  SearchInput,
+  ConfirmModal,
+  DeleteModal,
+  StackedList
 }
 
 export * from './types'

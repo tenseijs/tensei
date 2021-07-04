@@ -6,4 +6,4 @@ import { setup as baseSetup } from '../../../helpers'
 export * from '../../../helpers'
 
 export const setup = (plugins: PluginContract[] = [], reset = true) =>
-    baseSetup([...plugins, graphql().plugin()], reset)
+  baseSetup([...plugins, graphql().plugin()], reset)

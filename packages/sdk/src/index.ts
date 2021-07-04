@@ -16,7 +16,7 @@ class BaseSdk {
 		return this.authInstance
 	}
 
-	constructor(private options?: SdkOptions) {
+	constructor(public options?: SdkOptions) {
 		this.instance =
 			options?.axiosInstance ||
 			Axios.create({
@@ -72,7 +72,7 @@ function getSdk(instance: any, slug: string) {
 }
 
 export class Sdk extends BaseSdk {
-	constructor(options?: SdkOptions) {
+	constructor(public options?: SdkOptions) {
 		super(options)
 
 		const { instance } = this

@@ -110,11 +110,9 @@ export class AuthAPI {
 
 	constructor(public instance: AxiosInstance, public options?: SdkOptions) {
 		this.storage = new LocalStorageStore('___tensei__session___')
-
-		this.loadExistingSession()
 	}
 
-	private async loadExistingSession() {
+	public async loadExistingSession() {
 		if (this.usesRefreshTokens()) {
 			this.silentLogin()
 		}
@@ -218,7 +216,7 @@ export class AuthAPI {
 		}
 	}
 
-	listen(fn: (auth?: AuthResponse) => void) {
+	listen = (fn: (auth?: AuthResponse) => void) => {
 		this.on_auth_update = fn
 	}
 
@@ -262,11 +260,11 @@ export class AuthAPI {
 	}
 
 	private authenticateWithRefreshTokens() {
+		this.setAuthorizationHeader()
+
 		if (!this.usesRefreshTokens()) {
 			return
 		}
-
-		this.setAuthorizationHeader()
 
 		if (!isBrowser()) {
 			return

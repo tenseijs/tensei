@@ -1,58 +1,58 @@
 {
-    "name": "@tensei/cli",
-    "version": "0.8.14",
-    "main": "./build/index.js",
-    "license": "MIT",
-    "types": "./build/index.d.ts",
-    "files": [
-        "build/",
-        "_templates/"
-    ],
-    "bin": {
-        "tensei": "./build/index.js"
-    },
-    "scripts": {
-        "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-        "build": "tsc --p tsconfig.json",
-        "dev": "tsc --watch --p tsconfig.json"
-    },
-    "dependencies": {
-        "@types/change-case": "^2.3.1",
-        "@types/chokidar": "^2.1.3",
-        "@types/commander": "^2.12.2",
-        "@types/concurrently": "^5.2.1",
-        "@types/fs-extra": "^9.0.6",
-        "@types/listr": "^0.14.2",
-        "@types/node": "^14.14.10",
-        "@types/nodemon": "^1.19.0",
-        "@types/yargs": "^15.0.12",
-        "chalk": "^4.1.0",
-        "change-case": "^4.1.1",
-        "check-node-version": "^4.0.3",
-        "chokidar": "^3.5.1",
-        "commander": "^6.2.0",
-        "concurrently": "^5.3.0",
-        "edge.js": "^1.1.4",
-        "execa": "^5.0.0",
-        "fs-extra": "^9.1.0",
-        "hygen": "^6.0.4",
-        "latest-version": "^5.1.0",
-        "listr": "^0.14.3",
-        "nodemon": "^2.0.7",
-        "yargs": "^16.2.0"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "publishConfig": {
-        "access": "public"
-    },
-    "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
+  "name": "@tensei/cli",
+  "version": "0.8.14",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build/",
+    "_templates/"
+  ],
+  "bin": {
+    "tensei": "./build/index.js"
+  },
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "build": "tsc --p tsconfig.json",
+    "dev": "tsc --watch --p tsconfig.json"
+  },
+  "dependencies": {
+    "@types/change-case": "^2.3.1",
+    "@types/chokidar": "^2.1.3",
+    "@types/commander": "^2.12.2",
+    "@types/concurrently": "^5.2.1",
+    "@types/fs-extra": "^9.0.6",
+    "@types/listr": "^0.14.2",
+    "@types/node": "^14.14.10",
+    "@types/nodemon": "^1.19.0",
+    "@types/yargs": "^15.0.12",
+    "chalk": "^4.1.0",
+    "change-case": "^4.1.1",
+    "check-node-version": "^4.0.3",
+    "chokidar": "^3.5.1",
+    "commander": "^6.2.0",
+    "concurrently": "^5.3.0",
+    "edge.js": "^1.1.4",
+    "execa": "^5.0.0",
+    "fs-extra": "^9.1.0",
+    "hygen": "^6.0.4",
+    "latest-version": "^5.1.0",
+    "listr": "^0.14.3",
+    "nodemon": "^2.0.7",
+    "yargs": "^16.2.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "5f6d71bf6b43eb8543b92db59bddc5535202b590"
 }

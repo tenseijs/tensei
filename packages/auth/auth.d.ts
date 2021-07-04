@@ -5,18 +5,18 @@ import { SessionData } from 'express-session'
 import * as Formatter from 'express-response-formatter'
 
 declare global {
-    namespace Express {
-        export interface Request {
-            user: UserEntity
-            verifyTwoFactorAuthToken: (token: string | number) => boolean
-        }
+  namespace Express {
+    export interface Request {
+      user: UserEntity
+      verifyTwoFactorAuthToken: (token: string | number) => boolean
     }
+  }
 }
 
 declare module 'express-session' {
-    interface SessionData {
-        user: {
-            id: number
-        }
+  interface SessionData {
+    user: {
+      id: number
     }
+  }
 }
