@@ -4,12 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@tensei/auth": "^0.8.17",
-    "@tensei/cms": "^0.8.17",
-    "@tensei/core": "^0.8.17",
-    "@tensei/media": "^0.8.17",
-    "@tensei/nuxt": "^0.8.17",
-    "@tensei/rest": "^0.8.17"
+    "@tensei/auth": "^0.8.18",
+    "@tensei/cms": "^0.8.18",
+    "@tensei/core": "^0.8.18",
+    "@tensei/media": "^0.8.18",
+    "@tensei/nuxt": "^0.8.18",
+    "@tensei/rest": "^0.8.18"
   },
   "scripts": {
     "dev": "nodemon index.js",
