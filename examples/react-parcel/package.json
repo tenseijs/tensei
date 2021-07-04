@@ -15,5 +15,8 @@
   "scripts": {
     "example:dev": "parcel index.html"
   },
-  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
+  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27",
+  "dependencies": {
+    "react-router-dom": "^5.2.0"
+  }
 }

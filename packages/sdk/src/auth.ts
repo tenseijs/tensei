@@ -419,7 +419,15 @@ export class AuthAPI {
 	}
 
 	private async handleSocial(type: string, payload: any) {
-		const response = await this.instance.post(`social/${type}`, payload.object)
+		let response
+		
+		try {
+			response = await this.instance.post(`social/${type}`, payload.object)
+		} catch (errors) {
+			this.logout()
+
+			throw errors
+		}
 
 		this.auth_response = response.data.data
 		this.invokeAuthChange()
@@ -458,6 +466,12 @@ export class AuthAPI {
 	}
 
 	socialConfirm(payload: any) {
-		return this.handleSocial('confirm', this.getSocialPayload(payload))
+		try {
+			return this.handleSocial('confirm', this.getSocialPayload(payload))
+		} catch (errors)  {
+			this.logout()
+
+			throw errors
+		 }
 	}
 }

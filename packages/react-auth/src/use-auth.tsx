@@ -35,6 +35,13 @@ export interface AuthContextWrapperProps {
     options?: import('@tensei/sdk').SdkOptions
 }
 
+function getUrlParameter(name: string) {
+	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]')
+	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)')
+	var results = regex.exec(location.search)
+	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
+}
+
 export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = ({ children, tensei: tenseiInstance, options }) => {
     const [accessToken, setAccessToken] = useState<string>()
     const [user, setUser] = useState<AuthContextInterface['user']>()
@@ -43,6 +50,8 @@ export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = (
 
     const subscribeToAuthChanges = () => {
         tensei.auth().listen((auth: any) => {
+            setIsLoading(false)
+
             setUser(auth?.user || null)
             setAccessToken(auth?.access_token)
         })
@@ -50,8 +59,6 @@ export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = (
 
     const loadExistingSession = async () => {
         await tensei.auth().loadExistingSession()
-
-        setIsLoading(false)
     }
 
     // @ts-ignore
@@ -60,9 +67,24 @@ export const AuthContextProvider: FunctionComponent<AuthContextWrapperProps> = (
         setAccessToken(response?.access_token)
     }
 
-    useEffect(() => {
+    const loadSocialAuth = () => {
+        tensei.auth().socialConfirm()
+            .catch(console.error)
+    }
+
+    const init = async () => {
         subscribeToAuthChanges()
-        loadExistingSession()
+
+        // If there's an access token, then we might need to handle social authentication
+        if (getUrlParameter('access_token') && getUrlParameter('provider')) {
+            return loadSocialAuth()
+        }
+
+        await loadExistingSession()
+    }
+
+    useEffect(() => {
+        init()
     }, [])
 
     return (
