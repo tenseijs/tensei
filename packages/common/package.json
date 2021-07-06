@@ -1,6 +1,6 @@
 {
   "name": "@tensei/common",
-  "version": "0.8.18",
+  "version": "0.8.19",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./typings/index.d.ts",
@@ -27,7 +27,7 @@
     "test": "jest --verbose --runInBand --forceExit"
   },
   "dependencies": {
-    "@tensei/mail": "^0.8.18",
+    "@tensei/mail": "^0.8.19",
     "@types/luxon": "^1.25.0",
     "@types/pluralize": "^0.0.29",
     "change-case": "^4.1.1",

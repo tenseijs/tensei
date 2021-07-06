@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.19](https://github.com/tenseijs/tensei/compare/v0.8.18...v0.8.19) (2021-07-06)
+
+
+### Features
+
+* **react-auth:** add mustBeAuthenticated and MustBeNotAuthenticated higher order functions ([53faf43](https://github.com/tenseijs/tensei/commit/53faf437787f0a9df198a8b3ad1991e2958834ac))
+
+
+
+
+
 ## [0.8.18](https://github.com/tenseijs/tensei/compare/v0.8.17...v0.8.18) (2021-07-04)
 
 **Note:** Version bump only for package @tensei/sdk
