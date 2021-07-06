@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.20](https://github.com/tenseijs/tensei/compare/v0.8.19...v0.8.20) (2021-07-06)
+
+
+### Features
+
+* **react-auth:** update must-be-authenticated loading state ([9bb1bde](https://github.com/tenseijs/tensei/commit/9bb1bdeac106aa34b6401b2f49748c78ea714ffc))
+
+
+
+
+
 ## [0.8.19](https://github.com/tenseijs/tensei/compare/v0.8.18...v0.8.19) (2021-07-06)
 
 
