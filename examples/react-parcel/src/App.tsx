@@ -1,12 +1,15 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { BrowserRouter, Route } from 'react-router-dom'
+import { createBrowserHistory } from 'history'
+import { Router, Route, Link } from 'react-router-dom'
+import { TenseiAuthProvider, useAuth, useTensei, MustBeAuthenticated, MustBeNotAuthenticated } from '@tensei/react-auth'
 
-import { TenseiAuthProvider, useAuth, useTensei } from '@tensei/react-auth'
+export const history = createBrowserHistory()
 
-const Auth: React.FunctionComponent = () => {
+const onRedirectCallback = (path: string) => history.replace(path)
+
+const LoginPage: React.FunctionComponent = () => {
     const tensei = useTensei()
-    const { isLoading, user } = useAuth()
 
     const login = () => {
         tensei.auth().login({
@@ -18,48 +21,61 @@ const Auth: React.FunctionComponent = () => {
         })
     }
 
-    const logout = () => {
-        tensei.auth().logout()
-    }
-
-    if (isLoading) {
-        return null
-    }
-
-    if (user) {
-        return (
-            <>
-                <button onClick={logout}>
-                    Logout
-                </button>
-            </>
-        )
-    }
-
     return (
-        <>
+        <div>
             <button onClick={login}>
                 Login
             </button>
-            <br />
+
             <br />
             <br />
             <a href={tensei.auth().socialRedirectUrl('google')}>
                 Login with google
             </a>
+        </div>
+    )
+}
+
+const DashboardPage: React.FunctionComponent = () => {
+    const { user } = useAuth()
+    const tensei = useTensei()
+
+    const logout = () => {
+        tensei.auth().logout()
+    }
+
+    return <div>
+        <h1>Welcome to your dashboard, {user?.email}</h1>
+        <br />
+        <br />
+        <button onClick={logout}>Logout</button>
+    </div>
+}
+
+const WelcomePage: React.FunctionComponent = () => {
+    return (
+        <>
+            <h1>Welcome to our website.</h1>
+            <br />
+
+            <Link to='/auth/login'>Login to our app</Link>
+            <br />
+            <Link to='/dashboard'>Attempt to go to dashboard</Link>
         </>
     )
 }
 
 const App: React.FunctionComponent = () => {
     return (
-        <BrowserRouter>
-            <TenseiAuthProvider options={{
-                refreshTokens: true
-            }}>
-                <Route component={Auth} path='/' />
-            </TenseiAuthProvider>
-        </BrowserRouter>
+        <TenseiAuthProvider options={{
+            refreshTokens: true
+        }} onRedirectCallback={onRedirectCallback}>
+            <Router history={history}>
+                <Route component={WelcomePage} path='/' exact />
+                <Route component={MustBeNotAuthenticated(LoginPage)} path='/auth/login' />
+                <Route component={MustBeAuthenticated(DashboardPage)} path='/dashboard' exact />
+            </Router>
+        </TenseiAuthProvider>
     )
 }
 

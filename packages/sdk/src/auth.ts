@@ -420,7 +420,7 @@ export class AuthAPI {
 
 	private async handleSocial(type: string, payload: any) {
 		let response
-		
+
 		try {
 			response = await this.instance.post(`social/${type}`, payload.object)
 		} catch (errors) {
@@ -468,10 +468,10 @@ export class AuthAPI {
 	socialConfirm(payload: any) {
 		try {
 			return this.handleSocial('confirm', this.getSocialPayload(payload))
-		} catch (errors)  {
+		} catch (errors) {
 			this.logout()
 
 			throw errors
-		 }
+		}
 	}
 }

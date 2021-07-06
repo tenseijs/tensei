@@ -62,7 +62,7 @@ tensei()
             .social('google', {
                 key: process.env.GOOGLE_KEY,
                 secret: process.env.GOOGLE_SECRET,
-                clientCallback: 'http://localhost:3002'
+                clientCallback: 'http://localhost:1234'
             })
             .setup(({ user }) => {
                 user.fields([

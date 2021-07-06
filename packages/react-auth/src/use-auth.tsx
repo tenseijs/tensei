@@ -1,5 +1,5 @@
 import { sdk } from '@tensei/sdk'
-import React, { createContext, useContext, FunctionComponent, useState, useEffect } from 'react'
+import React, { createContext, useContext, FunctionComponent, useState, useEffect, ComponentType } from 'react'
 
 
 export interface TenseiAuthContextInterface {
@@ -11,13 +11,32 @@ export interface TenseiAuthContextInterface {
     user: import('@tensei/sdk').AuthResponse['user']
     // @ts-ignore
     setAuth: (response?: import('@tensei/sdk').AuthResponse) => void
+
+    onRedirectCallback: (path: string) => void
+
+    loginPath: string,
+    
+    profilePath: string,
+
+    Loader: ComponentType
 }
+
+
+const defaultOnRedirectCallback = (path: string) => {
+    window.location.href = path
+}
+
+const DefaultLoader = () => <></>
 
 export const TenseiAuthContext = createContext<TenseiAuthContextInterface>({
     isLoading: true,
+    loginPath: '/auth/login',
+    profilePath: '/dashboard',
     tensei: {} as any,
     user: undefined as any,
     setAuth: () => {},
+    onRedirectCallback: defaultOnRedirectCallback,
+    Loader: DefaultLoader
 })
 
 export const useAuth = () => useContext(TenseiAuthContext)
@@ -29,6 +48,14 @@ export interface TenseiAuthProviderProps {
 
     // @ts-ignore
     options?: import('@tensei/sdk').SdkOptions
+
+    onRedirectCallback?: (path: string) => void
+
+    profilePath?: string
+
+    loginPath?: string
+
+    Loader?: ComponentType
 }
 
 function getUrlParameter(name: string) {
@@ -38,7 +65,15 @@ function getUrlParameter(name: string) {
 	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
 }
 
-export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({ children, tensei: tenseiInstance, options }) => {
+export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
+    options,
+    children,
+    Loader = DefaultLoader,
+    tensei: tenseiInstance,
+    loginPath = '/auth/login',
+    profilePath = '/dashboard',
+    onRedirectCallback = defaultOnRedirectCallback,
+}) => {
     const [accessToken, setAccessToken] = useState<string>()
     const [user, setUser] = useState<TenseiAuthContextInterface['user']>()
     const [tensei] = useState(tenseiInstance ? tenseiInstance : sdk(options))
@@ -65,7 +100,12 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
 
     const loadSocialAuth = () => {
         tensei.auth().socialConfirm()
-            .catch(console.error)
+            .then(() => {
+                onRedirectCallback(profilePath)
+            })
+            .catch(() => {
+                onRedirectCallback(loginPath)
+            })
     }
 
     const init = async () => {
@@ -87,9 +127,13 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
         <TenseiAuthContext.Provider value={{
             user,
             tensei,
+            Loader,
             setAuth,
             isLoading,
-            accessToken
+            loginPath,
+            profilePath,
+            accessToken,
+            onRedirectCallback
         }}>
             {children}
         </TenseiAuthContext.Provider>
