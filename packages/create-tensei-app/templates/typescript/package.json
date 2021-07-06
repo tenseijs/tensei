@@ -5,12 +5,12 @@
   "license": "MIT",
   "dependencies": {
     "@mikro-orm/sqlite": "^4.4.0",
-    "@tensei/cms": "^0.8.18",
-    "@tensei/core": "^0.8.18",
-    "@tensei/graphql": "^0.8.18",
-    "@tensei/mde": "^0.8.18",
-    "@tensei/media": "^0.8.18",
-    "@tensei/social-auth": "^0.8.18"
+    "@tensei/cms": "^0.8.19",
+    "@tensei/core": "^0.8.19",
+    "@tensei/graphql": "^0.8.19",
+    "@tensei/mde": "^0.8.19",
+    "@tensei/media": "^0.8.19",
+    "@tensei/social-auth": "^0.8.19"
   },
   "scripts": {
     "dev": "nodemon --ext 'ts,js' --exec 'ts-node src/index.ts'",
