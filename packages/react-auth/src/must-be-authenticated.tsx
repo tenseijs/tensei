@@ -19,6 +19,10 @@ export const MustBeAuthenticated = <P extends object>(Component: ComponentType, 
             }
         }, [isLoading, user])
 
+        if (isLoading) {
+            return <Loader />
+        }
+
         return user ? <Component {...props} /> : <Loader />
     }
 }
@@ -36,6 +40,10 @@ export const MustBeNotAuthenticated = <P extends object>(Component: ComponentTyp
                 onRedirectCallback(profilePath)
             }
         }, [isLoading, user])
+
+        if (isLoading) {
+            return <Loader />
+        }
 
         return user ? <Loader /> : <Component {...props} />
     }

@@ -21,11 +21,28 @@ const LoginPage: React.FunctionComponent = () => {
         })
     }
 
+    const onSubmit = (event: any) => {
+        event.preventDefault()
+
+        const [email, password] = event.target.elements
+
+        tensei.auth().login({
+            object: {
+                email: email.value,
+                password: password.value
+            }
+        })
+    }
+
     return (
         <div>
-            <button onClick={login}>
-                Login
-            </button>
+            <form onSubmit={onSubmit}>
+                <input type="text" name="email" placeholder="email" />
+                <input type="text" name="password" placeholder="password" />
+
+                <br />
+                <button>login to your account</button>
+            </form> 
 
             <br />
             <br />
