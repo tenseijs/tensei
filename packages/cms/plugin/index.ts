@@ -580,8 +580,6 @@ class CmsPlugin {
         app.use(`/${this.config.path}`, this.router)
 
         app.get(`/${this.config.path}(/*)?`, async (request, response) => {
-          // @ts-ignore
-          console.log('@@@@@@@@@@@', request.user)
           response.send(
             Mustache.render(indexFileContent, {
               styles: request.styles,

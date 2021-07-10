@@ -111,14 +111,14 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     return this
   }
 
-  public disableAutoFilters() {
-    this.data.disableAutoFilters = true
+  public enableAutoFills() {
+    this.data.enableAutoFills = true
 
     return this
   }
 
-  public disableAutoFills() {
-    this.data.disableAutoFills = true
+  public enableAutoFilters() {
+    this.data.enableAutoFilters = true
 
     return this
   }
@@ -154,8 +154,8 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         .hideOnIndex()
         .hideOnUpdate()
     ],
-    disableAutoFills: false,
-    disableAutoFilters: false,
+    enableAutoFills: false,
+    enableAutoFilters: false,
     actions: [],
     table: '',
     name: '',

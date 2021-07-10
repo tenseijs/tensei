@@ -29,6 +29,8 @@ export type AuthResources = {
   permission: ResourceContract
   passwordReset: ResourceContract
   token: ResourceContract
+  team: ResourceContract
+  member: ResourceContract
 }
 
 export enum TokenTypes {
@@ -45,6 +47,7 @@ export interface AuthPluginConfig {
   fields: FieldContract[]
   userResource: string
   tokenResource: string
+  teamResource: string
   prefix: string
   autoFillUser: boolean
   autoFilterForUser: boolean
@@ -53,6 +56,7 @@ export interface AuthPluginConfig {
   registered?: (ctx: ApiContext) => Promise<void> | void
   roleResource: string
   permissionResource: string
+  teams: boolean
   rolesAndPermissions: boolean
   passwordResetResource: string
   apiPath: string

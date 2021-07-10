@@ -7,6 +7,7 @@ import {
   User,
   Post,
   Reaction,
+  ResourceCanUpdate,
   ReactionHiddenFromApi
 } from './resources'
 import {
@@ -23,6 +24,7 @@ export const resources = () => [
   User(),
   Post(),
   Reaction,
+  ResourceCanUpdate,
   ReactionHiddenFromApi
 ]
 

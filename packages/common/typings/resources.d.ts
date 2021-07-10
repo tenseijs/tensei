@@ -24,8 +24,8 @@ declare module '@tensei/common/resources' {
     table: string
     icon: SupportedIcons
     group: string
-    disableAutoFilters: boolean
-    disableAutoFills: boolean
+    enableAutoFilters: boolean
+    enableAutoFills: boolean
     slug: string
     label: string
     groupSlug: string
@@ -107,8 +107,8 @@ declare module '@tensei/common/resources' {
     hideOnUpdateApi(): this
     hideOnDeleteApi(): this
     hideOnFetchApi(): this
-    disableAutoFills(): this
-    disableAutoFilters(): this
+    enableAutoFills(): this
+    enableAutoFilters(): this
     showOnInsertSubscription(): this
     showOnUpdateSubscription(): this
     showOnDeleteSubscription(): this

@@ -27,6 +27,7 @@ import {
   ApiContext,
   UserRole,
   Utils,
+  hasOne,
   ResourceContract,
   PluginContract,
   timestamp
@@ -67,6 +68,8 @@ export class Auth {
     enableRefreshTokens: false,
     userResource: 'User',
     roleResource: 'Role',
+    teamResource: 'Team',
+    teams: false,
     excludedPathsFromCsrf: [],
     httpOnlyCookiesAuth: false,
     permissionResource: 'Permission',
@@ -136,6 +139,8 @@ export class Auth {
     this.resources.oauthIdentity = this.oauthResource()
     this.resources.permission = this.permissionResource()
     this.resources.passwordReset = this.passwordResetResource()
+    this.resources.team = this.teamResource()
+    this.resources.member = this.teamMemberResource()
 
     this.config.setupFn(this.resources)
   }
@@ -260,10 +265,17 @@ export class Auth {
     return this
   }
 
+  public teams() {
+    this.config.teams = true
+
+    return this
+  }
+
   private userResource() {
     let passwordField = password('Password')
 
     let socialFields: FieldContract[] = []
+    let teamFields: FieldContract[] = []
 
     if (Object.keys(this.config.providers).length === 0) {
       passwordField = passwordField.notNullable()
@@ -276,7 +288,21 @@ export class Auth {
       passwordField = passwordField.nullable()
     }
 
+    if (this.config.teams) {
+      teamFields = [
+        hasOne(this.config.teamResource, 'current_team')
+          .label(`Current ${this.config.teamResource}`)
+          .alwaysLoad()
+          .nullable(),
+        hasMany(this.config.teamResource)
+      ]
+    }
+
     const userResource = resource(this.config.userResource)
+      .canUpdate(
+        ({ user, params, config }) =>
+          user && (params.id as string) === user.id.toString()
+      )
       .fields([
         text('Email')
           .unique()
@@ -300,6 +326,7 @@ export class Auth {
           .defaultFormValue(false)
           .hideOnApi(),
         ...socialFields,
+        ...teamFields,
         ...(this.config.rolesAndPermissions
           ? [belongsToMany(this.config.roleResource).hideOnInsertApi()]
           : []),
@@ -312,6 +339,7 @@ export class Auth {
                 .hideOnUpdateApi()
                 .nullable(),
               text('Two Factor Secret')
+                .hidden()
                 .hideOnApi()
                 .hideOnDetail()
                 .hideOnIndex()
@@ -397,7 +425,7 @@ export class Auth {
         dateTime('Expires At').hidden(),
         belongsTo(this.config.userResource).nullable()
       ])
-      .disableAutoFilters()
+      .hideFromNavigation()
       .hideOnApi()
   }
 
@@ -414,6 +442,30 @@ export class Auth {
       .hideFromNavigation()
       .group('Users & Permissions')
   }
+
+  private teamResource() {
+    return resource(this.config.teamResource)
+      .enableAutoFills()
+      .enableAutoFilters()
+      .fields([
+        text('Name').rules('required', 'min:2', 'max:12'),
+        belongsTo(this.config.userResource).notNullable(),
+        hasMany('Member')
+      ])
+  }
+
+  private teamMemberResource() {
+    return resource('Member')
+      .fields([
+        belongsTo(this.config.teamResource).creationRules('required'),
+        text('Role').nullable(),
+        belongsTo(this.config.userResource).creationRules('required')
+      ])
+      .hideOnInsertApi()
+      .hideOnFetchApi()
+  }
+
+  public teamRoles() {}
 
   private roleResource() {
     return resource(this.config.roleResource)
@@ -507,7 +559,7 @@ export class Auth {
             field =>
               field.relatedProperty.reference === ReferenceType.MANY_TO_ONE &&
               field.relatedProperty.type === this.config.userResource
-          ) && !resource.data.disableAutoFills
+          ) && resource.data.enableAutoFills
       )
       .forEach(resource => {
         resource.beforeCreate(({ entity, em }, { request }) => {
@@ -528,7 +580,7 @@ export class Auth {
             field =>
               field.relatedProperty.reference === ReferenceType.MANY_TO_ONE &&
               field.relatedProperty.type === this.config.userResource
-          ) && !resource.data.disableAutoFilters
+          ) && resource.data.enableAutoFilters
       )
       .forEach(resource => {
         resource.filters([
@@ -569,6 +621,10 @@ export class Auth {
 
           if (this.config.rolesAndPermissions) {
             extendResources([this.resources.role, this.resources.permission])
+          }
+
+          if (this.config.teams) {
+            extendResources([this.resources.team, this.resources.member])
           }
 
           if (this.config.enableRefreshTokens) {
@@ -695,15 +751,18 @@ export class Auth {
         }
 
         currentCtx().graphQlQueries.forEach(query => {
-          query.middleware(async (resolve, parent, args, context, info) => {
-            await this.getAuthUserFromContext(context)
+          query.config.middleware = [
+            async (resolve, parent, args, context, info) => {
+              await this.getAuthUserFromContext(context)
 
-            await this.setAuthUserForPublicRoutes(context)
+              await this.setAuthUserForPublicRoutes(context)
 
-            await this.ensureAuthUserIsNotBlocked(context)
+              await this.ensureAuthUserIsNotBlocked(context)
 
-            return resolve(parent, args, context, info)
-          })
+              return resolve(parent, args, context, info)
+            },
+            ...query.config.middleware
+          ]
           if (query.config.resource && this.config.rolesAndPermissions) {
             const { path, internal } = query.config
             const {
@@ -759,7 +818,7 @@ export class Auth {
         })
 
         currentCtx().routes.forEach(route => {
-          route.middleware([
+          route.config.middleware = [
             async (request, response, next) => {
               await this.getAuthUserFromContext(request as any)
 
@@ -768,8 +827,10 @@ export class Auth {
               await this.ensureAuthUserIsNotBlocked(request as any)
 
               return next()
-            }
-          ])
+            },
+            ...route.config.middleware
+          ]
+
           if (route.config.resource && this.config.rolesAndPermissions) {
             const { resource, id } = route.config
 

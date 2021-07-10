@@ -50,13 +50,13 @@ tensei()
                 belongsTo('User').nullable(),
                 hasMany('Post')
             ])
-            .disableAutoFilters()
             .displayField('Name')
     ])
     .plugins([
         welcome(),
         cms().plugin(),
         auth()
+            .teams()
             .verifyEmails()
             .twoFactorAuth()
             .social('google', {
@@ -67,23 +67,25 @@ tensei()
             .setup(({ user }) => {
                 user.fields([
                     hasMany('Category'),
-                    boolean('Accepted Terms And Conditions').rules('required').default(false)
+                    boolean('Accepted Terms And Conditions')
+                        .creationRules('required')
+                        .default(false)
                 ])
             })
             .configureTokens({
-                accessTokenExpiresIn: 60
+                accessTokenExpiresIn: 60 * 60 * 60 * 60 * 60
             })
             .refreshTokens()
         .plugin(),
         rest().plugin(),
         graphql().plugin(),
         cors(),
-        mde().plugin()
+        mde().plugin(),
     ])
     .databaseConfig({
         type: 'sqlite',
         dbName: 'db.sqlite',
-        debug: true
+        // debug: true
     })
     .start()
     .catch(console.error)

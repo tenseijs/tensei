@@ -145,6 +145,41 @@ test('Only resources exposed to PUT AND PATCH API have update_resources endpoint
   ])
 })
 
+test('canUpdate authorizer on resources authorize requests', async () => {
+  const {
+    app,
+    ctx: { orm }
+  } = await setup()
+
+  const client = Supertest(app)
+
+  const resourcePayload = { like: true }
+
+  await orm.em.persistAndFlush(
+    orm.em.create('ResourceCanUpdate', resourcePayload)
+  )
+
+  const resource: any = await orm.em.findOne(
+    'ResourceCanUpdate',
+    resourcePayload
+  )
+
+  const response = await client
+    .patch(`/api/resource-can-updates/${resource.id}`)
+    .send({ like: false })
+
+  expect(response.status).toBe(401)
+  expect(response.body.message).toBe('Unauthorized.')
+
+  const authorizedResponse = await client
+    .patch(`/api/resource-can-updates/${resource.id}`)
+    .send({ like: false, canUpdate: true })
+
+  expect(authorizedResponse.status).toBe(200)
+  expect(authorizedResponse.body.data.id).toBe(resource.id)
+  expect(authorizedResponse.body.data.like).toBe(false)
+})
+
 test('emits inserted event after resource is inserted', async () => {
   const listener = jest.fn()
 
