@@ -21,6 +21,7 @@ import {
 import Pluralize from 'pluralize'
 // import { FilterContract } from '@tensei/filters'
 import { snakeCase, paramCase, camelCase, pascalCase } from 'change-case'
+import { ResourceMethod } from '@tensei/common/resources'
 
 interface ResourceDataWithFields extends ResourceData {
   fields: FieldContract[]
@@ -154,6 +155,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         .hideOnIndex()
         .hideOnUpdate()
     ],
+    methods: [],
     disableAutoFills: false,
     disableAutoFilters: false,
     actions: [],
@@ -259,6 +261,18 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     this.authorizeCallbacks.authorizedToShow.push(authorizeFunction)
 
     return this
+  }
+
+  public method<Fn extends ResourceMethod>(name: string, fn: Fn) {
+      this.data.methods = [
+        ...this.data.methods,
+        {
+          name,
+          fn
+        }
+      ]
+
+      return this
   }
 
   public canFetch(authorizeFunction: AuthorizeFunction) {

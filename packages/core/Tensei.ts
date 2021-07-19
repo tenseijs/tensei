@@ -36,6 +36,7 @@ import {
 } from '@tensei/core'
 
 export class Tensei implements TenseiContract {
+  public orm: any = null
   public app: Application = Express()
   public server: Server = createServer(this.app)
   public extensions: {
@@ -95,6 +96,7 @@ export class Tensei implements TenseiContract {
       resourcesMap: {},
       dashboardsMap: {},
       orm: null,
+      db: null,
       scripts: [],
       styles: [],
       logger: pino({
@@ -251,6 +253,10 @@ export class Tensei implements TenseiContract {
     this.setConfigOnResourceFields()
 
     await this.registerDatabase()
+
+    const Orm = require('@tensei/orm').Orm
+
+    this.ctx.db = (new Orm(this.ctx.resources, this.ctx?.orm?.em)).generate()
 
     this.registerAssetsRoutes()
     this.registerMiddleware()
@@ -556,6 +562,7 @@ export class Tensei implements TenseiContract {
         request.storage = this.ctx.storage
         request.emitter = this.ctx.emitter
         request.indicative = indicative
+        request.db = this.ctx.db
 
         // @ts-ignore
         this.ctx.request = request

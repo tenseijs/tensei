@@ -1,0 +1,30 @@
+{
+  "name": "@tensei/orm",
+  "version": "0.8.20",
+  "main": "./build/index.js",
+  "license": "MIT",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "build": "rimraf build/ && node scripts/build-types.js && tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@mikro-orm/core": "^4.3.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

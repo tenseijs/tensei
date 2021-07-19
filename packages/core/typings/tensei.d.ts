@@ -70,5 +70,6 @@ declare module '@tensei/core' {
 
   export const cors: (baseOptions?: CorsOptions) => PluginContract
 
+  export * from '@tensei/orm'
   export * from '@tensei/common'
 }

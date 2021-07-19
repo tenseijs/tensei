@@ -815,6 +815,7 @@ input id_where_query {
             ...ctx,
             ...config,
             pubsub: this.pubsub,
+            db: currentCtx().db,
             manager: currentCtx().orm?.em?.fork()
           }),
           uploads: false,

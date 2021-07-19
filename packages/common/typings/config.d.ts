@@ -333,6 +333,7 @@ declare module '@tensei/common/config' {
     events: {
       [key: string]: EventContract
     }
+    db: import('@tensei/orm').OrmContract
     inProduction: boolean
     port: number
     migrating: boolean

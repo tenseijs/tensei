@@ -35,6 +35,7 @@
     "@slynova/flydrive": "^1.0.3",
     "@tensei/auth": "^0.8.20",
     "@tensei/common": "^0.8.20",
+    "@tensei/orm": "^0.8.20",
     "@tensei/mail": "^0.8.20",
     "@types/cookie-parser": "^1.4.2",
     "@types/pino": "^6.3.4",

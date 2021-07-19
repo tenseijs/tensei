@@ -83,7 +83,6 @@ tensei()
     .databaseConfig({
         type: 'sqlite',
         dbName: 'db.sqlite',
-        debug: true
     })
     .start()
     .catch(console.error)

@@ -16,13 +16,26 @@ import {
     array,
     hasMany,
     belongsTo,
-    boolean
+    boolean,
+    route
 } from '@tensei/core'
 
-tensei()
+export default tensei()
     .root(__dirname)
     .resources([
         resource('Post')
+            .canFetch(async ({ db }) => {
+                const all = await db.posts.scrapeAllWithUsers()
+
+                console.log('========', all)
+
+                return true
+            })
+            .method('scrapeAllWithUsers', async function (this: any) {
+                console.log('$$$$$$$$$$', await this.findAndCount({}))
+
+                return [1, 2, 3]
+            })
             .fields([
                 text('Title').rules('required'),
                 slug('Slug').creationRules('required', 'unique:slug').unique().from('Title'),
