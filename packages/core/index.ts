@@ -24,4 +24,5 @@ export const cors = (baseOptions?: Cors.CorsOptions) =>
     app.use(Cors(options))
   })
 
+export * from '@tensei/orm'
 export * from '@tensei/common'

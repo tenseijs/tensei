@@ -8,9 +8,8 @@
     "baseUrl": "./src",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["@types/jest"]
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["core.d.ts", "index.ts"],
+  "include": ["core.d.ts", "index.ts", "cli.ts"],
   "exclude": ["__tests__", "build", "Tensei.ts"]
 }

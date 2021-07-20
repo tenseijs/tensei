@@ -2,7 +2,6 @@ import { paramCase } from 'change-case'
 import {
   Permission,
   PluginContract,
-  SetupFunctions,
   PluginSetupFunction,
   DataPayload
 } from '@tensei/common'

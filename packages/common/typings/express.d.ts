@@ -24,6 +24,7 @@ declare global {
       mailer: MailManagerContract
       config: Config
       orm: MikroORM
+      db: import('@tensei/orm').OrmContract
       storage: StorageManager
       manager: EntityManager
       scripts: Asset[]

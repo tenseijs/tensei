@@ -19,6 +19,11 @@ declare module '@tensei/common/resources' {
     [key: string]: string
   }
   export type SupportedIcons = string
+  export type ResourceMethod = () => any
+  export interface RepositoryMethod<Fn extends ResourceMethod> {
+    fn: Fn
+    name: string
+  }
   export interface ResourceData {
     name: string
     table: string
@@ -31,6 +36,7 @@ declare module '@tensei/common/resources' {
     groupSlug: string
     valueField: string
     hideOnApi?: boolean
+    methods: RepositoryMethod[]
     hideOnInsertApi: boolean
     hideOnFetchApi: boolean
     hideOnUpdateApi: boolean
@@ -104,6 +110,7 @@ declare module '@tensei/common/resources' {
     icon(icon: SupportedIcons): this
     isHiddenOnApi(): boolean
     hideOnInsertApi(): this
+    method<Fn extends ResourceMethod>(name: string, fn: Fn): this
     hideOnUpdateApi(): this
     hideOnDeleteApi(): this
     hideOnFetchApi(): this
@@ -181,6 +188,7 @@ declare module '@tensei/common/resources' {
     hideOnApi(): this
     isHiddenOnApi(): boolean
     hideOnInsertApi(): this
+    method<Fn extends ResourceMethod>(name: string, fn: Fn): this
     hideOnUpdateApi(): this
     hideOnDeleteApi(): this
     hideOnFetchApi(): this

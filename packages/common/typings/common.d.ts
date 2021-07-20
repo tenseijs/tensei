@@ -7,4 +7,5 @@ declare module '@tensei/common' {
   export * from '@tensei/common/filters'
   export * from '@tensei/common/dashboards'
   export * from '@tensei/common/events'
+  export * from '@tensei/common/commands'
 }
