@@ -403,12 +403,9 @@ export class Auth {
       .group('Users & Permissions')
 
     if (this.config.teams) {
-      userResource.method(
-        'currentTeam',
-        function (this: import('@tensei/orm').OrmContract['users']) {
-          return
-        }
-      )
+      userResource.method('currentTeam', function () {
+        return
+      })
     }
 
     return userResource

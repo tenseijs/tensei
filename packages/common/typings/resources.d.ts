@@ -19,7 +19,7 @@ declare module '@tensei/common/resources' {
     [key: string]: string
   }
   export type SupportedIcons = string
-  export type ResourceMethod = () => any
+  export type ResourceMethod = (ctx: Config) => any
   export interface RepositoryMethod<Fn extends ResourceMethod> {
     fn: Fn
     name: string
@@ -76,7 +76,7 @@ declare module '@tensei/common/resources' {
 
   export interface ResourceExtendContract extends any {}
 
-  export interface ResourceContract<ResourceType = {}> {
+  export interface ResourceContract {
     authorizeCallbacks: {
       authorizedToShow: AuthorizeFunction[]
       authorizedToFetch: AuthorizeFunction[]
@@ -233,7 +233,7 @@ declare module '@tensei/common/resources' {
   export const resource: (
     name: string,
     tableName?: string | undefined
-  ) => ResourceContract<{}>
+  ) => ResourceContract
 
   export interface ManagerContract {
     repository: DatabaseRepositoryInterface
@@ -269,7 +269,7 @@ declare module '@tensei/common/resources' {
         with: withRelationships,
         no_pagination: noPagination
       }: Request['query'],
-      resource?: ResourceContract<{}>
+      resource?: ResourceContract
     ): Promise<any>
     findAll(
       query?: FetchAllRequestQuery
@@ -295,7 +295,7 @@ declare module '@tensei/common/resources' {
       payload: DataPayload,
       creationRules?: boolean,
       modelId?: string | number | undefined,
-      resource?: ResourceContract<{}>
+      resource?: ResourceContract
     ) => Promise<DataPayload>
     validateUniqueFields: (
       payload: DataPayload,
@@ -314,9 +314,7 @@ declare module '@tensei/common/resources' {
       databaseField: string
     ) => import('@tensei/common').FieldContract | undefined
     setResource: (resourceOrSlug: ResourceContract | string) => this
-    findResource: (
-      resourceSlug: string | ResourceContract
-    ) => ResourceContract<{}>
+    findResource: (resourceSlug: string | ResourceContract) => ResourceContract
     findOneByField: (databaseField: string, value: any) => Promise<any>
   }
 
@@ -359,7 +357,7 @@ declare module '@tensei/common/resources' {
         with: withRelationships,
         no_pagination: noPagination
       }: Request['query'],
-      resource?: ResourceContract<{}>
+      resource?: ResourceContract
     ): Promise<any>
     findAll(
       query?: undefined
@@ -385,7 +383,7 @@ declare module '@tensei/common/resources' {
       payload: DataPayload,
       creationRules?: boolean,
       modelId?: string | number | undefined,
-      resource?: ResourceContract<{}>
+      resource?: ResourceContract
     ) => Promise<DataPayload>
     validateUniqueFields: (
       payload: DataPayload,
@@ -404,9 +402,7 @@ declare module '@tensei/common/resources' {
       databaseField: string
     ) => import('@tensei/common').FieldContract | undefined
     setResource: (resourceOrSlug: ResourceContract | string) => this
-    findResource: (
-      resourceSlug: string | ResourceContract
-    ) => ResourceContract<{}>
+    findResource: (resourceSlug: string | ResourceContract) => ResourceContract
     findOneByField: (databaseField: string, value: any) => Promise<any>
   }
 }

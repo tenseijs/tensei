@@ -28,7 +28,7 @@ interface ResourceDataWithFields extends ResourceData {
   actions: Action[]
 }
 
-export class Resource<ResourceType = {}> implements ResourceContract {
+export class Resource implements ResourceContract {
   public authorizeCallbacks: {
     authorizedToShow: AuthorizeFunction[]
     authorizedToFetch: AuthorizeFunction[]
