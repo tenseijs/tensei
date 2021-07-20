@@ -158,6 +158,7 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     enableAutoFills: false,
     enableAutoFilters: false,
     methods: [],
+    repositoryMethods: [],
     actions: [],
     table: '',
     name: '',
@@ -263,7 +264,19 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     return this
   }
 
-  public method<Fn extends ResourceMethod>(name: string, fn: Fn) {
+  public repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn) {
+    this.data.repositoryMethods = [
+      ...this.data.methods,
+      {
+        name,
+        fn
+      }
+    ]
+
+    return this
+  }
+
+  public method<Fn = ResourceMethod>(name: string, fn: Fn) {
     this.data.methods = [
       ...this.data.methods,
       {

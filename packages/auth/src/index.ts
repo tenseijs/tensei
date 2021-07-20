@@ -402,6 +402,15 @@ export class Auth {
       .icon('database-manager')
       .group('Users & Permissions')
 
+    if (this.config.teams) {
+      userResource.method(
+        'currentTeam',
+        function (this: import('@tensei/orm').OrmContract['users']) {
+          return
+        }
+      )
+    }
+
     return userResource
   }
 

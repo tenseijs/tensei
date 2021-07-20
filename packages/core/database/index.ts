@@ -113,6 +113,11 @@ class Database {
       writable: false
     })
 
+    // Set model methods on class
+    resource.data.methods.forEach(method => {
+      entityClass.prototype[method.name] = method.fn
+    })
+
     hookNames.forEach(hookName => {
       entityClass.prototype[hookName] = (eventPayload: any) =>
         Promise.all(

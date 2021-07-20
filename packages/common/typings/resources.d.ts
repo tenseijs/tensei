@@ -37,6 +37,7 @@ declare module '@tensei/common/resources' {
     valueField: string
     hideOnApi?: boolean
     methods: RepositoryMethod[]
+    repositoryMethods: RepositoryMethod[]
     hideOnInsertApi: boolean
     hideOnFetchApi: boolean
     hideOnUpdateApi: boolean
@@ -110,7 +111,8 @@ declare module '@tensei/common/resources' {
     icon(icon: SupportedIcons): this
     isHiddenOnApi(): boolean
     hideOnInsertApi(): this
-    method<Fn extends ResourceMethod>(name: string, fn: Fn): this
+    method<Fn = ResourceMethod>(name: string, fn: Fn): this
+    repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn): this
     hideOnUpdateApi(): this
     hideOnDeleteApi(): this
     hideOnFetchApi(): this
@@ -188,7 +190,8 @@ declare module '@tensei/common/resources' {
     hideOnApi(): this
     isHiddenOnApi(): boolean
     hideOnInsertApi(): this
-    method<Fn extends ResourceMethod>(name: string, fn: Fn): this
+    method<Fn = ResourceMethod>(name: string, fn: Fn): this
+    repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn): this
     hideOnUpdateApi(): this
     hideOnDeleteApi(): this
     hideOnFetchApi(): this

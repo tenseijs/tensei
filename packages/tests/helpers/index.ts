@@ -49,6 +49,11 @@ export const fakeUser = () => ({
   password: 'password'
 })
 
+export const fakeComment = () => ({
+  title: Faker.lorem.sentence(),
+  body: Faker.lorem.sentence()
+})
+
 export const fakePost = () => ({
   id: undefined,
   title: Faker.lorem.sentence(),

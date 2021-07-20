@@ -20,7 +20,7 @@ export class Orm {
         resource.data.camelCaseNamePlural
       ] = this.manager.getRepository(resource.data.pascalCaseName)
 
-      resource.data.methods.forEach(method => {
+      resource.data.repositoryMethods.forEach(method => {
         const methodName = method.name.replace(/\s+/g, '')
 
         repositories[resource.data.camelCaseNamePlural][
