@@ -9,6 +9,9 @@
     "typings/",
     "core.d.ts"
   ],
+  "bin": {
+    "tensei": "./build/cli.js"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/body-parser": "^1.19.0",
@@ -26,7 +29,7 @@
   },
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-    "build": "tsc --p tsconfig.json && yarn copy:files",
+    "build": "rimraf build/ && tsc --p tsconfig.json && yarn copy:files",
     "dev": "tsc --watch --p tsconfig.json",
     "copy:files": "copyfiles welcome.html build/"
   },
@@ -35,13 +38,17 @@
     "@slynova/flydrive": "^1.0.3",
     "@tensei/auth": "^0.8.20",
     "@tensei/common": "^0.8.20",
-    "@tensei/orm": "^0.8.20",
     "@tensei/mail": "^0.8.20",
+    "@tensei/orm": "^0.8.20",
+    "@types/cli-table": "^0.3.0",
+    "@types/commander": "^2.12.2",
     "@types/cookie-parser": "^1.4.2",
     "@types/pino": "^6.3.4",
     "@types/signale": "^1.4.1",
     "body-parser": "^1.19.0",
     "change-case": "^4.1.1",
+    "cli-table": "^0.3.6",
+    "commander": "^8.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "date-fns": "^2.14.0",

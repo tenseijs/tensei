@@ -20,7 +20,7 @@ const {
     boolean,
 } = require('@tensei/core')
 
-tensei()
+module.exports = tensei()
     .root(__dirname)
     .resources([
         resource('Post')
@@ -80,9 +80,9 @@ tensei()
         cors(),
         mde().plugin()
     ])
-    .databaseConfig({
-        type: 'sqlite',
-        dbName: 'db.sqlite',
-    })
+    // .databaseConfig({
+    //     type: 'sqlite',
+    //     dbName: 'db.sqlite',
+    // })
     .start()
     .catch(console.error)

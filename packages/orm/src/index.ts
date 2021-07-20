@@ -7,55 +7,70 @@ import { ResourceContract } from '@tensei/common'
 import { resolveFieldTypescriptType } from './helpers'
 
 export class Orm {
-    constructor(public resources: ResourceContract[], public manager: EntityManager) {}
+  constructor(
+    public resources: ResourceContract[],
+    public manager: EntityManager
+  ) {}
 
-    public generate() {
-        const repositories: any = {}
+  public generate() {
+    const repositories: any = {}
 
-        this.writeTypes()
+    this.resources.forEach(resource => {
+      repositories[
+        resource.data.camelCaseNamePlural
+      ] = this.manager.getRepository(resource.data.pascalCaseName)
 
-        this.resources.forEach(resource => {
-            repositories[resource.data.camelCaseNamePlural] = this.manager.getRepository(resource.data.pascalCaseName)
+      resource.data.methods.forEach(method => {
+        const methodName = method.name.replace(/\s+/g, '')
 
-            resource.data.methods.forEach(method => {
-                const methodName = method.name.replace(/\s+/g, '')
+        repositories[resource.data.camelCaseNamePlural][
+          methodName
+        ] = method.fn.bind(repositories[resource.data.camelCaseNamePlural])
+      })
+    })
 
-                repositories[resource.data.camelCaseNamePlural][methodName] = method.fn.bind(repositories[resource.data.camelCaseNamePlural])
-            })
-        })
+    return repositories
+  }
 
-        return repositories
-    }
+  public generateTypes() {
+    const types = Prettier.format(this.generateRepositoryInterfaces(), {
+      semi: false,
+      parser: 'typescript',
+      singleQuote: true
+    })
 
-    private writeTypes() {
-        const types = this.generateRepositoryInterfaces()
+    Fs.writeFileSync(Path.resolve(__dirname, 'index.d.ts'), types)
+  }
 
-        Fs.writeFileSync(Path.resolve(__dirname, 'index.d.ts'), Prettier.format(types, {
-            semi: false,
-            parser: 'typescript',
-            singleQuote: true
-        }))
-    }
-
-    private generateRepositoryInterfaces() {
-        return `
-            declare module '@tensei/orm' {
-                import { EntityRepository } from '@mikro-orm/core'
-
+  private generateRepositoryInterfaces() {
+    return `
+        declare module '@tensei/orm' {
+            import { EntityRepository } from '@mikro-orm/core'
+            ${this.resources
+              .map(resource => {
+                return `export interface ${resource.data.pascalCaseName}Model {
+                    ${resource.data.fields.map(
+                      field =>
+                        `${field.databaseField}: ${resolveFieldTypescriptType(
+                          field,
+                          this.resources
+                        )}`
+                    )}\n
+                }\n
+                export interface ${
+                  resource.data.pascalCaseName
+                }Repository extends EntityRepository<${
+                  resource.data.pascalCaseName
+                }Model> {}\n
+                `
+              })
+              .join('\n')}
+            export interface OrmContract {
                 ${this.resources.map(resource => {
-                    return `export interface ${resource.data.pascalCaseName}Model {
-                        ${resource.data.fields.map(field => `${field.databaseField}: ${resolveFieldTypescriptType(field, this.resources)}`)}\n
-                    }\n
-
-                    export interface ${resource.data.pascalCaseName}Repository extends EntityRepository<${resource.data.pascalCaseName}Model> {}\n
-                    `
-                }).join('\n')}
-                export interface OrmContract {
-                    ${this.resources.map(resource => {
-                        return `${resource.data.camelCaseNamePlural}: ${resource.data.pascalCaseName}Repository`
-                    })}
-                }
+                  return `${resource.data.camelCaseNamePlural}: ${resource.data.pascalCaseName}Repository`
+                })}
             }
-        `
-    }
+        }
+    `
+  }
 }

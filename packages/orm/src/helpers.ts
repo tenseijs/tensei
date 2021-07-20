@@ -50,7 +50,7 @@ export const resolveFieldTypescriptType = (
       )
   
       if (relatedResource) {
-        return `${relatedResource.data.pascalCaseName}`
+        return `${relatedResource.data.pascalCaseName}Model`
       }
   
       return 'ID'
@@ -65,7 +65,7 @@ export const resolveFieldTypescriptType = (
       )
   
       if (relatedResource) {
-        return `${relatedResource.data.pascalCaseName}[]`
+        return `${relatedResource.data.pascalCaseName}Model[]`
       }
   
       return 'ID[]'

@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-    "build": "rimraf build/ && node scripts/build-types.js && tsc",
+    "build": "rimraf build/ && tsc && node scripts/build-default-types.js",
     "dev": "tsc --watch"
   },
   "dependencies": {

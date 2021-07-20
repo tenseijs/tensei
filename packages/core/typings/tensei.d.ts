@@ -13,14 +13,19 @@ declare module '@tensei/core' {
     GraphQlQueryContract,
     TensieContext,
     EventContract,
-    DataPayload
+    DataPayload,
+    CommandContract
   } from '@tensei/common'
+
+  export type TENSEI_MODE = 'cli' | 'default' | 'serverless'
 
   export interface TenseiContract {
     ctx: Config
     app: Application
+    mode: TENSEI_MODE
     name: (name: string) => this
     start(fn?: (ctx: Config) => any, listen?: boolean): Promise<this>
+    shutdown(): Promise<this>
     boot(boot: PluginSetupFunction): this
     register(register: PluginSetupFunction): this
     listen(): Promise<Server>
@@ -56,6 +61,7 @@ declare module '@tensei/core' {
     db(databaseConfig: DatabaseConfiguration): this
     databaseConfig(databaseConfig: DatabaseConfiguration): this
     events(events: EventContract<DataPayload>[]): this
+    commands(command: CommandContract[]): this
     serverUrl(url: string): this
     clientUrl(url: string): this
     root(path: string): this

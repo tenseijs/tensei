@@ -13,7 +13,7 @@
         "@tensei/social-auth": "^0.8.20"
     },
     "scripts": {
-        "example:dev": "nodemon --ext --watch ../../node_modules/ --exec 'ts-node --files orm.d.ts src/index.ts'",
+        "example:dev": "yarn ts-node-dev --respawn src/index.ts",
         "build": "tsc"
     },
     "devDependencies": {

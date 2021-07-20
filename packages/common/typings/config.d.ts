@@ -5,6 +5,7 @@ declare module '@tensei/common/config' {
   import { EntityManager, AnyEntity } from '@mikro-orm/core'
   import { sanitizer, validator } from 'indicative'
   import { EventContract } from '@tensei/common/events'
+  import { CommandContract } from '@tensei/common/commands'
   import { FindOptions, FilterQuery } from '@mikro-orm/core'
   import { ResourceContract } from '@tensei/common/resources'
   import { ExecutionParams } from 'subscriptions-transport-ws'
@@ -333,6 +334,7 @@ declare module '@tensei/common/config' {
     events: {
       [key: string]: EventContract
     }
+    commands: CommandContract[]
     db: import('@tensei/orm').OrmContract
     inProduction: boolean
     port: number
