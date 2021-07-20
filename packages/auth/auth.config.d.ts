@@ -1,9 +1,11 @@
 import { AnyEntity } from '@mikro-orm/core'
-import { UserEntity } from './src/config'
-import { GraphQLPluginContext } from '@tensei/common'
+import { GraphQLPluginContext, DataPayload } from '@tensei/common'
 
 declare module '@tensei/common' {
   interface GraphQLPluginContext {
-    user: UserEntity
+    // @ts-ignore
+    user: import('@tensei/orm').UserModel & DataPayload
+    // @ts-ignore
+    team: import('@tensei/orm').TeamModel
   }
 }

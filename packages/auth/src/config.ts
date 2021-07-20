@@ -4,6 +4,7 @@ import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'
 import { ApiContext } from '@tensei/common'
 import { DataPayload } from '@tensei/common'
+import { RoleContract } from 'teams/Role'
 
 export interface GrantConfig {
   key: string
@@ -49,6 +50,7 @@ export interface AuthPluginConfig {
   tokenResource: string
   teamResource: string
   prefix: string
+  teamRoles: RoleContract[]
   autoFillUser: boolean
   autoFilterForUser: boolean
   excludedPathsFromCsrf: string[]

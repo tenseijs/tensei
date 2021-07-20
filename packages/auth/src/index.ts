@@ -49,6 +49,7 @@ export * from './config'
 
 import { setup } from './setup'
 import { Request } from 'express'
+import { RoleContract, role } from './teams/Role'
 
 type JwtPayload = {
   id: string
@@ -62,6 +63,12 @@ export class Auth {
     setupFn: AuthSetupFn
   } = {
     prefix: '',
+    teamRoles: [
+      role('Owner')
+        .slug('owner')
+        .description('Has all permissions on this team')
+        .permissions(['*'])
+    ],
     autoFillUser: true,
     autoFilterForUser: true,
     tokenResource: 'Token',
@@ -271,6 +278,12 @@ export class Auth {
     return this
   }
 
+  public teamRoles(roles: RoleContract[]) {
+    this.config.teamRoles = [...this.config.teamRoles, ...roles]
+
+    return this
+  }
+
   private userResource() {
     let passwordField = password('Password')
 
@@ -403,8 +416,8 @@ export class Auth {
       .group('Users & Permissions')
 
     if (this.config.teams) {
-      userResource.method('currentTeam', function () {
-        return
+      userResource.method('currentTeam', function (this: any) {
+        return this.current_team
       })
     }
 
@@ -450,12 +463,25 @@ export class Auth {
   }
 
   private teamResource() {
+    const self = this
     return resource(this.config.teamResource)
       .enableAutoFills()
       .enableAutoFilters()
+      .method('generateInviteToken', function (this: any, user: any) {
+        return Jwt.sign(
+          {
+            teamId: this.id
+          },
+          self.config.tokensConfig.secretKey,
+          {
+            expiresIn: '7d'
+          }
+        )
+      })
       .fields([
         text('Name').rules('required', 'min:2', 'max:12'),
         belongsTo(this.config.userResource).notNullable(),
+        text('Role').rules('required').nullable(),
         hasMany('Member')
       ])
   }
@@ -470,8 +496,6 @@ export class Auth {
       .hideOnInsertApi()
       .hideOnFetchApi()
   }
-
-  public teamRoles() {}
 
   private roleResource() {
     return resource(this.config.roleResource)
@@ -761,6 +785,8 @@ export class Auth {
             async (resolve, parent, args, context, info) => {
               await this.getAuthUserFromContext(context)
 
+              await this.getCurrentTeamFromContext(context)
+
               await this.setAuthUserForPublicRoutes(context)
 
               await this.ensureAuthUserIsNotBlocked(context)
@@ -827,6 +853,8 @@ export class Auth {
           route.config.middleware = [
             async (request, response, next) => {
               await this.getAuthUserFromContext(request as any)
+
+              await this.getCurrentTeamFromContext(request as any)
 
               await this.setAuthUserForPublicRoutes(request as any)
 
@@ -1228,6 +1256,20 @@ export class Auth {
               .handle(async (request, { formatter: { noContent } }) =>
                 noContent([])
               )
+          ]
+        : []),
+      ...(this.config.teams
+        ? [
+            route('Generate Team Invite token')
+              .post()
+              .path(this.getApiPath('teams/:team/invites'))
+              .handle(async (request, { formatter: { ok } }) => {
+                const { team } = request
+
+                return ok({
+                  inviteToken: team.generateInviteToken()
+                })
+              })
           ]
         : [])
     ]
@@ -1901,11 +1943,32 @@ export class Auth {
       createUserPayload
     )
 
-    await manager.persistAndFlush(user)
+    let currentTeam = null
+
+    if (this.config.teams) {
+      // Create a new team
+      currentTeam = manager.create(this.config.teamResource, {
+        name: 'Personal',
+        role: 'owner',
+        user
+      })
+
+      user.current_team = currentTeam
+    }
+
+    await manager.persistAndFlush([user, currentTeam])
+
+    const populates = []
 
     if (this.config.rolesAndPermissions) {
-      await manager.populate([user], [this.getRolesAndPermissionsNames()])
+      populates.push(this.getRolesAndPermissionsNames())
     }
+
+    if (this.config.teams) {
+      populates.push('current_team')
+    }
+
+    await manager.populate([user], populates)
 
     ctx.user = user
 
@@ -2282,6 +2345,32 @@ export class Auth {
     return this.resources.permission.data.snakeCaseNamePlural
   }
 
+  public getCurrentTeamFromContext = async (ctx: ApiContext) => {
+    if (!this.config.teams) {
+      return
+    }
+
+    const { req } = ctx
+
+    const { headers, params } = req
+
+    const currentTeamId = (headers['x-current-team'] as any) || params.team
+
+    if (!currentTeamId) {
+      return
+    }
+
+    const team = await ctx.db.teams.findOne({
+      id: currentTeamId
+    })
+
+    if (!team) {
+      return
+    }
+
+    ctx.team = team
+  }
+
   public getAuthUserFromContext = async (ctx: ApiContext) => {
     const { req } = ctx
 
@@ -2558,5 +2647,6 @@ export class Auth {
   }
 }
 
+export { role } from './teams/Role'
 export const auth = () => new Auth()
 export { USER_EVENTS } from './config'

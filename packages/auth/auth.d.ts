@@ -1,13 +1,16 @@
 import { Mail } from '@tensei/mail'
-import { UserEntity } from './src/config'
 import { AnyEntity } from '@mikro-orm/core'
+import { DataPayload } from '@tensei/common'
 import { SessionData } from 'express-session'
 import * as Formatter from 'express-response-formatter'
 
 declare global {
   namespace Express {
     export interface Request {
-      user: UserEntity
+      // @ts-ignore
+      user: import('@tensei/orm').UserModel & DataPayload
+      // @ts-ignore
+      team: import('@tensei/orm').TeamModel
       verifyTwoFactorAuthToken: (token: string | number) => boolean
     }
   }
