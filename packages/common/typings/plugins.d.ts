@@ -7,6 +7,7 @@ declare module '@tensei/common/plugins' {
   } from '@slynova/flydrive'
   import { DocumentNode } from 'graphql'
   import { Server } from 'http'
+  import { CommandContract } from '@tensei/common/commands'
   import { EntityManager } from '@mikro-orm/core'
   import { MailDriverContract, MailConfig } from '@tensei/mail'
   import { ResourceContract, ManagerContract } from '@tensei/common/resources'
@@ -52,6 +53,7 @@ declare module '@tensei/common/plugins' {
     extendGraphQlQueries: (queries: GraphQlQueryContract[]) => any
     extendGraphQlTypeDefs: (typeDefs: (string | DocumentNode)[]) => any
     extendRoutes: (queries: RouteContract[]) => any
+    extendCommands: (queries: CommandContract[]) => any
     extendResources: (resources: ResourceContract[]) => any
     currentCtx: () => Config
     getQuery: (path: string) => GraphQlQueryContract | undefined

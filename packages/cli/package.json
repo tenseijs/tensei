@@ -9,7 +9,7 @@
     "_templates/"
   ],
   "bin": {
-    "tensei": "./build/index.js"
+    "tensei-cli": "./build/index.js"
   },
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",

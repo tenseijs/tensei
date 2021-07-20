@@ -11,6 +11,7 @@ declare global {
         [key: string]: ResourceContract
       }
       mailer: Mail
+      db: import('@tensei/orm').OrmContract
       storage: Config['storage']
       currentCtx: () => Config
       emitter: Config['emitter']

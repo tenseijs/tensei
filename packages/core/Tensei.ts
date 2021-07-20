@@ -1,4 +1,5 @@
 import pino from 'pino'
+import Table from 'cli-table'
 import Emittery from 'emittery'
 import BodyParser from 'body-parser'
 import * as indicative from 'indicative'
@@ -23,7 +24,9 @@ import {
   ExtendMailCallback,
   EventContract,
   DataPayload,
-  ApiContext
+  ApiContext,
+  CommandContract,
+  command
 } from '@tensei/common'
 import Database from './database'
 import {
@@ -32,10 +35,20 @@ import {
   TensieContext,
   GraphQlQueryContract,
   PluginSetupConfig,
-  PluginSetupFunction
+  PluginSetupFunction,
+  TENSEI_MODE
 } from '@tensei/core'
 
+export enum TENSEI_MODES {
+  cli = 'cli',
+  serverless = 'serverless',
+  default = 'default'
+}
+
+
 export class Tensei implements TenseiContract {
+  public orm: any = null
+  public mode: TENSEI_MODE = (process.env.TENSEI_MODE as TENSEI_MODE) || TENSEI_MODES.default
   public app: Application = Express()
   public server: Server = createServer(this.app)
   public extensions: {
@@ -65,6 +78,7 @@ export class Tensei implements TenseiContract {
       schemas: [],
       routes: [],
       events: {},
+      commands: [],
       migrating: false,
       root: process.cwd(),
       emitter: new Emittery(),
@@ -95,6 +109,7 @@ export class Tensei implements TenseiContract {
       resourcesMap: {},
       dashboardsMap: {},
       orm: null,
+      db: null,
       scripts: [],
       styles: [],
       logger: pino({
@@ -237,6 +252,36 @@ export class Tensei implements TenseiContract {
     })
   }
 
+  private registerCoreCommands(orm: any) {
+    this.commands([
+      command('orm:types')
+        .signature('orm:types')
+        .description('Generate ORM Types')
+        .handle(() => {
+          orm.generateTypes()
+        }),
+      command('routes')
+        .signature('routes')
+        .description('Display all registered routes in the application')
+        .handle(() => {
+          const table = new Table({
+            head: ['METHOD', 'URI', 'MIDDLEWARE', 'NAME', 'DESCRIPTION'],
+            colWidths: [10, 45, 15, 25, 42]
+          })
+
+          table.push(...this.ctx.routes.map(route => [
+            route.config.type,
+            route.config.path,
+            route.config.middleware.length,
+            route.config.name,
+            route.config.description
+          ]))
+
+          console.log(table.toString())
+        })
+    ])
+  }
+
   private async bootApplication() {
     if (this.registeredApplication) {
       return this
@@ -251,6 +296,13 @@ export class Tensei implements TenseiContract {
     this.setConfigOnResourceFields()
 
     await this.registerDatabase()
+
+    const Orm = require('@tensei/orm').Orm
+    const orm = (new Orm(this.ctx.resources, this.ctx?.orm?.em))
+
+    this.ctx.db = orm.generate()
+
+    this.registerCoreCommands(orm)
 
     this.registerAssetsRoutes()
     this.registerMiddleware()
@@ -343,9 +395,22 @@ export class Tensei implements TenseiContract {
     await this.bootApplication()
   }
 
+  public async shutdown() {
+    // Shutdown database
+    if (this.ctx.orm) {
+      await this.ctx.orm.close()
+    }
+
+    return this
+  }
+
   public async start(fn?: (ctx: Config) => any, listen = true) {
     if (!this.registeredApplication) {
       await this.bootApplication()
+    }
+
+    if (this.mode !== TENSEI_MODES.default) {
+      return this
     }
 
     if (fn) {
@@ -423,6 +488,9 @@ export class Tensei implements TenseiContract {
       },
       extendRoutes: (routes: RouteContract[]) => {
         this.routes(routes)
+      },
+      extendCommands: (commands: CommandContract<any>[]) => {
+        this.commands(commands)
       },
       setPluginConfig: (name: string, config: any) => {
         this.ctx.pluginsConfig[name] = config
@@ -556,6 +624,7 @@ export class Tensei implements TenseiContract {
         request.storage = this.ctx.storage
         request.emitter = this.ctx.emitter
         request.indicative = indicative
+        request.db = this.ctx.db
 
         // @ts-ignore
         this.ctx.request = request
@@ -678,6 +747,12 @@ export class Tensei implements TenseiContract {
 
   public plugins(plugins: PluginContract[]) {
     this.ctx.plugins = [...this.ctx.plugins, ...plugins]
+
+    return this
+  }
+
+  public commands(commands: CommandContract<any>[]) {
+    this.ctx.commands = [...this.ctx.commands, ...commands]
 
     return this
   }

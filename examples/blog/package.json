@@ -11,10 +11,12 @@
         "@tensei/mde": "^0.8.20",
         "@tensei/media": "^0.8.20",
         "@tensei/social-auth": "^0.8.20",
+        "cli-table": "^0.3.6",
         "marked": "^2.0.1"
     },
     "scripts": {
-        "example:dev": "nodemon --watch ../../node_modules/ index.js"
+        "example:dev": "nodemon --watch ../../node_modules/ index.js",
+        "tensei": "tensei"
     },
     "devDependencies": {
         "nodemon": "^2.0.7"
