@@ -493,6 +493,7 @@ export class Auth {
         text('Role').nullable(),
         belongsTo(this.config.userResource).creationRules('required')
       ])
+      .hideOnUpdateApi()
       .hideOnInsertApi()
       .hideOnFetchApi()
   }
@@ -1269,7 +1270,59 @@ export class Auth {
                 return ok({
                   inviteToken: team.generateInviteToken()
                 })
-              })
+              }),
+            route('Accept Team Invite')
+              .post()
+              .authorize(({ user }) => !!user)
+              .path(this.getApiPath('teams/invites/:token/accept'))
+              .handle(
+                async (request, { formatter: { noContent, notFound } }) => {
+                  const { db, params, userInputError, user } = request
+
+                  let team
+                  let role
+
+                  try {
+                    const token = Jwt.verify(
+                      params.token,
+                      this.config.tokensConfig.secretKey
+                    ) as {
+                      teamId: number
+                      role: string
+                    }
+
+                    team = await db.teams.findOne({
+                      id: token.teamId
+                    })
+
+                    role = token.role
+
+                    if (!team) {
+                      throw new Error()
+                    }
+                  } catch (error) {
+                    throw userInputError('Validation Error', {
+                      errors: [
+                        {
+                          message: 'Invalid invite token.',
+                          validation: 'required',
+                          field: 'token'
+                        }
+                      ]
+                    })
+                  }
+
+                  db.members.persistAndFlush(
+                    db.members.create({
+                      team,
+                      role,
+                      [this.resources.user.data.snakeCaseName]: user
+                    })
+                  )
+
+                  return noContent({})
+                }
+              )
           ]
         : [])
     ]
@@ -1950,7 +2003,7 @@ export class Auth {
       currentTeam = manager.create(this.config.teamResource, {
         name: 'Personal',
         role: 'owner',
-        user
+        [this.resources.user.data.snakeCaseName]: user
       })
 
       user.current_team = currentTeam

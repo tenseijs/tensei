@@ -18,7 +18,7 @@ test('the currentTeam method returns the users current team', async () => {
   })
 
   expect(response.body.data.customer.current_team).toMatchObject({
-    id: expect.any(String),
+    id: expect.anything(),
     name: 'Personal',
     role: 'owner'
   })
@@ -68,25 +68,131 @@ test('can get team invite token', async () => {
   })
 })
 
-test('the allTeams method returns all the teams a user is a member of, including those she owns', async () => {
+test('can accept team invite', async () => {
+  process.env.JWT_SECRET = 'jwt-secret'
+
   const customerStud = fakeUser()
   const secondCustomerStud = fakeUser()
 
-  const {
-    ctx: { db },
-    app
-  } = await setupTeams()
+  const { app } = await setupTeams()
 
   const client = Supertest(app)
 
-  await Promise.all([
-    client.post('/api/register').send({
-      email: customerStud.email,
-      password: customerStud.password
-    }),
-    client.post('/api/register').send({
+  const response = await client.post('/api/register').send({
+    email: customerStud.email,
+    password: customerStud.password
+  })
+
+  const currentTeamId = response.body.data.customer.current_team.id
+
+  const inviteResponse = await client
+    .post(`/api/teams/${currentTeamId}/invites`)
+    .send({})
+    .set('Authorization', `Bearer ${response.body.data.access_token}`)
+
+  const secondCustomerRegisterResponse = await client
+    .post('/api/register')
+    .send({
       email: secondCustomerStud.email,
       password: secondCustomerStud.password
     })
-  ])
+
+  const acceptInviteResponse = await client
+    .post(`/api/teams/invites/${inviteResponse.body.data.inviteToken}/accept`)
+    .send({})
+    .set(
+      'Authorization',
+      `Bearer ${secondCustomerRegisterResponse.body.data.access_token}`
+    )
+
+  expect(acceptInviteResponse.status).toBe(204)
+
+  const teamsResponse = await client
+    .get(`/api/teams/${currentTeamId}?populate=members.customer`)
+    .send({})
+    .set('Authorization', `Bearer ${response.body.data.access_token}`)
+
+  expect(teamsResponse.body.data.members[0].customer.email).toBe(
+    secondCustomerStud.email
+  )
+})
+
+test('cannot accept team invite with invalid token', async () => {
+  process.env.JWT_SECRET = 'jwt-secret'
+
+  const customerStud = fakeUser()
+  const secondCustomerStud = fakeUser()
+
+  const { app } = await setupTeams()
+
+  const client = Supertest(app)
+
+  const response = await client.post('/api/register').send({
+    email: customerStud.email,
+    password: customerStud.password
+  })
+
+  const currentTeamId = response.body.data.customer.current_team.id
+
+  client
+    .post(`/api/teams/${currentTeamId}/invites`)
+    .send({})
+    .set('Authorization', `Bearer ${response.body.data.access_token}`)
+
+  const secondCustomerRegisterResponse = await client
+    .post('/api/register')
+    .send({
+      email: secondCustomerStud.email,
+      password: secondCustomerStud.password
+    })
+
+  const acceptInviteResponse = await client
+    .post(`/api/teams/invites/INVALID_INVITE_TOKEN/accept`)
+    .send({})
+    .set(
+      'Authorization',
+      `Bearer ${secondCustomerRegisterResponse.body.data.access_token}`
+    )
+
+  expect(acceptInviteResponse.status).toBe(422)
+  expect(acceptInviteResponse.body.errors[0].message).toBe(
+    'Invalid invite token.'
+  )
+})
+
+test('must be authenticated to accept team invite', async () => {
+  process.env.JWT_SECRET = 'jwt-secret'
+
+  const customerStud = fakeUser()
+  const secondCustomerStud = fakeUser()
+
+  const { app } = await setupTeams()
+
+  const client = Supertest(app)
+
+  const response = await client.post('/api/register').send({
+    email: customerStud.email,
+    password: customerStud.password
+  })
+
+  const currentTeamId = response.body.data.customer.current_team.id
+
+  const inviteResponse = await client
+    .post(`/api/teams/${currentTeamId}/invites`)
+    .send({})
+    .set('Authorization', `Bearer ${response.body.data.access_token}`)
+
+  const secondCustomerRegisterResponse = await client
+    .post('/api/register')
+    .send({
+      email: secondCustomerStud.email,
+      password: secondCustomerStud.password
+    })
+
+  const acceptInviteResponse = await client
+    .post(`/api/teams/invites/${inviteResponse.body.data.inviteToken}/accept`)
+    .send({})
+
+  expect(acceptInviteResponse.status).toBe(400)
+  expect(acceptInviteResponse.body.message).toBe('Unauthorized.')
 })
