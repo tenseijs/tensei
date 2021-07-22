@@ -1,16 +1,16 @@
 {
     "name": "@examples/typescript",
-    "version": "0.8.20",
+    "version": "0.8.21",
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
         "@mikro-orm/sqlite": "^4.4.0",
-        "@tensei/cms": "^0.8.20",
-        "@tensei/core": "^0.8.20",
-        "@tensei/graphql": "^0.8.20",
-        "@tensei/mde": "^0.8.20",
-        "@tensei/media": "^0.8.20",
-        "@tensei/social-auth": "^0.8.20"
+        "@tensei/cms": "^0.8.21",
+        "@tensei/core": "^0.8.21",
+        "@tensei/graphql": "^0.8.21",
+        "@tensei/mde": "^0.8.21",
+        "@tensei/media": "^0.8.21",
+        "@tensei/social-auth": "^0.8.21"
     },
     "scripts": {
         "example:dev": "yarn ts-node-dev --respawn src/index.ts",
