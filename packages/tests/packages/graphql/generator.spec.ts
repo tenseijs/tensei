@@ -139,7 +139,10 @@ test('Generates fetch queries only for resources exposed to fetch api', async ()
       'reactions',
       'reactions__count',
       'reaction_hidden_from_api',
-      'reaction_hidden_from_apis'
+      'reaction_hidden_from_apis',
+      'resource_can_update',
+      'resource_can_updates',
+      'resource_can_updates__count'
     ].filter(
       q =>
         !['reaction_hidden_from_api', 'reaction_hidden_from_apis'].includes(q)

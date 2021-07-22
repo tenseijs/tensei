@@ -2125,6 +2125,8 @@ export class Auth {
 
     let currentTeam = null
 
+    const toPersist = [user]
+
     if (this.config.teams) {
       // Create a new team
       currentTeam = manager.create(this.config.teamResource, {
@@ -2133,9 +2135,11 @@ export class Auth {
       })
 
       user.current_team = currentTeam
+
+      toPersist.push(currentTeam)
     }
 
-    await manager.persistAndFlush([user, currentTeam])
+    await manager.persistAndFlush(toPersist)
 
     const populates = []
 
