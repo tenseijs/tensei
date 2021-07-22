@@ -3,12 +3,13 @@ import crypto from 'crypto'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import { ReferenceType } from '@mikro-orm/core'
-import { validateAll } from 'indicative/validator'
+import { validateAll, validations } from 'indicative/validator'
 import {
   plugin,
   resource,
   text,
   json,
+  array,
   textarea,
   belongsTo,
   belongsToMany,
@@ -49,7 +50,7 @@ export * from './config'
 
 import { setup } from './setup'
 import { Request } from 'express'
-import { RoleContract, role } from './teams/Role'
+import { permission, PermissionContract } from './teams/Permission'
 
 type JwtPayload = {
   id: string
@@ -63,11 +64,8 @@ export class Auth {
     setupFn: AuthSetupFn
   } = {
     prefix: '',
-    teamRoles: [
-      role('Owner')
-        .slug('owner')
-        .description('Has all permissions on this team')
-        .permissions(['*'])
+    teamPermissions: [
+      permission('manage:teams').description('Has all permissions on this team')
     ],
     autoFillUser: true,
     autoFilterForUser: true,
@@ -147,7 +145,7 @@ export class Auth {
     this.resources.permission = this.permissionResource()
     this.resources.passwordReset = this.passwordResetResource()
     this.resources.team = this.teamResource()
-    this.resources.member = this.teamMemberResource()
+    this.resources.membership = this.teamMembershipResource()
 
     this.config.setupFn(this.resources)
   }
@@ -278,8 +276,11 @@ export class Auth {
     return this
   }
 
-  public teamRoles(roles: RoleContract[]) {
-    this.config.teamRoles = [...this.config.teamRoles, ...roles]
+  public teamPermissions(permissions: PermissionContract[]) {
+    this.config.teamPermissions = [
+      ...this.config.teamPermissions,
+      ...permissions
+    ]
 
     return this
   }
@@ -305,7 +306,6 @@ export class Auth {
       teamFields = [
         hasOne(this.config.teamResource, 'current_team')
           .label(`Current ${this.config.teamResource}`)
-          .alwaysLoad()
           .nullable(),
         hasMany(this.config.teamResource)
       ]
@@ -416,8 +416,96 @@ export class Auth {
       .group('Users & Permissions')
 
     if (this.config.teams) {
+      const self = this
+
       userResource.method('currentTeam', function (this: any) {
         return this.current_team
+      })
+
+      userResource.method('ownsTeam', function (this: any, team: any) {
+        return (
+          team.owner.toString() === this.id.toString() ||
+          team.owner?.id.toString() === this.id.toString()
+        )
+      })
+
+      userResource.method(
+        'teamMembership',
+        async function (this: any, team: any) {
+          const membership = await this.ctx.db.memberships.findOne({
+            team,
+            [self.resources.user.data.snakeCaseName]: this
+          })
+
+          return membership
+        }
+      )
+
+      userResource.method(
+        'belongsToTeam',
+        async function (this: any, team: any) {
+          if (this.ownsTeam(team)) {
+            return true
+          }
+
+          const teamMembership = await this.teamMembership(team)
+
+          return !!teamMembership
+        }
+      )
+
+      userResource.method(
+        'hasTeamPermission',
+        async function (this: any, team: any, permission: string) {
+          if (this.ownsTeam(team)) {
+            return true
+          }
+
+          const membership = await this.teamMembership(team)
+
+          if (!membership) {
+            return false
+          }
+
+          return membership.permissions.includes(permission)
+        }
+      )
+
+      userResource.method(
+        'teamPermissions',
+        async function (this: any, team: any) {
+          if (this.ownsTeam(team)) {
+            return self.config.teamPermissions.map(
+              permission => permission.config.slug
+            )
+          }
+
+          const membership = await this.teamMembership(team)
+
+          if (!membership) {
+            return []
+          }
+
+          return membership.permissions
+        }
+      )
+
+      userResource.method('allTeams', async function (this: any) {
+        const [ownedTeams, membershipTeams] = await Promise.all([
+          this.ctx.db.teams.find(
+            { owner: this },
+            { populate: ['memberships.customer'] }
+          ),
+          this.ctx.db.memberships.find(
+            { [self.resources.user.data.snakeCaseName]: this.id },
+            { populate: ['team'] }
+          )
+        ])
+
+        return [
+          ...ownedTeams,
+          ...membershipTeams.map((membership: any) => membership.team)
+        ]
       })
     }
 
@@ -465,32 +553,21 @@ export class Auth {
   private teamResource() {
     const self = this
     return resource(this.config.teamResource)
-      .enableAutoFills()
-      .enableAutoFilters()
-      .method('generateInviteToken', function (this: any, user: any) {
-        return Jwt.sign(
-          {
-            teamId: this.id
-          },
-          self.config.tokensConfig.secretKey,
-          {
-            expiresIn: '7d'
-          }
-        )
-      })
+      .hideOnFetchApi()
       .fields([
-        text('Name').rules('required', 'min:2', 'max:12'),
-        belongsTo(this.config.userResource).notNullable(),
-        text('Role').rules('required').nullable(),
-        hasMany('Member')
+        text('Name').rules('required', 'min:2', 'max:24'),
+        belongsTo(this.config.userResource, 'owner')
+          .notNullable()
+          .hideOnUpdateApi(),
+        hasMany('Membership')
       ])
   }
 
-  private teamMemberResource() {
-    return resource('Member')
+  private teamMembershipResource() {
+    return resource('Membership')
       .fields([
         belongsTo(this.config.teamResource).creationRules('required'),
-        text('Role').nullable(),
+        array('Permissions').default([]),
         belongsTo(this.config.userResource).creationRules('required')
       ])
       .hideOnUpdateApi()
@@ -655,7 +732,7 @@ export class Auth {
           }
 
           if (this.config.teams) {
-            extendResources([this.resources.team, this.resources.member])
+            extendResources([this.resources.team, this.resources.membership])
           }
 
           if (this.config.enableRefreshTokens) {
@@ -1261,68 +1338,118 @@ export class Auth {
         : []),
       ...(this.config.teams
         ? [
-            route('Generate Team Invite token')
-              .post()
-              .path(this.getApiPath('teams/:team/invites'))
-              .handle(async (request, { formatter: { ok } }) => {
-                const { team } = request
-
-                return ok({
-                  inviteToken: team.generateInviteToken()
-                })
-              }),
-            route('Accept Team Invite')
-              .post()
+            route('Get Team Permissions')
+              .get()
               .authorize(({ user }) => !!user)
-              .path(this.getApiPath('teams/invites/:token/accept'))
-              .handle(
-                async (request, { formatter: { noContent, notFound } }) => {
-                  const { db, params, userInputError, user } = request
-
-                  let team
-                  let role
-
-                  try {
-                    const token = Jwt.verify(
-                      params.token,
-                      this.config.tokensConfig.secretKey
-                    ) as {
-                      teamId: number
-                      role: string
+              .path(this.getApiPath('teams/permissions'))
+              .handle((_, { formatter: { ok } }) =>
+                ok(
+                  this.config.teamPermissions.map(
+                    permission => permission.config
+                  )
+                )
+              ),
+            route('Get Team Memberships By ID')
+              .get()
+              .authorize(({ user }) => !!user)
+              .path(this.getApiPath('teams/:team/memberships'))
+              .handle(async ({ db, team }, { formatter: { ok } }) => {
+                return ok(
+                  await db.memberships.find(
+                    {
+                      team
+                    },
+                    {
+                      populate: [this.resources.user.data.snakeCaseName]
                     }
+                  )
+                )
+              }),
+            route('Invite existing user to team')
+              .post()
+              .middleware([
+                (request, response, next) => {
+                  const { team, params } = request
 
-                    team = await db.teams.findOne({
-                      id: token.teamId
-                    })
-
-                    role = token.role
-
-                    if (!team) {
-                      throw new Error()
-                    }
-                  } catch (error) {
-                    throw userInputError('Validation Error', {
-                      errors: [
-                        {
-                          message: 'Invalid invite token.',
-                          validation: 'required',
-                          field: 'token'
-                        }
-                      ]
-                    })
+                  if (!team) {
+                    return response.formatter.notFound(
+                      `Could not find team with ID ${params.team}.`
+                    )
                   }
 
-                  db.members.persistAndFlush(
-                    db.members.create({
-                      team,
-                      role,
-                      [this.resources.user.data.snakeCaseName]: user
-                    })
-                  )
-
-                  return noContent({})
+                  next()
                 }
-              )
+              ])
+              .path(this.getApiPath('teams/:team/invites'))
+              .handle(async (request, { formatter: { noContent } }) => {
+                const { team, db, userInputError } = request
+
+                try {
+                  await validateAll(request.body, {
+                    permissions: [
+                      validations.array(),
+                      validations.required(),
+                      validations.min([1])
+                    ],
+                    'permissions.*': [
+                      validations.in(
+                        this.config.teamPermissions.map(
+                          permission => permission.config.slug
+                        )
+                      ),
+                      validations.required(),
+                      validations.string()
+                    ],
+                    email: [validations.required(), validations.string()]
+                  })
+                } catch (error) {
+                  throw userInputError(error)
+                }
+
+                const invitedUser = await db[
+                  this.resources.user.data.camelCaseNamePlural
+                ].findOne({
+                  email: request.body.email
+                })
+
+                if (!invitedUser) {
+                  throw userInputError('The invited user does not exist.')
+                }
+
+                await db.memberships.persistAndFlush(
+                  db.memberships.create({
+                    team,
+                    [this.resources.user.data.snakeCaseName]: invitedUser,
+                    permissions: request.body.permissions
+                  })
+                )
+
+                return noContent({})
+              }),
+            route('Fetch all user teams')
+              .get()
+              .authorize(({ user }) => !!user)
+              .path(this.getApiPath('teams'))
+              .handle(async (request, { formatter: { ok } }) => {
+                const { user } = request
+
+                return ok(
+                  (await user.allTeams()).map((userTeam: any) => {
+                    const { team: removeTeam, ...rest } = userTeam
+
+                    return {
+                      ...rest,
+                      memberships: rest.memberships
+                        .toJSON()
+                        .map((membership: any) => {
+                          const { team, ...rest } = membership
+
+                          return rest
+                        })
+                    }
+                  })
+                )
+              })
           ]
         : [])
     ]
@@ -2002,8 +2129,7 @@ export class Auth {
       // Create a new team
       currentTeam = manager.create(this.config.teamResource, {
         name: 'Personal',
-        role: 'owner',
-        [this.resources.user.data.snakeCaseName]: user
+        owner: user
       })
 
       user.current_team = currentTeam
@@ -2360,15 +2486,23 @@ export class Auth {
         return
       }
 
+      const populate = []
+
+      if (this.config.rolesAndPermissions) {
+        populate.push(this.getRolesAndPermissionsNames())
+      }
+
+      if (this.config.teams) {
+        populate.push('current_team')
+      }
+
       const user: any = await manager.findOne(
         this.resources.user.data.pascalCaseName,
         {
           id
         },
         {
-          populate: this.config.rolesAndPermissions
-            ? [this.getRolesAndPermissionsNames()]
-            : []
+          populate
         }
       )
 
@@ -2700,6 +2834,10 @@ export class Auth {
   }
 }
 
-export { role } from './teams/Role'
+export {
+  permission,
+  PermissionConfig,
+  PermissionContract
+} from './teams/Permission'
 export const auth = () => new Auth()
 export { USER_EVENTS } from './config'
