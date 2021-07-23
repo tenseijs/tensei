@@ -20,11 +20,13 @@ export default resource('Comment')
     text('Title').rules('required').searchable().sanitize('slug'),
     textarea('Body').rules('required'),
     text('Title Hidden From Insert And Fetch API')
+      .nullable()
       .hideOnInsertApi()
       .hideOnFetchApi(),
     text('Title Hidden From Update And Fetch API')
+      .nullable()
       .hideOnUpdateApi()
       .hideOnFetchApi(),
-    belongsTo('Post')
+    belongsTo('Post').nullable()
   ])
   .showOnInsertSubscription()
