@@ -1,42 +1,40 @@
 import { sdk } from '@tensei/sdk'
 import React, { createContext, useContext, FunctionComponent, useState, useEffect, ComponentType } from 'react'
 
-
 export interface TenseiAuthContextInterface {
-    isLoading: boolean
-    accessToken?: string
-    // @ts-ignore
-    tensei: import('@tensei/sdk').SdkContract
-    // @ts-ignore
-    user: import('@tensei/sdk').AuthResponse['user']
-    // @ts-ignore
-    setAuth: (response?: import('@tensei/sdk').AuthResponse) => void
+  isLoading: boolean
+  accessToken?: string
+  // @ts-ignore
+  tensei: import('@tensei/sdk').SdkContract
+  // @ts-ignore
+  user: import('@tensei/sdk').AuthResponse['user']
+  // @ts-ignore
+  setAuth: (response?: import('@tensei/sdk').AuthResponse) => void
 
-    onRedirectCallback: (path: string) => void
+  onRedirectCallback: (path: string) => void
 
-    loginPath: string,
-    
-    profilePath: string,
+  loginPath: string
 
-    Loader: ComponentType
+  profilePath: string
+
+  Loader: ComponentType
 }
 
-
 const defaultOnRedirectCallback = (path: string) => {
-    window.location.href = path
+  window.location.href = path
 }
 
 const DefaultLoader = () => <></>
 
 export const TenseiAuthContext = createContext<TenseiAuthContextInterface>({
-    isLoading: true,
-    loginPath: '/auth/login',
-    profilePath: '/dashboard',
-    tensei: {} as any,
-    user: undefined as any,
-    setAuth: () => {},
-    onRedirectCallback: defaultOnRedirectCallback,
-    Loader: DefaultLoader
+  isLoading: true,
+  loginPath: '/auth/login',
+  profilePath: '/dashboard',
+  tensei: {} as any,
+  user: undefined as any,
+  setAuth: () => {},
+  onRedirectCallback: defaultOnRedirectCallback,
+  Loader: DefaultLoader,
 })
 
 export const useAuth = () => useContext(TenseiAuthContext)
@@ -44,98 +42,112 @@ export const useAuth = () => useContext(TenseiAuthContext)
 export const useTensei: () => TenseiAuthContextInterface['tensei'] = () => useAuth().tensei
 
 export interface TenseiAuthProviderProps {
-    tensei?: TenseiAuthContextInterface['tensei']
+  tensei?: TenseiAuthContextInterface['tensei']
 
-    // @ts-ignore
-    options?: import('@tensei/sdk').SdkOptions
+  // @ts-ignore
+  options?: import('@tensei/sdk').SdkOptions
 
-    onRedirectCallback?: (path: string) => void
+  onRedirectCallback?: (path: string) => void
 
-    profilePath?: string
+  profilePath?: string
 
-    loginPath?: string
+  loginPath?: string
 
-    Loader?: ComponentType
+  Loader?: ComponentType
 }
 
 function getUrlParameter(name: string) {
-	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]')
-	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)')
-	var results = regex.exec(location.search)
-	return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
+  name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]')
+  var regex = new RegExp('[\\?&]' + name + '=([^&#]*)')
+  var results = regex.exec(location.search)
+  return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
 }
 
 export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
-    options,
-    children,
-    Loader = DefaultLoader,
-    tensei: tenseiInstance,
-    loginPath = '/auth/login',
-    profilePath = '/dashboard',
-    onRedirectCallback = defaultOnRedirectCallback,
+  options,
+  children,
+  Loader = DefaultLoader,
+  tensei: tenseiInstance,
+  loginPath = '/auth/login',
+  profilePath = '/dashboard',
+  onRedirectCallback = defaultOnRedirectCallback,
 }) => {
-    const [accessToken, setAccessToken] = useState<string>()
-    const [user, setUser] = useState<TenseiAuthContextInterface['user']>()
-    const [tensei] = useState(tenseiInstance ? tenseiInstance : sdk(options))
-    const [isLoading, setIsLoading] = useState<TenseiAuthContextInterface['isLoading']>(true)
+  const [user, setUser] = useState<{
+    user: TenseiAuthContextInterface['user']
+    isLoading: boolean
+    access_token: string
+  }>({
+    isLoading: true,
+    user: null,
+    access_token: undefined,
+  })
+  const [tensei] = useState(tenseiInstance ? tenseiInstance : sdk(options))
 
-    const subscribeToAuthChanges = () => {
-        tensei.auth().listen((auth: any) => {
-            setIsLoading(false)
+  const subscribeToAuthChanges = () => {
+    tensei.auth().listen((auth: any) => {
+      setUser({
+        isLoading: false,
+        user: auth?.user || null,
+        access_token: auth?.access_token,
+      })
+    })
+  }
 
-            setUser(auth?.user || null)
-            setAccessToken(auth?.access_token)
-        })
+  const loadExistingSession = async () => {
+    await tensei.auth().loadExistingSession()
+  }
+
+  // @ts-ignore
+  const setAuth = (response?: import('@tensei/sdk').AuthResponse) => {
+    setUser({
+      isLoading: false,
+      user: response?.user || null,
+      access_token: response?.access_token,
+    })
+  }
+
+  const loadSocialAuth = () => {
+    tensei
+      .auth()
+      .socialConfirm()
+      .then(() => {
+        onRedirectCallback(profilePath)
+      })
+      .catch(() => {
+        onRedirectCallback(loginPath)
+      })
+  }
+
+  const init = async () => {
+    subscribeToAuthChanges()
+
+    // If there's an access token, then we might need to handle social authentication
+    if (getUrlParameter('access_token') && getUrlParameter('provider')) {
+      return loadSocialAuth()
     }
 
-    const loadExistingSession = async () => {
-        await tensei.auth().loadExistingSession()
-    }
+    await loadExistingSession()
+  }
 
-    // @ts-ignore
-    const setAuth = (response?: import('@tensei/sdk').AuthResponse) => {
-        setUser(response?.user || null)
-        setAccessToken(response?.access_token)
-    }
+  useEffect(() => {
+    init()
+  }, [])
 
-    const loadSocialAuth = () => {
-        tensei.auth().socialConfirm()
-            .then(() => {
-                onRedirectCallback(profilePath)
-            })
-            .catch(() => {
-                onRedirectCallback(loginPath)
-            })
-    }
-
-    const init = async () => {
-        subscribeToAuthChanges()
-
-        // If there's an access token, then we might need to handle social authentication
-        if (getUrlParameter('access_token') && getUrlParameter('provider')) {
-            return loadSocialAuth()
-        }
-
-        await loadExistingSession()
-    }
-
-    useEffect(() => {
-        init()
-    }, [])
-
-    return (
-        <TenseiAuthContext.Provider value={{
-            user,
-            tensei,
-            Loader,
-            setAuth,
-            isLoading,
-            loginPath,
-            profilePath,
-            accessToken,
-            onRedirectCallback
-        }}>
-            {children}
-        </TenseiAuthContext.Provider>
-    )
+  return (
+    <TenseiAuthContext.Provider
+      value={{
+        tensei,
+        Loader,
+        setAuth,
+        loginPath,
+        profilePath,
+        user: user.user,
+        onRedirectCallback,
+        isLoading: user.isLoading,
+        accessToken: user.access_token,
+      }}
+    >
+      {children}
+    </TenseiAuthContext.Provider>
+  )
 }
