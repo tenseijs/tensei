@@ -1,40 +1,41 @@
 import { CommandConfig, CommandContract, DataPayload } from '@tensei/common'
 
-export class Command<Parameter = DataPayload> implements CommandContract<Parameter> {
-    config: CommandConfig<Parameter> = {
-        name: 'Unnamed command',
-        description: '',
-        handler: () => {},
-        signature: '',
-    }
+export class Command<Parameter = DataPayload>
+  implements CommandContract<Parameter> {
+  config: CommandConfig<Parameter> = {
+    name: 'Unnamed command',
+    description: '',
+    handler: () => {},
+    signature: ''
+  }
 
-    constructor(name: string) {
-        this.name(name)
-    }
+  constructor(name: string) {
+    this.name(name)
+  }
 
-    signature(signature: string) {
-        this.config.signature = signature
+  signature(signature: string) {
+    this.config.signature = signature
 
-        return this
-    }
+    return this
+  }
 
-    name(name: string) {
-        this.config.name = name
+  name(name: string) {
+    this.config.name = name
 
-        return this
-    }
+    return this
+  }
 
-    description(description: string) {
-        this.config.description = description
+  description(description: string) {
+    this.config.description = description
 
-        return this
-    }
+    return this
+  }
 
-    handle(handler: CommandConfig<Parameter>['handler']) {
-        this.config.handler = handler
+  handle(handler: CommandConfig<Parameter>['handler']) {
+    this.config.handler = handler
 
-        return this
-    }
+    return this
+  }
 }
 
 export const command = (name: string) => new Command(name)

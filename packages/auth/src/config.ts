@@ -4,6 +4,7 @@ import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'
 import { ApiContext } from '@tensei/common'
 import { DataPayload } from '@tensei/common'
+import { PermissionContract } from 'teams/Permission'
 
 export interface GrantConfig {
   key: string
@@ -29,6 +30,8 @@ export type AuthResources = {
   permission: ResourceContract
   passwordReset: ResourceContract
   token: ResourceContract
+  team: ResourceContract
+  membership: ResourceContract
 }
 
 export enum TokenTypes {
@@ -45,7 +48,9 @@ export interface AuthPluginConfig {
   fields: FieldContract[]
   userResource: string
   tokenResource: string
+  teamResource: string
   prefix: string
+  teamPermissions: PermissionContract[]
   autoFillUser: boolean
   autoFilterForUser: boolean
   excludedPathsFromCsrf: string[]
@@ -53,6 +58,7 @@ export interface AuthPluginConfig {
   registered?: (ctx: ApiContext) => Promise<void> | void
   roleResource: string
   permissionResource: string
+  teams: boolean
   rolesAndPermissions: boolean
   passwordResetResource: string
   apiPath: string

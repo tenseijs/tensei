@@ -1,27 +1,28 @@
 import Fs from 'fs'
 import Path from 'path'
 import Prettier from 'prettier'
-import { EntityManager } from '@mikro-orm/core'
-import { ResourceContract } from '@tensei/common'
+import { Config } from '@tensei/common'
 
 import { resolveFieldTypescriptType } from './helpers'
 
 export class Orm {
-  constructor(
-    public resources: ResourceContract[],
-    public manager: EntityManager
-  ) {}
+  constructor(public ctx: Config) {}
 
   public generate() {
     const repositories: any = {}
 
-    this.resources.forEach(resource => {
+    this.ctx.resources.forEach(resource => {
       repositories[
         resource.data.camelCaseNamePlural
-      ] = this.manager.getRepository(resource.data.pascalCaseName)
+      ] = this.ctx.orm?.em.getRepository(resource.data.pascalCaseName)
 
-      resource.data.methods.forEach(method => {
+      resource.data.repositoryMethods.forEach(method => {
         const methodName = method.name.replace(/\s+/g, '')
+
+        const ctx = this.ctx
+
+        // Set ctx property on repository instance
+        repositories[resource.data.camelCaseNamePlural]['ctx'] = ctx
 
         repositories[resource.data.camelCaseNamePlural][
           methodName
@@ -46,14 +47,14 @@ export class Orm {
     return `
         declare module '@tensei/orm' {
             import { EntityRepository } from '@mikro-orm/core'
-            ${this.resources
+            ${this.ctx.resources
               .map(resource => {
                 return `export interface ${resource.data.pascalCaseName}Model {
                     ${resource.data.fields.map(
                       field =>
                         `${field.databaseField}: ${resolveFieldTypescriptType(
                           field,
-                          this.resources
+                          this.ctx.resources
                         )}`
                     )}\n
                 }\n
@@ -66,7 +67,7 @@ export class Orm {
               })
               .join('\n')}
             export interface OrmContract {
-                ${this.resources.map(resource => {
+                ${this.ctx.resources.map(resource => {
                   return `${resource.data.camelCaseNamePlural}: ${resource.data.pascalCaseName}Repository`
                 })}
             }

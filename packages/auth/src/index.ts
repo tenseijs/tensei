@@ -3,12 +3,13 @@ import crypto from 'crypto'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import { ReferenceType } from '@mikro-orm/core'
-import { validateAll } from 'indicative/validator'
+import { validateAll, validations } from 'indicative/validator'
 import {
   plugin,
   resource,
   text,
   json,
+  array,
   textarea,
   belongsTo,
   belongsToMany,
@@ -27,6 +28,7 @@ import {
   ApiContext,
   UserRole,
   Utils,
+  hasOne,
   ResourceContract,
   PluginContract,
   timestamp
@@ -48,6 +50,7 @@ export * from './config'
 
 import { setup } from './setup'
 import { Request } from 'express'
+import { permission, PermissionContract } from './teams/Permission'
 
 type JwtPayload = {
   id: string
@@ -61,12 +64,17 @@ export class Auth {
     setupFn: AuthSetupFn
   } = {
     prefix: '',
+    teamPermissions: [
+      permission('manage:teams').description('Has all permissions on this team')
+    ],
     autoFillUser: true,
     autoFilterForUser: true,
     tokenResource: 'Token',
     enableRefreshTokens: false,
     userResource: 'User',
     roleResource: 'Role',
+    teamResource: 'Team',
+    teams: false,
     excludedPathsFromCsrf: [],
     httpOnlyCookiesAuth: false,
     permissionResource: 'Permission',
@@ -136,6 +144,8 @@ export class Auth {
     this.resources.oauthIdentity = this.oauthResource()
     this.resources.permission = this.permissionResource()
     this.resources.passwordReset = this.passwordResetResource()
+    this.resources.team = this.teamResource()
+    this.resources.membership = this.teamMembershipResource()
 
     this.config.setupFn(this.resources)
   }
@@ -260,10 +270,26 @@ export class Auth {
     return this
   }
 
+  public teams() {
+    this.config.teams = true
+
+    return this
+  }
+
+  public teamPermissions(permissions: PermissionContract[]) {
+    this.config.teamPermissions = [
+      ...this.config.teamPermissions,
+      ...permissions
+    ]
+
+    return this
+  }
+
   private userResource() {
     let passwordField = password('Password')
 
     let socialFields: FieldContract[] = []
+    let teamFields: FieldContract[] = []
 
     if (Object.keys(this.config.providers).length === 0) {
       passwordField = passwordField.notNullable()
@@ -276,7 +302,20 @@ export class Auth {
       passwordField = passwordField.nullable()
     }
 
+    if (this.config.teams) {
+      teamFields = [
+        hasOne(this.config.teamResource, 'current_team')
+          .label(`Current ${this.config.teamResource}`)
+          .nullable(),
+        hasMany(this.config.teamResource)
+      ]
+    }
+
     const userResource = resource(this.config.userResource)
+      .canUpdate(
+        ({ user, params, config }) =>
+          user && (params.id as string) === user.id.toString()
+      )
       .fields([
         text('Email')
           .unique()
@@ -300,6 +339,7 @@ export class Auth {
           .defaultFormValue(false)
           .hideOnApi(),
         ...socialFields,
+        ...teamFields,
         ...(this.config.rolesAndPermissions
           ? [belongsToMany(this.config.roleResource).hideOnInsertApi()]
           : []),
@@ -312,6 +352,7 @@ export class Auth {
                 .hideOnUpdateApi()
                 .nullable(),
               text('Two Factor Secret')
+                .hidden()
                 .hideOnApi()
                 .hideOnDetail()
                 .hideOnIndex()
@@ -374,6 +415,100 @@ export class Auth {
       .icon('database-manager')
       .group('Users & Permissions')
 
+    if (this.config.teams) {
+      const self = this
+
+      userResource.method('currentTeam', function (this: any) {
+        return this.current_team
+      })
+
+      userResource.method('ownsTeam', function (this: any, team: any) {
+        return (
+          team.owner.toString() === this.id.toString() ||
+          team.owner?.id.toString() === this.id.toString()
+        )
+      })
+
+      userResource.method(
+        'teamMembership',
+        async function (this: any, team: any) {
+          const membership = await this.ctx.db.memberships.findOne({
+            team,
+            [self.resources.user.data.snakeCaseName]: this
+          })
+
+          return membership
+        }
+      )
+
+      userResource.method(
+        'belongsToTeam',
+        async function (this: any, team: any) {
+          if (this.ownsTeam(team)) {
+            return true
+          }
+
+          const teamMembership = await this.teamMembership(team)
+
+          return !!teamMembership
+        }
+      )
+
+      userResource.method(
+        'hasTeamPermission',
+        async function (this: any, team: any, permission: string) {
+          if (this.ownsTeam(team)) {
+            return true
+          }
+
+          const membership = await this.teamMembership(team)
+
+          if (!membership) {
+            return false
+          }
+
+          return membership.permissions.includes(permission)
+        }
+      )
+
+      userResource.method(
+        'teamPermissions',
+        async function (this: any, team: any) {
+          if (this.ownsTeam(team)) {
+            return self.config.teamPermissions.map(
+              permission => permission.config.slug
+            )
+          }
+
+          const membership = await this.teamMembership(team)
+
+          if (!membership) {
+            return []
+          }
+
+          return membership.permissions
+        }
+      )
+
+      userResource.method('allTeams', async function (this: any) {
+        const [ownedTeams, membershipTeams] = await Promise.all([
+          this.ctx.db.teams.find(
+            { owner: this },
+            { populate: ['memberships.customer'] }
+          ),
+          this.ctx.db.memberships.find(
+            { [self.resources.user.data.snakeCaseName]: this.id },
+            { populate: ['team'] }
+          )
+        ])
+
+        return [
+          ...ownedTeams,
+          ...membershipTeams.map((membership: any) => membership.team)
+        ]
+      })
+    }
+
     return userResource
   }
 
@@ -397,7 +532,7 @@ export class Auth {
         dateTime('Expires At').hidden(),
         belongsTo(this.config.userResource).nullable()
       ])
-      .disableAutoFilters()
+      .hideFromNavigation()
       .hideOnApi()
   }
 
@@ -413,6 +548,31 @@ export class Auth {
       .hideOnUpdateApi()
       .hideFromNavigation()
       .group('Users & Permissions')
+  }
+
+  private teamResource() {
+    const self = this
+    return resource(this.config.teamResource)
+      .hideOnFetchApi()
+      .fields([
+        text('Name').rules('required', 'min:2', 'max:24'),
+        belongsTo(this.config.userResource, 'owner')
+          .notNullable()
+          .hideOnUpdateApi(),
+        hasMany('Membership')
+      ])
+  }
+
+  private teamMembershipResource() {
+    return resource('Membership')
+      .fields([
+        belongsTo(this.config.teamResource).creationRules('required'),
+        array('Permissions').default([]),
+        belongsTo(this.config.userResource).creationRules('required')
+      ])
+      .hideOnUpdateApi()
+      .hideOnInsertApi()
+      .hideOnFetchApi()
   }
 
   private roleResource() {
@@ -507,7 +667,7 @@ export class Auth {
             field =>
               field.relatedProperty.reference === ReferenceType.MANY_TO_ONE &&
               field.relatedProperty.type === this.config.userResource
-          ) && !resource.data.disableAutoFills
+          ) && resource.data.enableAutoFills
       )
       .forEach(resource => {
         resource.beforeCreate(({ entity, em }, { request }) => {
@@ -528,7 +688,7 @@ export class Auth {
             field =>
               field.relatedProperty.reference === ReferenceType.MANY_TO_ONE &&
               field.relatedProperty.type === this.config.userResource
-          ) && !resource.data.disableAutoFilters
+          ) && resource.data.enableAutoFilters
       )
       .forEach(resource => {
         resource.filters([
@@ -569,6 +729,10 @@ export class Auth {
 
           if (this.config.rolesAndPermissions) {
             extendResources([this.resources.role, this.resources.permission])
+          }
+
+          if (this.config.teams) {
+            extendResources([this.resources.team, this.resources.membership])
           }
 
           if (this.config.enableRefreshTokens) {
@@ -695,15 +859,20 @@ export class Auth {
         }
 
         currentCtx().graphQlQueries.forEach(query => {
-          query.middleware(async (resolve, parent, args, context, info) => {
-            await this.getAuthUserFromContext(context)
+          query.config.middleware = [
+            async (resolve, parent, args, context, info) => {
+              await this.getAuthUserFromContext(context)
 
-            await this.setAuthUserForPublicRoutes(context)
+              await this.getCurrentTeamFromContext(context)
 
-            await this.ensureAuthUserIsNotBlocked(context)
+              await this.setAuthUserForPublicRoutes(context)
 
-            return resolve(parent, args, context, info)
-          })
+              await this.ensureAuthUserIsNotBlocked(context)
+
+              return resolve(parent, args, context, info)
+            },
+            ...query.config.middleware
+          ]
           if (query.config.resource && this.config.rolesAndPermissions) {
             const { path, internal } = query.config
             const {
@@ -759,17 +928,21 @@ export class Auth {
         })
 
         currentCtx().routes.forEach(route => {
-          route.middleware([
+          route.config.middleware = [
             async (request, response, next) => {
               await this.getAuthUserFromContext(request as any)
+
+              await this.getCurrentTeamFromContext(request as any)
 
               await this.setAuthUserForPublicRoutes(request as any)
 
               await this.ensureAuthUserIsNotBlocked(request as any)
 
               return next()
-            }
-          ])
+            },
+            ...route.config.middleware
+          ]
+
           if (route.config.resource && this.config.rolesAndPermissions) {
             const { resource, id } = route.config
 
@@ -1161,6 +1334,122 @@ export class Auth {
               .handle(async (request, { formatter: { noContent } }) =>
                 noContent([])
               )
+          ]
+        : []),
+      ...(this.config.teams
+        ? [
+            route('Get Team Permissions')
+              .get()
+              .authorize(({ user }) => !!user)
+              .path(this.getApiPath('teams/permissions'))
+              .handle((_, { formatter: { ok } }) =>
+                ok(
+                  this.config.teamPermissions.map(
+                    permission => permission.config
+                  )
+                )
+              ),
+            route('Get Team Memberships By ID')
+              .get()
+              .authorize(({ user }) => !!user)
+              .path(this.getApiPath('teams/:team/memberships'))
+              .handle(async ({ db, team }, { formatter: { ok } }) => {
+                return ok(
+                  await db.memberships.find(
+                    {
+                      team
+                    },
+                    {
+                      populate: [this.resources.user.data.snakeCaseName]
+                    }
+                  )
+                )
+              }),
+            route('Invite existing user to team')
+              .post()
+              .middleware([
+                (request, response, next) => {
+                  const { team, params } = request
+
+                  if (!team) {
+                    return response.formatter.notFound(
+                      `Could not find team with ID ${params.team}.`
+                    )
+                  }
+
+                  next()
+                }
+              ])
+              .path(this.getApiPath('teams/:team/invites'))
+              .handle(async (request, { formatter: { noContent } }) => {
+                const { team, db, userInputError } = request
+
+                try {
+                  await validateAll(request.body, {
+                    permissions: [
+                      validations.array(),
+                      validations.required(),
+                      validations.min([1])
+                    ],
+                    'permissions.*': [
+                      validations.in(
+                        this.config.teamPermissions.map(
+                          permission => permission.config.slug
+                        )
+                      ),
+                      validations.required(),
+                      validations.string()
+                    ],
+                    email: [validations.required(), validations.string()]
+                  })
+                } catch (error) {
+                  throw userInputError(error)
+                }
+
+                const invitedUser = await db[
+                  this.resources.user.data.camelCaseNamePlural
+                ].findOne({
+                  email: request.body.email
+                })
+
+                if (!invitedUser) {
+                  throw userInputError('The invited user does not exist.')
+                }
+
+                await db.memberships.persistAndFlush(
+                  db.memberships.create({
+                    team,
+                    [this.resources.user.data.snakeCaseName]: invitedUser,
+                    permissions: request.body.permissions
+                  })
+                )
+
+                return noContent({})
+              }),
+            route('Fetch all user teams')
+              .get()
+              .authorize(({ user }) => !!user)
+              .path(this.getApiPath('teams'))
+              .handle(async (request, { formatter: { ok } }) => {
+                const { user } = request
+
+                return ok(
+                  (await user.allTeams()).map((userTeam: any) => {
+                    const { team: removeTeam, ...rest } = userTeam
+
+                    return {
+                      ...rest,
+                      memberships: rest.memberships
+                        .toJSON()
+                        .map((membership: any) => {
+                          const { team, ...rest } = membership
+
+                          return rest
+                        })
+                    }
+                  })
+                )
+              })
           ]
         : [])
     ]
@@ -1834,11 +2123,35 @@ export class Auth {
       createUserPayload
     )
 
-    await manager.persistAndFlush(user)
+    let currentTeam = null
+
+    const toPersist = [user]
+
+    if (this.config.teams) {
+      // Create a new team
+      currentTeam = manager.create(this.config.teamResource, {
+        name: 'Personal',
+        owner: user
+      })
+
+      user.current_team = currentTeam
+
+      toPersist.push(currentTeam)
+    }
+
+    await manager.persistAndFlush(toPersist)
+
+    const populates = []
 
     if (this.config.rolesAndPermissions) {
-      await manager.populate([user], [this.getRolesAndPermissionsNames()])
+      populates.push(this.getRolesAndPermissionsNames())
     }
+
+    if (this.config.teams) {
+      populates.push('current_team')
+    }
+
+    await manager.populate([user], populates)
 
     ctx.user = user
 
@@ -2177,15 +2490,23 @@ export class Auth {
         return
       }
 
+      const populate = []
+
+      if (this.config.rolesAndPermissions) {
+        populate.push(this.getRolesAndPermissionsNames())
+      }
+
+      if (this.config.teams) {
+        populate.push('current_team')
+      }
+
       const user: any = await manager.findOne(
         this.resources.user.data.pascalCaseName,
         {
           id
         },
         {
-          populate: this.config.rolesAndPermissions
-            ? [this.getRolesAndPermissionsNames()]
-            : []
+          populate
         }
       )
 
@@ -2213,6 +2534,32 @@ export class Auth {
 
   private getPermissionUserKey() {
     return this.resources.permission.data.snakeCaseNamePlural
+  }
+
+  public getCurrentTeamFromContext = async (ctx: ApiContext) => {
+    if (!this.config.teams) {
+      return
+    }
+
+    const { req } = ctx
+
+    const { headers, params } = req
+
+    const currentTeamId = (headers['x-current-team'] as any) || params.team
+
+    if (!currentTeamId) {
+      return
+    }
+
+    const team = await ctx.db.teams.findOne({
+      id: currentTeamId
+    })
+
+    if (!team) {
+      return
+    }
+
+    ctx.team = team
   }
 
   public getAuthUserFromContext = async (ctx: ApiContext) => {
@@ -2491,5 +2838,10 @@ export class Auth {
   }
 }
 
+export {
+  permission,
+  PermissionConfig,
+  PermissionContract
+} from './teams/Permission'
 export const auth = () => new Auth()
 export { USER_EVENTS } from './config'

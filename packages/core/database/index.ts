@@ -113,6 +113,16 @@ class Database {
       writable: false
     })
 
+    // Set model methods on class
+    resource.data.methods.forEach(method => {
+      entityClass.prototype[method.name] = function (...fnArgs: any) {
+        this.ctx = config // Set the config on the value of this
+        const fn = method.fn.bind(this)
+
+        return fn(...fnArgs)
+      }
+    })
+
     hookNames.forEach(hookName => {
       entityClass.prototype[hookName] = (eventPayload: any) =>
         Promise.all(

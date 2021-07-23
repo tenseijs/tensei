@@ -45,10 +45,10 @@ export enum TENSEI_MODES {
   default = 'default'
 }
 
-
 export class Tensei implements TenseiContract {
   public orm: any = null
-  public mode: TENSEI_MODE = (process.env.TENSEI_MODE as TENSEI_MODE) || TENSEI_MODES.default
+  public mode: TENSEI_MODE =
+    (process.env.TENSEI_MODE as TENSEI_MODE) || TENSEI_MODES.default
   public app: Application = Express()
   public server: Server = createServer(this.app)
   public extensions: {
@@ -269,13 +269,15 @@ export class Tensei implements TenseiContract {
             colWidths: [10, 45, 15, 25, 42]
           })
 
-          table.push(...this.ctx.routes.map(route => [
-            route.config.type,
-            route.config.path,
-            route.config.middleware.length,
-            route.config.name,
-            route.config.description
-          ]))
+          table.push(
+            ...this.ctx.routes.map(route => [
+              route.config.type,
+              route.config.path,
+              route.config.middleware.length,
+              route.config.name,
+              route.config.description
+            ])
+          )
 
           console.log(table.toString())
         })
@@ -298,7 +300,7 @@ export class Tensei implements TenseiContract {
     await this.registerDatabase()
 
     const Orm = require('@tensei/orm').Orm
-    const orm = (new Orm(this.ctx.resources, this.ctx?.orm?.em))
+    const orm = new Orm(this.ctx)
 
     this.ctx.db = orm.generate()
 

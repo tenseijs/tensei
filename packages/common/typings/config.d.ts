@@ -428,7 +428,7 @@ declare module '@tensei/common/config' {
     abstract setResource: (resourceOrSlug: ResourceContract | string) => this
     abstract findResource: (
       resourceSlug: string | ResourceContract
-    ) => ResourceContract<{}>
+    ) => ResourceContract
     abstract establishDatabaseConnection: () => void
     abstract create: (
       payload: DataPayload,
@@ -551,11 +551,9 @@ declare module '@tensei/common/config' {
     resources: ResourceContract[]
     resource: ResourceContract | null
     constructor(resources: ResourceContract[])
-    protected getCurrentResource: () => ResourceContract<{}>
+    protected getCurrentResource: () => ResourceContract
     setResource: (resourceOrSlug: ResourceContract | string) => this
-    findResource: (
-      resourceSlug: string | ResourceContract
-    ) => ResourceContract<{}>
+    findResource: (resourceSlug: string | ResourceContract) => ResourceContract
     getFieldFromResource: (
       resource: ResourceContract,
       databaseField: string

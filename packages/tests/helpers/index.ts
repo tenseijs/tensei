@@ -7,6 +7,7 @@ import {
   User,
   Post,
   Reaction,
+  ResourceCanUpdate,
   ReactionHiddenFromApi
 } from './resources'
 import {
@@ -23,6 +24,7 @@ export const resources = () => [
   User(),
   Post(),
   Reaction,
+  ResourceCanUpdate,
   ReactionHiddenFromApi
 ]
 
@@ -45,6 +47,11 @@ export const fakeUser = () => ({
   full_name: Faker.name.findName(),
   email: Faker.internet.exampleEmail(),
   password: 'password'
+})
+
+export const fakeComment = () => ({
+  title: Faker.lorem.sentence(),
+  body: Faker.lorem.sentence()
 })
 
 export const fakePost = () => ({

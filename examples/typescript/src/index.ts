@@ -52,7 +52,6 @@ export default tensei()
         belongsTo('User').nullable(),
         hasMany('Post')
       ])
-      .disableAutoFilters()
       .displayField('Name')
   ])
   .plugins([

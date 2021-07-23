@@ -28,7 +28,7 @@ interface ResourceDataWithFields extends ResourceData {
   actions: Action[]
 }
 
-export class Resource<ResourceType = {}> implements ResourceContract {
+export class Resource implements ResourceContract {
   public authorizeCallbacks: {
     authorizedToShow: AuthorizeFunction[]
     authorizedToFetch: AuthorizeFunction[]
@@ -112,14 +112,14 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     return this
   }
 
-  public disableAutoFilters() {
-    this.data.disableAutoFilters = true
+  public enableAutoFills() {
+    this.data.enableAutoFills = true
 
     return this
   }
 
-  public disableAutoFills() {
-    this.data.disableAutoFills = true
+  public enableAutoFilters() {
+    this.data.enableAutoFilters = true
 
     return this
   }
@@ -155,9 +155,10 @@ export class Resource<ResourceType = {}> implements ResourceContract {
         .hideOnIndex()
         .hideOnUpdate()
     ],
+    enableAutoFills: false,
+    enableAutoFilters: false,
     methods: [],
-    disableAutoFills: false,
-    disableAutoFilters: false,
+    repositoryMethods: [],
     actions: [],
     table: '',
     name: '',
@@ -263,16 +264,28 @@ export class Resource<ResourceType = {}> implements ResourceContract {
     return this
   }
 
-  public method<Fn extends ResourceMethod>(name: string, fn: Fn) {
-      this.data.methods = [
-        ...this.data.methods,
-        {
-          name,
-          fn
-        }
-      ]
+  public repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn) {
+    this.data.repositoryMethods = [
+      ...this.data.methods,
+      {
+        name,
+        fn
+      }
+    ]
 
-      return this
+    return this
+  }
+
+  public method<Fn = ResourceMethod>(name: string, fn: Fn) {
+    this.data.methods = [
+      ...this.data.methods,
+      {
+        name,
+        fn
+      }
+    ]
+
+    return this
   }
 
   public canFetch(authorizeFunction: AuthorizeFunction) {

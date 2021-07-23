@@ -25,6 +25,14 @@ export const parseQueryToFindOptions = (
 ) => {
   let findOptions: FindOptions<any> = {}
 
+  if (!query.page) {
+    query.page = 1
+  }
+
+  if (!query.per_page) {
+    query.per_page = 10
+  }
+
   if (query.page && query.page !== '-1') {
     findOptions.limit =
       parseInt(query.per_page) || resource.data.perPageOptions[0]

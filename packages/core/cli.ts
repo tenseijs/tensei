@@ -12,37 +12,38 @@ process.env.TENSEI_MODE = 'cli'
 // Or rather, require the package.json file from the project, then get the main key, and require that file.
 
 const getAppRootPath = () => {
-    const packageJson = require(Path.resolve(process.cwd(), 'package.json'))
+  const packageJson = require(Path.resolve(process.cwd(), 'package.json'))
 
-    return packageJson.main
+  return packageJson.main
 }
 
 const appPath = Path.resolve(process.cwd(), getAppRootPath())
 
 ;(async () => {
-    let tensei = await require(appPath)
+  let tensei = await require(appPath)
 
-    tensei.ctx.commands.forEach((command: CommandContract<any>) => {
-        program.command(command.config.signature)
-            .description(command.config.description)
-            .action(async (...parameters) => {
-                const thisCommand = parameters[parameters.length - 1]
+  tensei.ctx.commands.forEach((command: CommandContract<any>) => {
+    program
+      .command(command.config.signature)
+      .description(command.config.description)
+      .action(async (...parameters) => {
+        const thisCommand = parameters[parameters.length - 1]
 
-                const parameterObject: DataPayload = {}
+        const parameterObject: DataPayload = {}
 
-                thisCommand._args.forEach((arg: any, index: number) => {
-                    parameterObject[arg._name] = parameters[index]
-                })
+        thisCommand._args.forEach((arg: any, index: number) => {
+          parameterObject[arg._name] = parameters[index]
+        })
 
-                await command.config.handler(parameterObject, tensei.ctx)
+        await command.config.handler(parameterObject, tensei.ctx)
 
-                if (tensei.ctx.orm.config.get('type') !== 'sqlite') {
-                    await tensei.shutdown()
-                }
+        if (tensei.ctx.orm.config.get('type') !== 'sqlite') {
+          await tensei.shutdown()
+        }
 
-                process.exit(0)
-            })
-    })
+        process.exit(0)
+      })
+  })
 
-    program.parse(process.argv)
+  program.parse(process.argv)
 })()
