@@ -1,5 +1,10 @@
 import { NextApiResponse } from 'next'
-import { NextIronRequest, tensei, getAccessTokenExpiryTimeStamp, prepareAuthData } from '../utils'
+import {
+  NextIronRequest,
+  tensei,
+  getAccessTokenExpiryTimeStamp,
+  prepareAuthData
+} from '../utils'
 
 export default async function handleCheckSession(
   request: NextIronRequest,
@@ -15,7 +20,7 @@ export default async function handleCheckSession(
 
   try {
     apiResponse = await tensei.auth().refreshToken({
-      token: auth.refresh_token,
+      token: auth.refresh_token
     })
   } catch (error) {
     // Terminate the existing session.
@@ -26,7 +31,9 @@ export default async function handleCheckSession(
 
   request.session.set('auth', {
     refresh_token: apiResponse.data.data.refresh_token,
-    access_token_expires_at: getAccessTokenExpiryTimeStamp(apiResponse.data.data.expires_in),
+    access_token_expires_at: getAccessTokenExpiryTimeStamp(
+      apiResponse.data.data.expires_in
+    )
   })
 
   await request.session.save()

@@ -109,10 +109,10 @@ export const populateFromResolvedNodes = async (
 
   if (Object.keys(fieldNode).length > 0) {
     const countSelections = Object.keys(fieldNode).filter((selection: string) =>
-      selection.match(/__count/)
+      selection.match(/Count/)
     )
     const countSelectionNames: string[] = countSelections.map(
-      (selection: string) => selection.split('__')[0]
+      (selection: string) => selection.split('Count')[0]
     )
 
     const manyToOneSelections = Object.keys(
@@ -258,13 +258,13 @@ export const populateFromResolvedNodes = async (
                         $in: data.map(d => d._id)
                       },
                       ...parseWhereArgumentsToWhereQuery(
-                        fieldNode[`${selection}__count`].args.where
+                        fieldNode[`${selection}Count`].args.where
                       )
                     }
                   },
                   {
                     $project: {
-                      [`${relatedField?.relatedProperty.mappedBy}__count`]: {
+                      [`${relatedField?.relatedProperty.mappedBy}Count`]: {
                         $size: `$${relatedField?.relatedProperty.mappedBy}`
                       }
                     }
@@ -273,12 +273,11 @@ export const populateFromResolvedNodes = async (
               )
 
               data.map(item => {
-                item[`${relatedField?.relatedProperty.mappedBy}__count`] =
+                item[`${relatedField?.relatedProperty.mappedBy}Count`] =
                   (counts.find(
                     (count: any) => count._id.toString() === item._id.toString()
-                  ) || {})[
-                    `${relatedField?.relatedProperty.mappedBy}__count`
-                  ] || null
+                  ) || {})[`${relatedField?.relatedProperty.mappedBy}Count`] ||
+                  null
               })
 
               return
@@ -300,12 +299,12 @@ export const populateFromResolvedNodes = async (
                             }
                           },
                     ...parseWhereArgumentsToWhereQuery(
-                      fieldNode[`${selection}__count`].args.where
+                      fieldNode[`${selection}Count`].args.where
                     )
                   }
                 )
 
-                item[`${field?.databaseField}__count`] = count
+                item[`${field?.databaseField}Count`] = count
               })
             )
           }
@@ -322,7 +321,7 @@ export const populateFromResolvedNodes = async (
                 manager.count(field?.relatedProperty.type!, {
                   [resource.data.snakeCaseName]: key,
                   ...parseWhereArgumentsToWhereQuery(
-                    fieldNode[`${selection}__count`].args.where
+                    fieldNode[`${selection}Count`].args.where
                   )
                 })
               )
@@ -331,7 +330,7 @@ export const populateFromResolvedNodes = async (
             data.forEach(item => {
               const index = uniqueKeys.indexOf(item.id)
 
-              item[`${field?.databaseField}__count`] = counts[index]
+              item[`${field?.databaseField}Count`] = counts[index]
             })
           }
         })

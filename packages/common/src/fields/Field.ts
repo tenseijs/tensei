@@ -44,7 +44,7 @@ export class Field implements FieldContract {
   }
 
   public showHideFieldFromApi = {
-    hideOnInsertApi: false,
+    hideOnCreateApi: false,
     hideOnUpdateApi: false,
     hideOnDeleteApi: false,
     hideOnFetchApi: false
@@ -266,7 +266,7 @@ export class Field implements FieldContract {
   public constructor(name: string, databaseField?: string) {
     this.name = name
 
-    this.databaseField = databaseField || snakeCase(this.name)
+    this.databaseField = databaseField || camelCase(this.name)
 
     this.property.name = this.databaseField
     this.relatedProperty.name = this.databaseField
@@ -435,7 +435,7 @@ export class Field implements FieldContract {
   }
 
   public hideOnApi() {
-    this.showHideFieldFromApi.hideOnInsertApi = true
+    this.showHideFieldFromApi.hideOnCreateApi = true
     this.showHideFieldFromApi.hideOnFetchApi = true
     this.showHideFieldFromApi.hideOnDeleteApi = true
     this.showHideFieldFromApi.hideOnUpdateApi = true
@@ -443,8 +443,8 @@ export class Field implements FieldContract {
     return this
   }
 
-  public hideOnInsertApi() {
-    this.showHideFieldFromApi.hideOnInsertApi = true
+  public hideOnCreateApi() {
+    this.showHideFieldFromApi.hideOnCreateApi = true
 
     return this
   }

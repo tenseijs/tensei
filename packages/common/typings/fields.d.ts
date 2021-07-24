@@ -181,7 +181,7 @@ declare module '@tensei/common/fields' {
     }
     sanitizeRule?: SanitizationRules
     showHideFieldFromApi: {
-      hideOnInsertApi: boolean
+      hideOnCreateApi: boolean
       hideOnUpdateApi: boolean
       hideOnDeleteApi: boolean
       hideOnFetchApi: boolean
@@ -359,7 +359,7 @@ declare module '@tensei/common/fields' {
      */
     exceptOnForms(): this
     hideOnApi(): this
-    hideOnInsertApi(): this
+    hideOnCreateApi(): this
     hideOnUpdateApi(): this
     hideOnDeleteApi(): this
     hideOnFetchApi(): this

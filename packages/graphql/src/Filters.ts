@@ -17,16 +17,16 @@ export const FilterGraphqlTypes = new (class Filter {
     const validOperators = [
       'equals',
       'contains',
-      'not_equals',
-      'is_null',
-      'not_null',
+      'notEquals',
+      'isNull',
+      'notNull',
       'gt',
       'gte',
       'lt',
       'lte',
       'matches',
       'in',
-      'not_in'
+      'notIn'
     ]
 
     const FilterOperatorValueTypes: GraphQLEnumValueConfigMap = {}

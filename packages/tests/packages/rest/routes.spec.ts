@@ -180,16 +180,13 @@ test('canUpdate authorizer on resources authorize requests', async () => {
   expect(authorizedResponse.body.data.like).toBe(false)
 })
 
-test('emits inserted event after resource is inserted', async () => {
+test('emits created event after resource is inserted', async () => {
   const listener = jest.fn()
 
-  const {
-    app,
-    ctx: { emitter, orm }
-  } = await setup([
+  const { app } = await setup([
     plugin('Register listeners').register(({ extendEvents }) => {
       extendEvents([
-        event('user::inserted').listen(({ payload }) =>
+        event('user::created').listen(({ payload }) =>
           listener(payload.toJSON())
         )
       ])
@@ -202,22 +199,20 @@ test('emits inserted event after resource is inserted', async () => {
 
   const response = await client.post('/api/users').send(fake_user)
 
-  const expectedPayload = {}
-
   expect(response.status).toBe(201)
   expect(response.body.data).toEqual({
     id: expect.anything(),
-    full_name: fake_user.full_name,
+    fullName: fake_user.fullName,
     password: fake_user.password,
     email: fake_user.email,
     posts: [],
-    created_at: expect.any(String),
-    updated_at: expect.any(String)
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String)
   })
   expect(listener).toHaveBeenCalledWith({
     ...response.body.data,
-    created_at: new Date(response.body.data.created_at),
-    updated_at: new Date(response.body.data.updated_at)
+    createdAt: new Date(response.body.data.createdAt),
+    updatedAt: new Date(response.body.data.updatedAt)
   })
 })
 
@@ -226,7 +221,7 @@ test('emits updated event after resource is updated', async () => {
 
   const {
     app,
-    ctx: { emitter, orm }
+    ctx: { orm }
   } = await setup([
     plugin('Register listeners').register(({ extendEvents }) => {
       extendEvents([
@@ -248,11 +243,11 @@ test('emits updated event after resource is updated', async () => {
 
   const response = await client.patch(`/api/users/${user.id}`).send({
     email: updatedUserPayload.email,
-    full_name: updatedUserPayload.full_name
+    fullName: updatedUserPayload.fullName
   })
 
   const expectedPayload: any = {
-    full_name: updatedUserPayload.full_name,
+    fullName: updatedUserPayload.fullName,
     password: user.password,
     email: updatedUserPayload.email
   }
@@ -265,14 +260,14 @@ test('emits updated event after resource is updated', async () => {
   expect(response.body.data).toEqual({
     id: expect.anything(),
     ...expectedPayload,
-    updated_at: expect.any(String),
-    created_at: expect.any(String)
+    updatedAt: expect.any(String),
+    createdAt: expect.any(String)
   })
   expect(listener).toHaveBeenCalledWith({
     id: response.body.data.id,
     ...expectedPayload,
-    updated_at: new Date(response.body.data.updated_at),
-    created_at: new Date(response.body.data.created_at)
+    updatedAt: new Date(response.body.data.updatedAt),
+    createdAt: new Date(response.body.data.createdAt)
   })
 })
 
@@ -305,8 +300,8 @@ test('emits deleted event after resource is deleted', async () => {
   expect(listener).toHaveBeenCalledWith([
     {
       ...response.body.data,
-      created_at: new Date(response.body.data.created_at),
-      updated_at: new Date(response.body.data.updated_at)
+      createdAt: new Date(response.body.data.createdAt),
+      updatedAt: new Date(response.body.data.updatedAt)
     }
   ])
 })

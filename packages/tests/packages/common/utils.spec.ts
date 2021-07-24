@@ -23,12 +23,12 @@ test('correctly gets validation rules for a resource', async () => {
     title: 'string|required|max:64|unique:title',
     description: 'string|required',
     content: 'string|required|max:2000|min:12',
-    av_cpc: 'number|required',
+    avCpc: 'number|required',
     category: 'string|in:javascript,angular,mysql,pg|required',
     user: 'required',
-    published_at: 'date|required',
+    publishedAt: 'date|required',
     approved: 'boolean',
-    scheduled_for: 'date|required',
+    scheduledFor: 'date|required',
     tags: 'array',
     'tags.*': isMongo ? 'string' : 'number',
     comments: 'array',
@@ -38,8 +38,8 @@ test('correctly gets validation rules for a resource', async () => {
   expect(commentValidator.getValidationRules()).toEqual({
     title: 'string|required',
     body: 'string|required',
-    title_hidden_from_insert_and_fetch_api: 'string',
-    title_hidden_from_update_and_fetch_api: 'string',
+    titleHiddenFromInsertAndFetchApi: 'string',
+    titleHiddenFromUpdateAndFetchApi: 'string',
     post: isMongo ? 'string' : 'number'
   })
 })
@@ -58,8 +58,8 @@ test('Sanitizes resource fields on create', async () => {
   expect(validator.getValidationRules()).toEqual({
     title: 'string|required',
     body: 'string|required',
-    title_hidden_from_insert_and_fetch_api: 'string',
-    title_hidden_from_update_and_fetch_api: 'string',
+    titleHiddenFromInsertAndFetchApi: 'string',
+    titleHiddenFromUpdateAndFetchApi: 'string',
     post: isMongo ? 'string' : 'number'
   })
 
@@ -104,7 +104,7 @@ test('correctly validates data and throws error with validation rules', async ()
 
   const payload = {
     tags: [1, 2, 3, 4, 'INVALID_TAG_ID_VALUE'],
-    av_cpc: Faker.random.number(),
+    avCpc: Faker.random.number(),
     title: fakePostPayload.title,
     something_not_supposed_to_be_here: 'something_not_supposed_to_be_here'
   }
@@ -170,13 +170,13 @@ test('correctly validates data and throws error with validation rules', async ()
         validation: 'required'
       },
       {
-        field: 'published_at',
-        message: 'The published_at is required.',
+        field: 'publishedAt',
+        message: 'The publishedAt is required.',
         validation: 'required'
       },
       {
-        field: 'scheduled_for',
-        message: 'The scheduled_for is required.',
+        field: 'scheduledFor',
+        message: 'The scheduledFor is required.',
         validation: 'required'
       },
       ...tags_validations
@@ -218,13 +218,13 @@ test('correctly validates data and throws error with validation rules', async ()
         validation: 'required'
       },
       {
-        field: 'published_at',
-        message: 'The published_at is required.',
+        field: 'publishedAt',
+        message: 'The publishedAt is required.',
         validation: 'required'
       },
       {
-        field: 'scheduled_for',
-        message: 'The scheduled_for is required.',
+        field: 'scheduledFor',
+        message: 'The scheduledFor is required.',
         validation: 'required'
       },
       ...tags_validations

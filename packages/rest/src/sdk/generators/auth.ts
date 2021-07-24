@@ -14,7 +14,7 @@ export const getAuthUserResponseInterface = (
 
     export interface AuthResponse {
         ${userResource.data.snakeCaseName}: ${userResource.data.pascalCaseName}
-        ${authConfig.httpOnlyCookiesAuth ? '' : 'access_token: string'}
+        ${authConfig.httpOnlyCookiesAuth ? '' : 'accessToken: string'}
         ${authConfig.httpOnlyCookiesAuth ? '' : 'expires_in: number'}
         ${authConfig.enableRefreshTokens ? 'refresh_token: string' : ''}
     }
@@ -66,7 +66,7 @@ export const generateAuthTypes = (
 
   const fields = userResource?.data.fields.filter(
     field =>
-      !field.showHideFieldFromApi.hideOnInsertApi &&
+      !field.showHideFieldFromApi.hideOnCreateApi &&
       !field.isHidden &&
       field.databaseField !== 'id'
   )
@@ -126,7 +126,7 @@ export const generateAuthTypes = (
 
         export interface AccessTokenStorageValue {
             access_token_expires_at: string
-            access_token: string
+            accessToken: string
             current_time: string
             expires_in: number
         }
@@ -219,12 +219,12 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
         /**
          * 
          * Confirm social authenticated and login a user. If you omit the access token, this method will
-         * try to get the access_token parameter from the window URL.
+         * try to get the accessToken parameter from the window URL.
          *      Example:
-         *           await tensei.auth().socialConfirm({ object: { access_token: '6582ab8e9957f3d4e331a821823065c2cde0c32c8' } })
+         *           await tensei.auth().socialConfirm({ object: { accessToken: '6582ab8e9957f3d4e331a821823065c2cde0c32c8' } })
          * 
          **/
-        socialConfirm(payload?: { object: { access_token: string } }): Promise<DataResponse<AuthResponse>>
+        socialConfirm(payload?: { object: { accessToken: string } }): Promise<DataResponse<AuthResponse>>
         `
             : ``
         }

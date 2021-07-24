@@ -1,47 +1,47 @@
 {
-    "name": "@tensei/main",
-    "version": "0.0.0",
-    "main": "./build/server/index.js",
-    "license": "MIT",
-    "types": "./build/typings/index.d.ts",
-    "scripts": {
-        "test": "yarn lerna run test",
-        "build": "yarn lerna run build",
-        "dev": "yarn lerna run dev",
-        "prettier": "yarn lerna run prettier",
-        "before:release": "node scripts/prepublish.js",
-        "release": "./scripts/release.sh",
-        "commit": "yarn git-cz",
-        "setup": "yarn && yarn build && cd examples/blog && yarn && cd ../typescript && yarn"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "husky": {
-        "hooks": {
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
-    "private": true,
-    "workspaces": {
-        "packages": [
-            "packages/*",
-            "examples/*"
-        ],
-        "nohoist": [
-            "**/react-trix-editor",
-            "**/laravel-mix",
-            "**/node-sass"
-        ]
-    },
-    "dependencies": {
-        "@commitlint/cli": "^11.0.0",
-        "@commitlint/config-conventional": "^11.0.0",
-        "commitizen": "^4.2.2",
-        "husky": "^4.3.0",
-        "lerna": "^3.22.1",
-        "prettier": "^2.0.5"
+  "name": "@tensei/main",
+  "version": "0.0.0",
+  "main": "./build/server/index.js",
+  "license": "MIT",
+  "types": "./build/typings/index.d.ts",
+  "scripts": {
+    "test": "yarn lerna run test",
+    "build": "yarn lerna run build",
+    "dev": "yarn lerna run dev",
+    "prettier": "yarn prettier",
+    "before:release": "node scripts/prepublish.js",
+    "release": "./scripts/release.sh",
+    "commit": "yarn git-cz",
+    "setup": "yarn && yarn build && cd examples/blog && yarn && cd ../typescript && yarn"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
     }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "examples/*"
+    ],
+    "nohoist": [
+      "**/react-trix-editor",
+      "**/laravel-mix",
+      "**/node-sass"
+    ]
+  },
+  "dependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "commitizen": "^4.2.2",
+    "husky": "^4.3.0",
+    "lerna": "^3.22.1",
+    "prettier": "^2.0.5"
+  }
 }

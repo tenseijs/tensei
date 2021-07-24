@@ -38,7 +38,7 @@ declare module '@tensei/common/resources' {
     hideOnApi?: boolean
     methods: RepositoryMethod[]
     repositoryMethods: RepositoryMethod[]
-    hideOnInsertApi: boolean
+    hideOnCreateApi: boolean
     hideOnFetchApi: boolean
     hideOnUpdateApi: boolean
     hideOnDeleteApi: boolean
@@ -55,6 +55,7 @@ declare module '@tensei/common/resources' {
     snakeCaseNamePlural: string
     noTimestamps: boolean
     pascalCaseName: string
+    pascalCaseNamePlural: string
     slugSingular: string
     slugPlural: string
     perPageOptions: number[]
@@ -110,7 +111,7 @@ declare module '@tensei/common/resources' {
     hideOnApi(): this
     icon(icon: SupportedIcons): this
     isHiddenOnApi(): boolean
-    hideOnInsertApi(): this
+    hideOnCreateApi(): this
     method<Fn = ResourceMethod>(name: string, fn: Fn): this
     repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn): this
     hideOnUpdateApi(): this
@@ -189,7 +190,7 @@ declare module '@tensei/common/resources' {
     data: ResourceDataWithFields
     hideOnApi(): this
     isHiddenOnApi(): boolean
-    hideOnInsertApi(): this
+    hideOnCreateApi(): this
     method<Fn = ResourceMethod>(name: string, fn: Fn): this
     repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn): this
     hideOnUpdateApi(): this

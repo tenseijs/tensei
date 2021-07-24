@@ -1,14 +1,14 @@
 {
-	"compilerOptions": {
-		"target": "ES5",
-		"module": "commonjs",
-		"declaration": false,
-		"outDir": "./build",
-		"strict": true,
-		"baseUrl": "./src",
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
-	},
-	"exclude": ["__tests__", "build", "client"]
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "declaration": false,
+    "outDir": "./build",
+    "strict": true,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": ["__tests__", "build", "client"]
 }

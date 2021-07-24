@@ -1,5 +1,5 @@
 import { ReferenceType } from '@mikro-orm/core'
-import { pascalCase, snakeCase } from 'change-case'
+import { pascalCase, camelCase } from 'change-case'
 import RelationshipField from './RelationshipField'
 
 // This would be BelongsTo in other relationship language.
@@ -10,7 +10,7 @@ export class ManyToOne extends RelationshipField {
     detail: 'ManyToOne'
   }
 
-  public constructor(name: string, databaseField = snakeCase(name)) {
+  public constructor(name: string, databaseField = camelCase(name)) {
     super(name, databaseField)
 
     this.defaultFormValue(null)

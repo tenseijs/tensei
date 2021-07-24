@@ -39,80 +39,74 @@ const getSchema = async () => {
 test('Generates types only for resources not hidden from API', async () => {
   const schema = await getSchema()
 
-  expect(schema.types.find(t => t.name === 'insert_tag_input')).toBeDefined()
-  expect(schema.types.find(t => t.name === 'update_tag_input')).toBeDefined()
+  expect(schema.types.find(t => t.name === 'CreateTagInput')).toBeDefined()
+  expect(schema.types.find(t => t.name === 'UpdateTagInput')).toBeDefined()
+  expect(schema.types.find(t => t.name === 'CreateCommentInput')).toBeDefined()
+  expect(schema.types.find(t => t.name === 'UpdateCommentInput')).toBeDefined()
   expect(
-    schema.types.find(t => t.name === 'insert_comment_input')
-  ).toBeDefined()
-  expect(
-    schema.types.find(t => t.name === 'update_comment_input')
-  ).toBeDefined()
-  expect(
-    schema.types.find(t => t.name === 'insert_reaction_hidden_from_api_input')
+    schema.types.find(t => t.name === 'CreateReactionHiddenFromApiInput')
   ).toBeUndefined()
   expect(
-    schema.types.find(t => t.name === 'update_reaction_hidden_from_api_input')
+    schema.types.find(t => t.name === 'UpdateReactionHiddenFromApiInput')
   ).toBeUndefined()
 })
 
-test('Generates insert input types only for fields not hidden from the insert and update api', async () => {
+test('Generates create input types only for fields not hidden from the insert and update api', async () => {
   const schema = await getSchema()
 
   expect(
     schema.types
-      .find(t => t.name === 'insert_comment_input')
+      .find(t => t.name === 'CreateCommentInput')
       .inputFields.map(f => f.name)
-  ).toEqual(['title', 'body', 'title_hidden_from_update_and_fetch_api', 'post'])
+  ).toEqual(['title', 'body', 'titleHiddenFromUpdateAndFetchApi', 'post'])
 
   expect(
     schema.types
-      .find(t => t.name === 'update_comment_input')
+      .find(t => t.name === 'UpdateCommentInput')
       .inputFields.map(f => f.name)
-  ).toEqual(['title', 'body', 'title_hidden_from_insert_and_fetch_api', 'post'])
+  ).toEqual(['title', 'body', 'titleHiddenFromInsertAndFetchApi', 'post'])
 })
 
 test('Exposes fields in resource types only if they are not hidden', async () => {
   const schema = await getSchema()
 
   expect(
-    schema.types.find(t => t.name === 'comment').fields.map(f => f.name)
+    schema.types.find(t => t.name === 'Comment').fields.map(f => f.name)
   ).toEqual(
     [
       'id',
-      'created_at',
-      'updated_at',
+      'createdAt',
+      'updatedAt',
       'title',
       'body',
-      'title_hidden_from_insert_and_fetch_api',
-      'title_hidden_from_update_and_fetch_api',
+      'titleHiddenFromInsertAndFetchApi',
+      'titleHiddenFromUpdateAndFetchApi',
       'post'
     ].filter(
       f =>
         ![
-          'title_hidden_from_insert_and_fetch_api',
-          'title_hidden_from_update_and_fetch_api'
+          'titleHiddenFromInsertAndFetchApi',
+          'titleHiddenFromUpdateAndFetchApi'
         ].includes(f)
     )
   )
 })
 
-test('Generates insert_resource mutations only for resources exposed to insert api', async () => {
+test('Generates CreateResource mutations only for resources exposed to insert api', async () => {
   const schema = await getSchema()
 
-  expect(schema.types.map(t => t.name).includes('insert_tag_input')).toBe(true)
-  expect(schema.types.map(t => t.name).includes('insert_comment_input')).toBe(
+  expect(schema.types.map(t => t.name).includes('CreateTagInput')).toBe(true)
+  expect(schema.types.map(t => t.name).includes('CreateCommentInput')).toBe(
     true
   )
   expect(
-    schema.types
-      .map(t => t.name)
-      .includes('insert_reaction_hidden_from_api_input')
+    schema.types.map(t => t.name).includes('InsertReactionHiddenFromApiInput')
   ).toBe(false)
   expect(
     schema.types
       .find(t => t.name === 'Mutation')
       .fields.map(f => f.name)
-      .includes('insert_reaction_hidden_from_api')
+      .includes('insertReactionHiddenFromApi')
   ).toBe(false)
 })
 
@@ -125,60 +119,57 @@ test('Generates fetch queries only for resources exposed to fetch api', async ()
     [
       'tag',
       'tags',
-      'tags__count',
+      'tagsCount',
       'comment',
       'comments',
-      'comments__count',
+      'commentsCount',
       'user',
       'users',
-      'users__count',
+      'usersCount',
       'post',
       'posts',
-      'posts__count',
+      'postsCount',
       'reaction',
       'reactions',
-      'reactions__count',
-      'reaction_hidden_from_api',
-      'reaction_hidden_from_apis',
-      'resource_can_update',
-      'resource_can_updates',
-      'resource_can_updates__count'
+      'reactionsCount',
+      'reactionHiddenFromApi',
+      'reactionHiddenFromApis',
+      'resourceCanUpdate',
+      'resourceCanUpdates',
+      'resourceCanUpdatesCount'
     ].filter(
-      q =>
-        !['reaction_hidden_from_api', 'reaction_hidden_from_apis'].includes(q)
+      q => !['reactionHiddenFromApi', 'reactionHiddenFromApis'].includes(q)
     )
   )
 })
 
-test('Generates update_resource mutations only for resources exposed to update api', async () => {
+test('Generates updateResource mutations only for resources exposed to update api', async () => {
   const schema = await getSchema()
 
-  expect(schema.types.map(t => t.name).includes('update_tag_input')).toBe(true)
-  expect(schema.types.map(t => t.name).includes('update_comment_input')).toBe(
+  expect(schema.types.map(t => t.name).includes('UpdateTagInput')).toBe(true)
+  expect(schema.types.map(t => t.name).includes('UpdateCommentInput')).toBe(
     true
   )
   expect(
-    schema.types.map(t => t.name).includes('update_reaction_hidden_from_api')
+    schema.types.map(t => t.name).includes('updateReactionHiddenFromApi')
   ).toBe(false)
-  expect(schema.types.map(t => t.name).includes('update_post_input')).toBe(
-    false
-  )
+  expect(schema.types.map(t => t.name).includes('UpdatePostInput')).toBe(false)
   expect(
     schema.types
       .find(t => t.name === 'Mutation')
       .fields.map(f => f.name)
-      .includes('update_post')
+      .includes('updatePost')
   ).toBe(false)
 })
 
-test('Generates delete_resource mutations only for resources exposed to delete api', async () => {
+test('Generates deleteResource mutations only for resources exposed to delete api', async () => {
   const schema = await getSchema()
 
   expect(
     schema.types
       .find(t => t.name === 'Mutation')
       .fields.map(f => f.name)
-      .includes('delete_post')
+      .includes('deletePost')
   ).toBe(false)
 })
 
@@ -189,9 +180,7 @@ test('Generates subscriptions only for resources exposed to subscriptions', asyn
     .find(t => t.name === 'Subscription')
     .fields.map(f => f.name)
 
-  expect(subscriptions.includes('post_inserted')).toBe(false)
-  expect(subscriptions.includes('reaction_hidden_from_api_inserted')).toBe(
-    false
-  )
-  expect(subscriptions).toEqual(['comment_inserted', 'post_deleted'])
+  expect(subscriptions.includes('postCreated')).toBe(false)
+  expect(subscriptions.includes('reactionHiddenFromApiCreated')).toBe(false)
+  expect(subscriptions).toEqual(['commentCreated', 'postDeleted'])
 })

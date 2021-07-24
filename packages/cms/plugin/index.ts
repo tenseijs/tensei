@@ -121,7 +121,7 @@ class CmsPlugin {
     await orm?.em.persistAndFlush(
       orm?.em.create(this.resources.token.data.pascalCaseName, {
         token,
-        admin_user: user.id,
+        adminUser: user.id,
         type: 'PASSWORDLESS',
         expires_at: DateTime.local().plus({
           minutes: 15
@@ -193,12 +193,12 @@ class CmsPlugin {
           {
             token: tokenString
           },
-          { populate: [this.resources.user.data.snakeCaseName] }
+          { populate: [this.resources.user.data.camelCaseName] }
         )
 
         if (
           !token ||
-          !token[this.resources.user.data.snakeCaseName].active ||
+          !token[this.resources.user.data.camelCaseName].active ||
           token.expires_at < new Date()
         ) {
           return response.redirect(
@@ -216,7 +216,7 @@ class CmsPlugin {
 
         // @ts-ignore
         request.session.user = {
-          id: token[this.resources.user.data.snakeCaseName].id
+          id: token[this.resources.user.data.camelCaseName].id
         }
 
         return response.redirect(`/${this.config.path}`)
@@ -422,8 +422,8 @@ class CmsPlugin {
 
   sessionMikroOrmOptions = {
     entityName: `${this.resources.user.data.pascalCaseName}Session`,
-    tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
-    collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+    tableName: `${this.resources.user.data.camelCaseNamePlural}_sessions`,
+    collection: `${this.resources.user.data.camelCaseNamePlural}_sessions`
   }
 
   private authorizeResolver = async (ctx: ApiContext, query: RouteContract) => {
@@ -440,15 +440,15 @@ class CmsPlugin {
   }
 
   private getRolesAndPermissionsNames() {
-    return `${this.resources.role.data.snakeCaseNamePlural}.${this.resources.permission.data.snakeCaseNamePlural}`
+    return `${this.resources.role.data.camelCaseNamePlural}.${this.resources.permission.data.camelCaseNamePlural}`
   }
 
   private getRoleUserKey() {
-    return this.resources.role.data.snakeCaseNamePlural
+    return this.resources.role.data.camelCaseNamePlural
   }
 
   private getPermissionUserKey() {
-    return this.resources.permission.data.snakeCaseNamePlural
+    return this.resources.permission.data.camelCaseNamePlural
   }
 
   public dashboards(dashboards: DashboardContract[]) {
@@ -473,7 +473,7 @@ class CmsPlugin {
       )
 
       if (user) {
-        user[this.resources.permission.data.snakeCaseNamePlural] = user[
+        user[this.resources.permission.data.camelCaseNamePlural] = user[
           this.getRoleUserKey()
         ]
           ?.toJSON()

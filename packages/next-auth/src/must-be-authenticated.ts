@@ -1,5 +1,9 @@
 import { ComponentType } from 'react'
-import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult
+} from 'next'
 
 import { getLoginUrl, withSession } from './utils'
 
@@ -18,7 +22,9 @@ export const mustBeAuthenticated = (
 
   const { getServerSideProps } = optsOrComponent || {}
 
-  return withSession(async function (ctx: any): Promise<GetServerSidePropsResult<any>> {
+  return withSession(async function (
+    ctx: any
+  ): Promise<GetServerSidePropsResult<any>> {
     const auth = ctx.req.session.get('auth')
 
     if (!auth) {
@@ -26,17 +32,19 @@ export const mustBeAuthenticated = (
       return {
         redirect: {
           statusCode: 301,
-          destination: getLoginUrl(),
-        },
+          destination: getLoginUrl()
+        }
       }
     }
 
     let response: GetServerSidePropsResult<any> = {
-      props: {},
+      props: {}
     }
 
     if (getServerSideProps) {
-      response = await getServerSideProps((ctx as unknown) as GetServerSidePropsContext)
+      response = await getServerSideProps(
+        (ctx as unknown) as GetServerSidePropsContext
+      )
     }
 
     return response

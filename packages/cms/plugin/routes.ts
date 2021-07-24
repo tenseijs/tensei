@@ -81,7 +81,7 @@ export default (config: Config, cmsConfig: any) => {
 
           await manager.populate([entity], findOptions.populate || [])
 
-          config.emitter.emit(`${singular}::inserted`, entity)
+          config.emitter.emit(`${singular}::created`, entity)
 
           return response.formatter.created(entity)
         })

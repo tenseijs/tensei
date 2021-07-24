@@ -180,7 +180,7 @@ class Rest {
       } = resource.data
 
       !resource.isHiddenOnApi() &&
-        !resource.data.hideOnInsertApi &&
+        !resource.data.hideOnCreateApi &&
         routes.push(
           route(`Insert ${singular}`)
             .post()
@@ -195,7 +195,7 @@ class Rest {
               resource.data.fields
                 .filter(
                   field =>
-                    !field.showHideFieldFromApi.hideOnInsertApi &&
+                    !field.showHideFieldFromApi.hideOnCreateApi &&
                     !['id', '_id', 'created_at', 'updated_at'].includes(
                       field.databaseField
                     )
@@ -249,7 +249,7 @@ class Rest {
 
                 await manager.populate([entity], findOptions.populate || [])
 
-                config.emitter.emit(`${singular}::inserted`, entity)
+                config.emitter.emit(`${singular}::created`, entity)
 
                 return response.formatter.created(entity)
               }
@@ -257,7 +257,7 @@ class Rest {
         )
 
       !resource.isHiddenOnApi() &&
-        !resource.data.hideOnInsertApi &&
+        !resource.data.hideOnCreateApi &&
         routes.push(
           route(`Insert ${plural}`)
             .post()
@@ -272,7 +272,7 @@ class Rest {
               {
                 in: 'body',
                 name: 'objects',
-                description: `An array of ${singular} objects to be inserted`,
+                description: `An array of ${singular} objects to be created`,
                 type: 'array'
               }
             ])
@@ -343,11 +343,11 @@ class Rest {
                 await manager.populate(data, findOptions.populate || [])
 
                 config.emitter.emit(
-                  `${resource.data.snakeCaseNamePlural}::inserted`,
+                  `${resource.data.snakeCaseNamePlural}::created`,
                   data
                 )
 
-                config.emitter.emit(`${singular}::inserted`, data)
+                config.emitter.emit(`${singular}::created`, data)
 
                 return response.formatter.created(data)
               }

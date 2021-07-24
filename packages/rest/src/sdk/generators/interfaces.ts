@@ -321,7 +321,7 @@ const getInsertResourceInterface = (
   resource: ResourceContract,
   resources: ResourceContract[]
 ) => {
-  if (resource.data.hideOnInsertApi) {
+  if (resource.data.hideOnCreateApi) {
     return ''
   }
 
@@ -332,7 +332,7 @@ const getInsertResourceInterface = (
                 field =>
                   !field.property.primary &&
                   !field.property.hidden &&
-                  !field.showHideFieldFromApi.hideOnInsertApi
+                  !field.showHideFieldFromApi.hideOnCreateApi
               )
               .map(
                 field =>

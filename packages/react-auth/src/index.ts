@@ -4,6 +4,9 @@ export {
   TenseiAuthContextInterface,
   TenseiAuthProviderProps,
   useAuth,
-  useTensei,
+  useTensei
 } from './use-auth'
-export { MustBeAuthenticated, MustBeNotAuthenticated } from './must-be-authenticated'
+export {
+  MustBeAuthenticated,
+  MustBeNotAuthenticated
+} from './must-be-authenticated'

@@ -57,33 +57,33 @@ const generateApiClassForResource = (
             }
 
             ${
-              resource.data.hideOnInsertApi
+              resource.data.hideOnCreateApi
                 ? ''
                 : `
             /**
              * 
-             * Insert a single ${resource.data.pascalCaseName.toLowerCase()}.
+             * Create a single ${resource.data.pascalCaseName.toLowerCase()}.
              *    Example:
              *      await tensei.${
                resource.data.camelCaseNamePlural
-             }.insert({ object: {...} })
+             }.create({ object: {...} })
              *
              **/
-            insert(payload: {
-                object: ${resource.data.pascalCaseName}InsertInput
+            create(payload: {
+                object: ${resource.data.pascalCaseName}CreateInput
             }): Promise<FindResponse<${resource.data.pascalCaseName}>>
 
             /**
              * 
-             * Insert multiple ${resource.data.camelCaseNamePlural}.
+             * Create multiple ${resource.data.camelCaseNamePlural}.
              *    Example:
              *      await tensei.${
                resource.data.camelCaseNamePlural
-             }.insertMany({ objects: [{...}, {...}] })
+             }.createMany({ objects: [{...}, {...}] })
              *
              **/
-            insertMany(payload: {
-                objects: ${resource.data.pascalCaseName}InsertInput[]
+            createMany(payload: {
+                objects: ${resource.data.pascalCaseName}CreateInput[]
             }): Promise<FindResponse<${resource.data.pascalCaseName}[]>>
             `
             }
