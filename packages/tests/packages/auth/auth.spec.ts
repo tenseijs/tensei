@@ -126,15 +126,15 @@ test('Can enable email verification for auth', async () => {
           customer {
             id
             email
-            email_verified_at
+            emailVerifiedAt
           }
 
-          access_token
+          accessToken
         }
       }
     `,
     variables: {
-      name: user.full_name,
+      name: user.fullName,
       email: user.email,
       password: user.password
     }
@@ -148,32 +148,32 @@ test('Can enable email verification for auth', async () => {
   expect(response.body.data.register.customer.id).toBe(
     registeredCustomer.id.toString()
   )
-  expect(registeredCustomer.email_verification_token).toBeDefined()
+  expect(registeredCustomer.emailVerificationToken).toBeDefined()
 
   const verify_email_response = await client
     .post(`/graphql`)
     .send({
       query: gql`
-        mutation confirm_email($email_verification_token: String!) {
-          confirm_email(
-            object: { email_verification_token: $email_verification_token }
+        mutation confirmEmail($emailVerificationToken: String!) {
+          confirmEmail(
+            object: { emailVerificationToken: $emailVerificationToken }
           ) {
             id
             email
-            email_verified_at
+            emailVerifiedAt
           }
         }
       `,
       variables: {
-        email_verification_token: registeredCustomer.email_verification_token
+        emailVerificationToken: registeredCustomer.emailVerificationToken
       }
     })
-    .set('Authorization', `Bearer ${response.body.data.register.access_token}`)
+    .set('Authorization', `Bearer ${response.body.data.register.accessToken}`)
 
-  expect(verify_email_response.body.data.confirm_email).toEqual({
+  expect(verify_email_response.body.data.confirmEmail).toEqual({
     id: registeredCustomer.id.toString(),
     email: registeredCustomer.email,
-    email_verified_at: expect.any(String)
+    emailVerifiedAt: expect.any(String)
   })
 })
 
@@ -202,8 +202,8 @@ test('Can request a password reset and reset password', async () => {
 
   const response = await client.post(`/graphql`).send({
     query: gql`
-      mutation request_password_reset($email: String!) {
-        request_password_reset(object: { email: $email })
+      mutation requestPasswordReset($email: String!) {
+        requestPasswordReset(object: { email: $email })
       }
     `,
     variables: {
@@ -212,7 +212,7 @@ test('Can request a password reset and reset password', async () => {
   })
 
   expect(response.body).toEqual({
-    data: { request_password_reset: true }
+    data: { requestPasswordReset: true }
   })
 
   const passwordReset: any = await em.findOne('PasswordReset', {
@@ -223,14 +223,14 @@ test('Can request a password reset and reset password', async () => {
 
   expect(passwordReset).not.toBe(null)
 
-  const reset_password_response = await client.post(`/graphql`).send({
+  const resetPassword_response = await client.post(`/graphql`).send({
     query: gql`
-      mutation reset_password(
+      mutation resetPassword(
         $email: String!
         $password: String!
         $token: String!
       ) {
-        reset_password(
+        resetPassword(
           object: { email: $email, token: $token, password: $password }
         )
       }
@@ -242,9 +242,9 @@ test('Can request a password reset and reset password', async () => {
     }
   })
 
-  expect(reset_password_response.status).toBe(200)
-  expect(reset_password_response.body).toEqual({
-    data: { reset_password: true }
+  expect(resetPassword_response.status).toBe(200)
+  expect(resetPassword_response.body).toEqual({
+    data: { resetPassword: true }
   })
 
   const login_response = await client.post(`/graphql`).send({
@@ -308,8 +308,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
     query: gql`
       mutation login($email: String!, $password: String!) {
         login(object: { email: $email, password: $password }) {
-          access_token
-          refresh_token
+          accessToken
+          refreshToken
           student {
             id
             email
@@ -323,8 +323,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
     }
   })
 
-  const accessToken: string = login_response.body.data.login.access_token
-  const refreshToken: string = login_response.body.data.login.refresh_token
+  const accessToken: string = login_response.body.data.login.accessToken
+  const refreshToken: string = login_response.body.data.login.refreshToken
 
   setTimeout(async () => {
     // Wait for the jwt to expire, then run a test, make sure its invalid and fails.
@@ -348,12 +348,12 @@ test('access tokens and refresh tokens are generated correctly', async done => {
 
     // Refresh the jwt with the valid refresh token. Expect to get a new, valid JWT
 
-    const refresh_token_response = await client.post(`/graphql`).send({
+    const refreshToken_response = await client.post(`/graphql`).send({
       query: gql`
-        mutation refresh_token($refresh_token: String!) {
-          refresh_token(object: { refresh_token: $refresh_token }) {
-            access_token
-            refresh_token
+        mutation refreshToken($refreshToken: String!) {
+          refreshToken(object: { refreshToken: $refreshToken }) {
+            accessToken
+            refreshToken
             student {
               id
               email
@@ -362,13 +362,13 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         }
       `,
       variables: {
-        refresh_token: refreshToken
+        refreshToken: refreshToken
       }
     })
 
-    expect(refresh_token_response.body.data.refresh_token).toEqual({
-      access_token: expect.any(String),
-      refresh_token: expect.any(String),
+    expect(refreshToken_response.body.data.refreshToken).toEqual({
+      accessToken: expect.any(String),
+      refreshToken: expect.any(String),
       student: {
         id: user.id.toString(),
         email: user.email
@@ -391,7 +391,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
       })
       .set(
         'Authorization',
-        `Bearer ${refresh_token_response.body.data.refresh_token.access_token}`
+        `Bearer ${refreshToken_response.body.data.refreshToken.accessToken}`
       )
 
     expect(authenticated_refreshed_response.body.data.authenticated).toEqual({
@@ -404,12 +404,12 @@ test('access tokens and refresh tokens are generated correctly', async done => {
   setTimeout(async () => {
     // After the refresh token has expired, make a call to confirm it can no longer return fresh and new jwts
 
-    const invalid_refresh_token_response = await client.post(`/graphql`).send({
+    const invalid_refreshToken_response = await client.post(`/graphql`).send({
       query: gql`
-        mutation refresh_token($refresh_token: String!) {
-          refresh_token(object: { refresh_token: $refresh_token }) {
-            access_token
-            refresh_token
+        mutation refreshToken($refreshToken: String!) {
+          refreshToken(object: { refreshToken: $refreshToken }) {
+            accessToken
+            refreshToken
             student {
               id
               email
@@ -418,11 +418,11 @@ test('access tokens and refresh tokens are generated correctly', async done => {
         }
       `,
       variables: {
-        refresh_token: refreshToken
+        refreshToken: refreshToken
       }
     })
 
-    expect(invalid_refresh_token_response.body.errors[0].message).toBe(
+    expect(invalid_refreshToken_response.body.errors[0].message).toBe(
       'Invalid refresh token.'
     )
 
@@ -444,7 +444,7 @@ test('access tokens and refresh tokens are generated correctly', async done => {
     })
     .set('Authorization', `Bearer ${accessToken}`)
 
-  const refresh_token_has_no_access_response = await client
+  const refreshToken_has_no_access_response = await client
     .post(`/graphql`)
     .send({
       query: gql`
@@ -459,8 +459,8 @@ test('access tokens and refresh tokens are generated correctly', async done => {
     })
     .set('Authorization', `Bearer ${refreshToken}`)
 
-  expect(refresh_token_has_no_access_response.body.data).toBeNull()
-  expect(refresh_token_has_no_access_response.body.errors[0].message).toBe(
+  expect(refreshToken_has_no_access_response.body.data).toBeNull()
+  expect(refreshToken_has_no_access_response.body.errors[0].message).toBe(
     'Unauthorized.'
   )
 
@@ -494,8 +494,8 @@ test('if a refresh token is used twice (compromised), the user is automatically 
     query: gql`
       mutation login($email: String!, $password: String!) {
         login(object: { email: $email, password: $password }) {
-          access_token
-          refresh_token
+          accessToken
+          refreshToken
           customer {
             id
             email
@@ -509,14 +509,14 @@ test('if a refresh token is used twice (compromised), the user is automatically 
     }
   })
 
-  const { refresh_token } = login_response.body.data.login
+  const { refreshToken } = login_response.body.data.login
 
-  const refresh_token_response = await client.post(`/graphql`).send({
+  const refreshToken_response = await client.post(`/graphql`).send({
     query: gql`
-      mutation refresh_token($refresh_token: String!) {
-        refresh_token(object: { refresh_token: $refresh_token }) {
-          access_token
-          refresh_token
+      mutation refreshToken($refreshToken: String!) {
+        refreshToken(object: { refreshToken: $refreshToken }) {
+          accessToken
+          refreshToken
           customer {
             email
           }
@@ -524,40 +524,38 @@ test('if a refresh token is used twice (compromised), the user is automatically 
       }
     `,
     variables: {
-      refresh_token
+      refreshToken
     }
   })
 
-  expect(refresh_token_response.status).toBe(200)
-  expect(refresh_token_response.body.data.refresh_token).toEqual({
-    access_token: expect.any(String),
-    refresh_token: expect.any(String),
+  expect(refreshToken_response.status).toBe(200)
+  expect(refreshToken_response.body.data.refreshToken).toEqual({
+    accessToken: expect.any(String),
+    refreshToken: expect.any(String),
     customer: {
       email: expect.any(String)
     }
   })
-  const compromised_refresh_token_response = await client
-    .post(`/graphql`)
-    .send({
-      query: gql`
-        mutation refresh_token($refresh_token: String!) {
-          refresh_token(object: { refresh_token: $refresh_token }) {
-            access_token
-            refresh_token
-            customer {
-              id
-              email
-            }
+  const compromised_refreshToken_response = await client.post(`/graphql`).send({
+    query: gql`
+      mutation refreshToken($refreshToken: String!) {
+        refreshToken(object: { refreshToken: $refreshToken }) {
+          accessToken
+          refreshToken
+          customer {
+            id
+            email
           }
         }
-      `,
-      variables: {
-        refresh_token
       }
-    })
+    `,
+    variables: {
+      refreshToken
+    }
+  })
 
-  expect(compromised_refresh_token_response.status).toBe(200)
-  expect(compromised_refresh_token_response.body.errors[0].message).toBe(
+  expect(compromised_refreshToken_response.status).toBe(200)
+  expect(compromised_refreshToken_response.body.errors[0].message).toBe(
     'Invalid refresh token.'
   )
 
@@ -565,8 +563,8 @@ test('if a refresh token is used twice (compromised), the user is automatically 
     query: gql`
       mutation login($email: String!, $password: String!) {
         login(object: { email: $email, password: $password }) {
-          access_token
-          refresh_token
+          accessToken
+          refreshToken
           customer {
             id
             email
@@ -603,7 +601,7 @@ test('registers new users with email/password based authentication', async () =>
           student {
             id
             email
-            email_verified_at
+            emailVerifiedAt
           }
         }
       }
@@ -618,7 +616,7 @@ test('registers new users with email/password based authentication', async () =>
   expect(register_response.body.data.register.student).toEqual({
     id: expect.any(String),
     email: user.email,
-    email_verified_at: null
+    emailVerifiedAt: null
   })
 })
 
@@ -639,7 +637,7 @@ test('authentication works when refresh tokens are disabled', async () => {
           student {
             id
             email
-            email_verified_at
+            emailVerifiedAt
           }
         }
       }
@@ -659,9 +657,9 @@ test('authentication works when refresh tokens are disabled', async () => {
           student {
             id
             email
-            email_verified_at
+            emailVerifiedAt
           }
-          access_token
+          accessToken
         }
       }
     `,
@@ -675,7 +673,7 @@ test('authentication works when refresh tokens are disabled', async () => {
   expect(login_response.body.data.login.student).toEqual({
     id: expect.any(String),
     email: user.email,
-    email_verified_at: null
+    emailVerifiedAt: null
   })
 })
 
@@ -704,13 +702,13 @@ test('can signup with social authentication', async () => {
 
   const fakeIdentity = {
     provider: 'github',
-    access_token: 'TEST_ACCESS_TOKEN',
-    temporal_token: 'TEST_TEMPORAL_TOKEN',
+    accessToken: 'TEST_ACCESS_TOKEN',
+    temporalToken: 'TEST_TEMPORAL_TOKEN',
     email: 'test@email.com',
     payload: JSON.stringify({
       email: 'test@email.com'
     }),
-    provider_user_id: 'TEST_PROVIDER_USER_ID'
+    providerUserId: 'TEST_providerUserId'
   }
 
   await ctx.orm.em.persistAndFlush(
@@ -718,7 +716,7 @@ test('can signup with social authentication', async () => {
   )
 
   const postResponse = await client.post('/api/social/confirm').send({
-    access_token: fakeIdentity.temporal_token
+    accessToken: fakeIdentity.temporalToken
   })
 
   expect(postResponse.status).toBe(200)
@@ -726,7 +724,7 @@ test('can signup with social authentication', async () => {
     data: {
       doctor: {
         email: fakeIdentity.email,
-        email_verified_at: expect.any(String)
+        emailVerifiedAt: expect.any(String)
       }
     }
   })
@@ -746,7 +744,7 @@ test('can verify registered user email', async () => {
 
   const savedUser = await ctx.orm.em.findOne<{
     email: string
-    email_verification_token: string
+    emailVerificationToken: string
   }>('Student', {
     email: user.email
   })
@@ -754,10 +752,10 @@ test('can verify registered user email', async () => {
   const response = await client
     .post('/api/emails/verification/confirm')
     .send({
-      email_verification_token: savedUser.email_verification_token
+      emailVerificationToken: savedUser.emailVerificationToken
     })
-    .set('Authorization', `Bearer ${registerResponse.body.data.access_token}`)
+    .set('Authorization', `Bearer ${registerResponse.body.data.accessToken}`)
 
   expect(response.status).toBe(200)
-  expect(response.body.data.email_verified_at).toBeDefined()
+  expect(response.body.data.emailVerifiedAt).toBeDefined()
 })

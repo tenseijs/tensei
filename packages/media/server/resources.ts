@@ -33,7 +33,7 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
       belongsTo('File').nullable()
     ])
     .hideFromNavigation()
-    .hideOnInsertApi()
+    .hideOnCreateApi()
     .hideOnUpdateApi()
     .displayField('Name')
     .afterDelete((event, ctx) => {

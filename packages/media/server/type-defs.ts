@@ -4,13 +4,13 @@ export const typeDefs = (name: string, plural: string) => {
   return gql`
         scalar Upload
 
-        input upload_files_input {
+        input UploadFilesInput {
             ${plural}: [Upload]!
             path: String
         }
 
         extend type Mutation {
-            upload_files(object: upload_files_input!): [${name}]!
+            uploadFiles(object: UploadFilesInput!): [${name}]!
         }
     `
 }

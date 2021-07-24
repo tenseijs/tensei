@@ -10,13 +10,13 @@ test.skip('Can upload files using the graphql plugin', async () => {
   const client = Supertest(app)
 
   const query = gql`
-    mutation upload_files($files: [Upload]!, $path: String) {
-      upload_files(object: { files: $files, path: $path }) {
+    mutation uploadFiles($files: [Upload]!, $path: String) {
+      uploadFiles(object: { files: $files, path: $path }) {
         id
         size
         path
         hash
-        mime_type
+        mimeType
         extension
         name
       }
@@ -52,7 +52,7 @@ test.skip('Can upload files using the graphql plugin', async () => {
     .attach('file_3', getFileFixture('pdf.pdf'))
     .attach('file_4', getFileFixture('png.png'))
 
-  const uploaded_files = response.body.data.upload_files
+  const uploaded_files = response.body.data.uploadFiles
 
   expect(uploaded_files).toHaveLength(5)
 
@@ -104,13 +104,13 @@ test('Cannot upload more than max files', async () => {
   const client = Supertest(app)
 
   const query = gql`
-    mutation upload_files($files: [Upload]!, $path: String) {
-      upload_files(object: { files: $files, path: $path }) {
+    mutation uploadFiles($files: [Upload]!, $path: String) {
+      uploadFiles(object: { files: $files, path: $path }) {
         id
         size
         path
         hash
-        mime_type
+        mimeType
         extension
         name
       }
@@ -158,13 +158,13 @@ test.skip('Cannot upload files larger than max file size', async () => {
   const client = Supertest(app)
 
   const query = gql`
-    mutation upload_files($files: [Upload]!, $path: String) {
-      upload_files(object: { files: $files, path: $path }) {
+    mutation uploadFiles($files: [Upload]!, $path: String) {
+      uploadFiles(object: { files: $files, path: $path }) {
         id
         size
         path
         hash
-        mime_type
+        mimeType
         extension
         name
       }

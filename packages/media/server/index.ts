@@ -148,8 +148,8 @@ class MediaLibrary {
           extendGraphQlQueries(queries(this.config))
           extendGraphQlTypeDefs([
             typeDefs(
-              MediaResource.data.snakeCaseName,
-              MediaResource.data.snakeCaseNamePlural
+              MediaResource.data.pascalCaseName,
+              MediaResource.data.pascalCaseNamePlural
             )
           ])
 

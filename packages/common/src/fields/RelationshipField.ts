@@ -1,6 +1,6 @@
 import Field from './Field'
 import Pluralize from 'pluralize'
-import { snakeCase } from 'change-case'
+import { camelCase } from 'change-case'
 import { Cascade } from '@mikro-orm/core'
 
 // This would be BelongsTo in other relationship language.
@@ -18,7 +18,7 @@ export class RelationshipField extends Field {
    * When a new date string is initialized, it defaults the
    * date to today's date.
    */
-  constructor(name: string, databaseField = Pluralize(snakeCase(name))) {
+  constructor(name: string, databaseField = Pluralize(camelCase(name))) {
     super(name, databaseField)
 
     this.hideOnIndex()

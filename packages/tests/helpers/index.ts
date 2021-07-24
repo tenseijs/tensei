@@ -44,7 +44,7 @@ export const fakeTag = () =>
 
 export const fakeUser = () => ({
   id: undefined,
-  full_name: Faker.name.findName(),
+  fullName: Faker.name.findName(),
   email: Faker.internet.exampleEmail(),
   password: 'password'
 })
@@ -60,11 +60,11 @@ export const fakePost = () => ({
   description: Faker.lorem.sentence(),
   slug: Faker.lorem.sentence(),
   content: Faker.lorem.sentence(),
-  av_cpc: Faker.random.number(),
+  avCpc: Faker.random.number(),
   category: Faker.random.arrayElement(['javascript', 'angular', 'pg', 'mysql']),
   approved: Faker.random.boolean(),
-  scheduled_for: Faker.date.future(),
-  published_at: Faker.date.past()
+  scheduledFor: Faker.date.future(),
+  publishedAt: Faker.date.past()
 })
 
 export const getDatabaseCredentials = () => {

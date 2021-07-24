@@ -188,7 +188,7 @@ export interface ResourceContract {
   hideOnDeleteApi: boolean
   hideOnDeleteSubscription: boolean
   hideOnFetchApi: boolean
-  hideOnInsertApi: boolean
+  hideOnCreateApi: boolean
   hideOnInsertSubscription: boolean
   hideOnUpdateApi: boolean
   hideOnUpdateSubscription: boolean

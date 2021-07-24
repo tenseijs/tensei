@@ -1,7 +1,7 @@
 import Supertest from 'supertest'
 import { setup, fakeTag, sortArrayById, fakePost, fakeUser, gql } from './setup'
 
-test('correctly generates insert_resource resolvers for all registered resources', async () => {
+test('generates createResource resolvers for all registered resources', async () => {
   const instance = await setup()
 
   jest.spyOn(instance.ctx.emitter, 'emit')
@@ -12,12 +12,12 @@ test('correctly generates insert_resource resolvers for all registered resources
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation insert_tag(
+      mutation createTag(
         $name: String!
         $priority: Int!
         $description: String!
       ) {
-        insert_tag(
+        createTag(
           object: {
             name: $name
             priority: $priority
@@ -37,7 +37,7 @@ test('correctly generates insert_resource resolvers for all registered resources
   expect(response.status).toBe(200)
   expect(response.body).toEqual({
     data: {
-      insert_tag: {
+      createTag: {
         ...tag,
         id: expect.any(String),
         priority: tag.priority.toString()
@@ -47,12 +47,12 @@ test('correctly generates insert_resource resolvers for all registered resources
 
   // TODO: find a way to expect the exact payload here
   expect(instance.ctx.emitter.emit).toHaveBeenCalledWith(
-    'tag::inserted',
+    'tag::created',
     expect.anything()
   )
 })
 
-test('correctly validates all insert queries for a resource', async () => {
+test('validates all insert queries for a resource', async () => {
   const instance = await setup()
 
   const client = Supertest(instance.app)
@@ -61,12 +61,12 @@ test('correctly validates all insert queries for a resource', async () => {
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation insert_tag(
+      mutation createTag(
         $name: String!
         $description: String!
         $priority: Int!
       ) {
-        insert_tag(
+        createTag(
           object: {
             name: $name
             description: $description
@@ -98,7 +98,7 @@ test('correctly validates all insert queries for a resource', async () => {
   ])
 })
 
-test('correctly validates all update queries for a resource', async () => {
+test('validates all update queries for a resource', async () => {
   const instance = await setup()
 
   const client = Supertest(instance.app)
@@ -114,13 +114,13 @@ test('correctly validates all update queries for a resource', async () => {
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation update_tag(
+      mutation updateTag(
         $id: ID!
         $name: String!
         $description: String!
         $priority: Int!
       ) {
-        update_tag(
+        updateTag(
           id: $id
           object: {
             name: $name
@@ -154,7 +154,7 @@ test('correctly validates all update queries for a resource', async () => {
   ])
 })
 
-test('correctly generates insert_resources resolvers for all registered resources', async () => {
+test('correctly generates createManyResources resolvers for all registered resources', async () => {
   const instance = await setup()
 
   const client = Supertest(instance.app)
@@ -163,14 +163,14 @@ test('correctly generates insert_resources resolvers for all registered resource
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation insert_tags(
+      mutation createManyTags(
         $name: String!
         $description: String!
         $name2: String!
         $description2: String!
         $priority: Int!
       ) {
-        insert_tags(
+        createManyTags(
           objects: [
             { name: $name, description: $description, priority: $priority }
             { name: $name2, description: $description2, priority: $priority }
@@ -194,7 +194,7 @@ test('correctly generates insert_resources resolvers for all registered resource
   expect(response.status).toBe(200)
   expect(response.body).toEqual({
     data: {
-      insert_tags: [
+      createManyTags: [
         {
           id: expect.any(String),
           ...tag,
@@ -210,7 +210,7 @@ test('correctly generates insert_resources resolvers for all registered resource
   })
 })
 
-test('correctly generates update_resource resolvers for all registered resources', async () => {
+test('correctly generates updateResource resolvers for all registered resources', async () => {
   const {
     app,
     ctx: { orm, emitter }
@@ -228,8 +228,8 @@ test('correctly generates update_resource resolvers for all registered resources
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation update_tag($name: String!, $description: String!, $tagId: ID!) {
-        update_tag(
+      mutation updateTag($name: String!, $description: String!, $tagId: ID!) {
+        updateTag(
           id: $tagId
           object: { name: $name, description: $description }
         ) {
@@ -249,7 +249,7 @@ test('correctly generates update_resource resolvers for all registered resources
   expect(response.status).toBe(200)
   expect(response.body).toEqual({
     data: {
-      update_tag: {
+      updateTag: {
         id: tag.id?.toString(),
         name: updateTag.name,
         description: updateTag.description
@@ -260,7 +260,7 @@ test('correctly generates update_resource resolvers for all registered resources
   expect(emitter.emit).toHaveBeenCalledWith('tag::updated', expect.anything())
 })
 
-test('correctly generates update_resources resolvers for all registered resources', async () => {
+test('correctly generates updateManyResources resolvers for all registered resources', async () => {
   const {
     app,
     ctx: { orm, emitter }
@@ -278,13 +278,13 @@ test('correctly generates update_resources resolvers for all registered resource
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation update_tags(
+      mutation updateManyTags(
         $name: String!
         $description: String!
         $tagName: String!
         $tagName2: String!
       ) {
-        update_tags(
+        updateManyTags(
           where: { name: { _in: [$tagName, $tagName2] } }
           object: { name: $name, description: $description }
         ) {
@@ -303,7 +303,7 @@ test('correctly generates update_resources resolvers for all registered resource
   })
 
   expect(response.status).toBe(200)
-  expect(sortArrayById(response.body.data.update_tags)).toEqual(
+  expect(sortArrayById(response.body.data.updateManyTags)).toEqual(
     [
       {
         id: tag.id?.toString(),
@@ -321,7 +321,7 @@ test('correctly generates update_resources resolvers for all registered resource
   expect(emitter.emit).toHaveBeenCalledWith('tags::updated', expect.anything())
 })
 
-test('correctly generates delete_resource resolvers for all registered resources', async () => {
+test('correctly generates deleteResource resolvers for all registered resources', async () => {
   const {
     app,
     ctx: { orm, emitter }
@@ -337,8 +337,8 @@ test('correctly generates delete_resource resolvers for all registered resources
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation delete_tag($tagId: ID!) {
-        delete_tag(id: $tagId) {
+      mutation deleteTag($tagId: ID!) {
+        deleteTag(id: $tagId) {
           id
           name
           description
@@ -353,7 +353,7 @@ test('correctly generates delete_resource resolvers for all registered resources
   expect(response.status).toBe(200)
   expect(response.body).toEqual({
     data: {
-      delete_tag: {
+      deleteTag: {
         id: tag.id?.toString(),
         name: tag.name,
         description: tag.description
@@ -365,7 +365,7 @@ test('correctly generates delete_resource resolvers for all registered resources
   expect(emitter.emit).toHaveBeenCalledWith('tag::deleted', expect.anything())
 })
 
-test('correctly generates delete_resources resolvers for all registered resources', async () => {
+test(' generates deleteResources resolvers for all registered resources', async () => {
   const {
     app,
     ctx: { orm, emitter }
@@ -381,8 +381,8 @@ test('correctly generates delete_resources resolvers for all registered resource
 
   const response = await client.post('/graphql').send({
     query: gql`
-      mutation delete_tags($tagId: ID!, $tagId2: ID!) {
-        delete_tags(where: { id: { _in: [$tagId, $tagId2] } }) {
+      mutation deleteManyTags($tagId: ID!, $tagId2: ID!) {
+        deleteManyTags(where: { id: { _in: [$tagId, $tagId2] } }) {
           id
           name
           description
@@ -396,7 +396,7 @@ test('correctly generates delete_resources resolvers for all registered resource
   })
 
   expect(response.status).toBe(200)
-  expect(sortArrayById(response.body.data.delete_tags)).toEqual(
+  expect(sortArrayById(response.body.data.deleteManyTags)).toEqual(
     [
       {
         id: tag.id?.toString(),
@@ -422,7 +422,7 @@ test('correctly generates delete_resources resolvers for all registered resource
   expect(emitter.emit).toHaveBeenCalledWith('tags::deleted', expect.anything())
 })
 
-test('correctly generates index_resources resolvers for all registered resources', async () => {
+test('generates indexResources resolvers for all registered resources', async () => {
   const {
     app,
     ctx: { orm, logger }
@@ -474,11 +474,11 @@ test('correctly generates index_resources resolvers for all registered resources
           id
           name
           description
-          posts__count
+          postsCount
           posts {
             id
             title
-            tags__count
+            tagsCount
             description
             tags {
               id
@@ -487,11 +487,11 @@ test('correctly generates index_resources resolvers for all registered resources
             }
             user {
               id
-              full_name
-              posts__count
+              fullName
+              postsCount
               posts(offset: 0, limit: 1) {
                 id
-                tags__count
+                tagsCount
               }
             }
           }
@@ -504,12 +504,12 @@ test('correctly generates index_resources resolvers for all registered resources
   expect(response.body.data.tags).toHaveLength(2)
   expect(response.body.data.tags[0].name).toBe(tag.name)
   expect(response.body.data.tags[0].description).toBe(tag.description)
-  expect(response.body.data.tags[0].posts__count).toBe(6)
+  expect(response.body.data.tags[0].postsCount).toBe(6)
   expect(response.body.data.tags[0].posts).toHaveLength(6)
 
   expect(response.body.data.tags[1].name).toBe(tag2.name)
   expect(response.body.data.tags[1].description).toBe(tag2.description)
-  expect(response.body.data.tags[1].posts__count).toBe(6)
+  expect(response.body.data.tags[1].postsCount).toBe(6)
   expect(response.body.data.tags[1].posts).toHaveLength(6)
 
   expect((sortArrayById(response.body.data.tags[0].posts) as any)[0].name).toBe(
@@ -527,8 +527,7 @@ test('correctly generates index_resources resolvers for all registered resources
   ).toBe((posts[0] as any).description)
 
   expect(
-    (sortArrayById(response.body.data.tags[0].posts) as any)[0].user
-      .posts__count
+    (sortArrayById(response.body.data.tags[0].posts) as any)[0].user.postsCount
   ).toBe(posts.length)
   expect(
     (sortArrayById(response.body.data.tags[0].posts) as any)[0].user.posts
@@ -536,12 +535,11 @@ test('correctly generates index_resources resolvers for all registered resources
   ).toBe(1)
   expect(
     (sortArrayById(response.body.data.tags[0].posts) as any)[0].user.posts[0]
-      .tags__count
+      .tagsCount
   ).toBe(2)
 
   expect(
-    (sortArrayById(response.body.data.tags[1].posts) as any)[0].user
-      .posts__count
+    (sortArrayById(response.body.data.tags[1].posts) as any)[0].user.postsCount
   ).toBe(posts.length)
   expect(
     (sortArrayById(response.body.data.tags[1].posts) as any)[0].user.posts
@@ -549,7 +547,7 @@ test('correctly generates index_resources resolvers for all registered resources
   ).toBe(1)
 })
 
-test('correctly generates index_resource resolvers for all registered resources', async () => {
+test('generates indexResources resolvers for all registered resources', async () => {
   const {
     app,
     ctx: { orm }
@@ -593,11 +591,11 @@ test('correctly generates index_resource resolvers for all registered resources'
           id
           name
           description
-          posts__count
+          postsCount
           posts {
             id
             title
-            tags__count
+            tagsCount
             description
             tags {
               id
@@ -606,11 +604,11 @@ test('correctly generates index_resource resolvers for all registered resources'
             }
             user {
               id
-              full_name
-              posts__count
+              fullName
+              postsCount
               posts(offset: 0, limit: 1) {
                 id
-                tags__count
+                tagsCount
               }
             }
           }
@@ -625,7 +623,7 @@ test('correctly generates index_resource resolvers for all registered resources'
   expect(response.status).toBe(200)
   expect(response.body.data.tag.name).toBe(tag.name)
   expect(response.body.data.tag.description).toBe(tag.description)
-  expect(response.body.data.tag.posts__count).toBe(6)
+  expect(response.body.data.tag.postsCount).toBe(6)
   expect(response.body.data.tag.posts).toHaveLength(6)
 
   expect((sortArrayById(response.body.data.tag.posts) as any)[0].name).toBe(
@@ -636,13 +634,13 @@ test('correctly generates index_resource resolvers for all registered resources'
   ).toBe((posts[0] as any).description)
 
   expect(
-    (sortArrayById(response.body.data.tag.posts) as any)[0].user.posts__count
+    (sortArrayById(response.body.data.tag.posts) as any)[0].user.postsCount
   ).toBe(posts.length)
   expect(
     (sortArrayById(response.body.data.tag.posts) as any)[0].user.posts.length
   ).toBe(1)
   expect(
     (sortArrayById(response.body.data.tag.posts) as any)[0].user.posts[0]
-      .tags__count
+      .tagsCount
   ).toBe(1)
 })

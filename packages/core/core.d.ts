@@ -24,7 +24,7 @@ declare global {
 
 declare module 'express-session' {
   interface SessionData {
-    admin_user: {
+    adminUser: {
       id: number
     }
   }

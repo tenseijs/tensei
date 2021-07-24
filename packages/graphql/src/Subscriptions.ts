@@ -1,11 +1,10 @@
-import { PubSub } from 'apollo-server-express'
 import { ResourceContract } from '@tensei/common'
 
 export const defineCreateSubscriptionsForResource = (
   resource: ResourceContract
 ) => {
   return `
-    ${resource.data.snakeCaseName}_inserted(filter: JSONObject): ${resource.data.snakeCaseName}!    
+    ${resource.data.camelCaseName}Created(filter: JSONObject): ${resource.data.pascalCaseName}!    
 `
 }
 
@@ -13,7 +12,7 @@ export const defineUpdateSubscriptionsForResource = (
   resource: ResourceContract
 ) => {
   return `
-    ${resource.data.snakeCaseName}_updated(filter: JSONObject): ${resource.data.snakeCaseName}!    
+    ${resource.data.camelCaseName}Updated(filter: JSONObject): ${resource.data.pascalCaseName}!    
 `
 }
 
@@ -21,6 +20,6 @@ export const defineDeleteSubscriptionsForResource = (
   resource: ResourceContract
 ) => {
   return `
-    ${resource.data.snakeCaseName}_deleted(filter: JSONObject): ${resource.data.snakeCaseName}!    
+    ${resource.data.camelCaseName}Deleted(filter: JSONObject): ${resource.data.pascalCaseName}!    
 `
 }

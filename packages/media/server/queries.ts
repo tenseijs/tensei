@@ -5,7 +5,7 @@ import { MediaLibraryPluginConfig } from './types'
 
 export const queries = (config: MediaLibraryPluginConfig) => [
   graphQlQuery(`Upload files`)
-    .path('upload_files')
+    .path('uploadFiles')
     .mutation()
     .handle(async (_, args, ctx) => {
       ctx.body = args.object

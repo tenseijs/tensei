@@ -5,5 +5,5 @@ export interface AuthInstanceContract {
 const instance: AuthInstanceContract = {
   handleAuth: () => {
     throw new Error('')
-  },
+  }
 }

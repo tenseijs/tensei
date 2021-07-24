@@ -296,7 +296,7 @@ export class Auth {
     } else {
       socialFields = [
         hasMany(this.resources.oauthIdentity.data.name)
-          .hideOnInsertApi()
+          .hideOnCreateApi()
           .hideOnUpdateApi()
       ]
       passwordField = passwordField.nullable()
@@ -304,7 +304,7 @@ export class Auth {
 
     if (this.config.teams) {
       teamFields = [
-        hasOne(this.config.teamResource, 'current_team')
+        hasOne(this.config.teamResource, 'currentTeam')
           .label(`Current ${this.config.teamResource}`)
           .nullable(),
         hasMany(this.config.teamResource)
@@ -341,14 +341,14 @@ export class Auth {
         ...socialFields,
         ...teamFields,
         ...(this.config.rolesAndPermissions
-          ? [belongsToMany(this.config.roleResource).hideOnInsertApi()]
+          ? [belongsToMany(this.config.roleResource).hideOnCreateApi()]
           : []),
         ...(this.config.twoFactorAuth
           ? [
               boolean('Two Factor Enabled')
                 .hideOnCreate()
                 .hideOnUpdate()
-                .hideOnInsertApi()
+                .hideOnCreateApi()
                 .hideOnUpdateApi()
                 .nullable(),
               text('Two Factor Secret')
@@ -367,7 +367,7 @@ export class Auth {
               timestamp('Email Verified At')
                 .hideOnIndex()
                 .hideOnDetail()
-                .hideOnInsertApi()
+                .hideOnCreateApi()
                 .hideOnUpdateApi()
                 .nullable(),
               text('Email Verification Token')
@@ -391,11 +391,11 @@ export class Auth {
         }
 
         if (this.config.verifyEmails) {
-          if (!entity.email_verified_at) {
-            payload.email_verified_at = null
+          if (!entity.emailVerifiedAt) {
+            payload.emailVerifiedAt = null
           }
 
-          payload.email_verification_token = this.generateRandomToken(72)
+          payload.emailVerificationToken = this.generateRandomToken(72)
         }
 
         em.assign(entity, payload)
@@ -418,10 +418,6 @@ export class Auth {
     if (this.config.teams) {
       const self = this
 
-      userResource.method('currentTeam', function (this: any) {
-        return this.current_team
-      })
-
       userResource.method('ownsTeam', function (this: any, team: any) {
         return (
           team.owner.toString() === this.id.toString() ||
@@ -434,7 +430,7 @@ export class Auth {
         async function (this: any, team: any) {
           const membership = await this.ctx.db.memberships.findOne({
             team,
-            [self.resources.user.data.snakeCaseName]: this
+            [self.resources.user.data.camelCaseName]: this
           })
 
           return membership
@@ -494,10 +490,14 @@ export class Auth {
         const [ownedTeams, membershipTeams] = await Promise.all([
           this.ctx.db.teams.find(
             { owner: this },
-            { populate: ['memberships.customer'] }
+            {
+              populate: [
+                `memberships.${self.resources.user.data.camelCaseName}`
+              ]
+            }
           ),
           this.ctx.db.memberships.find(
-            { [self.resources.user.data.snakeCaseName]: this.id },
+            { [self.resources.user.data.camelCaseName]: this.id },
             { populate: ['team'] }
           )
         ])
@@ -571,7 +571,7 @@ export class Auth {
         belongsTo(this.config.userResource).creationRules('required')
       ])
       .hideOnUpdateApi()
-      .hideOnInsertApi()
+      .hideOnCreateApi()
       .hideOnFetchApi()
   }
 
@@ -623,7 +623,7 @@ export class Auth {
 
   private forceRemoveInsertUserQueries(queries: GraphQlQueryContract[]) {
     const insert_user_index = queries.findIndex(
-      q => q.config.path === `insert_${this.resources.user.data.snakeCaseName}`
+      q => q.config.path === `create${this.resources.user.data.camelCaseName}`
     )
 
     if (insert_user_index !== -1) {
@@ -633,7 +633,7 @@ export class Auth {
     const insert_users_index = queries.findIndex(
       q =>
         q.config.path ===
-        `insert_${this.resources.user.data.snakeCaseNamePlural}`
+        `createMany${this.resources.user.data.camelCaseNamePlural}`
     )
 
     if (insert_users_index !== -1) {
@@ -698,7 +698,7 @@ export class Auth {
             .query((args, request) =>
               request.user && request.user.id
                 ? {
-                    [this.resources.user.data.snakeCaseName]: request.user.id
+                    [this.resources.user.data.camelCaseName]: request.user.id
                   }
                 : resource.data.noTimestamps
                 ? false
@@ -748,8 +748,8 @@ export class Auth {
               ...(databaseConfig.entities || []),
               require('express-session-mikro-orm').generateSessionEntity({
                 entityName: `${this.resources.user.data.pascalCaseName}Session`,
-                tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
-                collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+                tableName: `${this.resources.user.data.camelCaseNamePlural}_sessions`,
+                collection: `${this.resources.user.data.camelCaseNamePlural}_sessions`
               })
             ]
           }
@@ -825,8 +825,8 @@ export class Auth {
 
           const Store = ExpressSessionMikroORMStore(ExpressSession, {
             entityName: `${this.resources.user.data.pascalCaseName}Session`,
-            tableName: `${this.resources.user.data.snakeCaseNamePlural}_sessions`,
-            collection: `${this.resources.user.data.snakeCaseNamePlural}_sessions`
+            tableName: `${this.resources.user.data.camelCaseNamePlural}_sessions`,
+            collection: `${this.resources.user.data.camelCaseNamePlural}_sessions`
           })
 
           app.use(
@@ -876,8 +876,8 @@ export class Auth {
           if (query.config.resource && this.config.rolesAndPermissions) {
             const { path, internal } = query.config
             const {
-              snakeCaseNamePlural: plural,
-              snakeCaseName: singular,
+              camelCaseNamePlural: plural,
+              camelCaseName: singular,
               slug
             } = query.config.resource.data
 
@@ -909,7 +909,7 @@ export class Auth {
               )
             }
 
-            if (path === plural || path === `${plural}__count`) {
+            if (path === plural || path === `${plural}Count`) {
               return query.authorize(
                 ({ user }) =>
                   user &&
@@ -1094,7 +1094,7 @@ export class Auth {
           }
         ])
         .id(this.getRouteId(`register_${name}`))
-        .handle(async (request, { formatter: { created, unprocess } }) => {
+        .handle(async (request, { formatter: { created } }) => {
           return created(await this.register(request as any))
         }),
       route(`Request password reset`)
@@ -1161,7 +1161,7 @@ export class Auth {
 
                 response.formatter.ok({
                   dataURL,
-                  [this.resources.user.data.snakeCaseName]: user
+                  [this.resources.user.data.camelCaseName]: user
                 })
               }),
             route(`Confirm Enable Two Factor Auth`)
@@ -1186,7 +1186,7 @@ export class Auth {
                   request as any
                 )
                 response.formatter.ok({
-                  [this.resources.user.data.snakeCaseName]: user
+                  [this.resources.user.data.camelCaseName]: user
                 })
               }),
             route(`Disable Two Factor Auth`)
@@ -1212,7 +1212,7 @@ export class Auth {
                   request as any
                 )
                 response.formatter.ok({
-                  [this.resources.user.data.snakeCaseName]: user
+                  [this.resources.user.data.camelCaseName]: user
                 })
               })
           ]
@@ -1315,7 +1315,7 @@ export class Auth {
               .path(this.getApiPath('refresh-token'))
               .get()
               .group('Auth')
-              .id(this.getRouteId(`refresh_token_${name}`))
+              .id(this.getRouteId(`refreshToken_${name}`))
               .handle(async (request, { formatter: { ok, unauthorized } }) => {
                 try {
                   return ok(await this.handleRefreshTokens(request as any))
@@ -1360,7 +1360,7 @@ export class Auth {
                       team
                     },
                     {
-                      populate: [this.resources.user.data.snakeCaseName]
+                      populate: [this.resources.user.data.camelCaseName]
                     }
                   )
                 )
@@ -1419,7 +1419,7 @@ export class Auth {
                 await db.memberships.persistAndFlush(
                   db.memberships.create({
                     team,
-                    [this.resources.user.data.snakeCaseName]: invitedUser,
+                    [this.resources.user.data.camelCaseName]: invitedUser,
                     permissions: request.body.permissions
                   })
                 )
@@ -1465,7 +1465,8 @@ export class Auth {
   }
 
   private extendGraphQlQueries() {
-    const name = this.resources.user.data.snakeCaseName
+    const name = this.resources.user.data.camelCaseName
+    const pascalName = this.resources.user.data.pascalCaseName
 
     const resources: ResourceContract[] = Object.keys(this.resources).map(
       key => (this.resources as any)[key]
@@ -1486,14 +1487,14 @@ export class Auth {
             ctx.databaseConfig.type!,
             this.resources.user,
             Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
-              name
+              pascalName
             ],
             [user]
           )
 
           return {
             ...payload,
-            [this.resources.user.data.snakeCaseName]: user
+            [this.resources.user.data.camelCaseName]: user
           }
         }),
       ...(this.config.httpOnlyCookiesAuth
@@ -1520,26 +1521,26 @@ export class Auth {
             ctx.databaseConfig.type!,
             this.resources.user,
             Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
-              name
+              pascalName
             ],
             [user]
           )
 
           return {
             ...payload,
-            [this.resources.user.data.snakeCaseName]: user
+            [this.resources.user.data.camelCaseName]: user
           }
         }),
       graphQlQuery(`Request ${name} password reset`)
-        .path('request_password_reset')
+        .path('requestPasswordReset')
         .mutation()
         .handle(async (_, args, ctx, info) => this.forgotPassword(ctx)),
       graphQlQuery(`Reset ${name} password`)
-        .path('reset_password')
+        .path('resetPassword')
         .mutation()
         .handle(async (_, args, ctx, info) => this.resetPassword(ctx)),
       graphQlQuery(
-        `Get authenticated ${this.resources.user.data.snakeCaseName}`
+        `Get authenticated ${this.resources.user.data.camelCaseName}`
       )
         .path(`authenticated`)
         .query()
@@ -1563,7 +1564,7 @@ export class Auth {
       ...(this.config.twoFactorAuth
         ? [
             graphQlQuery(`Enable Two Factor Auth`)
-              .path('enable_two_factor_auth')
+              .path('enableTwoFactorAuth')
               .mutation()
               .handle(async (_, args, ctx, info) =>
                 this.TwoFactorAuth.enableTwoFactorAuth(ctx)
@@ -1572,7 +1573,7 @@ export class Auth {
                 this.config.rolesAndPermissions ? user && !user.public : !!user
               ),
             graphQlQuery('Confirm Enable Two Factor Auth')
-              .path('confirm_enable_two_factor_auth')
+              .path('confirmEnableTwoFactorAuth')
               .mutation()
               .handle(async (_, args, ctx, info) => {
                 await this.TwoFactorAuth.confirmEnableTwoFactorAuth(ctx)
@@ -1595,7 +1596,7 @@ export class Auth {
               ),
 
             graphQlQuery(`Disable Two Factor Auth`)
-              .path('disable_two_factor_auth')
+              .path('disableTwoFactorAuth')
               .mutation()
               .handle(async (_, args, ctx, info) => {
                 await this.TwoFactorAuth.disableTwoFactorAuth(ctx)
@@ -1621,7 +1622,7 @@ export class Auth {
       ...(this.config.verifyEmails
         ? [
             graphQlQuery(`Confirm ${name} Email`)
-              .path('confirm_email')
+              .path('confirmEmail')
               .mutation()
               .handle(async (_, args, ctx, info) => {
                 await this.confirmEmail(ctx)
@@ -1643,7 +1644,7 @@ export class Auth {
                 this.config.rolesAndPermissions ? user && !user.public : !!user
               ),
             graphQlQuery(`Resend ${name} Verification Email`)
-              .path('resend_verification_email')
+              .path('resendVerificationEmail')
               .mutation()
               .handle(async (_, args, ctx, info) =>
                 this.resendVerificationEmail(ctx)
@@ -1654,7 +1655,7 @@ export class Auth {
         ? this.config.separateSocialLoginAndRegister
           ? [
               graphQlQuery('Social auth login')
-                .path('social_auth_login')
+                .path('socialAuthLogin')
                 .mutation()
                 .handle(async (_, args, ctx, info) => {
                   const payload = await this.socialAuth(ctx, 'login')
@@ -1672,11 +1673,11 @@ export class Auth {
 
                   return {
                     ...payload,
-                    [this.resources.user.data.snakeCaseName]: user
+                    [this.resources.user.data.camelCaseName]: user
                   }
                 }),
               graphQlQuery('Social auth register')
-                .path('social_auth_register')
+                .path('socialAuthRegister')
                 .mutation()
                 .handle(async (_, args, ctx, info) => {
                   const payload = await this.socialAuth(ctx, 'register')
@@ -1694,13 +1695,13 @@ export class Auth {
 
                   return {
                     ...payload,
-                    [this.resources.user.data.snakeCaseName]: user
+                    [this.resources.user.data.camelCaseName]: user
                   }
                 })
             ]
           : [
               graphQlQuery('Social auth confirm')
-                .path('social_auth_confirm')
+                .path('socialAuthConfirm')
                 .mutation()
                 .handle(async (_, args, ctx, info) => {
                   const payload = await this.socialAuth(ctx)
@@ -1718,7 +1719,7 @@ export class Auth {
 
                   return {
                     ...payload,
-                    [this.resources.user.data.snakeCaseName]: user
+                    [this.resources.user.data.camelCaseName]: user
                   }
                 })
             ]
@@ -1726,7 +1727,7 @@ export class Auth {
       ...(this.config.enableRefreshTokens
         ? [
             graphQlQuery('Refresh token')
-              .path('refresh_token')
+              .path('refreshToken')
               .mutation()
               .handle(async (_, args, ctx, info) =>
                 this.handleRefreshTokens(ctx)
@@ -1736,7 +1737,7 @@ export class Auth {
       ...(this.config.httpOnlyCookiesAuth
         ? [
             graphQlQuery('Get CSRF Token')
-              .path(`csrf_token`)
+              .path(`csrfToken`)
               .query()
               .handle(async (_, args, ctx, info) => {
                 ctx.res.cookie(
@@ -1762,15 +1763,15 @@ export class Auth {
     }
 
     const { body } = ctx
-    const userField = this.resources.user.data.snakeCaseName
+    const userField = this.resources.user.data.camelCaseName
     const tokenName = this.resources.token.data.pascalCaseName
 
     const refreshToken =
       ctx.req.headers[this.config.refreshTokenHeaderName] ||
       (body
         ? body.object
-          ? body.object.refresh_token
-          : body.refresh_token
+          ? body.object.refreshToken
+          : body.refreshToken
         : undefined)
 
     if (!refreshToken) {
@@ -1798,7 +1799,7 @@ export class Auth {
       throw ctx.authenticationError('Invalid refresh token.')
     }
 
-    if (token.last_used_at) {
+    if (token.lastUsedAt) {
       // This token has been used before.
       // We'll block the user's access to the API by marking this refresh token as compromised.
       // Human interaction is required to lift this limit, something like deleting the compromised tokens.
@@ -1819,15 +1820,15 @@ export class Auth {
       throw ctx.authenticationError('Invalid refresh token.')
     }
 
-    if (!token[userField] || Dayjs(token.expires_on).isBefore(Dayjs())) {
+    if (!token[userField] || Dayjs(token.expiresOn).isBefore(Dayjs())) {
       token && (await ctx.manager.removeAndFlush(token))
 
       throw ctx.authenticationError('Invalid refresh token.')
     }
 
     ctx.manager.assign(token, {
-      last_used_at: Dayjs().format(),
-      expires_at: Dayjs().subtract(1, 'second').format()
+      lastUsedAt: Dayjs().format(),
+      expiresAt: Dayjs().subtract(1, 'second').format()
     })
 
     await ctx.manager.persistAndFlush(token)
@@ -1838,25 +1839,25 @@ export class Auth {
 
     return this.getUserPayload(
       ctx,
-      await this.generateRefreshToken(ctx, token.expires_on)
+      await this.generateRefreshToken(ctx, token.expiresOn)
     )
   }
 
   private getUserPayload(ctx: ApiContext, refreshToken?: string) {
     let userPayload: any = {
-      [this.resources.user.data.snakeCaseName]: ctx.user
+      [this.resources.user.data.camelCaseName]: ctx.user
     }
 
     if (!this.config.httpOnlyCookiesAuth) {
-      userPayload.access_token = this.generateJwt({
+      userPayload.accessToken = this.generateJwt({
         id: ctx.user.id
       })
 
-      userPayload.expires_in = this.config.tokensConfig.accessTokenExpiresIn
+      userPayload.expiresIn = this.config.tokensConfig.accessTokenExpiresIn
     }
 
     if (this.config.enableRefreshTokens) {
-      userPayload.refresh_token = refreshToken
+      userPayload.refreshToken = refreshToken
     }
 
     if (this.config.httpOnlyCookiesAuth) {
@@ -1872,51 +1873,51 @@ export class Auth {
   }
 
   private extendGraphQLTypeDefs(gql: any) {
-    const snakeCaseName = this.resources.user.data.snakeCaseName
+    const { camelCaseName, pascalCaseName } = this.resources.user.data
 
     const cookies = this.config.httpOnlyCookiesAuth
 
     return gql`
-        type register_response {
+        type RegisterResponse {
             ${
               cookies
                 ? ''
                 : `
-            access_token: String!
-            ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
-            expires_in: Int!
+            accessToken: String!
+            ${this.config.enableRefreshTokens ? 'refreshToken: String!' : ''}
+            expiresIn: Int!
             `
             }
 
-            ${snakeCaseName}: ${snakeCaseName}!
+            ${camelCaseName}: ${pascalCaseName}!
         }
 
-        type login_response {
+        type LoginResponse {
             ${
               cookies
                 ? ''
                 : `
-            access_token: String!
-            ${this.config.enableRefreshTokens ? 'refresh_token: String!' : ''}
-            expires_in: Int!
+            accessToken: String!
+            ${this.config.enableRefreshTokens ? 'refreshToken: String!' : ''}
+            expiresIn: Int!
             `
             }
-            ${snakeCaseName}: ${snakeCaseName}!
+            ${camelCaseName}: ${pascalCaseName}!
         }
 
-        input login_input {
+        input LoginInput {
             email: String!
             password: String!
-            two_factor_token: String
+            twoFactorToken: String
         }
 
-        input request_password_reset_input {
+        input RequestPasswordResetInput {
             email: String!
         }
 
-        input reset_password_input {
+        input ResetPasswordInput {
             email: String!
-            """ The reset password token sent to ${snakeCaseName}'s email """
+            """ The reset password token sent to ${camelCaseName}'s email """
             token: String!
             password: String!
         }
@@ -1924,18 +1925,18 @@ export class Auth {
         ${
           this.config.twoFactorAuth
             ? `
-        type enable_two_factor_auth_response {
+        type EnableTwoFactorAuthResponse {
             """ The data url for the qr code. Display this in an <img /> tag to be scanned on the authenticator app """
             dataURL: String!
         }
 
-        input confirm_enable_two_factor_auth_input {
-            """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
+        input ConfirmEnableTwoFactorAuthInput {
+            """ The two factor auth token from the ${camelCaseName}'s authenticator app """
             token: String!
         }
 
-        input disable_two_factor_auth_input {
-            """ The two factor auth token from the ${snakeCaseName}'s authenticator app """
+        input DisableTwoFactorAuthInput {
+            """ The two factor auth token from the ${camelCaseName}'s authenticator app """
             token: Int!
         }
         `
@@ -1945,9 +1946,9 @@ export class Auth {
         ${
           this.config.verifyEmails
             ? `
-        input confirm_email_input {
-            """ The email verification token sent to the ${snakeCaseName}'s email """
-            email_verification_token: String!
+        input ConfirmEmailInput {
+            """ The email verification token sent to the ${camelCaseName}'s email """
+            emailVerificationToken: String!
         }
         `
             : ''
@@ -1957,42 +1958,42 @@ export class Auth {
           this.socialAuthEnabled()
             ? this.config.separateSocialLoginAndRegister
               ? `
-        input social_auth_register_input {
+        input SocialAuthRegisterInput {
             """ The temporal access token received in query parameter when user is redirected """
-            access_token: String!
+            accessToken: String!
             extra: JSONObject
         }
 
-        input social_auth_login_input {
+        input SocialAuthLoginInput {
             """ The temporal access token received in query parameter when user is redirected """
-            access_token: String!
+            accessToken: String!
         }
         `
               : `
-        input social_auth_confirm {
+        input SocialAuthConfirm {
             """ The temporal access token received in query parameter when user is redirected """
-            access_token: String!
+            accessToken: String!
         }
         `
             : ''
         }
 
-        extend input insert_${snakeCaseName}_input {
+        extend input Create${pascalCaseName}Input {
             password: String!
         }
 
         ${
           this.config.enableRefreshTokens
             ? `
-        input refresh_token_input {
-            refresh_token: String
+        input RefreshTokenInput {
+            refreshToken: String
         }
         `
             : ''
         }
 
         extend type Mutation {
-            login(object: login_input!): login_response!
+            login(object: LoginInput!): LoginResponse!
             ${
               cookies
                 ? `
@@ -2000,23 +2001,23 @@ export class Auth {
             `
                 : ''
             }
-            register(object: insert_${snakeCaseName}_input!): register_response!
-            request_password_reset(object: request_password_reset_input!): Boolean!
-            reset_password(object: reset_password_input!): Boolean!
+            register(object: Create${pascalCaseName}Input!): RegisterResponse!
+            requestPasswordReset(object: RequestPasswordResetInput!): Boolean!
+            resetPassword(object: ResetPasswordInput!): Boolean!
             ${
               this.config.twoFactorAuth
                 ? `
-            enable_two_factor_auth: enable_two_factor_auth_response!
-            disable_two_factor_auth(object: disable_two_factor_auth_input!): ${snakeCaseName}!
-            confirm_enable_two_factor_auth(object: confirm_enable_two_factor_auth_input!): ${snakeCaseName}!
+            enableTwoFactorAuth: EnableTwoFactorAuthResponse!
+            disableTwoFactorAuth(object: DisableTwoFactorAuthInput!): ${pascalCaseName}!
+            confirmEnableTwoFactorAuth(object: ConfirmEnableTwoFactorAuthInput!): ${pascalCaseName}!
             `
                 : ''
             }
             ${
               this.config.verifyEmails
                 ? `
-            confirm_email(object: confirm_email_input!): ${snakeCaseName}!
-            resend_verification_email: Boolean
+            confirmEmail(object: ConfirmEmailInput!): ${pascalCaseName}!
+            resendVerificationEmail: Boolean
             `
                 : ''
             }
@@ -2024,32 +2025,25 @@ export class Auth {
               this.socialAuthEnabled()
                 ? this.config.separateSocialLoginAndRegister
                   ? `
-            social_auth_register(object: social_auth_register_input!): register_response!
-            social_auth_login(object: social_auth_login_input!): login_response!
+            socialAuthRegister(object: SocialAuthRegisterInput!): RegisterResponse!
+            socialAuthLogin(object: SocialAuthLoginInput!): LoginResponse!
             `
                   : `
-                social_auth_confirm(object: social_auth_confirm): login_response!
+                socialAuthConfirm(object: SocialAuthConfirm): LoginResponse!
             `
                 : ''
             }
             ${
               this.config.enableRefreshTokens
                 ? `
-            refresh_token(object: refresh_token_input): login_response!
+            refreshToken(object: RefreshTokenInput): LoginResponse!
             `
                 : ''
             }
         }
 
         extend type Query {
-            authenticated: ${snakeCaseName}!
-            ${
-              this.config.httpOnlyCookiesAuth
-                ? `
-            csrf_token: Boolean!
-            `
-                : ''
-            }
+            authenticated: ${pascalCaseName}!
         }
     `
   }
@@ -2073,7 +2067,7 @@ export class Auth {
   }
 
   private getRolesAndPermissionsNames() {
-    return `${this.resources.role.data.snakeCaseNamePlural}.${this.resources.permission.data.snakeCaseNamePlural}`
+    return `${this.resources.role.data.camelCaseNamePlural}.${this.resources.permission.data.camelCaseNamePlural}`
   }
 
   private register = async (ctx: ApiContext) => {
@@ -2134,7 +2128,7 @@ export class Auth {
         owner: user
       })
 
-      user.current_team = currentTeam
+      user.currentTeam = currentTeam
 
       toPersist.push(currentTeam)
     }
@@ -2148,7 +2142,7 @@ export class Auth {
     }
 
     if (this.config.teams) {
-      populates.push('current_team')
+      populates.push('currentTeam')
     }
 
     await manager.populate([user], populates)
@@ -2167,12 +2161,12 @@ export class Auth {
     user,
     emitter
   }: ApiContext) => {
-    if (!user.email_verification_token) {
+    if (!user.emailVerificationToken) {
       return false
     }
 
     manager.assign(user, {
-      email_verification_token: this.generateRandomToken(72)
+      emailVerificationToken: this.generateRandomToken(72)
     })
 
     await manager.persistAndFlush(user)
@@ -2185,14 +2179,14 @@ export class Auth {
   private confirmEmail = async (ctx: ApiContext) => {
     const { manager, body, user } = ctx
     if (
-      user.email_verification_token ===
+      user.emailVerificationToken ===
       (body.object
-        ? body.object.email_verification_token
-        : body.email_verification_token)
+        ? body.object.emailVerificationToken
+        : body.emailVerificationToken)
     ) {
       manager.assign(user, {
-        email_verification_token: null,
-        email_verified_at: Dayjs().format()
+        emailVerificationToken: null,
+        emailVerifiedAt: Dayjs().format()
       })
 
       await manager.persistAndFlush(user)
@@ -2218,15 +2212,13 @@ export class Auth {
     action?: 'login' | 'register'
   ) => {
     const { body, manager } = ctx
-    const access_token = body.object
-      ? body.object.access_token
-      : body.access_token
+    const accessToken = body.object ? body.object.accessToken : body.accessToken
 
-    if (!access_token) {
+    if (!accessToken) {
       throw ctx.userInputError('Validation failed.', {
         errors: [
           {
-            field: 'access_token',
+            field: 'accessToken',
             message: 'Invalid access token provided.'
           }
         ]
@@ -2236,7 +2228,7 @@ export class Auth {
     let oauthIdentity: any = await manager.findOne(
       this.resources.oauthIdentity.data.pascalCaseName,
       {
-        temporal_token: access_token
+        temporalToken: accessToken
       }
     )
 
@@ -2244,7 +2236,7 @@ export class Auth {
       throw ctx.userInputError('Validation failed.', {
         errors: [
           {
-            field: 'access_token',
+            field: 'accessToken',
             message: 'Invalid access token provided.'
           }
         ]
@@ -2284,7 +2276,7 @@ export class Auth {
         errors: [
           {
             field: 'email',
-            message: `A ${this.resources.user.data.snakeCaseName.toLowerCase()} already exists with email ${
+            message: `A ${this.resources.user.data.camelCaseName.toLowerCase()} already exists with email ${
               oauthIdentity.email
             }.`
           }
@@ -2301,8 +2293,8 @@ export class Auth {
       }
 
       if (this.config.verifyEmails) {
-        createPayload.email_verified_at = Dayjs().format()
-        createPayload.email_verification_token = null
+        createPayload.emailVerifiedAt = Dayjs().format()
+        createPayload.emailVerificationToken = null
       }
 
       await this.config.beforeRegister(ctx, createPayload as any)
@@ -2324,7 +2316,7 @@ export class Auth {
     )!
 
     manager.assign(oauthIdentity, {
-      temporal_token: null,
+      temporalToken: null,
       [belongsToField.databaseField]: user.id
     })
 
@@ -2497,7 +2489,7 @@ export class Auth {
       }
 
       if (this.config.teams) {
-        populate.push('current_team')
+        populate.push('currentTeam')
       }
 
       const user: any = await manager.findOne(
@@ -2529,11 +2521,11 @@ export class Auth {
   }
 
   private getRoleUserKey() {
-    return this.resources.role.data.snakeCaseNamePlural
+    return this.resources.role.data.camelCaseNamePlural
   }
 
   private getPermissionUserKey() {
-    return this.resources.permission.data.snakeCaseNamePlural
+    return this.resources.permission.data.camelCaseNamePlural
   }
 
   public getCurrentTeamFromContext = async (ctx: ApiContext) => {
@@ -2632,7 +2624,7 @@ export class Auth {
       // make sure it has not expired
       manager.assign(existingPasswordReset, {
         token,
-        expires_at: expiresAt
+        expiresAt
       })
 
       manager.persist(existingPasswordReset)
@@ -2641,7 +2633,7 @@ export class Auth {
         manager.create(this.resources.passwordReset.data.pascalCaseName, {
           email,
           token,
-          expires_at: expiresAt
+          expiresAt
         })
       )
     }
@@ -2699,7 +2691,7 @@ export class Auth {
       })
     }
 
-    if (Dayjs(existingPasswordReset.expires_at).isBefore(Dayjs())) {
+    if (Dayjs(existingPasswordReset.expiresAt).isBefore(Dayjs())) {
       throw userInputError('Validation failed.', {
         errors: [
           {
@@ -2777,11 +2769,11 @@ export class Auth {
     await ctx.manager.nativeUpdate(
       this.resources.token.data.pascalCaseName,
       {
-        [this.resources.user.data.snakeCaseName]: ctx.user.id
+        [this.resources.user.data.camelCaseName]: ctx.user.id
       } as any,
       {
-        expires_at: Dayjs().subtract(1, 'second').format(),
-        last_used_at: Dayjs().subtract(1, 'second').format()
+        expiresAt: Dayjs().subtract(1, 'second').format(),
+        lastUsedAt: Dayjs().subtract(1, 'second').format()
       }
     )
 
@@ -2789,9 +2781,9 @@ export class Auth {
       this.resources.token.data.pascalCaseName,
       {
         token: plainTextToken,
-        [this.resources.user.data.snakeCaseName]: ctx.user.id,
+        [this.resources.user.data.camelCaseName]: ctx.user.id,
         type: TokenTypes.REFRESH,
-        expires_at: previousTokenExpiry
+        expiresAt: previousTokenExpiry
           ? previousTokenExpiry
           : Dayjs()
               .add(this.config.tokensConfig.refreshTokenExpiresIn, 'second')
@@ -2800,7 +2792,6 @@ export class Auth {
     )
 
     await ctx.manager.persistAndFlush(entity)
-
     // TODO:
     // 1. Encrypt the token using application key
     // 2. Create JWT with token as payload

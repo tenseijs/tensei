@@ -65,7 +65,7 @@ class Graphql {
     let FieldKey = field.databaseField
 
     if (field.property.enum) {
-      FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
+      FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
     }
 
     if (
@@ -122,7 +122,7 @@ class Graphql {
     let FieldKey = field.databaseField
 
     if (field.property.enum) {
-      FieldType = `${resource.data.snakeCaseName}_${field.snakeCaseName}_enum`
+      FieldType = `${resource.data.pascalCaseName}${field.pascalCaseName}Enum`
     }
 
     if (field.property.type === 'boolean') {
@@ -146,12 +146,12 @@ class Graphql {
       )
 
       if (relatedResource) {
-        FieldType = `[${relatedResource.data.snakeCaseName}]`
+        FieldType = `[${relatedResource.data.pascalCaseName}]`
         FieldKey = `${field.databaseField}(offset: Int, limit: Int, where: ${
-          relatedResource.data.snakeCaseName
-        }_where_query, order_by: ${
-          relatedResource.data.snakeCaseName
-        }_query_order${this.getPossibleResourceFilters(relatedResource)})`
+          relatedResource.data.pascalCaseName
+        }WhereQuery, orderBy: ${
+          relatedResource.data.pascalCaseName
+        }QueryOrder${this.getPossibleResourceFilters(relatedResource)})`
       }
     }
 
@@ -168,7 +168,7 @@ class Graphql {
       )
 
       if (relatedResource) {
-        FieldType = `${relatedResource.data.snakeCaseName}`
+        FieldType = `${relatedResource.data.pascalCaseName}`
         FieldKey = field.databaseField
       }
     }
@@ -186,12 +186,12 @@ class Graphql {
     config: PluginSetupConfig
   ) {
     return `
-  ${resource.data.snakeCaseNamePlural}(offset: Int, limit: Int, where: ${
-      resource.data.snakeCaseName
-    }_where_query, order_by: ${
-      resource.data.snakeCaseName
-    }_query_order${this.getPossibleResourceFilters(resource)}): [${
-      resource.data.snakeCaseName
+  ${resource.data.camelCaseNamePlural}(offset: Int, limit: Int, where: ${
+      resource.data.pascalCaseName
+    }WhereQuery, orderBy: ${
+      resource.data.pascalCaseName
+    }QueryOrder${this.getPossibleResourceFilters(resource)}): [${
+      resource.data.pascalCaseName
     }]`
   }
 
@@ -200,9 +200,9 @@ class Graphql {
     config: PluginSetupConfig
   ) {
     return `
-  ${resource.data.snakeCaseNamePlural}__count(offset: Int, limit: Int, where: ${
-      resource.data.snakeCaseName
-    }_where_query${this.getPossibleResourceFilters(resource)}): Int!`
+  ${resource.data.camelCaseNamePlural}Count(offset: Int, limit: Int, where: ${
+      resource.data.pascalCaseName
+    }WhereQuery${this.getPossibleResourceFilters(resource)}): Int!`
   }
 
   private defineFetchSingleQueryForResource(
@@ -210,8 +210,8 @@ class Graphql {
     config: PluginSetupConfig
   ) {
     return `
-  ${resource.data.snakeCaseName}(${this.getIdKey(config)}: ID!): ${
-      resource.data.snakeCaseName
+  ${resource.data.camelCaseName}(${this.getIdKey(config)}: ID!): ${
+      resource.data.pascalCaseName
     }`
   }
 
@@ -236,20 +236,20 @@ class Graphql {
         resource => resource.data.pascalCaseName === field.relatedProperty.type
       )
 
-      return `${relatedResource?.data.snakeCaseName}_${
-        filter ? 'subscription_filter' : 'where_query'
+      return `${relatedResource?.data.pascalCaseName}${
+        filter ? 'SubscriptionFilter' : 'WhereQuery'
       }`
     }
 
     if (field.property.primary) {
-      return `id_where_query`
+      return `IdWhereQuery`
     }
 
     if (field.property.type === 'integer') {
-      return 'integer_where_query'
+      return 'IntegerWhereQuery'
     }
 
-    return 'string_where_query'
+    return 'StringWhereQuery'
   }
 
   getOrderByQueryForResource(
@@ -257,11 +257,11 @@ class Graphql {
     config: PluginSetupConfig
   ) {
     return `
-input ${resource.data.snakeCaseName}_query_order {
+input ${resource.data.pascalCaseName}QueryOrder {
     ${resource
       .getFetchApiExposedFields()
       .filter(f => !f.relatedProperty.reference && f.isSortable)
-      .map(field => `${field.databaseField}: query_order`)}
+      .map(field => `${field.databaseField}: QueryOrder`)}
     
     ${resource
       .getFetchApiExposedFields()
@@ -269,7 +269,7 @@ input ${resource.data.snakeCaseName}_query_order {
       .map(field => {
         const relatedResource = config.resourcesMap[field.relatedProperty.type!]
 
-        return `${field.databaseField}: ${relatedResource.data.snakeCaseName}_query_order`
+        return `${field.databaseField}: ${relatedResource.data.pascalCaseName}QueryOrder`
       })}
 }        
 `
@@ -280,13 +280,13 @@ input ${resource.data.snakeCaseName}_query_order {
     config: PluginSetupConfig
   ) {
     return `
-input ${resource.data.snakeCaseName}_where_query {
+input ${resource.data.pascalCaseName}WhereQuery {
 ${topLevelOperators.map(
   operator =>
     `${operator}: ${
       operator === '_not'
-        ? `${resource.data.snakeCaseName}_where_query`
-        : `[${resource.data.snakeCaseName}_where_query]`
+        ? `${resource.data.pascalCaseName}WhereQuery`
+        : `[${resource.data.pascalCaseName}WhereQuery]`
     }`
 )}
 ${resource
@@ -296,7 +296,7 @@ ${resource
       `${field.databaseField}: ${this.getWhereQueryFieldType(field, config)}`
   )}
 }
-input ${resource.data.snakeCaseName}_subscription_filter {
+input ${resource.data.pascalCaseName}SubscriptionFilter {
     ${resource
       .getFetchApiExposedFields()
       .map(
@@ -311,11 +311,11 @@ input ${resource.data.snakeCaseName}_subscription_filter {
 ${
   resource.data.filters.length > 0
     ? `
-enum ${resource.data.snakeCaseName}_query_filter_options {
+enum ${resource.data.pascalCaseName}QueryFilterOptions {
     ${resource.data.filters.map(filter => `${filter.config.shortName}`)}
 }
-input ${resource.data.snakeCaseName}_filter_query {
-     name: ${resource.data.snakeCaseName}_query_filter_options
+input ${resource.data.pascalCaseName}FilterQuery {
+     name: ${resource.data.pascalCaseName}QueryFilterOptions
      args: JSONObject
 }
 `
@@ -346,15 +346,15 @@ ${resource.data.fields
   .filter(field => field.property.enum && !field.property.hidden)
   .map(
     field => `
-        enum ${resource.data.snakeCaseName}_${
-      field.snakeCaseName
-    }_enum {${field.property.items?.map(
+        enum ${resource.data.pascalCaseName}${
+      field.pascalCaseName
+    }Enum {${field.property.items?.map(
       option => `
             ${option}`
     )}
         }`
   )}
-type ${resource.data.snakeCaseName} {${resource.data.fields
+type ${resource.data.pascalCaseName} {${resource.data.fields
         .filter(
           field =>
             !field.property.hidden && !field.showHideFieldFromApi.hideOnFetchApi
@@ -370,22 +370,20 @@ type ${resource.data.snakeCaseName} {${resource.data.fields
      )
      .map(
        field =>
-         `${field.databaseField}__count(where: ${
-           field.snakeCaseName
-         }_where_query${this.getPossibleResourceFilters(resource)}): Int`
+         `${field.databaseField}Count(where: ${
+           field.pascalCaseName
+         }WhereQuery${this.getPossibleResourceFilters(resource)}): Int`
      )}
 }
 ${
-  !resource.data.hideOnInsertApi
+  !resource.data.hideOnCreateApi
     ? `
-input insert_${
-        resource.data.snakeCaseName
-      }_input {${resource.data.fields
+input Create${resource.data.pascalCaseName}Input {${resource.data.fields
         .filter(
           field =>
             !field.property.primary &&
             !field.property.hidden &&
-            !field.showHideFieldFromApi.hideOnInsertApi
+            !field.showHideFieldFromApi.hideOnCreateApi
         )
         .map(field =>
           this.getGraphqlFieldDefinitionForCreateInput(
@@ -402,9 +400,7 @@ input insert_${
 ${
   !resource.data.hideOnUpdateApi
     ? `
-input update_${
-        resource.data.snakeCaseName
-      }_input {${resource.data.fields
+input Update${resource.data.pascalCaseName}Input {${resource.data.fields
         .filter(
           field =>
             !field.property.primary &&
@@ -453,13 +449,13 @@ ${this.getOrderByQueryForResource(resource, config)}
 
     this.schemaString = `${this.schemaString}
 
-        enum query_order {
+        enum QueryOrder {
             asc
-            asc_nulls_last
-            asc_nulls_first
+            ascNullsLast
+            ascNullsFirst
             desc
-            desc_nulls_last
-            desc_nulls_first
+            descNullsLast
+            descNullsFirst
         }                
 `
 
@@ -495,7 +491,7 @@ ${deleteSubscriptions.map(
     }
 
     this.schemaString = `${this.schemaString}type Mutation {${resources
-      .filter(r => !r.data.hideOnInsertApi)
+      .filter(r => !r.data.hideOnCreateApi)
       .map(resource => {
         return `${this.defineCreateMutationForResource(resource, config)}`
       })}
@@ -510,7 +506,7 @@ ${resources
     return `${this.defineDeleteMutationForResource(resource, config)}`
   })}
 }
-input string_where_query {
+input StringWhereQuery {
     ${filterOperators.map(operator => {
       if (['_in', '_nin'].includes(operator)) {
         return `${operator}: [String!]`
@@ -520,7 +516,7 @@ input string_where_query {
     })}
 }
 
-input integer_where_query {
+input IntegerWhereQuery {
     ${filterOperators.map(operator => {
       if (['_in', '_nin'].includes(operator)) {
         return `${operator}: [Int!]`
@@ -530,7 +526,7 @@ input integer_where_query {
     })}
 }
 
-input id_where_query {
+input IdWhereQuery {
     ${filterOperators.map(operator => {
       if (['_in', '_nin'].includes(operator)) {
         return `${operator}: [ID!]`
@@ -549,8 +545,8 @@ input id_where_query {
     config: PluginSetupConfig
   ) {
     return `
-        insert_${resource.data.snakeCaseName}(object: insert_${resource.data.snakeCaseName}_input!): ${resource.data.snakeCaseName}!
-        insert_${resource.data.snakeCaseNamePlural}(objects: [insert_${resource.data.snakeCaseName}_input]!): [${resource.data.snakeCaseName}]!
+        create${resource.data.pascalCaseName}(object: Create${resource.data.pascalCaseName}Input!): ${resource.data.pascalCaseName}!
+        createMany${resource.data.pascalCaseNamePlural}(objects: [Create${resource.data.pascalCaseName}Input]!): [${resource.data.pascalCaseName}]!
     `
   }
 
@@ -558,17 +554,17 @@ input id_where_query {
     resource: ResourceContract,
     config: PluginSetupConfig
   ) {
-    return `update_${resource.data.snakeCaseName}(${this.getIdKey(
+    return `update${resource.data.pascalCaseName}(${this.getIdKey(
       config
-    )}: ID!, object: update_${resource.data.snakeCaseName}_input!): ${
-      resource.data.snakeCaseName
+    )}: ID!, object: Update${resource.data.pascalCaseName}Input!): ${
+      resource.data.pascalCaseName
     }!
-        update_${resource.data.snakeCaseNamePlural}(where: ${
-      resource.data.snakeCaseName
-    }_where_query!, object: update_${
-      resource.data.snakeCaseName
-    }_input!${this.getPossibleResourceFilters(resource)}): [${
-      resource.data.snakeCaseName
+        updateMany${resource.data.pascalCaseNamePlural}(where: ${
+      resource.data.pascalCaseName
+    }WhereQuery!, object: Update${
+      resource.data.pascalCaseName
+    }Input!${this.getPossibleResourceFilters(resource)}): [${
+      resource.data.pascalCaseName
     }]!
         `
   }
@@ -577,13 +573,13 @@ input id_where_query {
     resource: ResourceContract,
     config: PluginSetupConfig
   ) {
-    return `delete_${resource.data.snakeCaseName}(${this.getIdKey(
+    return `delete${resource.data.pascalCaseName}(${this.getIdKey(
       config
-    )}: ID!): ${resource.data.snakeCaseName}
-        delete_${resource.data.snakeCaseNamePlural}(where: ${
-      resource.data.snakeCaseName
-    }_where_query${this.getPossibleResourceFilters(resource)}): [${
-      resource.data.snakeCaseName
+    )}: ID!): ${resource.data.pascalCaseName}
+        deleteMany${resource.data.pascalCaseNamePlural}(where: ${
+      resource.data.pascalCaseName
+    }WhereQuery${this.getPossibleResourceFilters(resource)}): [${
+      resource.data.pascalCaseName
     }]
         `
   }
@@ -593,7 +589,7 @@ input id_where_query {
       return ''
     }
 
-    return `, filters: [${resource.data.snakeCaseName}_filter_query]`
+    return `, filters: [${resource.data.pascalCaseName}FilterQuery]`
   }
 
   private getIdKey(config: PluginSetupConfig) {

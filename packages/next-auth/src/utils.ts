@@ -4,7 +4,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 export type NextIronRequest = NextApiRequest & { session: Session }
 
-export type NextIronHandler = (req: NextIronRequest, res: NextApiResponse) => void | Promise<void>
+export type NextIronHandler = (
+  req: NextIronRequest,
+  res: NextApiResponse
+) => void | Promise<void>
 
 export const prepareAuthData = (payload: any) => {
   const { refresh_token, ...rest } = payload
@@ -22,7 +25,7 @@ export const getAccessTokenExpiryTimeStamp = (seconds: number) => {
 
 // @ts-ignore -> These types will be generated when the user runs the `yarn tensei-sdk g` command.
 export const tensei: import('@tensei/sdk').SdkContract = sdk({
-  url: process.env.TENSEI_API_URL,
+  url: process.env.TENSEI_API_URL
 })
 
 export function getLoginUrl() {
@@ -52,7 +55,7 @@ export const withSession = (handler: NextIronHandler) => {
     password: process.env.SECRET_COOKIE_PASSWORD,
     cookieName: 'session/tensei',
     cookieOptions: {
-      secure: process.env.NODE_ENV === 'production',
-    },
+      secure: process.env.NODE_ENV === 'production'
+    }
   }) as unknown) as NextIronHandler
 }

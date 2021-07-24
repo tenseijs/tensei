@@ -21,7 +21,7 @@ export default resource('Comment')
     textarea('Body').rules('required'),
     text('Title Hidden From Insert And Fetch API')
       .nullable()
-      .hideOnInsertApi()
+      .hideOnCreateApi()
       .hideOnFetchApi(),
     text('Title Hidden From Update And Fetch API')
       .nullable()

@@ -94,6 +94,7 @@ export class Resource implements ResourceContract {
     this.data.snakeCaseName = snakeCase(name)
     this.data.camelCaseName = camelCase(name)
     this.data.pascalCaseName = pascalCase(name)
+    this.data.pascalCaseNamePlural = Pluralize(pascalCase(name))
     this.data.slug = Pluralize(paramCase(name))
     this.data.slugSingular = paramCase(name)
     this.data.slugPlural = Pluralize(paramCase(name))
@@ -138,7 +139,7 @@ export class Resource implements ResourceContract {
         .nullable()
         .sortable()
         .onCreate(() => new Date())
-        .hideOnInsertApi()
+        .hideOnCreateApi()
         .hideOnUpdateApi()
         .hideOnUpdate()
         .hideOnIndex()
@@ -149,7 +150,7 @@ export class Resource implements ResourceContract {
         .sortable()
         .onCreate(() => new Date())
         .onUpdate(() => new Date())
-        .hideOnInsertApi()
+        .hideOnCreateApi()
         .hideOnUpdateApi()
         .hideOnCreate()
         .hideOnIndex()
@@ -168,7 +169,7 @@ export class Resource implements ResourceContract {
     extend: {},
     icon: 'category',
     description: '',
-    hideOnInsertApi: false,
+    hideOnCreateApi: false,
     hideOnFetchApi: false,
     hideOnDeleteApi: false,
     hideOnUpdateApi: false,
@@ -189,6 +190,7 @@ export class Resource implements ResourceContract {
     snakeCaseNamePlural: '',
     camelCaseNamePlural: '',
     pascalCaseName: '',
+    pascalCaseNamePlural: '',
     slugPlural: '',
     slugSingular: '',
     validationMessages: {
@@ -207,7 +209,7 @@ export class Resource implements ResourceContract {
   }
 
   public hideOnApi() {
-    this.data.hideOnInsertApi = true
+    this.data.hideOnCreateApi = true
     this.data.hideOnFetchApi = true
     this.data.hideOnDeleteApi = true
     this.data.hideOnUpdateApi = true
@@ -234,8 +236,8 @@ export class Resource implements ResourceContract {
     return this
   }
 
-  public hideOnInsertApi() {
-    this.data.hideOnInsertApi = true
+  public hideOnCreateApi() {
+    this.data.hideOnCreateApi = true
 
     return this
   }
@@ -553,7 +555,7 @@ export class Resource implements ResourceContract {
   }
 
   public getCreateApiExposedFields() {
-    return this.data.fields.filter(f => !f.showHideFieldFromApi.hideOnInsertApi)
+    return this.data.fields.filter(f => !f.showHideFieldFromApi.hideOnCreateApi)
   }
 
   public getPrimaryField() {
@@ -570,7 +572,7 @@ export class Resource implements ResourceContract {
 
   public isHiddenOnApi() {
     return (
-      this.data.hideOnInsertApi &&
+      this.data.hideOnCreateApi &&
       this.data.hideOnDeleteApi &&
       this.data.hideOnFetchApi &&
       this.data.hideOnUpdateApi

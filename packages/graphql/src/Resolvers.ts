@@ -61,8 +61,8 @@ export const getResolvers = (
     !resource.isHiddenOnApi() &&
       !resource.data.hideOnFetchApi &&
       resolversList.push(
-        graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural}`)
-          .path(resource.data.snakeCaseNamePlural)
+        graphQlQuery(`Fetch ${resource.data.camelCaseNamePlural}`)
+          .path(resource.data.camelCaseNamePlural)
           .query()
           .internal()
           .middleware(
@@ -94,8 +94,8 @@ export const getResolvers = (
     !resource.isHiddenOnApi() &&
       !resource.data.hideOnFetchApi &&
       resolversList.push(
-        graphQlQuery(`Fetch ${resource.data.snakeCaseNamePlural} count`)
-          .path(`${resource.data.snakeCaseNamePlural}__count`)
+        graphQlQuery(`Fetch ${resource.data.camelCaseNamePlural} count`)
+          .path(`${resource.data.camelCaseNamePlural}Count`)
           .query()
           .internal()
           .resource(resource)
@@ -118,8 +118,8 @@ export const getResolvers = (
     !resource.isHiddenOnApi() &&
       !resource.data.hideOnFetchApi &&
       resolversList.push(
-        graphQlQuery(`Fetch single ${resource.data.snakeCaseName}`)
-          .path(resource.data.snakeCaseName)
+        graphQlQuery(`Fetch single ${resource.data.camelCaseName}`)
+          .path(resource.data.camelCaseName)
           .query()
           .internal()
           .middleware(
@@ -146,10 +146,10 @@ export const getResolvers = (
       )
 
     !resource.isHiddenOnApi() &&
-      !resource.data.hideOnInsertApi &&
+      !resource.data.hideOnCreateApi &&
       resolversList.push(
-        graphQlQuery(`Insert single ${resource.data.snakeCaseName}`)
-          .path(`insert_${resource.data.snakeCaseName}`)
+        graphQlQuery(`Insert single ${resource.data.camelCaseName}`)
+          .path(`create${resource.data.pascalCaseName}`)
           .mutation()
           .internal()
           .resource(resource)
@@ -190,21 +190,21 @@ export const getResolvers = (
             )
 
             subscriptionsEnabled &&
-              ctx.pubsub.publish(`${resource.data.snakeCaseName}_inserted`, {
-                [`${resource.data.snakeCaseName}_inserted`]: data
+              ctx.pubsub.publish(`${resource.data.pascalCaseName}Created`, {
+                [`${resource.data.pascalCaseName}Created`]: data
               })
 
-            ctx.emitter.emit(`${resource.data.snakeCaseName}::inserted`, data)
+            ctx.emitter.emit(`${resource.data.camelCaseName}::created`, data)
 
             return data
           })
       )
 
     !resource.isHiddenOnApi() &&
-      !resource.data.hideOnInsertApi &&
+      !resource.data.hideOnCreateApi &&
       resolversList.push(
-        graphQlQuery(`Insert multiple ${resource.data.snakeCaseNamePlural}`)
-          .path(`insert_${resource.data.snakeCaseNamePlural}`)
+        graphQlQuery(`Insert multiple ${resource.data.camelCaseNamePlural}`)
+          .path(`createMany${resource.data.pascalCaseNamePlural}`)
           .mutation()
           .internal()
           .resource(resource)
@@ -249,15 +249,12 @@ export const getResolvers = (
 
             subscriptionsEnabled &&
               data.forEach(d => {
-                ctx.pubsub.publish(`${resource.data.snakeCaseName}_inserted`, {
-                  [`${resource.data.snakeCaseName}_inserted`]: d
+                ctx.pubsub.publish(`${resource.data.camelCaseName}Created`, {
+                  [`${resource.data.camelCaseName}Created`]: d
                 })
               })
 
-            ctx.emitter.emit(
-              `${resource.data.snakeCaseNamePlural}::inserted`,
-              data
-            )
+            ctx.emitter.emit(`${resource.data.camelCaseName}::created`, data)
 
             return data
           })
@@ -266,8 +263,8 @@ export const getResolvers = (
     !resource.data.hideOnUpdateApi &&
       !resource.isHiddenOnApi() &&
       resolversList.push(
-        graphQlQuery(`Update single ${resource.data.snakeCaseName}`)
-          .path(`update_${resource.data.snakeCaseName}`)
+        graphQlQuery(`Update single ${resource.data.pascalCaseName}`)
+          .path(`update${resource.data.pascalCaseName}`)
           .mutation()
           .internal()
           .resource(resource)
@@ -309,11 +306,11 @@ export const getResolvers = (
             )
 
             subscriptionsEnabled &&
-              ctx.pubsub.publish(`${resource.data.snakeCaseName}_updated`, {
-                [`${resource.data.snakeCaseName}_updated`]: data
+              ctx.pubsub.publish(`${resource.data.camelCaseName}Updated`, {
+                [`${resource.data.camelCaseName}Updated`]: data
               })
 
-            ctx.emitter.emit(`${resource.data.snakeCaseName}::updated`, data)
+            ctx.emitter.emit(`${resource.data.camelCaseName}::updated`, data)
 
             return data
           })
@@ -322,8 +319,8 @@ export const getResolvers = (
     !resource.data.hideOnUpdateApi &&
       !resource.isHiddenOnApi() &&
       resolversList.push(
-        graphQlQuery(`Update multiple ${resource.data.snakeCaseNamePlural}`)
-          .path(`update_${resource.data.snakeCaseNamePlural}`)
+        graphQlQuery(`Update multiple ${resource.data.camelCaseNamePlural}`)
+          .path(`updateMany${resource.data.pascalCaseNamePlural}`)
           .mutation()
           .internal()
           .resource(resource)
@@ -367,13 +364,13 @@ export const getResolvers = (
 
             subscriptionsEnabled &&
               data.forEach(d => {
-                ctx.pubsub.publish(`${resource.data.snakeCaseName}_updated`, {
-                  [`${resource.data.snakeCaseName}_updated`]: d
+                ctx.pubsub.publish(`${resource.data.camelCaseName}Updated`, {
+                  [`${resource.data.camelCaseName}Updated`]: d
                 })
               })
 
             ctx.emitter.emit(
-              `${resource.data.snakeCaseNamePlural}::updated`,
+              `${resource.data.camelCaseNamePlural}::updated`,
               data
             )
 
@@ -384,8 +381,8 @@ export const getResolvers = (
     !resource.data.hideOnDeleteApi &&
       !resource.isHiddenOnApi() &&
       resolversList.push(
-        graphQlQuery(`Delete single ${resource.data.snakeCaseName}`)
-          .path(`delete_${resource.data.snakeCaseName}`)
+        graphQlQuery(`Delete single ${resource.data.pascalCaseName}`)
+          .path(`delete${resource.data.pascalCaseName}`)
           .mutation()
           .internal()
           .resource(resource)
@@ -410,11 +407,11 @@ export const getResolvers = (
             await ctx.manager.removeAndFlush(data)
 
             subscriptionsEnabled &&
-              ctx.pubsub.publish(`${resource.data.snakeCaseName}_deleted`, {
-                [`${resource.data.snakeCaseName}_deleted`]: data
+              ctx.pubsub.publish(`${resource.data.camelCaseName}Deleted`, {
+                [`${resource.data.camelCaseName}Deleted`]: data
               })
 
-            ctx.emitter.emit(`${resource.data.snakeCaseName}::deleted`, data)
+            ctx.emitter.emit(`${resource.data.camelCaseName}::deleted`, data)
 
             return data
           })
@@ -423,8 +420,8 @@ export const getResolvers = (
     !resource.data.hideOnDeleteApi &&
       !resource.isHiddenOnApi() &&
       resolversList.push(
-        graphQlQuery(`Delete multiple ${resource.data.snakeCaseNamePlural}`)
-          .path(`delete_${resource.data.snakeCaseNamePlural}`)
+        graphQlQuery(`Delete multiple ${resource.data.pascalCaseNamePlural}`)
+          .path(`deleteMany${resource.data.pascalCaseNamePlural}`)
           .mutation()
           .internal()
           .resource(resource)
@@ -452,13 +449,13 @@ export const getResolvers = (
 
             subscriptionsEnabled &&
               data.forEach(d => {
-                ctx.pubsub.publish(`${resource.data.snakeCaseName}_deleted`, {
-                  [`${resource.data.snakeCaseName}_deleted`]: d
+                ctx.pubsub.publish(`${resource.data.camelCaseName}Deleted`, {
+                  [`${resource.data.camelCaseName}Deleted`]: d
                 })
               })
 
             ctx.emitter.emit(
-              `${resource.data.snakeCaseNamePlural}::deleted`,
+              `${resource.data.camelCaseNamePlural}::deleted`,
               data
             )
 
@@ -469,39 +466,39 @@ export const getResolvers = (
     if (subscriptionsEnabled) {
       !resource.data.hideOnInsertSubscription &&
         resolversList.push(
-          graphQlQuery(`${resource.data.snakeCaseName} inserted subscription`)
+          graphQlQuery(`${resource.data.camelCaseName} created subscription`)
             .subscription()
-            .path(`${resource.data.snakeCaseName}_inserted`)
+            .path(`${resource.data.camelCaseName}Created`)
             .resource(resource)
             .handle((_, args, ctx, info) =>
               ctx.pubsub.asyncIterator([
-                `${resource.data.snakeCaseName}_inserted`
+                `${resource.data.camelCaseName}Created`
               ])
             )
         )
 
       !resource.data.hideOnUpdateSubscription &&
         resolversList.push(
-          graphQlQuery(`${resource.data.snakeCaseName} updated subscription`)
+          graphQlQuery(`${resource.data.camelCaseName} updated subscription`)
             .subscription()
-            .path(`${resource.data.snakeCaseName}_updated`)
+            .path(`${resource.data.camelCaseName}Updated`)
             .resource(resource)
             .handle((_, args, ctx, info) =>
               ctx.pubsub.asyncIterator([
-                `${resource.data.snakeCaseName}_updated`
+                `${resource.data.camelCaseName}Updated`
               ])
             )
         )
 
       !resource.data.hideOnDeleteSubscription &&
         resolversList.push(
-          graphQlQuery(`${resource.data.snakeCaseName} deleted subscription`)
+          graphQlQuery(`${resource.data.camelCaseName} deleted subscription`)
             .subscription()
-            .path(`${resource.data.snakeCaseName}_deleted`)
+            .path(`${resource.data.camelCaseName}Deleted`)
             .resource(resource)
             .handle((_, args, ctx, info) =>
               ctx.pubsub.asyncIterator([
-                `${resource.data.snakeCaseName}_deleted`
+                `${resource.data.camelCaseName}Deleted`
               ])
             )
         )

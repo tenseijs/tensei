@@ -75,11 +75,11 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
   const [user, setUser] = useState<{
     user: TenseiAuthContextInterface['user']
     isLoading: boolean
-    access_token: string
+    accessToken: string
   }>({
     isLoading: true,
     user: null,
-    access_token: undefined,
+    accessToken: undefined,
   })
   const [tensei] = useState(tenseiInstance ? tenseiInstance : sdk(options))
 
@@ -88,7 +88,7 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
       setUser({
         isLoading: false,
         user: auth?.user || null,
-        access_token: auth?.access_token,
+        accessToken: auth?.accessToken,
       })
     })
   }
@@ -102,7 +102,7 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
     setUser({
       isLoading: false,
       user: response?.user || null,
-      access_token: response?.access_token,
+      accessToken: response?.accessToken,
     })
   }
 
@@ -122,7 +122,7 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
     subscribeToAuthChanges()
 
     // If there's an access token, then we might need to handle social authentication
-    if (getUrlParameter('access_token') && getUrlParameter('provider')) {
+    if (getUrlParameter('accessToken') && getUrlParameter('provider')) {
       return loadSocialAuth()
     }
 
@@ -144,7 +144,7 @@ export const TenseiAuthProvider: FunctionComponent<TenseiAuthProviderProps> = ({
         user: user.user,
         onRedirectCallback,
         isLoading: user.isLoading,
-        accessToken: user.access_token,
+        accessToken: user.accessToken,
       }}
     >
       {children}

@@ -22,7 +22,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
             id
             email
           }
-          access_token
+          accessToken
         }
       }
     `,
@@ -38,8 +38,8 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     .post(`/graphql`)
     .send({
       query: gql`
-        mutation enable_two_factor_auth {
-          enable_two_factor_auth {
+        mutation enableTwoFactorAuth {
+          enableTwoFactorAuth {
             dataURL
           }
         }
@@ -47,17 +47,17 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     })
     .set(
       'Authorization',
-      `Bearer ${register_response.body.data.register.access_token}`
+      `Bearer ${register_response.body.data.register.accessToken}`
     )
 
   expect(enable_2fa_response.status).toBe(200)
-  expect(enable_2fa_response.body.data.enable_two_factor_auth.dataURL).toMatch(
+  expect(enable_2fa_response.body.data.enableTwoFactorAuth.dataURL).toMatch(
     'data:image/png;base64'
   )
 
   const user = await ctx.orm.em.findOne<{
     id: string
-    two_factor_secret: string
+    twoFactorSecret: string
     email: string
   }>('Student', {
     email: fakeUserDetails.email
@@ -66,7 +66,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
   const Speakeasy = require('speakeasy')
 
   const totp = Speakeasy.totp({
-    secret: user.two_factor_secret,
+    secret: user.twoFactorSecret,
     encoding: 'base32'
   })
 
@@ -74,10 +74,10 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     .post(`/graphql`)
     .send({
       query: gql`
-        mutation confirm_enable_two_factor_auth($token: String!) {
-          confirm_enable_two_factor_auth(object: { token: $token }) {
+        mutation confirmEnableTwoFactorAuth($token: String!) {
+          confirmEnableTwoFactorAuth(object: { token: $token }) {
             id
-            two_factor_enabled
+            twoFactorEnabled
           }
         }
       `,
@@ -87,25 +87,25 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     })
     .set(
       'Authorization',
-      `Bearer ${register_response.body.data.register.access_token}`
+      `Bearer ${register_response.body.data.register.accessToken}`
     )
 
   expect(confirm_enable_2fa_response.status).toBe(200)
   expect(
-    confirm_enable_2fa_response.body.data.confirm_enable_two_factor_auth
+    confirm_enable_2fa_response.body.data.confirmEnableTwoFactorAuth
   ).toEqual({
     id: user.id.toString(),
-    two_factor_enabled: true
+    twoFactorEnabled: true
   })
 
   const disable_2fa_response = await client
     .post(`/graphql`)
     .send({
       query: gql`
-        mutation disable_two_factor_auth($token: Int!) {
-          disable_two_factor_auth(object: { token: $token }) {
+        mutation disableTwoFactorAuth($token: Int!) {
+          disableTwoFactorAuth(object: { token: $token }) {
             id
-            two_factor_enabled
+            twoFactorEnabled
           }
         }
       `,
@@ -115,12 +115,12 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     })
     .set(
       'Authorization',
-      `Bearer ${register_response.body.data.register.access_token}`
+      `Bearer ${register_response.body.data.register.accessToken}`
     )
 
   expect(disable_2fa_response.status).toBe(200)
-  expect(disable_2fa_response.body.data.disable_two_factor_auth).toEqual({
+  expect(disable_2fa_response.body.data.disableTwoFactorAuth).toEqual({
     id: user.id.toString(),
-    two_factor_enabled: false
+    twoFactorEnabled: false
   })
 })
