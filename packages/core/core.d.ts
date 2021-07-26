@@ -12,6 +12,7 @@ declare global {
       }
       mailer: Mail
       db: import('@tensei/orm').OrmContract
+      repositories: import('@tensei/orm').OrmContract
       storage: Config['storage']
       currentCtx: () => Config
       emitter: Config['emitter']

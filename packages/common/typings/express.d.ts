@@ -25,6 +25,7 @@ declare global {
       config: Config
       orm: MikroORM
       db: import('@tensei/orm').OrmContract
+      repositories: import('@tensei/orm').OrmContract
       storage: StorageManager
       manager: EntityManager
       scripts: Asset[]

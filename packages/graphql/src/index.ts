@@ -812,6 +812,7 @@ input IdWhereQuery {
             ...config,
             pubsub: this.pubsub,
             db: currentCtx().db,
+            repositories: currentCtx().db,
             manager: currentCtx().orm?.em?.fork()
           }),
           uploads: false,

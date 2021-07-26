@@ -110,6 +110,7 @@ export class Tensei implements TenseiContract {
       dashboardsMap: {},
       orm: null,
       db: null,
+      repositories: {},
       scripts: [],
       styles: [],
       logger: pino({
@@ -303,6 +304,7 @@ export class Tensei implements TenseiContract {
     const orm = new Orm(this.ctx)
 
     this.ctx.db = orm.generate()
+    this.ctx.repositories = this.ctx.db
 
     this.registerCoreCommands(orm)
 
@@ -627,6 +629,7 @@ export class Tensei implements TenseiContract {
         request.emitter = this.ctx.emitter
         request.indicative = indicative
         request.db = this.ctx.db
+        request.repositories = this.ctx.db
 
         // @ts-ignore
         this.ctx.request = request

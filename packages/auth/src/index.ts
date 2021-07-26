@@ -43,13 +43,15 @@ import {
   AuthPluginConfig,
   SupportedSocialProviders,
   defaultProviderScopes,
-  AuthHookFunction
+  AuthHookFunction,
+  AuthContract
 } from './config'
 
 export * from './config'
 
 import { setup } from './setup'
 import { Request } from 'express'
+import { Teams } from './teams/Teams'
 import { permission, PermissionContract } from './teams/Permission'
 
 type JwtPayload = {
@@ -59,7 +61,7 @@ type JwtPayload = {
 
 type AuthSetupFn = (resources: AuthResources) => any
 
-export class Auth {
+export class Auth implements AuthContract {
   public config: AuthPluginConfig & {
     setupFn: AuthSetupFn
   } = {
@@ -107,7 +109,9 @@ export class Auth {
 
   private TwoFactorAuth: any = null
 
-  private resources: AuthResources = {} as any
+  private teamsInstance: any = new Teams(this)
+
+  public __resources: AuthResources = {} as any
 
   public constructor() {
     this.refreshResources()
@@ -138,16 +142,19 @@ export class Auth {
   }
 
   private refreshResources() {
-    this.resources.user = this.userResource()
-    this.resources.role = this.roleResource()
-    this.resources.token = this.tokenResource()
-    this.resources.oauthIdentity = this.oauthResource()
-    this.resources.permission = this.permissionResource()
-    this.resources.passwordReset = this.passwordResetResource()
-    this.resources.team = this.teamResource()
-    this.resources.membership = this.teamMembershipResource()
+    this.__resources.user = this.userResource()
+    this.__resources.role = this.roleResource()
+    this.__resources.token = this.tokenResource()
+    this.__resources.oauthIdentity = this.oauthResource()
+    this.__resources.permission = this.permissionResource()
+    this.__resources.passwordReset = this.passwordResetResource()
 
-    this.config.setupFn(this.resources)
+    this.teamsInstance = new Teams(this)
+
+    this.__resources.team = this.teamsInstance.teamResource()
+    this.__resources.membership = this.teamsInstance.teamMembershipResource()
+
+    this.config.setupFn(this.__resources)
   }
 
   private resolveApiPath(plugins: PluginContract[]) {
@@ -272,6 +279,7 @@ export class Auth {
 
   public teams() {
     this.config.teams = true
+    this.teamsInstance = new Teams(this)
 
     return this
   }
@@ -295,7 +303,7 @@ export class Auth {
       passwordField = passwordField.notNullable()
     } else {
       socialFields = [
-        hasMany(this.resources.oauthIdentity.data.name)
+        hasMany(this.__resources.oauthIdentity.data.name)
           .hideOnCreateApi()
           .hideOnUpdateApi()
       ]
@@ -307,7 +315,7 @@ export class Auth {
         hasOne(this.config.teamResource, 'currentTeam')
           .label(`Current ${this.config.teamResource}`)
           .nullable(),
-        hasMany(this.config.teamResource)
+        hasMany(this.config.teamResource, 'ownTeams').owner()
       ]
     }
 
@@ -416,97 +424,7 @@ export class Auth {
       .group('Users & Permissions')
 
     if (this.config.teams) {
-      const self = this
-
-      userResource.method('ownsTeam', function (this: any, team: any) {
-        return (
-          team.owner.toString() === this.id.toString() ||
-          team.owner?.id.toString() === this.id.toString()
-        )
-      })
-
-      userResource.method(
-        'teamMembership',
-        async function (this: any, team: any) {
-          const membership = await this.ctx.db.memberships.findOne({
-            team,
-            [self.resources.user.data.camelCaseName]: this
-          })
-
-          return membership
-        }
-      )
-
-      userResource.method(
-        'belongsToTeam',
-        async function (this: any, team: any) {
-          if (this.ownsTeam(team)) {
-            return true
-          }
-
-          const teamMembership = await this.teamMembership(team)
-
-          return !!teamMembership
-        }
-      )
-
-      userResource.method(
-        'hasTeamPermission',
-        async function (this: any, team: any, permission: string) {
-          if (this.ownsTeam(team)) {
-            return true
-          }
-
-          const membership = await this.teamMembership(team)
-
-          if (!membership) {
-            return false
-          }
-
-          return membership.permissions.includes(permission)
-        }
-      )
-
-      userResource.method(
-        'teamPermissions',
-        async function (this: any, team: any) {
-          if (this.ownsTeam(team)) {
-            return self.config.teamPermissions.map(
-              permission => permission.config.slug
-            )
-          }
-
-          const membership = await this.teamMembership(team)
-
-          if (!membership) {
-            return []
-          }
-
-          return membership.permissions
-        }
-      )
-
-      userResource.method('allTeams', async function (this: any) {
-        const [ownedTeams, membershipTeams] = await Promise.all([
-          this.ctx.db.teams.find(
-            { owner: this },
-            {
-              populate: [
-                `memberships.${self.resources.user.data.camelCaseName}`
-              ]
-            }
-          ),
-          this.ctx.db.memberships.find(
-            { [self.resources.user.data.camelCaseName]: this.id },
-            { populate: ['team'] }
-          )
-        ])
-
-        return [
-          ...ownedTeams,
-          ...membershipTeams.map((membership: any) => membership.team)
-        ]
-      })
+      this.teamsInstance.defineUserResourceMethods(userResource)
     }
 
     return userResource
@@ -548,31 +466,6 @@ export class Auth {
       .hideOnUpdateApi()
       .hideFromNavigation()
       .group('Users & Permissions')
-  }
-
-  private teamResource() {
-    const self = this
-    return resource(this.config.teamResource)
-      .hideOnFetchApi()
-      .fields([
-        text('Name').rules('required', 'min:2', 'max:24'),
-        belongsTo(this.config.userResource, 'owner')
-          .notNullable()
-          .hideOnUpdateApi(),
-        hasMany('Membership')
-      ])
-  }
-
-  private teamMembershipResource() {
-    return resource('Membership')
-      .fields([
-        belongsTo(this.config.teamResource).creationRules('required'),
-        array('Permissions').default([]),
-        belongsTo(this.config.userResource).creationRules('required')
-      ])
-      .hideOnUpdateApi()
-      .hideOnCreateApi()
-      .hideOnFetchApi()
   }
 
   private roleResource() {
@@ -623,7 +516,7 @@ export class Auth {
 
   private forceRemoveInsertUserQueries(queries: GraphQlQueryContract[]) {
     const insert_user_index = queries.findIndex(
-      q => q.config.path === `create${this.resources.user.data.camelCaseName}`
+      q => q.config.path === `create${this.__resources.user.data.camelCaseName}`
     )
 
     if (insert_user_index !== -1) {
@@ -633,7 +526,7 @@ export class Auth {
     const insert_users_index = queries.findIndex(
       q =>
         q.config.path ===
-        `createMany${this.resources.user.data.camelCaseNamePlural}`
+        `createMany${this.__resources.user.data.camelCaseNamePlural}`
     )
 
     if (insert_users_index !== -1) {
@@ -692,13 +585,13 @@ export class Auth {
       )
       .forEach(resource => {
         resource.filters([
-          filter(`${this.resources.user.data.label} ${resource.data.label}`)
+          filter(`${this.__resources.user.data.label} ${resource.data.label}`)
             .default()
             .noArgs()
             .query((args, request) =>
               request.user && request.user.id
                 ? {
-                    [this.resources.user.data.camelCaseName]: request.user.id
+                    [this.__resources.user.data.camelCaseName]: request.user.id
                   }
                 : resource.data.noTimestamps
                 ? false
@@ -725,38 +618,53 @@ export class Auth {
         }) => {
           this.refreshResources()
 
-          extendResources([this.resources.user, this.resources.passwordReset])
+          extendResources([
+            this.__resources.user,
+            this.__resources.passwordReset
+          ])
 
           if (this.config.rolesAndPermissions) {
-            extendResources([this.resources.role, this.resources.permission])
+            extendResources([
+              this.__resources.role,
+              this.__resources.permission
+            ])
           }
 
           if (this.config.teams) {
-            extendResources([this.resources.team, this.resources.membership])
+            extendResources([
+              this.__resources.team,
+              this.__resources.membership
+            ])
           }
 
           if (this.config.enableRefreshTokens) {
-            extendResources([this.resources.token])
+            extendResources([this.__resources.token])
           }
 
           if (Object.keys(this.config.providers).length > 0) {
-            extendResources([this.resources.oauthIdentity])
+            extendResources([this.__resources.oauthIdentity])
           }
 
           if (this.socialAuthEnabled() || this.config.httpOnlyCookiesAuth) {
             databaseConfig.entities = [
               ...(databaseConfig.entities || []),
               require('express-session-mikro-orm').generateSessionEntity({
-                entityName: `${this.resources.user.data.pascalCaseName}Session`,
-                tableName: `${this.resources.user.data.camelCaseNamePlural}_sessions`,
-                collection: `${this.resources.user.data.camelCaseNamePlural}_sessions`
+                entityName: `${this.__resources.user.data.pascalCaseName}Session`,
+                tableName: `${this.__resources.user.data.camelCaseNamePlural}_sessions`,
+                collection: `${this.__resources.user.data.camelCaseNamePlural}_sessions`
               })
             ]
           }
 
           extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
+
           extendGraphQlQueries(this.extendGraphQlQueries())
           extendRoutes(this.extendRoutes())
+
+          if (this.config.teams) {
+            extendGraphQlTypeDefs([this.teamsInstance.types(gql)])
+            extendGraphQlQueries(this.teamsInstance.queries())
+          }
 
           if (this.config.autoFillUser) {
             this.registerAutofillUserHooks(currentCtx().resources)
@@ -783,7 +691,10 @@ export class Auth {
         }
 
         if (this.config.rolesAndPermissions) {
-          await setup(config, [this.resources.role, this.resources.permission])
+          await setup(config, [
+            this.__resources.role,
+            this.__resources.permission
+          ])
         }
 
         const {
@@ -799,9 +710,9 @@ export class Auth {
 
         setPluginConfig('auth', {
           rolesAndPermissions: this.config.rolesAndPermissions,
-          user: this.resources.user.serialize(),
-          role: this.resources.role.serialize(),
-          permission: this.resources.permission.serialize()
+          user: this.__resources.user.serialize(),
+          role: this.__resources.role.serialize(),
+          permission: this.__resources.permission.serialize()
         })
 
         if (this.config.httpOnlyCookiesAuth) {
@@ -824,9 +735,9 @@ export class Auth {
             .default
 
           const Store = ExpressSessionMikroORMStore(ExpressSession, {
-            entityName: `${this.resources.user.data.pascalCaseName}Session`,
-            tableName: `${this.resources.user.data.camelCaseNamePlural}_sessions`,
-            collection: `${this.resources.user.data.camelCaseNamePlural}_sessions`
+            entityName: `${this.__resources.user.data.pascalCaseName}Session`,
+            tableName: `${this.__resources.user.data.camelCaseNamePlural}_sessions`,
+            collection: `${this.__resources.user.data.camelCaseNamePlural}_sessions`
           })
 
           app.use(
@@ -851,7 +762,7 @@ export class Auth {
             serverUrl,
             orm: config.orm,
             authConfig: this.config,
-            resourcesMap: this.resources,
+            resourcesMap: this.__resources,
             apiPath: this.config.apiPath,
             getUserPayloadFromProviderData: this.config
               .getUserPayloadFromProviderData
@@ -1032,12 +943,12 @@ export class Auth {
   }
 
   private extendRoutes() {
-    const name = this.resources.user.data.slugSingular
+    const name = this.__resources.user.data.slugSingular
 
     return [
       route(`Login ${name}`)
         .group('Auth')
-        .path(this.getApiPath('login'))
+        .path(this.__getApiPath('login'))
         .id(this.getRouteId(`login_${name}`))
         .post()
         .description(`Login an existing ${name}.`)
@@ -1064,7 +975,7 @@ export class Auth {
         ? [
             route(`Logout ${name}`)
               .group('Auth')
-              .path(this.getApiPath('logout'))
+              .path(this.__getApiPath('logout'))
               .id(this.getRouteId(`logout_${name}`))
               .post()
               .description(`Logout a currently logged in ${name}.`)
@@ -1074,7 +985,7 @@ export class Auth {
           ]
         : []),
       route(`Register ${name}`)
-        .path(this.getApiPath('register'))
+        .path(this.__getApiPath('register'))
         .group('Auth')
         .post()
         .parameters([
@@ -1098,7 +1009,7 @@ export class Auth {
           return created(await this.register(request as any))
         }),
       route(`Request password reset`)
-        .path(this.getApiPath('passwords/email'))
+        .path(this.__getApiPath('passwords/email'))
         .post()
         .group('Auth')
         .parameters([
@@ -1119,7 +1030,7 @@ export class Auth {
         ),
 
       route(`Reset password`)
-        .path(this.getApiPath('passwords/reset'))
+        .path(this.__getApiPath('passwords/reset'))
         .post()
         .group('Auth')
         .id(this.getRouteId(`reset_password_${name}`))
@@ -1146,7 +1057,7 @@ export class Auth {
       ...(this.config.twoFactorAuth
         ? [
             route(`Enable Two Factor Auth`)
-              .path(this.getApiPath('two-factor/enable'))
+              .path(this.__getApiPath('two-factor/enable'))
               .post()
               .group('Two Factor Auth')
               .description(
@@ -1161,11 +1072,11 @@ export class Auth {
 
                 response.formatter.ok({
                   dataURL,
-                  [this.resources.user.data.camelCaseName]: user
+                  [this.__resources.user.data.camelCaseName]: user
                 })
               }),
             route(`Confirm Enable Two Factor Auth`)
-              .path(this.getApiPath('two-factor/confirm'))
+              .path(this.__getApiPath('two-factor/confirm'))
               .post()
               .group('Two Factor Auth')
               .parameters([
@@ -1186,11 +1097,11 @@ export class Auth {
                   request as any
                 )
                 response.formatter.ok({
-                  [this.resources.user.data.camelCaseName]: user
+                  [this.__resources.user.data.camelCaseName]: user
                 })
               }),
             route(`Disable Two Factor Auth`)
-              .path(this.getApiPath('two-factor/disable'))
+              .path(this.__getApiPath('two-factor/disable'))
               .post()
               .group('Two Factor Auth')
               .parameters([
@@ -1212,13 +1123,13 @@ export class Auth {
                   request as any
                 )
                 response.formatter.ok({
-                  [this.resources.user.data.camelCaseName]: user
+                  [this.__resources.user.data.camelCaseName]: user
                 })
               })
           ]
         : []),
       route(`Get authenticated ${name}`)
-        .path(this.getApiPath('me'))
+        .path(this.__getApiPath('me'))
         .group('Auth')
         .get()
         .id(this.getRouteId(`get_authenticated_${name}`))
@@ -1233,7 +1144,7 @@ export class Auth {
         ? [
             route(`Resend Verification email`)
               .group('Verify Emails')
-              .path(this.getApiPath('emails/verification/resend'))
+              .path(this.__getApiPath('emails/verification/resend'))
               .post()
               .id(this.getRouteId(`resend_${name}_verification_email`))
               .authorize(({ user }) =>
@@ -1246,7 +1157,7 @@ export class Auth {
                 )
               ),
             route(`Confirm ${name} email`)
-              .path(this.getApiPath('emails/verification/confirm'))
+              .path(this.__getApiPath('emails/verification/confirm'))
               .post()
               .group('Verify Emails')
               .authorize(({ user }) =>
@@ -1274,7 +1185,7 @@ export class Auth {
         ? this.config.separateSocialLoginAndRegister
           ? [
               route(`Social Auth Login`)
-                .path(this.getApiPath('social/login'))
+                .path(this.__getApiPath('social/login'))
                 .post()
                 .id('social_login')
                 .description(`Login a ${name} via a social provider.`)
@@ -1285,7 +1196,7 @@ export class Auth {
                   )
                 ),
               route(`Social Auth Register`)
-                .path(this.getApiPath('social/register'))
+                .path(this.__getApiPath('social/register'))
                 .id('social_register')
                 .post()
                 .group('Social Auth')
@@ -1298,7 +1209,7 @@ export class Auth {
             ]
           : [
               route(`Social Auth Confirm`)
-                .path(this.getApiPath(`social/confirm`))
+                .path(this.__getApiPath(`social/confirm`))
                 .id('social_confirm')
                 .post()
                 .description(
@@ -1312,7 +1223,7 @@ export class Auth {
       ...(this.config.enableRefreshTokens
         ? [
             route('Refresh Token')
-              .path(this.getApiPath('refresh-token'))
+              .path(this.__getApiPath('refresh-token'))
               .get()
               .group('Auth')
               .id(this.getRouteId(`refreshToken_${name}`))
@@ -1330,128 +1241,13 @@ export class Auth {
       ...(this.config.httpOnlyCookiesAuth
         ? [
             route('Get CSRF Token')
-              .path(this.getApiPath('csrf'))
+              .path(this.__getApiPath('csrf'))
               .handle(async (request, { formatter: { noContent } }) =>
                 noContent([])
               )
           ]
         : []),
-      ...(this.config.teams
-        ? [
-            route('Get Team Permissions')
-              .get()
-              .authorize(({ user }) => !!user)
-              .path(this.getApiPath('teams/permissions'))
-              .handle((_, { formatter: { ok } }) =>
-                ok(
-                  this.config.teamPermissions.map(
-                    permission => permission.config
-                  )
-                )
-              ),
-            route('Get Team Memberships By ID')
-              .get()
-              .authorize(({ user }) => !!user)
-              .path(this.getApiPath('teams/:team/memberships'))
-              .handle(async ({ db, team }, { formatter: { ok } }) => {
-                return ok(
-                  await db.memberships.find(
-                    {
-                      team
-                    },
-                    {
-                      populate: [this.resources.user.data.camelCaseName]
-                    }
-                  )
-                )
-              }),
-            route('Invite existing user to team')
-              .post()
-              .middleware([
-                (request, response, next) => {
-                  const { team, params } = request
-
-                  if (!team) {
-                    return response.formatter.notFound(
-                      `Could not find team with ID ${params.team}.`
-                    )
-                  }
-
-                  next()
-                }
-              ])
-              .path(this.getApiPath('teams/:team/invites'))
-              .handle(async (request, { formatter: { noContent } }) => {
-                const { team, db, userInputError } = request
-
-                try {
-                  await validateAll(request.body, {
-                    permissions: [
-                      validations.array(),
-                      validations.required(),
-                      validations.min([1])
-                    ],
-                    'permissions.*': [
-                      validations.in(
-                        this.config.teamPermissions.map(
-                          permission => permission.config.slug
-                        )
-                      ),
-                      validations.required(),
-                      validations.string()
-                    ],
-                    email: [validations.required(), validations.string()]
-                  })
-                } catch (error) {
-                  throw userInputError(error)
-                }
-
-                const invitedUser = await db[
-                  this.resources.user.data.camelCaseNamePlural
-                ].findOne({
-                  email: request.body.email
-                })
-
-                if (!invitedUser) {
-                  throw userInputError('The invited user does not exist.')
-                }
-
-                await db.memberships.persistAndFlush(
-                  db.memberships.create({
-                    team,
-                    [this.resources.user.data.camelCaseName]: invitedUser,
-                    permissions: request.body.permissions
-                  })
-                )
-
-                return noContent({})
-              }),
-            route('Fetch all user teams')
-              .get()
-              .authorize(({ user }) => !!user)
-              .path(this.getApiPath('teams'))
-              .handle(async (request, { formatter: { ok } }) => {
-                const { user } = request
-
-                return ok(
-                  (await user.allTeams()).map((userTeam: any) => {
-                    const { team: removeTeam, ...rest } = userTeam
-
-                    return {
-                      ...rest,
-                      memberships: rest.memberships
-                        .toJSON()
-                        .map((membership: any) => {
-                          const { team, ...rest } = membership
-
-                          return rest
-                        })
-                    }
-                  })
-                )
-              })
-          ]
-        : [])
+      ...(this.config.teams ? this.teamsInstance.routes() : [])
     ]
   }
 
@@ -1465,11 +1261,11 @@ export class Auth {
   }
 
   private extendGraphQlQueries() {
-    const name = this.resources.user.data.camelCaseName
-    const pascalName = this.resources.user.data.pascalCaseName
+    const name = this.__resources.user.data.camelCaseName
+    const pascalName = this.__resources.user.data.pascalCaseName
 
-    const resources: ResourceContract[] = Object.keys(this.resources).map(
-      key => (this.resources as any)[key]
+    const resources: ResourceContract[] = Object.keys(this.__resources).map(
+      key => (this.__resources as any)[key]
     )
 
     return [
@@ -1485,7 +1281,7 @@ export class Auth {
             resources,
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.resources.user,
+            this.__resources.user,
             Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
               pascalName
             ],
@@ -1494,7 +1290,7 @@ export class Auth {
 
           return {
             ...payload,
-            [this.resources.user.data.camelCaseName]: user
+            [this.__resources.user.data.camelCaseName]: user
           }
         }),
       ...(this.config.httpOnlyCookiesAuth
@@ -1519,7 +1315,7 @@ export class Auth {
             resources,
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.resources.user,
+            this.__resources.user,
             Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
               pascalName
             ],
@@ -1528,7 +1324,7 @@ export class Auth {
 
           return {
             ...payload,
-            [this.resources.user.data.camelCaseName]: user
+            [this.__resources.user.data.camelCaseName]: user
           }
         }),
       graphQlQuery(`Request ${name} password reset`)
@@ -1540,7 +1336,7 @@ export class Auth {
         .mutation()
         .handle(async (_, args, ctx, info) => this.resetPassword(ctx)),
       graphQlQuery(
-        `Get authenticated ${this.resources.user.data.camelCaseName}`
+        `Get authenticated ${this.__resources.user.data.camelCaseName}`
       )
         .path(`authenticated`)
         .query()
@@ -1554,7 +1350,7 @@ export class Auth {
             resources,
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.resources.user,
+            this.__resources.user,
             Utils.graphql.getParsedInfo(info),
             [user]
           )
@@ -1584,7 +1380,7 @@ export class Auth {
                   resources,
                   ctx.manager,
                   ctx.databaseConfig.type!,
-                  this.resources.user,
+                  this.__resources.user,
                   Utils.graphql.getParsedInfo(info),
                   [user]
                 )
@@ -1607,7 +1403,7 @@ export class Auth {
                   resources,
                   ctx.manager,
                   ctx.databaseConfig.type!,
-                  this.resources.user,
+                  this.__resources.user,
                   Utils.graphql.getParsedInfo(info),
                   [user]
                 )
@@ -1633,7 +1429,7 @@ export class Auth {
                   resources,
                   ctx.manager,
                   ctx.databaseConfig.type!,
-                  this.resources.user,
+                  this.__resources.user,
                   Utils.graphql.getParsedInfo(info),
                   [user]
                 )
@@ -1666,14 +1462,14 @@ export class Auth {
                     resources,
                     ctx.manager,
                     ctx.databaseConfig.type!,
-                    this.resources.user,
+                    this.__resources.user,
                     Utils.graphql.getParsedInfo(info),
                     [user]
                   )
 
                   return {
                     ...payload,
-                    [this.resources.user.data.camelCaseName]: user
+                    [this.__resources.user.data.camelCaseName]: user
                   }
                 }),
               graphQlQuery('Social auth register')
@@ -1688,14 +1484,14 @@ export class Auth {
                     resources,
                     ctx.manager,
                     ctx.databaseConfig.type!,
-                    this.resources.user,
+                    this.__resources.user,
                     Utils.graphql.getParsedInfo(info),
                     [user]
                   )
 
                   return {
                     ...payload,
-                    [this.resources.user.data.camelCaseName]: user
+                    [this.__resources.user.data.camelCaseName]: user
                   }
                 })
             ]
@@ -1712,14 +1508,14 @@ export class Auth {
                     resources,
                     ctx.manager,
                     ctx.databaseConfig.type!,
-                    this.resources.user,
+                    this.__resources.user,
                     Utils.graphql.getParsedInfo(info),
                     [user]
                   )
 
                   return {
                     ...payload,
-                    [this.resources.user.data.camelCaseName]: user
+                    [this.__resources.user.data.camelCaseName]: user
                   }
                 })
             ]
@@ -1763,8 +1559,8 @@ export class Auth {
     }
 
     const { body } = ctx
-    const userField = this.resources.user.data.camelCaseName
-    const tokenName = this.resources.token.data.pascalCaseName
+    const userField = this.__resources.user.data.camelCaseName
+    const tokenName = this.__resources.token.data.pascalCaseName
 
     const refreshToken =
       ctx.req.headers[this.config.refreshTokenHeaderName] ||
@@ -1845,7 +1641,7 @@ export class Auth {
 
   private getUserPayload(ctx: ApiContext, refreshToken?: string) {
     let userPayload: any = {
-      [this.resources.user.data.camelCaseName]: ctx.user
+      [this.__resources.user.data.camelCaseName]: ctx.user
     }
 
     if (!this.config.httpOnlyCookiesAuth) {
@@ -1873,7 +1669,7 @@ export class Auth {
   }
 
   private extendGraphQLTypeDefs(gql: any) {
-    const { camelCaseName, pascalCaseName } = this.resources.user.data
+    const { camelCaseName, pascalCaseName } = this.__resources.user.data
 
     const cookies = this.config.httpOnlyCookiesAuth
 
@@ -2052,7 +1848,7 @@ export class Auth {
     return Object.keys(this.config.providers).length > 0
   }
 
-  private getApiPath(path: string) {
+  __getApiPath(path: string) {
     return `/${this.config.apiPath}/${path}`
   }
 
@@ -2067,14 +1863,14 @@ export class Auth {
   }
 
   private getRolesAndPermissionsNames() {
-    return `${this.resources.role.data.camelCaseNamePlural}.${this.resources.permission.data.camelCaseNamePlural}`
+    return `${this.__resources.role.data.camelCaseNamePlural}.${this.__resources.permission.data.camelCaseNamePlural}`
   }
 
   private register = async (ctx: ApiContext) => {
     const { manager, body, emitter } = ctx
 
     const validator = Utils.validator(
-      this.resources.user,
+      this.__resources.user,
       ctx.manager,
       ctx.req.resources
     )
@@ -2091,7 +1887,7 @@ export class Auth {
 
     if (this.config.rolesAndPermissions) {
       const authenticatorRole: any = await manager.findOneOrFail(
-        this.resources.role.data.pascalCaseName,
+        this.__resources.role.data.pascalCaseName,
         {
           slug: 'authenticated'
         }
@@ -2108,7 +1904,7 @@ export class Auth {
       createUserPayload.roles = [authenticatorRole.id]
     }
 
-    const UserResource = this.resources.user
+    const UserResource = this.__resources.user
 
     await this.config.beforeRegister(ctx, createUserPayload)
 
@@ -2226,7 +2022,7 @@ export class Auth {
     }
 
     let oauthIdentity: any = await manager.findOne(
-      this.resources.oauthIdentity.data.pascalCaseName,
+      this.__resources.oauthIdentity.data.pascalCaseName,
       {
         temporalToken: accessToken
       }
@@ -2246,7 +2042,7 @@ export class Auth {
     const oauthPayload = JSON.parse(oauthIdentity.payload)
 
     let user: any = await manager.findOne(
-      this.resources.user.data.pascalCaseName,
+      this.__resources.user.data.pascalCaseName,
       {
         email: oauthPayload.email
       }
@@ -2276,7 +2072,7 @@ export class Auth {
         errors: [
           {
             field: 'email',
-            message: `A ${this.resources.user.data.camelCaseName.toLowerCase()} already exists with email ${
+            message: `A ${this.__resources.user.data.camelCaseName.toLowerCase()} already exists with email ${
               oauthIdentity.email
             }.`
           }
@@ -2300,7 +2096,7 @@ export class Auth {
       await this.config.beforeRegister(ctx, createPayload as any)
 
       user = manager.create(
-        this.resources.user.data.pascalCaseName,
+        this.__resources.user.data.pascalCaseName,
         createPayload
       )
 
@@ -2311,8 +2107,8 @@ export class Auth {
       await this.config.beforeLogin(ctx, oauthPayload)
     }
 
-    const belongsToField = this.resources.oauthIdentity.data.fields.find(
-      field => field.name === this.resources.user.data.pascalCaseName
+    const belongsToField = this.__resources.oauthIdentity.data.fields.find(
+      field => field.name === this.__resources.user.data.pascalCaseName
     )!
 
     manager.assign(oauthIdentity, {
@@ -2360,7 +2156,7 @@ export class Auth {
     const { email, password, two_factor_token } = payload
 
     const user: any = await manager.findOne(
-      this.resources.user.data.pascalCaseName,
+      this.__resources.user.data.pascalCaseName,
       {
         email
       },
@@ -2427,7 +2223,7 @@ export class Auth {
     }
 
     const publicRole: any = await manager.findOne(
-      this.resources.role.data.pascalCaseName,
+      this.__resources.role.data.pascalCaseName,
       {
         slug: 'public'
       },
@@ -2493,7 +2289,7 @@ export class Auth {
       }
 
       const user: any = await manager.findOne(
-        this.resources.user.data.pascalCaseName,
+        this.__resources.user.data.pascalCaseName,
         {
           id
         },
@@ -2521,11 +2317,11 @@ export class Auth {
   }
 
   private getRoleUserKey() {
-    return this.resources.role.data.camelCaseNamePlural
+    return this.__resources.role.data.camelCaseNamePlural
   }
 
   private getPermissionUserKey() {
-    return this.resources.permission.data.camelCaseNamePlural
+    return this.__resources.permission.data.camelCaseNamePlural
   }
 
   public getCurrentTeamFromContext = async (ctx: ApiContext) => {
@@ -2533,17 +2329,18 @@ export class Auth {
       return
     }
 
-    const { req } = ctx
+    const { req, body } = ctx
 
     const { headers, params } = req
 
-    const currentTeamId = (headers['x-current-team'] as any) || params.team
+    const currentTeamId =
+      (headers['x-current-team'] as any) || params.team || body.teamId
 
     if (!currentTeamId) {
       return
     }
 
-    const team = await ctx.db.teams.findOne({
+    const team = await ctx.repositories.teams.findOne({
       id: currentTeamId
     })
 
@@ -2593,13 +2390,13 @@ export class Auth {
     const { email } = payload
 
     const existingUser: any = await manager.findOne(
-      this.resources.user.data.pascalCaseName,
+      this.__resources.user.data.pascalCaseName,
       {
         email
       }
     )
     const existingPasswordReset = await manager.findOne(
-      this.resources.passwordReset.data.pascalCaseName,
+      this.__resources.passwordReset.data.pascalCaseName,
       {
         email
       }
@@ -2630,7 +2427,7 @@ export class Auth {
       manager.persist(existingPasswordReset)
     } else {
       manager.persist(
-        manager.create(this.resources.passwordReset.data.pascalCaseName, {
+        manager.create(this.__resources.passwordReset.data.pascalCaseName, {
           email,
           token,
           expiresAt
@@ -2674,7 +2471,7 @@ export class Auth {
     const { token, password } = payload
 
     let existingPasswordReset: any = await manager.findOne(
-      this.resources.passwordReset.data.pascalCaseName,
+      this.__resources.passwordReset.data.pascalCaseName,
       {
         token
       }
@@ -2703,7 +2500,7 @@ export class Auth {
     }
 
     let user: any = await manager.findOne(
-      this.resources.user.data.pascalCaseName,
+      this.__resources.user.data.pascalCaseName,
       {
         email: existingPasswordReset.email
       }
@@ -2767,9 +2564,9 @@ export class Auth {
 
     // Expire all existing refresh tokens for this user.
     await ctx.manager.nativeUpdate(
-      this.resources.token.data.pascalCaseName,
+      this.__resources.token.data.pascalCaseName,
       {
-        [this.resources.user.data.camelCaseName]: ctx.user.id
+        [this.__resources.user.data.camelCaseName]: ctx.user.id
       } as any,
       {
         expiresAt: Dayjs().subtract(1, 'second').format(),
@@ -2778,10 +2575,10 @@ export class Auth {
     )
 
     const entity = ctx.manager.create(
-      this.resources.token.data.pascalCaseName,
+      this.__resources.token.data.pascalCaseName,
       {
         token: plainTextToken,
-        [this.resources.user.data.camelCaseName]: ctx.user.id,
+        [this.__resources.user.data.camelCaseName]: ctx.user.id,
         type: TokenTypes.REFRESH,
         expiresAt: previousTokenExpiry
           ? previousTokenExpiry

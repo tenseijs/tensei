@@ -2,6 +2,7 @@ export * from '../../../helpers'
 import { setup } from '../../../helpers'
 
 import { rest } from '@tensei/rest'
+import { graphql } from '@tensei/graphql'
 import { auth, permission } from '@tensei/auth'
 
 export const setupTeams = () => {
@@ -15,6 +16,7 @@ export const setupTeams = () => {
       .user('Customer')
       .teams()
       .plugin(),
-    rest().plugin()
+    rest().plugin(),
+    graphql().plugin()
   ])
 }

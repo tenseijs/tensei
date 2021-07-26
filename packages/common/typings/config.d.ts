@@ -336,6 +336,7 @@ declare module '@tensei/common/config' {
     }
     commands: CommandContract[]
     db: import('@tensei/orm').OrmContract
+    repositories: import('@tensei/orm').OrmContract
     inProduction: boolean
     port: number
     migrating: boolean

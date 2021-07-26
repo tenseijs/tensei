@@ -23,6 +23,8 @@ export class Orm {
 
         // Set ctx property on repository instance
         repositories[resource.data.camelCaseNamePlural]['ctx'] = ctx
+        repositories[resource.data.camelCaseNamePlural]['repositories'] =
+          ctx.repositories
 
         repositories[resource.data.camelCaseNamePlural][
           methodName
@@ -57,6 +59,7 @@ export class Orm {
                           this.ctx.resources
                         )}`
                     )}\n
+                    repositories: OrmContract
                 }\n
                 export interface ${
                   resource.data.pascalCaseName

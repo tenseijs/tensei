@@ -78,6 +78,8 @@ export const getDatabaseCredentials = () => {
     config.dbName = process.env.DATABASE_NAME || 'postgres'
     config.user = process.env.DATABASE_USER || 'postgres'
     config.password = process.env.DATABASE_PASSWORD || 'postgres'
+  } else if (databaseType === 'sqlite') {
+    config.dbName = ':memory:'
   } else {
     config.dbName = process.env.DATABASE_NAME || 'mikrotensei'
     config.user = process.env.DATABASE_USER || 'root'

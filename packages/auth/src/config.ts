@@ -34,6 +34,12 @@ export type AuthResources = {
   membership: ResourceContract
 }
 
+export interface AuthContract {
+  config: AuthPluginConfig
+  __getApiPath: (path: string) => string
+  __resources: AuthResources
+}
+
 export enum TokenTypes {
   REFRESH = 'REFRESH',
   PASSWORDLESS = 'PASSWORDLESS'
