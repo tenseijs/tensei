@@ -203,7 +203,7 @@ export class Teams {
         .mutation()
         .middleware(findTeamQueryMiddleware)
         .handle(async (_, args, ctx, info) => {
-          const permissions = ctx.body.object.permissions.map(
+          const permissions = ctx?.body?.object?.permissions?.map(
             (permission: string) =>
               permission.split('_').join(':').toLowerCase()
           )

@@ -1316,9 +1316,7 @@ export class Auth implements AuthContract {
             ctx.manager,
             ctx.databaseConfig.type!,
             this.__resources.user,
-            Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
-              pascalName
-            ],
+            Utils.graphql.getParsedInfo(info),
             [user]
           )
 
