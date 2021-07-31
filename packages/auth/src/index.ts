@@ -66,9 +66,7 @@ export class Auth implements AuthContract {
     setupFn: AuthSetupFn
   } = {
     prefix: '',
-    teamPermissions: [
-      permission('manage:teams').description('Has all permissions on this team')
-    ],
+    teamPermissions: [],
     autoFillUser: true,
     autoFilterForUser: true,
     tokenResource: 'Token',
@@ -315,7 +313,7 @@ export class Auth implements AuthContract {
         hasOne(this.config.teamResource, 'currentTeam')
           .label(`Current ${this.config.teamResource}`)
           .nullable(),
-        hasMany(this.config.teamResource, 'ownTeams').owner()
+        hasMany(this.config.teamResource, 'ownTeams')
       ]
     }
 
@@ -609,6 +607,7 @@ export class Auth implements AuthContract {
       .register(
         ({
           gql,
+          resources,
           currentCtx,
           extendRoutes,
           databaseConfig,
@@ -658,12 +657,16 @@ export class Auth implements AuthContract {
 
           extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
 
-          extendGraphQlQueries(this.extendGraphQlQueries())
+          extendGraphQlQueries(
+            this.extendGraphQlQueries(currentCtx().resources)
+          )
           extendRoutes(this.extendRoutes())
 
           if (this.config.teams) {
             extendGraphQlTypeDefs([this.teamsInstance.types(gql)])
-            extendGraphQlQueries(this.teamsInstance.queries())
+            extendGraphQlQueries(
+              this.teamsInstance.queries(currentCtx().resources)
+            )
           }
 
           if (this.config.autoFillUser) {
@@ -986,6 +989,7 @@ export class Auth implements AuthContract {
         : []),
       route(`Register ${name}`)
         .path(this.__getApiPath('register'))
+        .description(`Register a new ${name}`)
         .group('Auth')
         .post()
         .parameters([
@@ -1260,13 +1264,9 @@ export class Auth implements AuthContract {
     return this
   }
 
-  private extendGraphQlQueries() {
+  private extendGraphQlQueries(resources: ResourceContract[]) {
     const name = this.__resources.user.data.camelCaseName
     const pascalName = this.__resources.user.data.pascalCaseName
-
-    const resources: ResourceContract[] = Object.keys(this.__resources).map(
-      key => (this.__resources as any)[key]
-    )
 
     return [
       graphQlQuery(`Login ${name}`)

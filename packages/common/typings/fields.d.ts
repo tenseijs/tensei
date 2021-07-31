@@ -14,6 +14,7 @@ declare module '@tensei/common/fields' {
     EntityProperty,
     Dictionary
   } from '@mikro-orm/core'
+  import Faker from 'faker'
 
   interface Constructor<M> {
     new (...args: any[]): M
@@ -193,6 +194,7 @@ declare module '@tensei/common/fields' {
       authorizedToUpdate: AuthorizeFunction
       authorizedToDelete: AuthorizeFunction
     }
+    fakerFn?: (fn: typeof Faker) => any
     property: FieldProperty
     relatedProperty: FieldProperty
     afterConfigSet(): void

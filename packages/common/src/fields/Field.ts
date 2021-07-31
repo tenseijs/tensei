@@ -43,6 +43,8 @@ export class Field implements FieldContract {
     showOnCreation: true
   }
 
+  public fakerFn = undefined
+
   public showHideFieldFromApi = {
     hideOnCreateApi: false,
     hideOnUpdateApi: false,

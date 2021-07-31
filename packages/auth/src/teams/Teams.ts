@@ -8,6 +8,7 @@ import {
   array,
   route,
   Utils,
+  PluginSetupConfig,
   graphQlQuery,
   ResourceContract,
   GraphQlMiddleware
@@ -21,6 +22,20 @@ const findTeamMiddleware: RequestHandler = (request, response, next) => {
     return response.formatter.notFound(
       `Could not find team with ID ${params.team}.`
     )
+  }
+
+  next()
+}
+
+const isTeamOwnerMiddleware: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  const { team, user, authenticationError } = request
+
+  if (!user.ownsTeam(team)) {
+    throw authenticationError(`Unauthorized.`)
   }
 
   next()
@@ -103,6 +118,10 @@ const handleInviteTeamMember = (auth: AuthContract) => async (
     throw userInputError('The invited user does not exist.')
   }
 
+  if (await invitedUser.belongsToTeam(team)) {
+    return
+  }
+
   await repositories.memberships.persistAndFlush(
     repositories.memberships.create({
       team,
@@ -118,6 +137,8 @@ export class Teams {
   teamResource() {
     return resource(this.auth.config.teamResource)
       .hideOnFetchApi()
+      .canDelete(({ user, team }) => user.ownsTeam(team))
+      .canUpdate(({ user, team }) => user.ownsTeam(team))
       .fields([
         text('Name').rules('required', 'min:2', 'max:24'),
         belongsTo(this.auth.config.userResource, 'owner')
@@ -128,15 +149,19 @@ export class Teams {
   }
 
   teamMembershipResource() {
-    return resource('Membership')
-      .fields([
-        belongsTo(this.auth.config.teamResource).creationRules('required'),
-        array('Permissions').default([]),
-        belongsTo(this.auth.config.userResource).creationRules('required')
-      ])
-      .hideOnUpdateApi()
-      .hideOnCreateApi()
-      .hideOnFetchApi()
+    return (
+      resource('Membership')
+        .fields([
+          belongsTo(this.auth.config.teamResource).creationRules('required'),
+          array('Permissions').default([]),
+          belongsTo(this.auth.config.userResource).creationRules('required')
+        ])
+        // Only the owner of the team can delete the team.
+        .canDelete(({ user, team }) => user.ownsTeam(team))
+        .hideOnUpdateApi()
+        .hideOnCreateApi()
+        .hideOnFetchApi()
+    )
   }
 
   types(gql: any) {
@@ -180,18 +205,15 @@ export class Teams {
     `
   }
 
-  queries() {
+  queries(resources: ResourceContract[]) {
     if (!this.auth.config.teams) {
       return []
     }
 
-    const resources: ResourceContract[] = Object.keys(
-      this.auth.__resources
-    ).map(key => (this.auth.__resources as any)[key])
-
     return [
       graphQlQuery('Get team permissions')
         .path('teamPermissions')
+        .authorize(({ user, team }) => user.belongsToTeam(team))
         .query()
         .handle(async (_, args, ctx, info) => {
           return this.auth.config.teamPermissions.map(
@@ -201,6 +223,7 @@ export class Teams {
       graphQlQuery('Invite team member')
         .path('inviteTeamMember')
         .mutation()
+        .authorize(({ user, team }) => user.ownsTeam(team))
         .middleware(findTeamQueryMiddleware)
         .handle(async (_, args, ctx, info) => {
           const permissions = ctx?.body?.object?.permissions?.map(
@@ -217,6 +240,7 @@ export class Teams {
       graphQlQuery('All teams for a user')
         .path('allTeams')
         .authorize(({ user }) => !!user)
+        .authorize(async ({ user, team }) => await user.belongsToTeam(team))
         .handle(async (_, args, ctx, info) => {
           const { user } = ctx
 
@@ -235,6 +259,7 @@ export class Teams {
         }),
       graphQlQuery('Get team memberships')
         .path('teamMemberships')
+        .authorize(async ({ user, team }) => await user.belongsToTeam(team))
         .handle(async (_, args, ctx, info) => {
           const { team, manager } = ctx
 
@@ -363,6 +388,7 @@ export class Teams {
       route('Get Team Permissions')
         .get()
         .authorize(({ user }) => !!user)
+        .description(`Get a list of all existing team permissions.`)
         .path(this.auth.__getApiPath('teams/permissions'))
         .handle((_, { formatter: { ok } }) =>
           ok(
@@ -390,7 +416,8 @@ export class Teams {
         }),
       route('Invite existing user to team')
         .post()
-        .middleware([findTeamMiddleware])
+        .description(`Create a team membership for a user.`)
+        .middleware([findTeamMiddleware, isTeamOwnerMiddleware])
         .path(this.auth.__getApiPath('teams/:team/invites'))
         .handle(async (request, response) => {
           await handleInviteTeamMember(this.auth)(request)

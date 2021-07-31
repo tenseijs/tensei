@@ -139,7 +139,10 @@ export const populateFromResolvedNodes = async (
     await Promise.all([
       Promise.all(
         manyToOneSelections.map((selection: string) =>
-          manager.populate(data, selection)
+          manager.populate(
+            data.filter(d => d),
+            [selection]
+          )
         )
       ),
       Promise.all(
@@ -149,21 +152,15 @@ export const populateFromResolvedNodes = async (
               _ => _.databaseField === selection
             )
 
-            if (database === 'mongo' && field?.relatedProperty.owner) {
-              const relatedResource = resources.find(
-                r => r.data.pascalCaseName === field.relatedProperty.type
-              )
-              const relatedField = relatedResource?.data.fields.find(
-                f => f.databaseField === field.relatedProperty?.inversedBy
-              )
-            }
-
             if (
               !fieldNode[selection].args.where &&
               !fieldNode[selection].args.limit &&
               !fieldNode[selection].args.offset
             ) {
-              await manager.populate(data, selection)
+              await manager.populate(
+                data.filter(d => d),
+                selection
+              )
 
               return
             }
@@ -173,7 +170,7 @@ export const populateFromResolvedNodes = async (
                 const relatedData: any = await manager.find(
                   field?.relatedProperty.type!,
                   {
-                    [resource.data.snakeCaseNamePlural]: {
+                    [resource.data.camelCaseNamePlural]: {
                       id: {
                         $in: [item.id]
                       }
@@ -199,7 +196,10 @@ export const populateFromResolvedNodes = async (
               !fieldNode[selection].args.limit &&
               !fieldNode[selection].args.offset
             ) {
-              await manager.populate(data, selection)
+              await manager.populate(
+                data.filter(d => d),
+                selection
+              )
 
               return
             }
@@ -210,10 +210,14 @@ export const populateFromResolvedNodes = async (
 
             await Promise.all(
               data.map(async item => {
+                if (!item) {
+                  return
+                }
+
                 const relatedData: any = await manager.find(
                   field?.relatedProperty.type!,
                   {
-                    [resource.data.snakeCaseName]: item.id,
+                    [resource.data.camelCaseName]: item.id,
                     ...parseWhereArgumentsToWhereQuery(
                       fieldNode[selection].args.where
                     )
@@ -229,7 +233,10 @@ export const populateFromResolvedNodes = async (
       ),
       Promise.all(
         oneToOneSelections.map((selection: string) =>
-          manager.populate(data, selection)
+          manager.populate(
+            data.filter(d => d),
+            selection
+          )
         )
       ),
       Promise.all(
@@ -288,7 +295,7 @@ export const populateFromResolvedNodes = async (
                 const count = await manager.count(
                   field?.relatedProperty.type!,
                   {
-                    [resource.data.snakeCaseNamePlural]:
+                    [resource.data.camelCaseNamePlural]:
                       database === 'mongo'
                         ? {
                             $in: [item.id.toString()]
@@ -314,12 +321,21 @@ export const populateFromResolvedNodes = async (
               _ => _.databaseField === selection
             )
 
-            const uniqueKeys = Array.from(new Set(data.map(_ => _.id)))
+            const relatedResource = resources.find(
+              resource =>
+                resource.data.pascalCaseName === field?.relatedProperty?.type
+            )
+
+            const uniqueKeys = Array.from(new Set(data.map(_ => _?.id)))
+
+            const relatedManyToOneField = relatedResource?.data?.fields.find(
+              f => f.relatedProperty?.type === resource.data.pascalCaseName
+            )
 
             const counts: any[] = await Promise.all(
               uniqueKeys.map(async key =>
                 manager.count(field?.relatedProperty.type!, {
-                  [resource.data.snakeCaseName]: key,
+                  [relatedManyToOneField?.relatedProperty?.name!]: key,
                   ...parseWhereArgumentsToWhereQuery(
                     fieldNode[`${selection}Count`].args.where
                   )
@@ -328,9 +344,11 @@ export const populateFromResolvedNodes = async (
             )
 
             data.forEach(item => {
-              const index = uniqueKeys.indexOf(item.id)
+              if (item) {
+                const index = uniqueKeys.indexOf(item.id)
 
-              item[`${field?.databaseField}Count`] = counts[index]
+                item[`${field?.databaseField}Count`] = counts[index]
+              }
             })
           }
         })
@@ -357,7 +375,7 @@ export const populateFromResolvedNodes = async (
           fieldTypes[
             Object.keys(fieldNode[manyToOneSelection].fieldsByTypeName)[0]
           ],
-          data.map(d => d[field.databaseField])
+          data.filter(d => d).map(d => d[field.databaseField])
         )
       }
     }
@@ -382,7 +400,7 @@ export const populateFromResolvedNodes = async (
           fieldTypes[
             Object.keys(fieldNode[oneToOneSelection].fieldsByTypeName)[0]
           ],
-          data.map(d => d[field.databaseField])
+          data.filter(d => d).map(d => d[field.databaseField])
         )
       }
     }
@@ -408,6 +426,7 @@ export const populateFromResolvedNodes = async (
             Object.keys(fieldNode[manyToManySelection].fieldsByTypeName)[0]
           ],
           data
+            .filter(d => d)
             .map(d => d[field.databaseField])
             .reduce((acc, d) => [...acc, ...d], [])
         )
@@ -435,6 +454,7 @@ export const populateFromResolvedNodes = async (
             Object.keys(fieldNode[oneToManySelection].fieldsByTypeName)[0]
           ],
           data
+            .filter(d => d)
             .map(d => d[field.databaseField])
             .reduce((acc, d) => [...acc, ...d], [])
         )

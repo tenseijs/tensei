@@ -541,9 +541,9 @@ export class Tensei implements TenseiContract {
     return this.ctx.graphQlQueries.find(query => query.config.path === path)
   }
 
-  private getRoute(id: string) {
+  private getRoute(idOrPath: string) {
     return this.ctx.routes.find(
-      route => route.config.id === id || route.config.path === id
+      route => route.config.id === idOrPath || route.config.path === idOrPath
     )
   }
 

@@ -1,5 +1,4 @@
 export { id, ID } from './fields/ID'
-export { Field } from './fields/Field'
 export { text, Text } from './fields/Text'
 export { link, Link } from './fields/Link'
 export { Json, json } from './fields/Json'
@@ -7,6 +6,9 @@ export { slug, Slug } from './fields/Slug'
 export { date, DateField } from './fields/Date'
 export { select, Select } from './fields/Select'
 export { array, ArrayField } from './fields/Array'
+
+export { Field } from './fields/Field'
+
 export { integer, Integer } from './fields/Integer'
 export { number, NumberField } from './fields/Number'
 export { dateTime, DateTime } from './fields/DateTime'

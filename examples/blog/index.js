@@ -1,23 +1,19 @@
 require('dotenv').config()
-const { cms } = require('@tensei/cms')
-const { auth } = require('@tensei/auth')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
-const { mde, markdown } = require('@tensei/mde')
+const { auth, permission } = require('@tensei/auth')
+
+const seed = require('./seed')
 
 const {
   tensei,
   welcome,
-  cors,
   resource,
   text,
   textarea,
-  dateTime,
-  slug,
-  array,
   hasMany,
   belongsTo,
-  boolean
+  belongsToMany
 } = require('@tensei/core')
 
 module.exports = tensei()
@@ -25,66 +21,55 @@ module.exports = tensei()
   .resources([
     resource('Post')
       .fields([
-        text('Title').rules('required'),
-        slug('Slug')
-          .creationRules('required', 'unique:slug')
-          .unique()
-          .from('Title'),
-        markdown('Description').creationRules('required', 'max:255'),
-        textarea('Content').nullable().rules('required'),
-        dateTime('Published At').creationRules('required'),
-        belongsTo('Category').alwaysLoad(),
-        array('Procedure')
-          .of('string')
-          .rules('min:3', 'max:10')
-          .creationRules('required'),
-        array('Prices')
-          .nullable()
-          .of('decimal')
-          .rules('max:10', 'min:2')
-          .creationRules('required')
+        text('Title').notNullable().rules('required'),
+        textarea('Description').nullable(),
+        belongsTo('Category').nullable(),
+        belongsToMany('Tag'),
+        belongsToMany('Peg')
       ])
-      .icon('library')
       .displayField('Title'),
     resource('Category')
       .fields([
         text('Name').notNullable().rules('required'),
         textarea('Description'),
-        belongsTo('User').nullable(),
-        hasMany('Post')
+        hasMany('Post'),
+        belongsToMany('Peg')
       ])
-      .displayField('Name')
+      .displayField('Name'),
+    resource('Tag').fields([
+      text('Name').rules('required'),
+      belongsToMany('Post')
+    ]),
+    resource('Peg').fields([
+      text('Name').rules('required'),
+      belongsToMany('Category'),
+      belongsToMany('Post'),
+      belongsTo('Team')
+    ])
   ])
   .plugins([
     welcome(),
-    cms().plugin(),
     auth()
       .teams()
-      .verifyEmails()
-      .twoFactorAuth()
-      .social('google', {
-        key: process.env.GOOGLE_KEY,
-        secret: process.env.GOOGLE_SECRET,
-        clientCallback: 'http://localhost:1234'
-      })
-      .setup(({ user }) => {
-        user.fields([
-          hasMany('Category'),
-          boolean('Accepted Terms And Conditions')
-            .creationRules('required')
-            .default(false)
-        ])
-      })
       .configureTokens({
-        accessTokenExpiresIn: 60 * 60 * 60 * 60 * 60
+        accessTokenExpiresIn: 60 * 60 * 60 * 60
       })
-      .refreshTokens()
+      .teamPermissions([
+        permission('Manage databases')
+          .description('Manage databases')
+          .default()
+          .slug('manage:databases')
+      ])
+      .setup(({ team }) => {
+        team.fields([hasMany('Peg')])
+      })
       .plugin(),
     rest().plugin(),
-    graphql().plugin(),
-    cors(),
-    mde().plugin()
+    graphql().plugin()
   ])
+  .boot(async ctx => {
+    await seed(ctx)
+  })
   .databaseConfig({
     type: 'sqlite',
     dbName: 'db.sqlite'
