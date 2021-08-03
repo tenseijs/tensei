@@ -1,5 +1,5 @@
 declare module '@tensei/common/resources' {
-  import { Request } from 'express'
+  import { Request, RequestHandler } from 'express'
   import { FilterContract } from '@tensei/common/filters'
   import { SerializedField, FieldContract } from '@tensei/common/fields'
   import { SerializedAction, ActionContract } from '@tensei/common/actions'
@@ -12,7 +12,8 @@ declare module '@tensei/common/resources' {
     DatabaseRepositoryInterface,
     User,
     DataPayload,
-    ResourceHelpers
+    ResourceHelpers,
+    GraphQlMiddleware
   } from '@tensei/common/config'
   import { ActionResponse } from '@tensei/common/actions'
   export interface ValidationMessages {
@@ -129,9 +130,10 @@ declare module '@tensei/common/resources' {
     extend(extend: ResourceExtendContract): this
     filters(filters: FilterContract[]): this
     permissions(permissions: Permission[]): this
-    canShow(authorizeFunction: AuthorizeFunction): this
-    canFetch(authorizeFunction: AuthorizeFunction): this
     canFetchRelation(authorizeFunction: AuthorizeFunction): this
+    canShow(authorizeFunction: AuthorizeFunction): this
+
+    canFetch(authorizeFunction: AuthorizeFunction): this
     canInsert(authorizeFunction: AuthorizeFunction): this
     canUpdate(authorizeFunction: AuthorizeFunction): this
     canDelete(authorizeFunction: AuthorizeFunction): this

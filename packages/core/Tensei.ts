@@ -267,7 +267,7 @@ export class Tensei implements TenseiContract {
         .handle(() => {
           const table = new Table({
             head: ['METHOD', 'URI', 'MIDDLEWARE', 'NAME', 'DESCRIPTION'],
-            colWidths: [10, 45, 15, 25, 42]
+            colWidths: [10, 45, 15, 25, 25, 42]
           })
 
           table.push(
@@ -275,6 +275,7 @@ export class Tensei implements TenseiContract {
               route.config.type,
               route.config.path,
               route.config.middleware.length,
+              route.config.id,
               route.config.name,
               route.config.description
             ])
@@ -628,8 +629,7 @@ export class Tensei implements TenseiContract {
         request.storage = this.ctx.storage
         request.emitter = this.ctx.emitter
         request.indicative = indicative
-        request.db = this.ctx.db
-        request.repositories = this.ctx.db
+        request.repositories = this.ctx.repositories
 
         // @ts-ignore
         this.ctx.request = request

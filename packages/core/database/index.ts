@@ -117,6 +117,7 @@ class Database {
     resource.data.methods.forEach(method => {
       entityClass.prototype[method.name] = function (...fnArgs: any) {
         this.ctx = config // Set the config on the value of this
+        this.ctx.manager = config.orm?.em.fork()
         this.repositories = config.repositories // Set the repositories on the value of this
         const fn = method.fn.bind(this)
 

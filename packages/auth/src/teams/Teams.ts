@@ -8,14 +8,13 @@ import {
   array,
   route,
   Utils,
-  PluginSetupConfig,
   graphQlQuery,
   ResourceContract,
   GraphQlMiddleware
 } from '@tensei/common'
 import { validateAll, validations } from 'indicative/validator'
 
-const findTeamMiddleware: RequestHandler = (request, response, next) => {
+export const findTeamMiddleware: RequestHandler = (request, response, next) => {
   const { team, params } = request
 
   if (!team) {
@@ -27,7 +26,7 @@ const findTeamMiddleware: RequestHandler = (request, response, next) => {
   next()
 }
 
-const isTeamOwnerMiddleware: RequestHandler = async (
+export const isTeamOwnerMiddleware: RequestHandler = async (
   request,
   response,
   next
@@ -41,7 +40,7 @@ const isTeamOwnerMiddleware: RequestHandler = async (
   next()
 }
 
-const findTeamQueryMiddleware: GraphQlMiddleware = (
+export const findTeamQueryMiddleware: GraphQlMiddleware = (
   resolve,
   parent,
   args,
@@ -110,7 +109,7 @@ const handleInviteTeamMember = (auth: AuthContract) => async (
 
   const invitedUser = await repositories[
     auth.__resources.user.data.camelCaseNamePlural
-  ].findOne({
+  ]().findOne({
     email: payload.email
   })
 
@@ -122,8 +121,8 @@ const handleInviteTeamMember = (auth: AuthContract) => async (
     return
   }
 
-  await repositories.memberships.persistAndFlush(
-    repositories.memberships.create({
+  await repositories.memberships().persistAndFlush(
+    repositories.memberships().create({
       team,
       [auth.__resources.user.data.camelCaseName]: invitedUser,
       permissions: payload.permissions
@@ -240,7 +239,6 @@ export class Teams {
       graphQlQuery('All teams for a user')
         .path('allTeams')
         .authorize(({ user }) => !!user)
-        .authorize(async ({ user, team }) => await user.belongsToTeam(team))
         .handle(async (_, args, ctx, info) => {
           const { user } = ctx
 
@@ -285,6 +283,10 @@ export class Teams {
     const self = this
 
     userResource.method('ownsTeam', function (this: any, team: any) {
+      if (!team) {
+        return false
+      }
+
       return (
         team.owner.toString() === this.id.toString() ||
         team.owner?.id.toString() === this.id.toString()
@@ -294,7 +296,7 @@ export class Teams {
     userResource.method(
       'teamMembership',
       async function (this: any, team: any) {
-        const membership = await this.ctx.repositories.memberships.findOne({
+        const membership = await this.ctx.repositories.memberships().findOne({
           team,
           [self.auth.__resources.user.data.camelCaseName]: this
         })
@@ -351,19 +353,20 @@ export class Teams {
 
     userResource.method('allTeams', async function (this: any) {
       const [ownedTeams, memberships] = await Promise.all([
-        this.ctx.orm.em.find(
-          self.auth.__resources.team.data.pascalCaseName,
+        this.repositories.teams().find(
           { owner: this },
           {
             populate: [
-              `memberships.${self.auth.__resources.user.data.camelCaseName}`
+              `memberships.${self.auth.__resources.user.data.camelCaseName}`,
+              'owner'
             ]
           }
         ),
-        this.ctx.orm.em.find(
-          self.auth.__resources.membership.data.pascalCaseName,
+        this.repositories.memberships().find(
           { [self.auth.__resources.user.data.camelCaseName]: this.id },
-          { populate: ['team.owner'] }
+          {
+            populate: [`${self.auth.__resources.team.data.camelCaseName}.owner`]
+          }
         )
       ])
 
@@ -404,7 +407,7 @@ export class Teams {
         .path(this.auth.__getApiPath('teams/:team/memberships'))
         .handle(async ({ repositories, team }, { formatter: { ok } }) => {
           return ok(
-            await repositories.memberships.find(
+            await repositories.memberships().find(
               {
                 team
               },

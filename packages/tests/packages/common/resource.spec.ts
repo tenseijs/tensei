@@ -7,9 +7,9 @@ test('can register custom model methods on resource instances', async () => {
 
   const db = ctx.db as any
 
-  await db.comments.persistAndFlush(db.comments.create(commentStub))
+  await db.comments().persistAndFlush(db.comments().create(commentStub))
 
-  const comment = await db.comments.findOne({
+  const comment = await db.comments().findOne({
     title: commentStub.title
   })
 
@@ -23,16 +23,16 @@ test('can register custom repository methods on resource instances', async () =>
 
   const commentStub = fakeComment()
 
-  const db = ctx.db as any
+  const { comments } = ctx.repositories as any
 
-  await db.comments.persistAndFlush(db.comments.create(commentStub))
+  await comments().persistAndFlush(comments().create(commentStub))
 
-  const deletedComment = await db.comments.deleteByTitle(commentStub.title)
+  const deletedComment = await comments().deleteByTitle(commentStub.title)
 
   expect(deletedComment.body).toBe(commentStub.body)
 
   expect(
-    await db.comments.findOne({
+    await comments().findOne({
       title: commentStub.title
     })
   ).toBeNull()

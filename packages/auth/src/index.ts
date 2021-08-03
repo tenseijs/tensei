@@ -50,7 +50,7 @@ import {
 export * from './config'
 
 import { setup } from './setup'
-import { Request } from 'express'
+import { request, Request } from 'express'
 import { Teams } from './teams/Teams'
 import { permission, PermissionContract } from './teams/Permission'
 
@@ -166,7 +166,11 @@ export class Auth implements AuthContract {
       restAPiPlugin.config.extra?.path !== 'api'
     ) {
       this.config.apiPath = restAPiPlugin.config.extra?.path
+
+      return restAPiPlugin.config.extra?.path
     }
+
+    return this.config.apiPath
   }
 
   public setup(fn: AuthSetupFn) {
@@ -777,7 +781,10 @@ export class Auth implements AuthContract {
             async (resolve, parent, args, context, info) => {
               await this.getAuthUserFromContext(context)
 
-              await this.getCurrentTeamFromContext(context)
+              await this.getCurrentTeamFromContext(
+                context,
+                currentCtx().plugins
+              )
 
               await this.setAuthUserForPublicRoutes(context)
 
@@ -846,7 +853,10 @@ export class Auth implements AuthContract {
             async (request, response, next) => {
               await this.getAuthUserFromContext(request as any)
 
-              await this.getCurrentTeamFromContext(request as any)
+              await this.getCurrentTeamFromContext(
+                request as any,
+                currentCtx().plugins
+              )
 
               await this.setAuthUserForPublicRoutes(request as any)
 
@@ -935,14 +945,6 @@ export class Auth implements AuthContract {
           }
         })
       })
-  }
-
-  private getRegistrationFieldsDocs() {
-    const properties: any = {}
-
-    // TODO: Calculate and push new registration fields to be exposed to API
-
-    return properties
   }
 
   private extendRoutes() {
@@ -2322,7 +2324,10 @@ export class Auth implements AuthContract {
     return this.__resources.permission.data.camelCaseNamePlural
   }
 
-  public getCurrentTeamFromContext = async (ctx: ApiContext) => {
+  public getCurrentTeamFromContext = async (
+    ctx: ApiContext,
+    plugins: PluginContract[]
+  ) => {
     if (!this.config.teams) {
       return
     }
@@ -2331,14 +2336,26 @@ export class Auth implements AuthContract {
 
     const { headers, params } = req
 
-    const currentTeamId =
+    let currentTeamId =
       (headers['x-current-team'] as any) || params.team || body.teamId
+
+    if (
+      !currentTeamId &&
+      req.originalUrl.startsWith(
+        `/${this.resolveApiPath(plugins)}/${
+          this.__resources.team.data.slugPlural
+        }`
+      ) &&
+      ['GET', 'PATCH', 'PUT', 'DELETE'].includes(req.method)
+    ) {
+      currentTeamId = params.id
+    }
 
     if (!currentTeamId) {
       return
     }
 
-    const team = await ctx.repositories.teams.findOne({
+    const team = await ctx.repositories.teams().findOne({
       id: currentTeamId
     })
 

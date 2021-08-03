@@ -31,6 +31,22 @@ import { generateResourceInterfaces } from './sdk/generators/interfaces'
 import { generateFetchWrapperForResources } from './sdk/generators/rest'
 import { formatContent } from './sdk/generators/helpers'
 
+const authorizeMiddleware = (checks: AuthorizeFunction[]) => {
+  return (async (request, response, next) => {
+    const authorized = await Promise.all(
+      checks.map(fn => fn(request, request.entity))
+    )
+
+    if (authorized.filter(result => result).length !== checks.length) {
+      return response.status(401).json({
+        message: 'Unauthorized.'
+      })
+    }
+
+    return next()
+  }) as RequestHandler
+}
+
 class Rest {
   private getApiPath = (path: string) => {
     return `/${this.path}/${path}`
@@ -134,22 +150,6 @@ class Rest {
       ]
     }
 
-    const authorizeMiddleware = (checks: AuthorizeFunction[]) => {
-      return (async (request, response, next) => {
-        const authorized = await Promise.all(
-          checks.map(fn => fn(request, request.entity))
-        )
-
-        if (authorized.filter(result => result).length !== checks.length) {
-          return response.status(401).json({
-            message: 'Unauthorized.'
-          })
-        }
-
-        return next()
-      }) as RequestHandler
-    }
-
     const findSingleEntityMiddleware = (resource: ResourceContract) => {
       return (async (request, response, next) => {
         const findOptions = parseQueryToFindOptions(request.query, resource)
@@ -176,21 +176,18 @@ class Rest {
       const {
         slugSingular: singular,
         slugPlural: plural,
-        pascalCaseName: modelName
+        pascalCaseName: modelName,
+        camelCaseNamePlural: camelPlural,
+        camelCaseName: camelSingular
       } = resource.data
 
       !resource.isHiddenOnApi() &&
         !resource.data.hideOnCreateApi &&
         routes.push(
-          route(`Insert ${singular}`)
+          route(`Create ${singular}`)
             .post()
             .internal()
             .group(resource.data.label)
-            .middleware([
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToCreate
-              )
-            ])
             .parameters(
               resource.data.fields
                 .filter(
@@ -210,10 +207,10 @@ class Rest {
                   type: field.relatedProperty.type || field.property.type!
                 }))
             )
-            .id(this.getRouteId(`insert_${singular}`))
+            .id(this.getRouteId(`create${camelSingular}`))
             .resource(resource)
             .path(getApiPath(plural))
-            .description(`Insert a single ${singular}.`)
+            .description(`Create a single ${camelSingular}.`)
             .handle(
               async (
                 {
@@ -259,15 +256,10 @@ class Rest {
       !resource.isHiddenOnApi() &&
         !resource.data.hideOnCreateApi &&
         routes.push(
-          route(`Insert ${plural}`)
+          route(`Create ${plural}`)
             .post()
             .internal()
             .group(resource.data.label)
-            .middleware([
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToCreate
-              )
-            ])
             .parameters([
               {
                 in: 'body',
@@ -276,10 +268,10 @@ class Rest {
                 type: 'array'
               }
             ])
-            .id(this.getRouteId(`insert_${plural}`))
+            .id(this.getRouteId(`createMany${camelPlural}`))
             .resource(resource)
             .path(getApiPath(`${plural}/bulk`))
-            .description(`Insert multiple ${plural}.`)
+            .description(`Create multiple ${plural}.`)
             .handle(
               async (
                 {
@@ -361,10 +353,7 @@ class Rest {
             .get()
             .internal()
             .group(resource.data.label)
-            .id(plural)
-            .middleware([
-              authorizeMiddleware(resource.authorizeCallbacks.authorizedToFetch)
-            ])
+            .id(`fetchMany${camelPlural}`)
             .parameters(paginationParameters(resource))
             .resource(resource)
             .path(getApiPath(plural))
@@ -403,12 +392,9 @@ class Rest {
             ])
             .group(resource.data.label)
             .internal()
-            .id(singular)
+            .id(`fetchOne${singular}`)
             .resource(resource)
-            .middleware([
-              findSingleEntityMiddleware(resource),
-              authorizeMiddleware(resource.authorizeCallbacks.authorizedToShow)
-            ])
+            .middleware([findSingleEntityMiddleware(resource)])
             .description(
               `This endpoint fetches a single ${singular}. Provide the primary key ID of the entity you want to fetch.`
             )
@@ -423,11 +409,6 @@ class Rest {
         routes.push(
           route(`Fetch ${singular} relations`)
             .get()
-            .middleware([
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToFetchRelation
-              )
-            ])
             .parameters([
               {
                 in: 'path',
@@ -452,7 +433,7 @@ class Rest {
               ...paginationParameters(resource)
             ])
             .group(resource.data.label)
-            .id(`index_${singular}_relations`)
+            .id(`fetchMany${camelSingular}Relations`)
             .internal()
             .resource(resource)
             .description(
@@ -577,11 +558,6 @@ class Rest {
           route(`Update multiple ${plural}`)
             .patch()
             .internal()
-            .middleware([
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToUpdate
-              )
-            ])
             .parameters([
               {
                 in: 'body',
@@ -597,7 +573,7 @@ class Rest {
               }
             ])
             .group(resource.data.label)
-            .id(this.getRouteId(`update_${plural}`))
+            .id(this.getRouteId(`updateMany${camelPlural}`))
             .resource(resource)
             .description(
               `This endpoint update multiple ${plural}. Provide a where query matching all the objects you want to update.`
@@ -608,7 +584,6 @@ class Rest {
                 {
                   manager,
                   body,
-                  entity,
                   resources: resourcesMap,
                   userInputError,
                   config
@@ -689,18 +664,13 @@ class Rest {
           route(`Update single ${singular}`)
             .patch()
             .internal()
-            .middleware([
-              findSingleEntityMiddleware(resource),
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToUpdate
-              )
-            ])
+            .middleware([findSingleEntityMiddleware(resource)])
             .parameters(
               resource.data.fields
                 .filter(
                   field =>
                     !field.showHideFieldFromApi.hideOnUpdateApi &&
-                    !['id', '_id', 'created_at', 'updated_at'].includes(
+                    !['id', '_id', 'createdAt', 'updatedAt'].includes(
                       field.databaseField
                     )
                 )
@@ -715,7 +685,7 @@ class Rest {
                 }))
             )
             .group(resource.data.label)
-            .id(this.getRouteId(`update_${singular}`))
+            .id(this.getRouteId(`update${camelSingular}`))
             .resource(resource)
             .description(
               `This endpoint update a single ${singular}. Provide the primary key ID of the ${singular} you want to update.`
@@ -748,9 +718,9 @@ class Rest {
                   })
                 }
 
-                manager.assign(entity, body)
+                manager.assign(entity, payload)
 
-                await manager.persistAndFlush(entity)
+                await manager.persistAndFlush([entity])
 
                 config.emitter.emit(`${singular}::updated`, entity)
 
@@ -765,12 +735,7 @@ class Rest {
           route(`Delete single ${singular}`)
             .delete()
             .internal()
-            .middleware([
-              findSingleEntityMiddleware(resource),
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToDelete
-              )
-            ])
+            .middleware([findSingleEntityMiddleware(resource)])
             .parameters([
               {
                 in: 'path',
@@ -781,7 +746,7 @@ class Rest {
               }
             ])
             .group(resource.data.label)
-            .id(this.getRouteId(`delete_${singular}`))
+            .id(this.getRouteId(`delete${camelSingular}`))
             .resource(resource)
             .path(getApiPath(`${plural}/:id`))
             .extend({
@@ -810,12 +775,7 @@ class Rest {
             .delete()
             .group(resource.data.label)
             .internal()
-            .middleware([
-              authorizeMiddleware(
-                resource.authorizeCallbacks.authorizedToDelete
-              )
-            ])
-            .id(this.getRouteId(`delete_many_${singular}`))
+            .id(this.getRouteId(`deleteMany${singular}`))
             .resource(resource)
             .path(getApiPath(`${plural}`))
             .description(
@@ -905,6 +865,45 @@ class Rest {
               )
             })
         ])
+      })
+      .boot(config => {
+        config.currentCtx().routes.forEach(route => {
+          if (!route.config.internal) {
+            return
+          }
+
+          if (route.config.id.startsWith('create')) {
+            route.middleware([
+              authorizeMiddleware(
+                route?.config.resource?.authorizeCallbacks.authorizedToCreate!
+              )
+            ])
+          }
+
+          if (route.config.id.startsWith('update')) {
+            route.middleware([
+              authorizeMiddleware(
+                route?.config.resource?.authorizeCallbacks.authorizedToUpdate!
+              )
+            ])
+          }
+
+          if (route.config.id.startsWith('delete')) {
+            route.middleware([
+              authorizeMiddleware(
+                route?.config.resource?.authorizeCallbacks.authorizedToDelete!
+              )
+            ])
+          }
+
+          if (route.config.id.startsWith('fetch')) {
+            route.middleware([
+              authorizeMiddleware(
+                route?.config.resource?.authorizeCallbacks.authorizedToFetch!
+              )
+            ])
+          }
+        })
       })
   }
 }

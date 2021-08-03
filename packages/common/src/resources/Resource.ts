@@ -268,7 +268,7 @@ export class Resource implements ResourceContract {
 
   public repositoryMethod<Fn = ResourceMethod>(name: string, fn: Fn) {
     this.data.repositoryMethods = [
-      ...this.data.methods,
+      ...this.data.repositoryMethods,
       {
         name,
         fn

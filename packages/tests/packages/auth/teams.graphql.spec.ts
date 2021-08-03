@@ -50,7 +50,7 @@ test('the currentTeam method returns the users current team', async () => {
 
   const orm: any = repositories
 
-  const registeredCustomer = await orm.customers.findOne({
+  const registeredCustomer = await orm.customers().findOne({
     email: customerStud.email
   })
 
@@ -165,17 +165,17 @@ test('the hasTeamPermission method checks if a user can perform a specific team 
     .set('Authorization', `Bearer ${response.body.data.register.accessToken}`)
   expect(inviteMemberResponse.body.data.inviteTeamMember).toBe(true)
 
-  const firstCustomer = await db.customers.findOne({
+  const firstCustomer = await db.customers().findOne({
     email: customerStud.email
   })
 
   const team = firstCustomer.currentTeam
 
-  const secondCustomer = await db.customers.findOne({
+  const secondCustomer = await db.customers().findOne({
     email: secondCustomerStud.email
   })
 
-  const thirdCustomer = await db.customers.findOne({
+  const thirdCustomer = await db.customers().findOne({
     email: thirdCustomerStud.email
   })
 
@@ -204,12 +204,7 @@ test('the hasTeamPermission method checks if a user can perform a specific team 
   )
 
   expect((await firstCustomer.teamPermissions(team)).sort()).toEqual(
-    [
-      'attach:databases',
-      'manage:teams',
-      'create:databases',
-      'create:servers'
-    ].sort()
+    ['attach:databases', 'create:databases', 'create:servers'].sort()
   )
   expect(await secondCustomer.teamPermissions(team)).toEqual([
     'attach:databases'

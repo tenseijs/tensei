@@ -8,28 +8,41 @@ import { resolveFieldTypescriptType } from './helpers'
 export class Orm {
   constructor(public ctx: Config) {}
 
+  private cachedRepositories: any = {}
+
   public generate() {
     const repositories: any = {}
 
+    const self = this
+
     this.ctx.resources.forEach(resource => {
-      repositories[
-        resource.data.camelCaseNamePlural
-      ] = this.ctx.orm?.em.getRepository(resource.data.pascalCaseName)
+      repositories[resource.data.camelCaseNamePlural] = function () {
+        if (self.cachedRepositories[resource.data.camelCaseNamePlural]) {
+          return self.cachedRepositories[resource.data.camelCaseNamePlural]
+        }
 
-      resource.data.repositoryMethods.forEach(method => {
-        const methodName = method.name.replace(/\s+/g, '')
+        const repository = (
+          self.ctx.request?.manager || self.ctx.orm!.em
+        ).getRepository(resource.data.pascalCaseName)
 
-        const ctx = this.ctx
+        resource.data.repositoryMethods.forEach(method => {
+          const methodName = method.name.replace(/\s+/g, '')
 
-        // Set ctx property on repository instance
-        repositories[resource.data.camelCaseNamePlural]['ctx'] = ctx
-        repositories[resource.data.camelCaseNamePlural]['repositories'] =
-          ctx.repositories
+          ;(repository as any)[methodName] = method.fn.bind(repository)
+        })
 
-        repositories[resource.data.camelCaseNamePlural][
-          methodName
-        ] = method.fn.bind(repositories[resource.data.camelCaseNamePlural])
-      })
+        self.cachedRepositories[resource.data.camelCaseNamePlural] = repository
+
+        return repository
+      }
+
+      Object.defineProperty(
+        repositories[resource.data.camelCaseNamePlural],
+        'name',
+        {
+          value: `${resource.data.pascalCaseName}Repository`
+        }
+      )
     })
 
     return repositories
