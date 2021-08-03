@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.1](https://github.com/tenseijs/tensei/compare/v0.9.0...v0.9.1) (2021-08-03)
+
+
+### Features
+
+* **create-tensei-app:** update start command in typescript template ([a02c5b4](https://github.com/tenseijs/tensei/commit/a02c5b45ba4b8c542ddf2d49a338b9db287c0adb))
+
+
+
+
+
 # [0.9.0](https://github.com/tenseijs/tensei/compare/v0.8.21...v0.9.0) (2021-08-03)
 
 
