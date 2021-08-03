@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/tenseijs/tensei/compare/v0.8.21...v0.9.0) (2021-08-03)
+
+
+### Features
+
+* **graphql:** add teams queries to graphql ' ([e6343eb](https://github.com/tenseijs/tensei/commit/e6343eb076384bd5bdcb4bc3856c27329b5a90bd))
+* **graphql:** move graphql (auth, resources, common) from snake case to camel case ([#138](https://github.com/tenseijs/tensei/issues/138)) ([c0d23d5](https://github.com/tenseijs/tensei/commit/c0d23d5442bdf4cad56dbe8b77ed9fe274cbad4b))
+
+
+
+
+
 ## [0.8.21](https://github.com/tenseijs/tensei/compare/v0.8.20...v0.8.21) (2021-07-22)
 
 **Note:** Version bump only for package @tensei/graphql
