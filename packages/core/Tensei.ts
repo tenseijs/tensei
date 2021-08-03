@@ -157,7 +157,7 @@ export class Tensei implements TenseiContract {
 
     if (this.ctx.databaseConfig.type === 'sqlite') {
       this.ctx.databaseConfig.dbName =
-        process.env.DATABASE_NAME || this.ctx.name.toLowerCase()
+        process.env.DATABASE_NAME || `${this.ctx.name}.sqlite`.toLowerCase()
     }
 
     if (
