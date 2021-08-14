@@ -197,6 +197,20 @@ class CmsPlugin {
     const { config, manager, body, resources } = request
     const { emitter } = config
 
+    const adminCount = await manager.count(
+      this.resources.user.data.pascalCaseName,
+      {}
+    )
+
+    if (adminCount !== 0) {
+      return done(
+        {
+          message: 'Admin user already exists.'
+        },
+        null
+      )
+    }
+
     const validator = Utils.validator(this.userResource(), manager, resources)
 
     const [success, payload] = await validator.validate(body)
