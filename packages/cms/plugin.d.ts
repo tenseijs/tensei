@@ -2,8 +2,8 @@ import { User } from '@tensei/common'
 
 declare global {
   namespace Express {
-    export interface Request {
-      user: User
+    interface User {
+      id: number
     }
   }
 }

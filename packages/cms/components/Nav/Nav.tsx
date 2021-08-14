@@ -111,7 +111,7 @@ const Nav: React.FC<NavProps> = ({ className }) => {
               route.requiredPermissions.length === 0 ||
               route.requiredPermissions
                 .map(p =>
-                  window.Tensei.state.admin.admin_permissions.includes(p)
+                  window.Tensei.state.admin.admin_permissions?.includes(p)
                 )
                 .filter(Boolean).length === route.requiredPermissions.length
           )

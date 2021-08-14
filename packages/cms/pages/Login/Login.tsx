@@ -2,11 +2,10 @@ import React, { useState, FormEventHandler } from 'react'
 import { TextInput, Checkbox, Button } from '@tensei/components'
 import { useHistory, useLocation, Redirect } from 'react-router-dom'
 
-const Register = () => {
+const Login = () => {
   const { push } = useHistory()
   const location = useLocation()
   const [state, setState] = useState<{
-    fullName: string
     email: string
     password: string
     errors: {
@@ -16,7 +15,6 @@ const Register = () => {
     is_login: boolean
     submitted?: boolean
   }>({
-    fullName: '',
     email: '',
     password: '',
     errors: {},
@@ -45,9 +43,8 @@ const Register = () => {
     event.preventDefault()
 
     window.Tensei.client
-      .post(`auth/register`, {
+      .post(`auth/login`, {
         email: state.email,
-        fullName: state.fullName,
         password: state.password
       })
       .then(() => {
@@ -73,10 +70,6 @@ const Register = () => {
       })
   }
 
-  if (state.is_login && !window.Tensei.state.registered) {
-    return <Redirect to={window.Tensei.getPath('auth/register')} />
-  }
-
   return (
     <div className="w-full bg-gray-100 h-screen">
       <div className="max-w-md mx-auto pt-20 md:px-0 px-5">
@@ -89,21 +82,6 @@ const Register = () => {
         </div>
         <div className="border-t-2 border-tensei-primary bg-white shadow-md pt-4 pb-6 px-8">
           <form onSubmit={onSubmit}>
-            <TextInput
-              id="fullName"
-              name="fullName"
-              label="Full name"
-              className="mt-4"
-              value={state.fullName}
-              placeholder="Dan Saltz"
-              error={state.errors.fullName}
-              onChange={event =>
-                setState({
-                  ...state,
-                  fullName: event.target.value
-                })
-              }
-            />
             <TextInput
               id="email"
               name="email"
@@ -142,7 +120,7 @@ const Register = () => {
                 loading={state.is_loading}
                 className="mt-3 md:mt-3 text-center"
               >
-                {state.is_login ? 'Login' : 'Create admin'}
+                Login
               </Button>
             </div>
           </form>
@@ -152,4 +130,4 @@ const Register = () => {
   )
 }
 
-export default Register
+export default Login

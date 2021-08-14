@@ -12,6 +12,7 @@ import Register from '../Register'
 import Dashboard from '../Dashboard'
 import Users from '../Settings/Users'
 import Roles from '../Settings/Roles'
+import Login from '../Login'
 
 const TenseiCtx = createContext<TenseiCtxInterface>({
   user: null as any,
@@ -134,7 +135,7 @@ const Wrapper: React.FC = () => {
           />
           <Route
             exact
-            component={MustBeNotAuthComponent(Register)}
+            component={MustBeNotAuthComponent(Login)}
             path={window.Tensei.getPath('auth/login')}
           />
           <Route

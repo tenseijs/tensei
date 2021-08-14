@@ -3,9 +3,12 @@ import Path from 'path'
 import Csurf from 'csurf'
 import crypto from 'crypto'
 import Mustache from 'mustache'
-import { DateTime } from 'luxon'
+import Passport from 'passport'
+import Bcrypt from 'bcryptjs'
+import CookieParser from 'cookie-parser'
+import PassportLocal from 'passport-local'
 import AsyncHandler from 'express-async-handler'
-import { Router, RequestHandler, static as Static } from 'express'
+import { Router, RequestHandler, static as Static, Request } from 'express'
 import { responseEnhancer } from 'express-response-formatter'
 import ExpressSession, { CookieOptions } from 'express-session'
 import ExpressSessionMikroORMStore, {
@@ -32,6 +35,7 @@ import {
 } from '@tensei/common'
 import getRoutes from './routes'
 import { setupCms } from './setup'
+import { DataPayload } from '@tensei/common/config'
 
 const indexFileContent = Fs.readFileSync(
   Path.resolve(__dirname, 'template', 'index.mustache')
@@ -112,62 +116,6 @@ class CmsPlugin {
     permission: this.permissionResource()
   }
 
-  private async sendEmail(
-    user: User,
-    { mailer, orm, serverUrl, name }: Config
-  ) {
-    const token = this.generateRandomToken()
-
-    await orm?.em.persistAndFlush(
-      orm?.em.create(this.resources.token.data.pascalCaseName, {
-        token,
-        adminUser: user.id,
-        type: 'PASSWORDLESS',
-        expires_at: DateTime.local().plus({
-          minutes: 15
-        })
-      })
-    )
-
-    const url = `${serverUrl}/${this.config.apiPath}/passwordless/token/${token}`
-
-    mailer.send(message => {
-      message
-        .to(user.email)
-        .from(
-          process.env.ADMIN_SUPPORT_MAIL ||
-            `no-reply@${new URL(serverUrl).host}`
-        )
-        .subject(`Sign-in link for ${name}.`)
-        .html(
-          `
-<p>Hi! 👋</p>
-
-<p>You asked us to send you a sign-in link for ${name}.</p>
-
-<ul>
-    <li>
-        This link expires in 13 minutes. After that you will need to request another link.
-    </li>
-    <li>
-        This link can only be used once. After you click the link it will no longer work.
-    </li>
-
-    <li>
-      You can always request another link!
-    </li>
-</ul>
-
-<p>
-==> <a href="${url}">Click here to access the ${name} cms dashboard</a>
-</p>
-
-<b><i>Note: This link expires in 13 minutes and can only be used once. You can always request another link to be sent if this one has been used or is expired.</i></b>
-`
-        )
-    })
-  }
-
   public generateRandomToken(length = 32) {
     return crypto.randomBytes(length).toString('hex')
   }
@@ -180,146 +128,6 @@ class CmsPlugin {
         response.cookie('x-csrf-token', request.csrfToken())
 
         return response.status(204).json()
-      }),
-    route('Passwordless Token')
-      .get()
-      .path(this.getApiPath('passwordless/token/:token'))
-      .id('passwordless_token')
-      .handle(async (request, response) => {
-        const { token: tokenString } = request.params
-
-        const token: any = await request.manager.findOne(
-          this.resources.token.data.pascalCaseName,
-          {
-            token: tokenString
-          },
-          { populate: [this.resources.user.data.camelCaseName] }
-        )
-
-        if (
-          !token ||
-          !token[this.resources.user.data.camelCaseName].active ||
-          token.expires_at < new Date()
-        ) {
-          return response.redirect(
-            `/${this.config.path}/auth/login?error=Your login credentials are invalid. Please try again.`
-          )
-        }
-
-        request.manager.assign(token, {
-          expires_at: DateTime.local().minus({
-            second: 1
-          })
-        })
-
-        await request.manager.persistAndFlush(token)
-
-        // @ts-ignore
-        request.session.user = {
-          id: token[this.resources.user.data.camelCaseName].id
-        }
-
-        return response.redirect(`/${this.config.path}`)
-      }),
-    route('Passwordless Email Registration')
-      .post()
-      .path(this.getApiPath('passwordless/email/register'))
-      .id('passwordless_email_register')
-      .authorize(
-        async ({ manager }) =>
-          (await manager.count(this.resources.user.data.pascalCaseName)) === 0
-      )
-      .handle(async ({ config, manager, body, resources }, response) => {
-        const { emitter } = config
-
-        const validator = Utils.validator(
-          this.userResource(),
-          manager,
-          resources
-        )
-
-        const [success, payload] = await validator.validate(body)
-
-        if (!success) {
-          return response.status(422).json(payload)
-        }
-
-        let createUserPayload: any = {
-          email: payload.email,
-          active: true
-        }
-
-        let roles = payload.admin_roles
-
-        if (!roles || (roles && roles.length === 0)) {
-          const authenticatorRole: any = await manager.findOne(
-            this.resources.role.data.pascalCaseName,
-            {
-              slug: 'super-admin'
-            }
-          )
-
-          if (!authenticatorRole) {
-            throw {
-              status: 400,
-              message:
-                'The authenticated role must be created to use roles and permissions.'
-            }
-          }
-
-          roles = [authenticatorRole.id]
-        }
-
-        createUserPayload.admin_roles = roles
-
-        const admin: User = manager.create(
-          this.resources.user.data.pascalCaseName,
-          createUserPayload
-        )
-        await manager.persistAndFlush(admin)
-
-        emitter.emit('ADMIN_REGISTERED', admin)
-
-        await this.sendEmail(admin, config)
-
-        return response.status(204).json()
-      }),
-    route('Passwordless Email Login')
-      .post()
-      .path(this.getApiPath('passwordless/email/login'))
-      .id('passwordless_email_login')
-      .handle(async ({ config, manager, body }, response) => {
-        const { indicative, emitter } = config
-        try {
-          const { email } = await indicative.validator.validate(body, {
-            email: 'required|email'
-          })
-
-          let user: any = await manager.findOne(
-            this.resources.user.data.pascalCaseName,
-            {
-              email
-            }
-          )
-
-          if (!user) {
-            return response.status(401).json([
-              {
-                field: 'email',
-                message: 'This user does not exist.'
-              }
-            ])
-          }
-
-          emitter.emit('ADMIN_REGISTERED', user)
-
-          await this.sendEmail(user, config)
-
-          return response.status(204).json()
-        } catch (errors) {
-          console.log(errors)
-          return response.status(422).json(errors)
-        }
       }),
     route('Passwordless Logout')
       .path(this.getApiPath('logout'))
@@ -337,6 +145,82 @@ class CmsPlugin {
         })
       })
   ]
+
+  private loginPassport = async (request: Request, done: any) => {
+    const { config, manager, body } = request
+
+    const { indicative } = config
+
+    try {
+      const { email, password } = await indicative.validator.validate(body, {
+        email: 'required|email'
+      })
+
+      let user: any = await manager.findOne(
+        this.resources.user.data.pascalCaseName,
+        {
+          email
+        }
+      )
+
+      if (!user) {
+        return done(
+          [
+            {
+              field: 'email',
+              message: 'This user does not exist.'
+            }
+          ],
+          null
+        )
+      }
+
+      if (!Bcrypt.compareSync(password, user.password)) {
+        return done(
+          [
+            {
+              field: 'password',
+              message: 'Your password is incorrect.'
+            }
+          ],
+          null
+        )
+      }
+
+      return done(null, user)
+    } catch (errors) {
+      return done(errors, null)
+    }
+  }
+
+  private registerPassport = async (request: Request, done: any) => {
+    const { config, manager, body, resources } = request
+    const { emitter } = config
+
+    const validator = Utils.validator(this.userResource(), manager, resources)
+
+    const [success, payload] = await validator.validate(body)
+
+    if (!success) {
+      return done(payload, null)
+    }
+
+    let createUserPayload: any = {
+      ...payload,
+      active: true
+    }
+
+    const admin: User = manager.create(
+      this.resources.user.data.pascalCaseName,
+      createUserPayload
+    )
+
+    await manager.persistAndFlush(admin)
+
+    emitter.emit('ADMIN_REGISTERED', admin)
+
+    return done(null, admin)
+  }
 
   private permissionResource() {
     return resource(this.config.permissionResource)
@@ -394,12 +278,8 @@ class CmsPlugin {
   private userResource() {
     return resource(this.config.userResource)
       .fields([
-        text('Full name')
-          .unique()
-          .searchable()
-          .nullable()
-          .sortable()
-          .rules('unique:full_name'),
+        text('Full name').searchable().nullable().sortable(),
+        text('Password').rules('required', 'min:12').nullable(),
         text('Email')
           .unique()
           .searchable()
@@ -418,6 +298,22 @@ class CmsPlugin {
       .secondaryDisplayField('Email')
       .hideOnApi()
       .hideFromNavigation()
+      .beforeCreate(({ entity, em }) => {
+        const payload: DataPayload = {
+          password: entity.password
+            ? Bcrypt.hashSync(entity.password)
+            : undefined
+        }
+
+        em.assign(entity, payload)
+      })
+      .beforeUpdate(async ({ entity, em, changeSet }) => {
+        if (changeSet?.payload.password) {
+          em.assign(entity, {
+            password: Bcrypt.hashSync(changeSet.payload.password)
+          })
+        }
+      })
   }
 
   sessionMikroOrmOptions = {
@@ -523,6 +419,8 @@ class CmsPlugin {
 
         await setupCms(config, [this.resources.role, this.resources.permission])
 
+        this.router.use(CookieParser())
+
         this.router.use(
           ExpressSession({
             resave: false,
@@ -533,9 +431,130 @@ class CmsPlugin {
           })
         )
 
-        this.router.use(responseEnhancer())
+        this.router.use(Passport.initialize())
+        this.router.use(Passport.session())
 
-        this.router.use(this.setAuth)
+        const self = this
+
+        Passport.use(
+          'local-register',
+          new PassportLocal.Strategy(
+            {
+              usernameField: 'email',
+              passwordField: 'password',
+              passReqToCallback: true
+            },
+            async (request, email, password, done) => {
+              await self.registerPassport(request, done)
+            }
+          )
+        )
+
+        Passport.use(
+          'local-login',
+          new PassportLocal.Strategy(
+            {
+              usernameField: 'email',
+              passwordField: 'password',
+              passReqToCallback: true
+            },
+            async (request, email, password, done) => {
+              await this.loginPassport(request, done)
+            }
+          )
+        )
+
+        Passport.serializeUser((user, done) => {
+          done(null, {
+            id: (user as any).id
+          })
+        })
+        Passport.deserializeUser(async (request, id, done) => {
+          const user = await request.manager.findOne(
+            this.resources.user.data.pascalCaseName,
+            {
+              id: id.id
+            }
+          )
+
+          done(null, user)
+        })
+        this.router.post(
+          `${this.getApiPath('auth/register')}`,
+          (request, response, next) => {
+            Passport.authenticate(
+              'local-register',
+              {
+                successRedirect: `${this.getApiPath('')}`,
+                failureRedirect: `${this.getApiPath('auth/register')}`
+              },
+              (error, user, info) => {
+                if (user === false) {
+                  return response.status(422).json([
+                    {
+                      message: 'The full name is required.',
+                      field: 'fullName'
+                    },
+                    {
+                      message: 'The email is required.',
+                      field: 'email'
+                    },
+                    {
+                      message: 'The password is required.',
+                      field: 'password'
+                    }
+                  ])
+                }
+
+                if (error || !user) {
+                  return response.status(400).json(error)
+                }
+
+                request.logIn(user, error => {
+                  if (error) {
+                    return next(error)
+                  }
+
+                  return response.status(204).json([])
+                })
+              }
+            )(request, response, next)
+          }
+        )
+
+        this.router.post(
+          `${this.getApiPath('auth/login')}`,
+          (request, response, next) => {
+            Passport.authenticate('local-login', {}, (error, user, info) => {
+              if (user === false) {
+                return response.status(422).json([
+                  {
+                    message: 'The email is required.',
+                    field: 'email'
+                  },
+                  {
+                    message: 'The password is required.',
+                    field: 'password'
+                  }
+                ])
+              }
+
+              if (error || !user) {
+                return response.status(400).json(error)
+              }
+
+              request.logIn(user, error => {
+                if (error) {
+                  return next(error)
+                }
+
+                return response.status(204).json([])
+              })
+            })(request, response, next)
+          }
+        )
+
+        this.router.use(responseEnhancer())
 
         this.router.use((request, response, next) => {
           // set filter parameters
@@ -580,6 +599,7 @@ class CmsPlugin {
         app.use(`/${this.config.path}`, this.router)
 
         app.get(`/${this.config.path}(/*)?`, async (request, response) => {
+          console.log('=====================================', request.session)
           response.send(
             Mustache.render(indexFileContent, {
               styles: request.styles,

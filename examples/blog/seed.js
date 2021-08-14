@@ -4,23 +4,23 @@ const make = (fn, n = 50) => Array.from({ length: n }, () => fn())
 
 module.exports = async ctx => {
   const postsSeeder = () =>
-    ctx.repositories.posts.create({
+    ctx.repositories.posts().create({
       title: faker.lorem.sentence(),
       description: faker.lorem.paragraph()
     })
 
   const tagsSeeder = () =>
-    ctx.repositories.tags.create({
+    ctx.repositories.tags().create({
       name: faker.lorem.words(3)
     })
 
   const pegsSeeder = () =>
-    ctx.repositories.pegs.create({
+    ctx.repositories.pegs().create({
       name: faker.lorem.words(3)
     })
 
   const categoriesSeeder = () =>
-    ctx.repositories.categories.create({
+    ctx.repositories.categories().create({
       name: faker.lorem.words(2),
       description: faker.lorem.paragraph()
     })
