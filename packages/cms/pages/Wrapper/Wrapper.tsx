@@ -8,11 +8,11 @@ import {
   PageWrapper
 } from '@tensei/components'
 
+import Login from '../Login'
 import Register from '../Register'
 import Dashboard from '../Dashboard'
 import Users from '../Settings/Users'
 import Roles from '../Settings/Roles'
-import Login from '../Login'
 
 const TenseiCtx = createContext<TenseiCtxInterface>({
   user: null as any,
@@ -100,7 +100,7 @@ const Wrapper: React.FC = () => {
             ),
             settings: false,
             icon: 'membership-mgt',
-            group: 'Users & Permissions',
+            group: 'Authentication',
             name: authPluginConfig.role.label
           }
         ]

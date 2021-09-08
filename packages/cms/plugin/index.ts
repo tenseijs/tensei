@@ -613,7 +613,6 @@ class CmsPlugin {
         app.use(`/${this.config.path}`, this.router)
 
         app.get(`/${this.config.path}(/*)?`, async (request, response) => {
-          console.log('=====================================', request.session)
           response.send(
             Mustache.render(indexFileContent, {
               styles: request.styles,

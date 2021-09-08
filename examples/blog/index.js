@@ -75,5 +75,8 @@ module.exports = tensei()
     dbName: 'db.sqlite',
     debug: true
   })
+  .boot(async ctx => {
+    await seed(ctx)
+  })
   .start()
   .catch(console.error)

@@ -1,9 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
-import { ThemeProvider } from 'evergreen-ui'
 import './core'
-import theme from './evergreen'
+
 // Styles
 import '@reach/accordion/styles.css'
 import 'toastedjs/dist/toasted.min.css'
@@ -14,9 +13,7 @@ import Wrapper from './pages/Wrapper'
 
 ReactDOM.render(
   <BrowserRouter>
-    <ThemeProvider value={theme}>
-      <Wrapper />
-    </ThemeProvider>
+    <Wrapper />
   </BrowserRouter>,
   document.querySelector('#app')
 )
