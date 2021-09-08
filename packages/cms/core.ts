@@ -143,18 +143,7 @@ class Core {
     }
   }
 
-  routes: Lib.CmsRoute[] = [
-    {
-      path: this.getPath(''),
-      exact: true,
-      settings: false,
-      name: 'Dashboard',
-      requiredPermissions: [],
-      component: Home,
-      icon: 'product',
-      top: true
-    }
-  ]
+  routes: Lib.CmsRoute[] = []
 
   route = (route: Lib.CmsRoute) => {
     this.routes.push({

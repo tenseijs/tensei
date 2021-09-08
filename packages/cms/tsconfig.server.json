@@ -24,6 +24,7 @@
     "public",
     "css",
     "form",
+    "evergreen",
     "components",
     "main.tsx",
     "core.ts"

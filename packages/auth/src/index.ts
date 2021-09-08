@@ -423,7 +423,7 @@ export class Auth implements AuthContract {
         }
       })
       .icon('database-manager')
-      .group('Users & Permissions')
+      .group('Authentication')
 
     if (this.config.teams) {
       this.teamsInstance.defineUserResourceMethods(userResource)
@@ -467,7 +467,7 @@ export class Auth implements AuthContract {
       .hideOnDeleteApi()
       .hideOnUpdateApi()
       .hideFromNavigation()
-      .group('Users & Permissions')
+      .group('Authentication')
   }
 
   private roleResource() {
@@ -486,7 +486,7 @@ export class Auth implements AuthContract {
       .displayField('Name')
       .hideFromNavigation()
       .hideOnUpdateApi()
-      .group('Users & Permissions')
+      .group('Authentication')
   }
 
   private passwordResetResource() {

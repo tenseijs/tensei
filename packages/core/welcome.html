@@ -1,142 +1,596 @@
 <!-- Hugely copied from the awesome folks at Laravel https://github.com/laravel/laravel/blob/8.x/resources/views/welcome.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <title>Tensei</title>
+    <title>Tensei</title>
 
-        <!-- Fonts -->
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="apple-touch-icon" sizes="180x180" href="/tensei-assets/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/tensei-assets/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/tensei-assets/favicon-16x16.png" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/tensei-assets/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/tensei-assets/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/tensei-assets/favicon-16x16.png"
+    />
 
-        <!-- Styles -->
-        <style>
-            /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}a{background-color:transparent}[hidden]{display:none}html{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;line-height:1.5}*,:after,:before{box-sizing:border-box;border:0 solid #e2e8f0}a{color:inherit;text-decoration:inherit}svg,video{display:block;vertical-align:middle}video{max-width:100%;height:auto}.bg-white{--bg-opacity:1;background-color:#fff;background-color:rgba(255,255,255,var(--bg-opacity))}.bg-gray-100{--bg-opacity:1;background-color:#f7fafc;background-color:rgba(247,250,252,var(--bg-opacity))}.border-gray-200{--border-opacity:1;border-color:#edf2f7;border-color:rgba(237,242,247,var(--border-opacity))}.border-t{border-top-width:1px}.flex{display:flex}.grid{display:grid}.hidden{display:none}.items-center{align-items:center}.justify-center{justify-content:center}.font-semibold{font-weight:600}.h-5{height:1.25rem}.h-8{height:2rem}.h-16{height:4rem}.text-sm{font-size:.875rem}.text-lg{font-size:1.125rem}.leading-7{line-height:1.75rem}.mx-auto{margin-left:auto;margin-right:auto}.ml-1{margin-left:.25rem}.mt-2{margin-top:.5rem}.mr-2{margin-right:.5rem}.ml-2{margin-left:.5rem}.mt-4{margin-top:1rem}.ml-4{margin-left:1rem}.mt-8{margin-top:2rem}.ml-12{margin-left:3rem}.-mt-px{margin-top:-1px}.max-w-6xl{max-width:72rem}.min-h-screen{min-height:100vh}.overflow-hidden{overflow:hidden}.p-6{padding:1.5rem}.py-4{padding-top:1rem;padding-bottom:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.pt-8{padding-top:2rem}.fixed{position:fixed}.relative{position:relative}.top-0{top:0}.right-0{right:0}.shadow-sm{--tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);}.text-center{text-align:center}.text-gray-200{--text-opacity:1;color:#edf2f7;color:rgba(237,242,247,var(--text-opacity))}.text-gray-300{--text-opacity:1;color:#e2e8f0;color:rgba(226,232,240,var(--text-opacity))}.text-gray-400{--text-opacity:1;color:#cbd5e0;color:rgba(203,213,224,var(--text-opacity))}.text-gray-600{--text-opacity:1;color:#a0aec0;color:rgba(160,174,192,var(--text-opacity))}.text-gray-600{--text-opacity:1;color:#4B5563;}.text-gray-700{--text-opacity:1;color:#4a5568;color:rgba(74,85,104,var(--text-opacity))}.text-gray-900{--text-opacity:1;color:#61677c;}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.w-5{width:1.25rem}.w-8{width:2rem}.w-auto{width:auto}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}@media (min-width:640px){.sm\:rounded-lg{border-radius:.5rem}.sm\:block{display:block}.sm\:items-center{align-items:center}.sm\:justify-start{justify-content:flex-start}.sm\:justify-between{justify-content:space-between}.sm\:h-20{height:5rem}.sm\:ml-0{margin-left:0}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:pt-0{padding-top:0}.sm\:text-left{text-align:left}.sm\:text-right{text-align:right}}@media (min-width:768px){.md\:border-t-0{border-top-width:0}.md\:border-l{border-left-width:1px}.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (min-width:1024px){.lg\:px-8{padding-left:2rem;padding-right:2rem}}@media (prefers-color-scheme:dark){.dark\:bg-gray-800{--bg-opacity:1;background-color:#2d3748;background-color:rgba(45,55,72,var(--bg-opacity))}.dark\:bg-gray-900{--bg-opacity:1;background-color:#1a202c;}.dark\:border-gray-700{--border-opacity:1;border-color:#4a5568;border-color:rgba(74,85,104,var(--border-opacity))}.dark\:text-white{--text-opacity:1;color:#fff;color:rgba(255,255,255,var(--text-opacity))}.dark\:text-gray-400{--text-opacity:1;color:#cbd5e0;color:rgba(203,213,224,var(--text-opacity))}}.underline{text-decoration:underline;}
-        </style>
+    <!-- Styles -->
+    <style>
+      /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+      html {
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+      }
+      a {
+        background-color: transparent;
+      }
+      [hidden] {
+        display: none;
+      }
+      html {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,
+          Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+          Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+        line-height: 1.5;
+      }
+      *,
+      :after,
+      :before {
+        box-sizing: border-box;
+        border: 0 solid #e2e8f0;
+      }
+      a {
+        color: inherit;
+        text-decoration: inherit;
+      }
+      svg,
+      video {
+        display: block;
+        vertical-align: middle;
+      }
+      video {
+        max-width: 100%;
+        height: auto;
+      }
+      .bg-white {
+        --bg-opacity: 1;
+        background-color: #fff;
+        background-color: rgba(255, 255, 255, var(--bg-opacity));
+      }
+      .bg-gray-100 {
+        --bg-opacity: 1;
+        background-color: #f7fafc;
+        background-color: rgba(247, 250, 252, var(--bg-opacity));
+      }
+      .border-gray-200 {
+        --border-opacity: 1;
+        border-color: #edf2f7;
+        border-color: rgba(237, 242, 247, var(--border-opacity));
+      }
+      .border-t {
+        border-top-width: 1px;
+      }
+      .flex {
+        display: flex;
+      }
+      .grid {
+        display: grid;
+      }
+      .hidden {
+        display: none;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-center {
+        justify-content: center;
+      }
+      .font-semibold {
+        font-weight: 600;
+      }
+      .h-5 {
+        height: 1.25rem;
+      }
+      .h-8 {
+        height: 2rem;
+      }
+      .h-16 {
+        height: 4rem;
+      }
+      .text-sm {
+        font-size: 0.875rem;
+      }
+      .text-lg {
+        font-size: 1.125rem;
+      }
+      .leading-7 {
+        line-height: 1.75rem;
+      }
+      .mx-auto {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .ml-1 {
+        margin-left: 0.25rem;
+      }
+      .mt-2 {
+        margin-top: 0.5rem;
+      }
+      .mr-2 {
+        margin-right: 0.5rem;
+      }
+      .ml-2 {
+        margin-left: 0.5rem;
+      }
+      .mt-4 {
+        margin-top: 1rem;
+      }
+      .ml-4 {
+        margin-left: 1rem;
+      }
+      .mt-8 {
+        margin-top: 2rem;
+      }
+      .ml-12 {
+        margin-left: 3rem;
+      }
+      .-mt-px {
+        margin-top: -1px;
+      }
+      .max-w-6xl {
+        max-width: 72rem;
+      }
+      .min-h-screen {
+        min-height: 100vh;
+      }
+      .overflow-hidden {
+        overflow: hidden;
+      }
+      .p-6 {
+        padding: 1.5rem;
+      }
+      .py-4 {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+      .px-6 {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+      .pt-8 {
+        padding-top: 2rem;
+      }
+      .fixed {
+        position: fixed;
+      }
+      .relative {
+        position: relative;
+      }
+      .top-0 {
+        top: 0;
+      }
+      .right-0 {
+        right: 0;
+      }
+      .shadow-sm {
+        --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+          var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+      }
+      .text-center {
+        text-align: center;
+      }
+      .text-gray-200 {
+        --text-opacity: 1;
+        color: #edf2f7;
+        color: rgba(237, 242, 247, var(--text-opacity));
+      }
+      .text-gray-300 {
+        --text-opacity: 1;
+        color: #e2e8f0;
+        color: rgba(226, 232, 240, var(--text-opacity));
+      }
+      .text-gray-400 {
+        --text-opacity: 1;
+        color: #cbd5e0;
+        color: rgba(203, 213, 224, var(--text-opacity));
+      }
+      .text-gray-600 {
+        --text-opacity: 1;
+        color: #a0aec0;
+        color: rgba(160, 174, 192, var(--text-opacity));
+      }
+      .text-gray-600 {
+        --text-opacity: 1;
+        color: #4b5563;
+      }
+      .text-gray-700 {
+        --text-opacity: 1;
+        color: #4a5568;
+        color: rgba(74, 85, 104, var(--text-opacity));
+      }
+      .text-gray-900 {
+        --text-opacity: 1;
+        color: #61677c;
+      }
+      .antialiased {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .w-5 {
+        width: 1.25rem;
+      }
+      .w-8 {
+        width: 2rem;
+      }
+      .w-auto {
+        width: auto;
+      }
+      .grid-cols-1 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+      }
+      @media (min-width: 640px) {
+        .sm\:rounded-lg {
+          border-radius: 0.5rem;
+        }
+        .sm\:block {
+          display: block;
+        }
+        .sm\:items-center {
+          align-items: center;
+        }
+        .sm\:justify-start {
+          justify-content: flex-start;
+        }
+        .sm\:justify-between {
+          justify-content: space-between;
+        }
+        .sm\:h-20 {
+          height: 5rem;
+        }
+        .sm\:ml-0 {
+          margin-left: 0;
+        }
+        .sm\:px-6 {
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
+        }
+        .sm\:pt-0 {
+          padding-top: 0;
+        }
+        .sm\:text-left {
+          text-align: left;
+        }
+        .sm\:text-right {
+          text-align: right;
+        }
+      }
+      @media (min-width: 768px) {
+        .md\:border-t-0 {
+          border-top-width: 0;
+        }
+        .md\:border-l {
+          border-left-width: 1px;
+        }
+        .md\:grid-cols-2 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 1024px) {
+        .lg\:px-8 {
+          padding-left: 2rem;
+          padding-right: 2rem;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        .dark\:bg-gray-800 {
+          --bg-opacity: 1;
+          background-color: #2d3748;
+          background-color: rgba(45, 55, 72, var(--bg-opacity));
+        }
+        .dark\:bg-gray-900 {
+          --bg-opacity: 1;
+          background-color: #1a202c;
+        }
+        .dark\:border-gray-700 {
+          --border-opacity: 1;
+          border-color: #4a5568;
+          border-color: rgba(74, 85, 104, var(--border-opacity));
+        }
+        .dark\:text-white {
+          --text-opacity: 1;
+          color: #fff;
+          color: rgba(255, 255, 255, var(--text-opacity));
+        }
+        .dark\:text-gray-400 {
+          --text-opacity: 1;
+          color: #cbd5e0;
+          color: rgba(203, 213, 224, var(--text-opacity));
+        }
+      }
+      .underline {
+        text-decoration: underline;
+      }
+    </style>
 
-        <style>
-            .cls-1 {
-                fill:#21185a;
-            }
-            
-            .cls-2{
-                fill:#2346f8;
-            }
-            
-            .cls-3{
-                fill:#33c5ff;
-            }
+    <style>
+      .cls-1 {
+        fill: #21185a;
+      }
 
-            @media (prefers-color-scheme: dark) {
-                .dark\:cls-1-light {
-                    fill: #fff;
-                }
-            }
-        </style>
+      .cls-2 {
+        fill: #2346f8;
+      }
 
-        <style>
-            body {
-                font-family: 'Nunito';
-            }
-        </style>
-    </head>
-    <body class="antialiased">
-        <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center sm:pt-0">
-            <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-                <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-auto text-gray-700 sm:h-20" viewBox="0 0 692.63 146.53">
-                        <defs></defs>
-                        <title>Tensei logo</title>
-                        <g id="Layer_2" data-name="Layer 2">
-                        <g id="Layer_1-2" data-name="Layer 1">
-                        <path class="cls-1 dark:cls-1-light" d="M261.49,63.65V42.48H243.73V16.13H222.21V28.5c0,7.88-4.29,14-13.61,14h-4.49V63.65h16V104.7c0,17,10.75,27.25,28,27.25,7,0,11.28-1.26,13.45-2.15V110.07a33.9,33.9,0,0,1-7.36.73c-6.82,0-10.4-2.51-10.4-10.23V63.65Z"/>
-                        <path class="cls-1 dark:cls-1-light" d="M361.15,84.08a64.58,64.58,0,0,0-.61-9.08,50.27,50.27,0,0,0-1.9-8.58c-5.52-17.72-20-28.05-41-28.05-22.6,0-43.39,18.27-43.39,46.43,0,29.75,21.33,47.15,45.54,47.15,21.37,0,35.24-12.33,39.94-27.27.07-.23.14-.47.21-.69H336.82a9,9,0,0,1-.61.77c-3.45,4.16-8.69,6.75-16.28,6.75-11.85,0-21.7-8.42-22.24-20.07h63.12C360.81,91.07,361.15,87.49,361.15,84.08Zm-62.92-9c.53-8.06,7.34-17.38,19.72-17.38,8.91,0,14.45,3.68,17.32,8.69a18.51,18.51,0,0,1,2.32,7.49c0,.41.07.8.08,1.2Z"/>
-                        <path class="cls-1 dark:cls-1-light" d="M460,69.11c-2.27-15.86-12.35-27.7-31.4-27.7-9.5,0-20.09,4.13-25.46,13.26V43.74H380V132h23.85V81.21a24,24,0,0,1,.25-3.52,18.8,18.8,0,0,1,3.4-8.58,15.42,15.42,0,0,1,12.85-6.19c6.38,0,10.7,2.39,13.28,6.19a18.43,18.43,0,0,1,2.89,8.58,25.79,25.79,0,0,1,.14,2.81V132h23.84V76.37A50.56,50.56,0,0,0,460,69.11Z"/>
-                        <path class="cls-1 dark:cls-1-light" d="M547.28,96.18c-.06-.25-.14-.52-.21-.77C544.24,86,535.84,78.7,522,75.84L518.06,75l-8.65-1.85c-4.38-.81-7.45-3.1-8-6.73a6.45,6.45,0,0,1-.1-1.17c0-5,5-8.78,11.3-8.78,8.85,0,12.82,5.15,14.12,10h20.56l-.26-2.59c-1.08-9.52-9.5-25.46-34.6-25.46-18.68,0-32.51,12.64-33,28.05a7.22,7.22,0,0,0,0,.81,26.45,26.45,0,0,0,.91,7c2.48,9.13,10.16,16.33,23.84,19.35l7.91,1.83,3.32.77.42.1c6.3,1.31,9.07,4.17,9.45,7.71a5,5,0,0,1,0,.77v.11c0,4.66-3.76,8.79-11.65,8.79-8.07,0-13-3.89-15.06-8.9h-21.5c1.09,10,10.25,27.19,36.75,27.19,22.11,0,33.26-13.46,34.15-27.19,0-.25,0-.52.05-.77s0-.72,0-1.09A26.12,26.12,0,0,0,547.28,96.18Z"/>
-                        <path class="cls-1 dark:cls-1-light" d="M647.28,84.08a66.11,66.11,0,0,0-.61-9.08,51.24,51.24,0,0,0-1.9-8.58c-5.53-17.72-20-28.05-41-28.05a43.06,43.06,0,0,0-40.08,28.05A47.16,47.16,0,0,0,561.23,75a52.53,52.53,0,0,0-.89,9.8,56.41,56.41,0,0,0,1,10.61c.06.27.1.52.17.77a44.16,44.16,0,0,0,2.29,7.81c.1.27.21.52.32.77,7.13,17.42,23.65,27.19,41.78,27.19,21.38,0,35.24-12.33,39.94-27.27L646,104H623a9.08,9.08,0,0,1-.62.77c-3.44,4.16-8.69,6.75-16.28,6.75a22.81,22.81,0,0,1-16.47-6.75c-.24-.25-.48-.5-.71-.77a19.82,19.82,0,0,1-4.27-7.81,4.85,4.85,0,0,1-.21-.77,19.2,19.2,0,0,1-.57-4h63.11C646.93,91.07,647.28,87.49,647.28,84.08Zm-62.92-9a.41.41,0,0,1,0-.11,18.29,18.29,0,0,1,3-8.58,19.35,19.35,0,0,1,16.74-8.69c8.92,0,14.46,3.68,17.33,8.69a18.83,18.83,0,0,1,2.32,7.49c0,.41.07.8.08,1.2Z"/>
-                        <path class="cls-1 dark:cls-1-light" d="M666.1,43.74V132h23.84V43.74ZM677.93,0a14.7,14.7,0,0,0,0,29.39,14.7,14.7,0,1,0,0-29.39Z"/>
-                        <path class="cls-2" d="M124.25.52H21.78A21.78,21.78,0,0,0,0,22.29V124.75a21.78,21.78,0,0,0,21.78,21.78H124.25A21.77,21.77,0,0,0,146,124.75V22.29A21.77,21.77,0,0,0,124.25.52ZM73,112.14A48.16,48.16,0,0,1,24.86,64h30.4a19.94,19.94,0,0,0,35.49,0h30.4A48.15,48.15,0,0,1,73,112.14Z"/>
-                        <path class="cls-3" d="M93,54.87A20,20,0,0,1,55.26,64,20,20,0,1,1,93,54.87Z"/></g></g></svg>
-                </div>
+      .cls-3 {
+        fill: #33c5ff;
+      }
 
-                <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="grid grid-cols-1 md:grid-cols-2">
-                        <div class="p-6">
-                            <div class="flex items-center">
-                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="w-8 h-8 text-gray-400"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                <div class="ml-4 text-lg leading-7 font-semibold"><a href="https://tenseijs.com/docs" class="underline text-gray-900 dark:text-white">Documentation</a></div>
-                            </div>
+      @media (prefers-color-scheme: dark) {
+        .dark\:cls-1-light {
+          fill: #fff;
+        }
+      }
+    </style>
 
-                            <div class="ml-12">
-                                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-                                    Tensei has a well thought out, practical documentation that covers every aspect of the framework. We recommend spending some time on the documentation so you become productive from day one.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l">
-                            <div class="flex items-center">
-                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="w-8 h-8 text-gray-400"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                <div class="ml-4 text-lg leading-7 font-semibold"><a href="https://tenseijs.com/docs/quickstart" class="underline text-gray-900 dark:text-white">Quickstart</a></div>
-                            </div>
-
-                            <div class="ml-12">
-                                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-                                    First time using Tensei? Our quickstart guide will have you building applications in just a few minutes. We build a real API and cms for a SAAS in this guide in less than 10 minutes.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center">
-                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="w-8 h-8 text-gray-400"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
-                                <div class="ml-4 text-lg leading-7 font-semibold"><a href="https://twitter.com/tenseijs" class="underline text-gray-900 dark:text-white">Community</a></div>
-                            </div>
-
-                            <div class="ml-12">
-                                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-                                    Want to get more involved and stay up to date with our community, progress, events and plans? Follow us on <a href="https://twitter.com/tenseijs">Twitter</a>. We love the community, and we'd love you to be part of it.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-l">
-                            <div class="flex items-center">
-                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="w-8 h-8 text-gray-400"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <div class="underline ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white">
-                                    <a href="https://github.com/tenseijs/tensei/discussions">Help & Support</a>
-                                </div>
-                            </div>
-
-                            <div class="ml-12">
-                                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-                                    Have any questions about Tensei? We offer timely support on our discussion forum. You can ask questions about anything that interests you. We'll be excited to hear from you.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-center mt-4 sm:items-center sm:justify-between">
-                    <div class="text-center text-sm text-gray-600 sm:text-left">
-                        <div class="flex items-center">
-                            <svg role="img" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="-mt-px w-5 h-5 text-gray-400"><title>GitHub icon</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-
-                            <a href="https://github.com/tenseijs/tensei" class="ml-2 ">
-                                Github
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="ml-4 text-center text-sm text-gray-600 sm:text-right sm:ml-0">
-                        Tensei 
-                    </div>
-                </div>
-            </div>
+    <style>
+      body {
+        font-family: 'Inter';
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <div
+      class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center sm:pt-0"
+    >
+      <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-16 w-auto text-gray-700 sm:h-20"
+            viewBox="0 0 692.63 146.53"
+          >
+            <defs></defs>
+            <title>Tensei logo</title>
+            <g id="Layer_2" data-name="Layer 2">
+              <g id="Layer_1-2" data-name="Layer 1">
+                <path
+                  class="cls-1 dark:cls-1-light"
+                  d="M261.49,63.65V42.48H243.73V16.13H222.21V28.5c0,7.88-4.29,14-13.61,14h-4.49V63.65h16V104.7c0,17,10.75,27.25,28,27.25,7,0,11.28-1.26,13.45-2.15V110.07a33.9,33.9,0,0,1-7.36.73c-6.82,0-10.4-2.51-10.4-10.23V63.65Z"
+                />
+                <path
+                  class="cls-1 dark:cls-1-light"
+                  d="M361.15,84.08a64.58,64.58,0,0,0-.61-9.08,50.27,50.27,0,0,0-1.9-8.58c-5.52-17.72-20-28.05-41-28.05-22.6,0-43.39,18.27-43.39,46.43,0,29.75,21.33,47.15,45.54,47.15,21.37,0,35.24-12.33,39.94-27.27.07-.23.14-.47.21-.69H336.82a9,9,0,0,1-.61.77c-3.45,4.16-8.69,6.75-16.28,6.75-11.85,0-21.7-8.42-22.24-20.07h63.12C360.81,91.07,361.15,87.49,361.15,84.08Zm-62.92-9c.53-8.06,7.34-17.38,19.72-17.38,8.91,0,14.45,3.68,17.32,8.69a18.51,18.51,0,0,1,2.32,7.49c0,.41.07.8.08,1.2Z"
+                />
+                <path
+                  class="cls-1 dark:cls-1-light"
+                  d="M460,69.11c-2.27-15.86-12.35-27.7-31.4-27.7-9.5,0-20.09,4.13-25.46,13.26V43.74H380V132h23.85V81.21a24,24,0,0,1,.25-3.52,18.8,18.8,0,0,1,3.4-8.58,15.42,15.42,0,0,1,12.85-6.19c6.38,0,10.7,2.39,13.28,6.19a18.43,18.43,0,0,1,2.89,8.58,25.79,25.79,0,0,1,.14,2.81V132h23.84V76.37A50.56,50.56,0,0,0,460,69.11Z"
+                />
+                <path
+                  class="cls-1 dark:cls-1-light"
+                  d="M547.28,96.18c-.06-.25-.14-.52-.21-.77C544.24,86,535.84,78.7,522,75.84L518.06,75l-8.65-1.85c-4.38-.81-7.45-3.1-8-6.73a6.45,6.45,0,0,1-.1-1.17c0-5,5-8.78,11.3-8.78,8.85,0,12.82,5.15,14.12,10h20.56l-.26-2.59c-1.08-9.52-9.5-25.46-34.6-25.46-18.68,0-32.51,12.64-33,28.05a7.22,7.22,0,0,0,0,.81,26.45,26.45,0,0,0,.91,7c2.48,9.13,10.16,16.33,23.84,19.35l7.91,1.83,3.32.77.42.1c6.3,1.31,9.07,4.17,9.45,7.71a5,5,0,0,1,0,.77v.11c0,4.66-3.76,8.79-11.65,8.79-8.07,0-13-3.89-15.06-8.9h-21.5c1.09,10,10.25,27.19,36.75,27.19,22.11,0,33.26-13.46,34.15-27.19,0-.25,0-.52.05-.77s0-.72,0-1.09A26.12,26.12,0,0,0,547.28,96.18Z"
+                />
+                <path
+                  class="cls-1 dark:cls-1-light"
+                  d="M647.28,84.08a66.11,66.11,0,0,0-.61-9.08,51.24,51.24,0,0,0-1.9-8.58c-5.53-17.72-20-28.05-41-28.05a43.06,43.06,0,0,0-40.08,28.05A47.16,47.16,0,0,0,561.23,75a52.53,52.53,0,0,0-.89,9.8,56.41,56.41,0,0,0,1,10.61c.06.27.1.52.17.77a44.16,44.16,0,0,0,2.29,7.81c.1.27.21.52.32.77,7.13,17.42,23.65,27.19,41.78,27.19,21.38,0,35.24-12.33,39.94-27.27L646,104H623a9.08,9.08,0,0,1-.62.77c-3.44,4.16-8.69,6.75-16.28,6.75a22.81,22.81,0,0,1-16.47-6.75c-.24-.25-.48-.5-.71-.77a19.82,19.82,0,0,1-4.27-7.81,4.85,4.85,0,0,1-.21-.77,19.2,19.2,0,0,1-.57-4h63.11C646.93,91.07,647.28,87.49,647.28,84.08Zm-62.92-9a.41.41,0,0,1,0-.11,18.29,18.29,0,0,1,3-8.58,19.35,19.35,0,0,1,16.74-8.69c8.92,0,14.46,3.68,17.33,8.69a18.83,18.83,0,0,1,2.32,7.49c0,.41.07.8.08,1.2Z"
+                />
+                <path
+                  class="cls-1 dark:cls-1-light"
+                  d="M666.1,43.74V132h23.84V43.74ZM677.93,0a14.7,14.7,0,0,0,0,29.39,14.7,14.7,0,1,0,0-29.39Z"
+                />
+                <path
+                  class="cls-2"
+                  d="M124.25.52H21.78A21.78,21.78,0,0,0,0,22.29V124.75a21.78,21.78,0,0,0,21.78,21.78H124.25A21.77,21.77,0,0,0,146,124.75V22.29A21.77,21.77,0,0,0,124.25.52ZM73,112.14A48.16,48.16,0,0,1,24.86,64h30.4a19.94,19.94,0,0,0,35.49,0h30.4A48.15,48.15,0,0,1,73,112.14Z"
+                />
+                <path
+                  class="cls-3"
+                  d="M93,54.87A20,20,0,0,1,55.26,64,20,20,0,1,1,93,54.87Z"
+                />
+              </g>
+            </g>
+          </svg>
         </div>
-    </body>
+
+        <div
+          class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="p-6">
+              <div class="flex items-center">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  class="w-8 h-8 text-gray-400"
+                >
+                  <path
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  ></path>
+                </svg>
+                <div class="ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://tenseijs.com/docs"
+                    class="underline text-gray-900 dark:text-white"
+                    >Documentation</a
+                  >
+                </div>
+              </div>
+
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+                  Tensei has a well thought out, practical documentation that
+                  covers every aspect of the framework. We recommend spending
+                  some time on the documentation so you become productive from
+                  day one.
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l"
+            >
+              <div class="flex items-center">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  class="w-8 h-8 text-gray-400"
+                >
+                  <path
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  ></path>
+                  <path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <div class="ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://tenseijs.com/docs/quickstart"
+                    class="underline text-gray-900 dark:text-white"
+                    >Quickstart</a
+                  >
+                </div>
+              </div>
+
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+                  First time using Tensei? Our quickstart guide will have you
+                  building applications in just a few minutes. We build a real
+                  API and cms for a SAAS in this guide in less than 10 minutes.
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  class="w-8 h-8 text-gray-400"
+                >
+                  <path
+                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                  ></path>
+                </svg>
+                <div class="ml-4 text-lg leading-7 font-semibold">
+                  <a
+                    href="https://twitter.com/tenseijs"
+                    class="underline text-gray-900 dark:text-white"
+                    >Community</a
+                  >
+                </div>
+              </div>
+
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+                  Want to get more involved and stay up to date with our
+                  community, progress, events and plans? Follow us on
+                  <a href="https://twitter.com/tenseijs">Twitter</a>. We love
+                  the community, and we'd love you to be part of it.
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-l"
+            >
+              <div class="flex items-center">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  class="w-8 h-8 text-gray-400"
+                >
+                  <path
+                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                <div
+                  class="underline ml-4 text-lg leading-7 font-semibold text-gray-900 dark:text-white"
+                >
+                  <a href="https://github.com/tenseijs/tensei/discussions"
+                    >Help & Support</a
+                  >
+                </div>
+              </div>
+
+              <div class="ml-12">
+                <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+                  Have any questions about Tensei? We offer timely support on
+                  our discussion forum. You can ask questions about anything
+                  that interests you. We'll be excited to hear from you.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex justify-center mt-4 sm:items-center sm:justify-between"
+        >
+          <div class="text-center text-sm text-gray-600 sm:text-left">
+            <div class="flex items-center">
+              <svg
+                role="img"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                class="-mt-px w-5 h-5 text-gray-400"
+              >
+                <title>GitHub icon</title>
+                <path
+                  d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+                />
+              </svg>
+
+              <a href="https://github.com/tenseijs/tensei" class="ml-2">
+                Github
+              </a>
+            </div>
+          </div>
+
+          <div
+            class="ml-4 text-center text-sm text-gray-600 sm:text-right sm:ml-0"
+          >
+            Tensei
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

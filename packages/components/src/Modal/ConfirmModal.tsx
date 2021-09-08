@@ -33,19 +33,14 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       className="align-bottom sm:align-middle sm:max-w-lg"
     >
       <div className="sm:flex sm:items-start">
-        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-          <h3
-            id="modal-headline"
-            className="text-xl mb-6 leading-6 font-semibold text-tensei-darkest"
-          >
-            {title}
-          </h3>
-          <div className="mb-3">
+        <div className="mt-3 text-center sm:mt-0 sm:text-left">
+          <h3 className="mb-6 font-bold text-tensei-darkest">{title}</h3>
+          <div className="mb-3 text-13px">
             <p>{description}</p>
           </div>
         </div>
       </div>
-      <div className="mt-5 sm:mt-4 sm:pl-4 sm:flex">
+      <div className="mt-5 sm:mt-4 sm:flex">
         <Button danger onClick={onConfirm} {...(confirmButtonProps || {})}>
           {confirmText}
         </Button>

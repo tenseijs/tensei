@@ -1,8 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Heading, Paragraph, Button } from '@tensei/components'
-
-import PageWrapper from '../../components/PageWrapper'
+import {
+  Heading,
+  Paragraph,
+  Button,
+  DynamicSidebar,
+  PageWrapper
+} from '@tensei/components'
 
 export interface FourOhFourProps {}
 

@@ -12,6 +12,8 @@ import { StackedList } from './List'
 import DatePicker from './DatePicker'
 import SearchInput from './SearchInput'
 import PageWrapper from './PageWrapper'
+import { ActionButton } from './ActionButton'
+import { DynamicSidebar } from './DynamicSidebar'
 import { Heading, Paragraph } from './Typography'
 import Modal, { ConfirmModal, DeleteModal } from './Modal'
 
@@ -34,7 +36,9 @@ export {
   SearchInput,
   ConfirmModal,
   DeleteModal,
-  StackedList
+  StackedList,
+  ActionButton,
+  DynamicSidebar
 }
 
 export * from './types'

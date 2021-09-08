@@ -12,11 +12,11 @@ const ID: React.FC<
   return (
     <>
       <Text
-        value={value}
         field={field}
+        value={value}
         values={values}
         resource={resource}
-        className={`${className} bg-opacity-10 bg-tensei-primary text-base rounded-md px-2 text-tensei-primary border border-tensei-primary w-auto inline-block`}
+        className={`${className} bg-opacity-10 bg-tensei-primary text-xs rounded-md px-2 py-1 text-tensei-primary border border-tensei-primary w-auto inline-block`}
       ></Text>
     </>
   )

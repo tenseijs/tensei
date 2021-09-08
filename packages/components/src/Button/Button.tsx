@@ -36,60 +36,54 @@ const Button: React.FC<ButtonProps> = ({
   }
 
   const classes = {
-    primary: `flex items-center justify-center w-full md:w-auto leading-5 px-6 ${
+    primary: `flex items-center justify-center w-full md:w-auto ${
       props.disabled
         ? 'cursor-not-allowed bg-tensei-primary-lighter'
         : 'bg-tensei-primary hover:bg-tensei-primary-darker'
-    } text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out`,
-    secondary: `flex items-center justify-center w-full md:w-auto leading-5 px-6 ${
+    } text-white rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out`,
+    secondary: `flex items-center justify-center w-full md:w-auto ${
       props.disabled
         ? 'cursor-not-allowed opacity-50'
         : 'bg-transparent hover:bg-tensei-primary-darker hover:bg-opacity-20'
-    } text-white border border-tensei-primary rounded-lg font-medium text-tensei-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out`,
-    danger: `inline-flex justify-center w-full rounded-lg border border-transparent shadow-sm px-6 ${
+    } text-white border border-tensei-primary rounded text-tensei-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary transition ease-in-out`,
+    danger: `inline-flex justify-center w-full rounded border border-transparent shadow-sm ${
       props.disabled
         ? 'cursor-not-allowed bg-red-500'
         : 'bg-red-600 hover:bg-red-700'
-    } font-medium text-white transition ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto`,
-    clear: `w-full inline-flex justify-center rounded-lg border border-tensei-gray-600 px-6 ${
+    } text-white transition ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto`,
+    clear: `w-full inline-flex justify-center rounded border border-tensei-gray-600 ${
       props.disabled ? 'cursor-not-allowed bg-tensei-primary-lighter' : ''
-    } bg-tensei-gray-600 font-medium text-tensei-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto`,
-    success: `flex items-center justify-center w-full md:w-auto leading-5 px-6 ${
+    } bg-tensei-gray-600 text-tensei-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-primary sm:mt-0 sm:ml-3 sm:w-auto`,
+    success: `flex items-center justify-center w-full md:w-auto ${
       props.disabled
         ? 'cursor-not-allowed bg-tensei-success-lighter'
         : 'bg-tensei-success hover:bg-tensei-success-darker'
-    } text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-success transition ease-in-out`
+    } text-white rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tensei-success transition ease-in-out`
   }
 
   if (clear) {
-    props.className = `font-bold h-9 flex items-center ${
-      props.className || ''
-    } ${classes.clear}`
+    props.className = `${props.className || ''} ${classes.clear}`
   }
 
   if (primary) {
-    props.className = `font-bold h-9 flex items-center ${
-      props.className || ''
-    } ${classes.primary}`
+    props.className = `${props.className || ''} ${classes.primary}`
   }
 
   if (danger) {
-    props.className = `font-bold h-9 flex items-center ${
-      props.className || ''
-    } ${classes.danger}`
+    props.className = `${props.className || ''} ${classes.danger}`
   }
 
   if (success) {
-    props.className = `font-bold h-9 flex items-center ${
-      props.className || ''
-    } ${classes.success}`
+    props.className = `${props.className || ''} ${classes.success}`
   }
 
   if (secondary) {
-    props.className = `font-bold h-9 flex items-center ${
-      props.className || ''
-    } ${classes.secondary}`
+    props.className = `${props.className || ''} ${classes.secondary}`
   }
+
+  props.className = `h-8 flex items-center text-13px font-medium px-3 ${
+    props.className || ''
+  }`
 
   return (
     <button {...props}>

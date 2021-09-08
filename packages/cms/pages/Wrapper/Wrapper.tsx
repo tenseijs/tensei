@@ -8,6 +8,7 @@ import {
   PageWrapper
 } from '@tensei/components'
 
+import Login from '../Login'
 import Register from '../Register'
 import Dashboard from '../Dashboard'
 import Users from '../Settings/Users'
@@ -99,7 +100,7 @@ const Wrapper: React.FC = () => {
             ),
             settings: false,
             icon: 'membership-mgt',
-            group: 'Users & Permissions',
+            group: 'Authentication',
             name: authPluginConfig.role.label
           }
         ]
@@ -134,7 +135,7 @@ const Wrapper: React.FC = () => {
           />
           <Route
             exact
-            component={MustBeNotAuthComponent(Register)}
+            component={MustBeNotAuthComponent(Login)}
             path={window.Tensei.getPath('auth/login')}
           />
           <Route

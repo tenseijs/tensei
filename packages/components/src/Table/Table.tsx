@@ -117,110 +117,112 @@ const Table: React.FC<TableProps> = ({
   )
 
   return (
-    <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-white">
-        <tr className="border-tensei-gray-600">
-          {selection?.onChange ? (
-            <th
-              key="select-all"
-              className="px-6 py-3 text-left text-xs font-medium text-tensei-darkest uppercase tracking-wider"
-            >
-              <input
-                type="checkbox"
-                checked={
-                  selected.length !== 0 && selected.length === rows.length
-                }
-                disabled={loading}
-                onChange={onSelectAllCheckboxChange}
-                className="text-tensei-primary rounded-sm border border-tensei-gray-500"
-              />
-            </th>
-          ) : null}
-          {columns.map(column => (
-            <th
-              key={column.field}
-              scope="col"
-              className={
-                column.className ||
-                'px-6 py-3 text-left text-xs font-extrabold text-tensei-darkest uppercase tracking-wider'
-              }
-            >
-              <div
-                tabIndex={0}
-                onClick={() =>
-                  column.sorter
-                    ? setSort({
-                        field: column.field,
-                        direction:
-                          column.field === sort?.field
-                            ? sort?.direction === 'asc'
-                              ? 'desc'
-                              : 'asc'
-                            : 'asc'
-                      })
-                    : undefined
-                }
-                className="flex items-center cursor-pointer focus:outline-none"
+    <>
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-white">
+          <tr className="border-tensei-gray-600">
+            {selection?.onChange ? (
+              <th
+                key="select-all"
+                className="px-6 py-1 text-left text-13px font-medium text-tensei-darkest uppercase tracking-wider"
               >
-                {column.title}{' '}
-                {column.sorter ? (
-                  <p
-                    className={`transition duration-150 ease-in-out ${
-                      column.field === sort?.field ? '' : 'opacity-30'
-                    } ${
-                      sort?.direction === 'asc' && column.field === sort.field
-                        ? 'transform rotate-180 ml-2'
-                        : ''
-                    }`}
-                  >
-                    {Sorter}
-                  </p>
-                ) : null}
-              </div>
-            </th>
-          ))}
-        </tr>
-      </thead>
-
-      <tbody className="bg-white divide-y divide-gray-200">
-        {loading ? (
-          <tr className="h-24">
-            <td colSpan={columns.length + 1}>
-              <div className="w-full h-full flex items-center justify-center mt-8">
-                <Pulse dotClassName="bg-tensei-primary" />
-              </div>
-            </td>
-          </tr>
-        ) : (
-          <Fragment>
-            {rows.map(row => (
-              <tr key={row[key]}>
-                {selection?.onChange ? (
-                  <td className="px-6 py-3 whitespace-nowrap text-sm font-medium">
-                    <input
-                      type="checkbox"
-                      checked={selected.some(r => r[key] === row[key])}
-                      className="text-tensei-primary rounded-sm border border-tensei-gray-500"
-                      onChange={event => onCheckboxChange(row, event)}
-                    />
-                  </td>
-                ) : null}
-                {columns.map((column, index) => (
-                  <Fragment key={`${column.field}-${row[key]}-${index}`}>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm">
-                      {column.render
-                        ? column.render(row[column.field], row)
-                        : row[column.field]}
-                    </td>
-                  </Fragment>
-                ))}
-              </tr>
+                <input
+                  type="checkbox"
+                  checked={
+                    selected.length !== 0 && selected.length === rows.length
+                  }
+                  disabled={loading}
+                  onChange={onSelectAllCheckboxChange}
+                  className="text-tensei-primary rounded-sm border border-tensei-gray-500"
+                />
+              </th>
+            ) : null}
+            {columns.map(column => (
+              <th
+                key={column.field}
+                scope="col"
+                className={
+                  column.className ||
+                  'px-6 py-1 text-left text-13px font-extrabold text-tensei-darkest uppercase tracking-wider'
+                }
+              >
+                <div
+                  tabIndex={0}
+                  onClick={() =>
+                    column.sorter
+                      ? setSort({
+                          field: column.field,
+                          direction:
+                            column.field === sort?.field
+                              ? sort?.direction === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                              : 'asc'
+                        })
+                      : undefined
+                  }
+                  className="flex items-center cursor-pointer focus:outline-none text-13px"
+                >
+                  {column.title}{' '}
+                  {column.sorter ? (
+                    <p
+                      className={`transition duration-150 ease-in-out ${
+                        column.field === sort?.field ? '' : 'opacity-30'
+                      } ${
+                        sort?.direction === 'asc' && column.field === sort.field
+                          ? 'transform rotate-180 ml-2'
+                          : ''
+                      }`}
+                    >
+                      {Sorter}
+                    </p>
+                  ) : null}
+                </div>
+              </th>
             ))}
-            {rows.length === 0 && Empty ? <Empty /> : null}
-          </Fragment>
-        )}
-      </tbody>
-    </table>
+          </tr>
+        </thead>
+
+        <tbody className="bg-white divide-y divide-gray-200">
+          {loading ? (
+            <tr className="h-24">
+              <td colSpan={columns.length + 1}>
+                <div className="w-full h-full flex items-center justify-center mt-8">
+                  <Pulse dotClassName="bg-tensei-primary" />
+                </div>
+              </td>
+            </tr>
+          ) : (
+            <Fragment>
+              {rows.map(row => (
+                <tr key={row[key]}>
+                  {selection?.onChange ? (
+                    <td className="px-6 py-3 whitespace-nowrap text-13px font-medium">
+                      <input
+                        type="checkbox"
+                        checked={selected.some(r => r[key] === row[key])}
+                        className="text-tensei-primary rounded-sm border border-tensei-gray-500"
+                        onChange={event => onCheckboxChange(row, event)}
+                      />
+                    </td>
+                  ) : null}
+                  {columns.map((column, index) => (
+                    <Fragment key={`${column.field}-${row[key]}-${index}`}>
+                      <td className="px-6 py-3 whitespace-nowrap text-13px">
+                        {column.render
+                          ? column.render(row[column.field], row)
+                          : row[column.field]}
+                      </td>
+                    </Fragment>
+                  ))}
+                </tr>
+              ))}
+              {rows.length === 0 && Empty ? <Empty /> : null}
+            </Fragment>
+          )}
+        </tbody>
+      </table>
+    </>
   )
 }
 

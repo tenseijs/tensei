@@ -1,6 +1,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
+  mode: 'jit',
   purge: {
     enabled: process.env.NODE_ENV === 'production',
     content: ['./**/*.tsx', './../components/**/*.tsx']
@@ -8,8 +9,14 @@ module.exports = {
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
+      opacity: {
+        15: '0.15'
+      },
       fontFamily: {
-        sans: ['Nunito', ...defaultTheme.fontFamily.sans]
+        sans: ['Inter', ...defaultTheme.fontFamily.sans]
+      },
+      fontSize: {
+        '13px': '13px'
       },
       colors: {
         'tensei-primary': '#2346F8',
@@ -31,6 +38,8 @@ module.exports = {
         'tensei-gray-300': '#EAEBEF',
         'tensei-gray-100': '#F7F9FA',
         'tensei-gray-bg': '#EEF1F4',
+
+        'tensei-gray-450': '#525692',
 
         'tensei-warning': '#F0B103',
         'tensei-success': '#00976E',

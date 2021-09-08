@@ -21,11 +21,7 @@ const Paragraph: React.FC<ParagraphProps> = ({
   const Component = as
 
   return (
-    <Component
-      onClick={onClick}
-      className={`text-base ${className}`}
-      {...props}
-    >
+    <Component onClick={onClick} className={`text-sm ${className}`} {...props}>
       {children}
     </Component>
   )

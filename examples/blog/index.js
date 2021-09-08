@@ -1,4 +1,5 @@
 require('dotenv').config()
+const { cms } = require('@tensei/cms')
 const { rest } = require('@tensei/rest')
 const { graphql } = require('@tensei/graphql')
 const { auth, permission } = require('@tensei/auth')
@@ -64,16 +65,18 @@ module.exports = tensei()
         team.fields([hasMany('Peg')])
       })
       .plugin(),
+
+    cms().plugin(),
     rest().plugin(),
     graphql().plugin()
   ])
-  .boot(async ctx => {
-    await seed(ctx)
-  })
   .databaseConfig({
     type: 'sqlite',
-    dbName: 'db.sqlite'
-    // debug: true
+    dbName: 'db.sqlite',
+    debug: true
+  })
+  .boot(async ctx => {
+    await seed(ctx)
   })
   .start()
   .catch(console.error)
