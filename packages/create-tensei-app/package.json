@@ -31,7 +31,7 @@
     "check-node-version": "^4.0.3",
     "chokidar": "^3.5.1",
     "commander": "^6.2.0",
-    "edge.js": "^1.1.4",
+    "edge.js": "^5.3.2",
     "execa": "^5.0.0",
     "fs-extra": "^9.1.0",
     "latest-version": "^5.1.0",
