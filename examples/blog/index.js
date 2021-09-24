@@ -21,6 +21,7 @@ module.exports = tensei()
   .root(__dirname)
   .resources([
     resource('Post')
+      .canInsert(({ user }) => {})
       .fields([
         text('Title').notNullable().rules('required'),
         textarea('Description').nullable(),
@@ -45,7 +46,7 @@ module.exports = tensei()
       text('Name').rules('required'),
       belongsToMany('Category'),
       belongsToMany('Post'),
-      belongsTo('Team')
+      belongsTo('Team').nullable()
     ])
   ])
   .plugins([

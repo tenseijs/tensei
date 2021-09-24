@@ -1,5 +1,4 @@
 import pino from 'pino'
-import Table from 'cli-table'
 import Emittery from 'emittery'
 import BodyParser from 'body-parser'
 import * as indicative from 'indicative'
@@ -32,7 +31,7 @@ import Database from './database'
 import {
   TenseiContract,
   DatabaseConfiguration,
-  TensieContext,
+  TenseiContext,
   GraphQlQueryContract,
   PluginSetupConfig,
   PluginSetupFunction,
@@ -210,7 +209,7 @@ export class Tensei implements TenseiContract {
     return this
   }
 
-  public graphQlTypeDefs(graphQlTypeDefs: TensieContext['graphQlTypeDefs']) {
+  public graphQlTypeDefs(graphQlTypeDefs: TenseiContext['graphQlTypeDefs']) {
     this.ctx.graphQlTypeDefs = [...this.ctx.graphQlTypeDefs, ...graphQlTypeDefs]
 
     return this
@@ -256,32 +255,13 @@ export class Tensei implements TenseiContract {
   private registerCoreCommands(orm: any) {
     this.commands([
       command('orm:types')
-        .signature('orm:types')
-        .description('Generate ORM Types')
-        .handle(() => {
+        .describe(
+          'Generate types for the orm. This will generate types such as Model and Repository for all your resources.'
+        )
+        .run(function () {
           orm.generateTypes()
-        }),
-      command('routes')
-        .signature('routes')
-        .description('Display all registered routes in the application')
-        .handle(() => {
-          const table = new Table({
-            head: ['METHOD', 'URI', 'MIDDLEWARE', 'NAME', 'DESCRIPTION'],
-            colWidths: [10, 45, 15, 25, 25, 42]
-          })
 
-          table.push(
-            ...this.ctx.routes.map(route => [
-              route.config.type,
-              route.config.path,
-              route.config.middleware.length,
-              route.config.id,
-              route.config.name,
-              route.config.description
-            ])
-          )
-
-          console.log(table.toString())
+          this.logger.success('Orm types generated successfully.')
         })
     ])
   }
@@ -488,13 +468,13 @@ export class Tensei implements TenseiContract {
       extendGraphQlQueries: (routes: GraphQlQueryContract[]) => {
         this.graphQlQueries(routes)
       },
-      extendGraphQlTypeDefs: (typeDefs: TensieContext['graphQlTypeDefs']) => {
+      extendGraphQlTypeDefs: (typeDefs: TenseiContext['graphQlTypeDefs']) => {
         this.graphQlTypeDefs(typeDefs)
       },
       extendRoutes: (routes: RouteContract[]) => {
         this.routes(routes)
       },
-      extendCommands: (commands: CommandContract<any>[]) => {
+      extendCommands: (commands: CommandContract[]) => {
         this.commands(commands)
       },
       setPluginConfig: (name: string, config: any) => {
@@ -756,7 +736,7 @@ export class Tensei implements TenseiContract {
     return this
   }
 
-  public commands(commands: CommandContract<any>[]) {
+  public commands(commands: CommandContract[]) {
     this.ctx.commands = [...this.ctx.commands, ...commands]
 
     return this

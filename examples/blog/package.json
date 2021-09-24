@@ -19,7 +19,8 @@
         "tensei": "tensei"
     },
     "devDependencies": {
-        "nodemon": "^2.0.7"
+        "nodemon": "^2.0.7",
+        "why-is-node-running": "^2.2.0"
     },
     "private": true
 }

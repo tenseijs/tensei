@@ -31,6 +31,10 @@ declare global {
       scripts: Asset[]
       styles: Asset[]
       logger: Logger
+      // @ts-ignore
+      user: import('@tensei/orm').UserModel & DataPayload
+      // @ts-ignore
+      team: import('@tensei/orm').TeamModel
       originatedFromDashboard: boolean | undefined
       authenticationError: (message?: string) => unknown
       forbiddenError: (message?: string) => unknown

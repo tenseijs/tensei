@@ -11,5 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["@types/jest", "node"]
   },
+  "include": ["cli.ts"],
   "exclude": ["__tests__", "build"]
 }
