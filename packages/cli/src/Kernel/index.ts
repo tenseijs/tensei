@@ -179,9 +179,11 @@ export class Kernel implements KernelContract {
       const arg = command.args[i]
       if (arg.type === 'spread') {
         ;(commandInstance as any)[arg.propertyName] = parsedOptions._.slice(i)
+        commandInstance.argValues[arg.propertyName] = parsedOptions._.slice(i)
         break
       } else {
         ;(commandInstance as any)[arg.propertyName] = parsedOptions._[i]
+        commandInstance.argValues[arg.propertyName] = parsedOptions._[i]
       }
     }
 
@@ -192,6 +194,7 @@ export class Kernel implements KernelContract {
       const flagValue = parsedOptions[flag.name]
       if (flagValue !== undefined) {
         ;(commandInstance as any)[flag.propertyName] = flagValue
+        commandInstance.flagValues[flag.propertyName] = flagValue
       }
     }
   }

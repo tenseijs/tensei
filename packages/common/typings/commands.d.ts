@@ -85,6 +85,8 @@ declare module '@tensei/common/commands' {
     flags: CommandFlag[]
     commandName: string
     description: string
+    argValues: { [key: string]: any }
+    flagValues: { [key: string]: any }
   }
 
   export interface CommandConstructorContract extends CommandContract {}

@@ -12,20 +12,28 @@ export const kill = async (server: Server) => {
   await terminate()
 }
 
-const getAppRootPath = () => {
-  const packageJson = require(Path.resolve(process.cwd(), 'package.json'))
+export const getAppRootPath = () => {
+  const packageJson = require(Path.resolve(
+    getProjectDirectory(),
+    'package.json'
+  ))
 
-  return packageJson.main
+  return packageJson.main as string
 }
 
+export const getProjectDirectory = () => process.cwd()
+
+export const appPath = () =>
+  Path.resolve(getProjectDirectory(), getAppRootPath())
+
 export const app = async (invalidate = true) => {
-  const appPath = Path.resolve(process.cwd(), getAppRootPath())
+  const path = appPath()
 
   if (invalidate) {
-    decache(appPath)
+    decache(path)
   }
 
-  const instance = require(appPath)
+  const instance = require(path)
 
   let tensei: TenseiContract = await (instance.default
     ? instance.default

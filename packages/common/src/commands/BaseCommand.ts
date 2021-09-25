@@ -29,6 +29,10 @@ export abstract class BaseCommand implements CommandContract {
     async prepare() {}
   }
 
+  public argValues = {}
+
+  public flagValues = {}
+
   /**
    * Reference to the exit handler
    */

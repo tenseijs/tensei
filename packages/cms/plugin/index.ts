@@ -408,6 +408,9 @@ class CmsPlugin {
   plugin() {
     return plugin('CMS')
       .id('cms')
+      .extra({
+        path: this.config.path
+      })
       .register(({ script, style, extendResources, databaseConfig }) => {
         this.scripts.forEach(s => script(s.name, s.path))
         this.styles.forEach(s => style(s.name, s.path))
@@ -425,7 +428,7 @@ class CmsPlugin {
         ])
       })
       .boot(async config => {
-        const { app, orm, extendEvents, resources, currentCtx } = config
+        const { app, orm, resources, currentCtx } = config
         const Store = ExpressSessionMikroORMStore(
           ExpressSession,
           this.sessionMikroOrmOptions
@@ -646,14 +649,6 @@ class CmsPlugin {
           '/tensei-assets',
           Static(Path.resolve(__dirname, '..', 'default-assets'))
         )
-
-        extendEvents([
-          event('tensei::listening').listen(({ ctx }) => {
-            ctx.logger.info(
-              `🦄 Access your cms dashboard ${ctx.serverUrl}/${this.config.path}`
-            )
-          })
-        ])
       })
   }
 }

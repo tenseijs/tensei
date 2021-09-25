@@ -340,6 +340,7 @@ declare module '@tensei/common/config' {
     repositories: import('@tensei/orm').OrmContract
     inProduction: boolean
     port: number
+    serverHost: string
     migrating: boolean
     root: string
     emitter: Emittery

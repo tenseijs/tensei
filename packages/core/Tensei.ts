@@ -74,6 +74,7 @@ export class Tensei implements TenseiContract {
   private initCtx() {
     this.ctx = {
       port: process.env.PORT || 8810,
+      serverHost: process.env.HOST || '127.0.0.1',
       schemas: [],
       routes: [],
       events: {},
@@ -100,7 +101,9 @@ export class Tensei implements TenseiContract {
         }
       },
       databaseClient: null,
-      serverUrl: `http://localhost:${this.ctx.port}`,
+      serverUrl:
+        process.env.SERVER_URL ||
+        `http://${this.ctx.serverHost}:${this.ctx.port}`,
       clientUrl: '',
       resources: [],
       plugins: [],
@@ -429,8 +432,6 @@ export class Tensei implements TenseiContract {
     }
 
     return this.server.listen(this.ctx.port, () => {
-      this.ctx.logger.info(`🚀 Access your server on ${this.ctx.serverUrl}`)
-
       this.ctx.emitter.emit('tensei::listening')
     })
   }

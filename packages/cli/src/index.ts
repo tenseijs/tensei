@@ -8,7 +8,13 @@
  */
 
 export { Kernel } from './Kernel'
-export { app } from './utils/get-app'
 export { serve } from './BaseCommands/Serve'
+export { build } from './BaseCommands/Build'
 export { handleError } from './utils/handleError'
 export { listDirectoryFiles } from './utils/listDirectoryFiles'
+export {
+  app,
+  appPath,
+  getProjectDirectory,
+  getAppRootPath
+} from './utils/get-app'

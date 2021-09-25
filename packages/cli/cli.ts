@@ -1,17 +1,30 @@
 #!/usr/bin/env node
 
-import { Kernel, handleError, serve, app } from './src'
+import { register } from '@adonisjs/require-ts'
+import {
+  Kernel,
+  handleError,
+  serve,
+  app,
+  getProjectDirectory,
+  build
+} from './src'
 
 // Set cli env variable
 process.env.TENSEI_MODE = 'cli'
 ;(async () => {
+  // Register ts hook
+  register(getProjectDirectory(), {
+    cache: true
+  })
+
   let tensei = await app()
 
   const { commands } = tensei.ctx
 
   const kernel = new Kernel(tensei)
 
-  kernel.register([serve, ...commands])
+  kernel.register([serve, build, ...commands])
 
   kernel.flag(
     'help',

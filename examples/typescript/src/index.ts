@@ -34,14 +34,14 @@ export default tensei()
         dateTime('Published At').creationRules('required'),
         belongsTo('Category').alwaysLoad(),
         array('Procedure')
-          .of('string')
+          .of('decimal')
           .rules('min:3', 'max:10')
-          .creationRules('required'),
+          .creationRules('required', 'max:24'),
         array('Prices')
           .nullable()
-          .of('decimal')
+          .of('string')
           .rules('max:10', 'min:2')
-          .creationRules('required')
+          .creationRules('required', 'max:500')
       ])
       .icon('library')
       .displayField('Title'),

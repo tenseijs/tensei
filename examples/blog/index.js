@@ -73,8 +73,8 @@ module.exports = tensei()
   ])
   .databaseConfig({
     type: 'sqlite',
-    dbName: 'db.sqlite',
-    debug: true
+    dbName: 'db.sqlite'
+    // debug: true
   })
   .boot(async ctx => {
     await seed(ctx)
