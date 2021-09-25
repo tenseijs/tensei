@@ -101,9 +101,6 @@ export class Tensei implements TenseiContract {
         }
       },
       databaseClient: null,
-      serverUrl:
-        process.env.SERVER_URL ||
-        `http://${this.ctx.serverHost}:${this.ctx.port}`,
       clientUrl: '',
       resources: [],
       plugins: [],
@@ -136,6 +133,9 @@ export class Tensei implements TenseiContract {
       },
       pluginsConfig: {}
     } as any
+
+    this.ctx.serverUrl =
+      process.env.SERVER_URL || `http://${this.ctx.serverHost}:${this.ctx.port}`
 
     this.ctx.mailer = mail(this.mailerConfig, this.ctx.logger, this.ctx.root)
 
