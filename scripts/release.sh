@@ -9,6 +9,6 @@ else
 fi
 
 git add .
-git commit -m "chore(release): publish v${TENSEI_PACKAGE_VERSION}"
+git commit -m "chore(release): publish v${TENSEI_PACKAGE_VERSION}" --allow-empty
 yarn build
 yarn lerna publish "$@"
