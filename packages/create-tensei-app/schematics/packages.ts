@@ -9,6 +9,8 @@
 
 import { CliState } from '../contracts'
 
+const TENSEI_PACKAGE_VERSION = process.env.TENSEI_PACKAGE_VERSION || 'latest'
+
 export const packages: {
   [K in CliState['boilerplate']]: {
     [pkg: string]: { version: string }
@@ -16,12 +18,12 @@ export const packages: {
 } = {
   graphql: {
     '@tensei/graphql': {
-      version: '^0.9.0'
+      version: TENSEI_PACKAGE_VERSION
     }
   },
   rest: {
     '@tensei/rest': {
-      version: '^0.9.0'
+      version: TENSEI_PACKAGE_VERSION
     }
   }
 }

@@ -31,18 +31,20 @@ const task: TaskFn = async (_, logger, { pkg, client, boilerplate, debug }) => {
     pkg.install(pkgName, boilerPlatePackages[pkgName].version, false)
   })
 
+  const TENSEI_PACKAGE_VERSION = process.env.TENSEI_PACKAGE_VERSION || 'latest'
+
   /**
    * Required dependencies for all projects
    */
   pkg.install('@mikro-orm/sqlite', '^4.4.0', false)
-  pkg.install('@tensei/core', 'latest', false)
-  pkg.install('@tensei/auth', 'latest', false)
+  pkg.install('@tensei/core', TENSEI_PACKAGE_VERSION, false)
+  pkg.install('@tensei/auth', TENSEI_PACKAGE_VERSION, false)
 
   /**
    * Required dev dependencies
    */
   pkg.install('typescript', '~4.3')
-  pkg.install('@tensei/cli', '^0.9.0')
+  pkg.install('@tensei/cli', TENSEI_PACKAGE_VERSION)
 
   /**
    * Displaying a spinner, since install packages takes

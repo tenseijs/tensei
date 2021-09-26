@@ -9,7 +9,6 @@
     "build": "yarn lerna run build",
     "dev": "yarn lerna run dev",
     "prettier": "yarn prettier",
-    "before:release": "node scripts/prepublish.js",
     "release": "./scripts/release.sh",
     "commit": "yarn git-cz",
     "setup": "yarn && yarn build && cd examples/blog && yarn && cd ../typescript && yarn"

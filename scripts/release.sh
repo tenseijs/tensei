@@ -1,7 +1,14 @@
 set -e
+set -u
 
-yarn before:release "$@"
+if [[ -z "${TENSEI_PACKAGE_VERSION}" ]]; then
+  echo "You must set the TENSEI_PACKAGE_VERSION environment variable before publishing a release."
+  exit 1
+else
+  echo "Publishing version ${TENSEI_PACKAGE_VERSION}"
+fi
+
 git add .
-git commit -m "chore(release): publish v`node -p 'require(\"./lerna.json\").version'`"
+git commit -m "chore(release): publish v${TENSEI_PACKAGE_VERSION}"
 yarn build
 yarn lerna publish "$@"
