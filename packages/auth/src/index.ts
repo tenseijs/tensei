@@ -323,8 +323,8 @@ export class Auth implements AuthContract {
 
     const userResource = resource(this.config.userResource)
       .canUpdate(
-        ({ user, params, config }) =>
-          user && (params.id as string) === user.id.toString()
+        ({ authUser, params, config }) =>
+          authUser && (params.id as string) === authUser.id.toString()
       )
       .fields([
         text('Email')
@@ -566,9 +566,9 @@ export class Auth implements AuthContract {
       )
       .forEach(resource => {
         resource.beforeCreate(({ entity, em }, { request }) => {
-          if (request.user && request.user.id) {
+          if (request.authUser && request.authUser.id) {
             em.assign(entity, {
-              user: request.user.id
+              user: request.authUser.id
             })
           }
         })
@@ -591,9 +591,10 @@ export class Auth implements AuthContract {
             .default()
             .noArgs()
             .query((args, request) =>
-              request.user && request.user.id
+              request.authUser && request.authUser.id
                 ? {
-                    [this.__resources.user.data.camelCaseName]: request.user.id
+                    [this.__resources.user.data.camelCaseName]:
+                      request.authUser.id
                   }
                 : resource.data.noTimestamps
                 ? false
@@ -808,41 +809,51 @@ export class Auth implements AuthContract {
 
             if ([`insert_${plural}`, `insert_${singular}`].includes(path)) {
               return query.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(`insert:${slug}`)
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
+                    `insert:${slug}`
+                  )
               )
             }
 
             if ([`delete_${plural}`, `delete_${singular}`].includes(path)) {
               return query.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(`delete:${slug}`)
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
+                    `delete:${slug}`
+                  )
               )
             }
 
             if ([`update_${plural}`, `update_${singular}`].includes(path)) {
               return query.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(`update:${slug}`)
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
+                    `update:${slug}`
+                  )
               )
             }
 
             if (path === plural || path === `${plural}Count`) {
               return query.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(`index:${slug}`)
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
+                    `index:${slug}`
+                  )
               )
             }
 
             if (path === singular) {
               return query.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(`show:${slug}`)
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
+                    `show:${slug}`
+                  )
               )
             }
           }
@@ -889,9 +900,9 @@ export class Auth implements AuthContract {
               id === `insert_${slugSingular}`
             ) {
               return route.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
                     `insert:${slugPlural}`
                   )
               )
@@ -899,9 +910,9 @@ export class Auth implements AuthContract {
 
             if (id === `index_${slugPlural}`) {
               return route.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
                     `index:${slugPlural}`
                   )
               )
@@ -909,9 +920,9 @@ export class Auth implements AuthContract {
 
             if (id === `show_${slugSingular}`) {
               return route.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
                     `show:${slugPlural}`
                   )
               )
@@ -922,9 +933,9 @@ export class Auth implements AuthContract {
               id === `update_${slugPlural}`
             ) {
               return route.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]?.includes(
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]?.includes(
                     `update:${slugPlural}`
                   )
               )
@@ -935,9 +946,9 @@ export class Auth implements AuthContract {
               id === `delete_${slugPlural}`
             ) {
               return route.authorize(
-                ({ user }) =>
-                  user &&
-                  user[this.getPermissionUserKey()]!.includes(
+                ({ authUser }) =>
+                  authUser &&
+                  authUser[this.getPermissionUserKey()]!.includes(
                     `delete:${slugPlural}`
                   )
               )
@@ -1069,7 +1080,7 @@ export class Auth implements AuthContract {
               .description(
                 `Enable two factor authentication for an existing ${name}.`
               )
-              .authorize(({ user }) => user && !user.public)
+              .authorize(({ authUser }) => authUser && !authUser.public)
               .handle(async (request, response) => {
                 const {
                   dataURL,
@@ -1097,7 +1108,7 @@ export class Auth implements AuthContract {
               .description(
                 `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
               )
-              .authorize(({ user }) => user && !user.public)
+              .authorize(({ authUser }) => authUser && !authUser.public)
               .handle(async (request, response) => {
                 const user = await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
                   request as any
@@ -1122,8 +1133,8 @@ export class Auth implements AuthContract {
               .description(
                 `Disable two factor authentication for an existing ${name}.`
               )
-              .authorize(({ user }) => user && !user.public)
-              .authorize(({ user }) => !!user)
+              .authorize(({ authUser }) => authUser && !authUser.public)
+              .authorize(({ authUser }) => !!authUser)
               .handle(async (request, response) => {
                 const user = await this.TwoFactorAuth.disableTwoFactorAuth(
                   request as any
@@ -1139,13 +1150,15 @@ export class Auth implements AuthContract {
         .group('Auth')
         .get()
         .id(this.getRouteId(`get_authenticated_${name}`))
-        .authorize(({ user }) =>
-          this.config.rolesAndPermissions ? user && !user.public : !!user
+        .authorize(({ authUser }) =>
+          this.config.rolesAndPermissions
+            ? authUser && !authUser.public
+            : !!authUser
         )
         .description(
           `Get the authenticated ${name} from a valid JWT or session.`
         )
-        .handle(async ({ user }, { formatter: { ok } }) => ok(user)),
+        .handle(async ({ authUser }, { formatter: { ok } }) => ok(authUser)),
       ...(this.config.verifyEmails
         ? [
             route(`Resend Verification email`)
@@ -1153,8 +1166,10 @@ export class Auth implements AuthContract {
               .path(this.__getApiPath('emails/verification/resend'))
               .post()
               .id(this.getRouteId(`resend_${name}_verification_email`))
-              .authorize(({ user }) =>
-                this.config.rolesAndPermissions ? user && !user.public : !!user
+              .authorize(({ authUser }) =>
+                this.config.rolesAndPermissions
+                  ? authUser && !authUser.public
+                  : !!authUser
               )
               .description(`Resend verification email to ${name} email.`)
               .handle(async (request, response) =>
@@ -1166,8 +1181,10 @@ export class Auth implements AuthContract {
               .path(this.__getApiPath('emails/verification/confirm'))
               .post()
               .group('Verify Emails')
-              .authorize(({ user }) =>
-                this.config.rolesAndPermissions ? user && !user.public : !!user
+              .authorize(({ authUser }) =>
+                this.config.rolesAndPermissions
+                  ? authUser && !authUser.public
+                  : !!authUser
               )
               .parameters([
                 {
@@ -1277,7 +1294,7 @@ export class Auth implements AuthContract {
         .handle(async (_, args, ctx, info) => {
           const payload = await this.login(ctx)
 
-          const { user } = ctx
+          const { authUser } = ctx
 
           await Utils.graphql.populateFromResolvedNodes(
             resources,
@@ -1287,12 +1304,12 @@ export class Auth implements AuthContract {
             Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
               pascalName
             ],
-            [user]
+            [authUser]
           )
 
           return {
             ...payload,
-            [this.__resources.user.data.camelCaseName]: user
+            [this.__resources.user.data.camelCaseName]: authUser
           }
         }),
       ...(this.config.httpOnlyCookiesAuth
@@ -1311,7 +1328,7 @@ export class Auth implements AuthContract {
         .handle(async (_, args, ctx, info) => {
           const payload = await this.register(ctx)
 
-          const { user } = ctx
+          const { authUser } = ctx
 
           await Utils.graphql.populateFromResolvedNodes(
             resources,
@@ -1319,12 +1336,12 @@ export class Auth implements AuthContract {
             ctx.databaseConfig.type!,
             this.__resources.user,
             Utils.graphql.getParsedInfo(info),
-            [user]
+            [authUser]
           )
 
           return {
             ...payload,
-            [this.__resources.user.data.camelCaseName]: user
+            [this.__resources.user.data.camelCaseName]: authUser
           }
         }),
       graphQlQuery(`Request ${name} password reset`)
@@ -1340,11 +1357,13 @@ export class Auth implements AuthContract {
       )
         .path(`authenticated`)
         .query()
-        .authorize(({ user }) =>
-          this.config.rolesAndPermissions ? user && !user.public : !!user
+        .authorize(({ authUser }) =>
+          this.config.rolesAndPermissions
+            ? authUser && !authUser.public
+            : !!authUser
         )
         .handle(async (_, args, ctx, info) => {
-          const { user } = ctx
+          const { authUser } = ctx
 
           await Utils.graphql.populateFromResolvedNodes(
             resources,
@@ -1352,10 +1371,10 @@ export class Auth implements AuthContract {
             ctx.databaseConfig.type!,
             this.__resources.user,
             Utils.graphql.getParsedInfo(info),
-            [user]
+            [authUser]
           )
 
-          return user
+          return authUser
         }),
       ...(this.config.twoFactorAuth
         ? [
@@ -1365,8 +1384,10 @@ export class Auth implements AuthContract {
               .handle(async (_, args, ctx, info) =>
                 this.TwoFactorAuth.enableTwoFactorAuth(ctx)
               )
-              .authorize(({ user }) =>
-                this.config.rolesAndPermissions ? user && !user.public : !!user
+              .authorize(({ authUser }) =>
+                this.config.rolesAndPermissions
+                  ? authUser && !authUser.public
+                  : !!authUser
               ),
             graphQlQuery('Confirm Enable Two Factor Auth')
               .path('confirmEnableTwoFactorAuth')
@@ -1374,7 +1395,7 @@ export class Auth implements AuthContract {
               .handle(async (_, args, ctx, info) => {
                 await this.TwoFactorAuth.confirmEnableTwoFactorAuth(ctx)
 
-                const { user } = ctx
+                const { authUser } = ctx
 
                 await Utils.graphql.populateFromResolvedNodes(
                   resources,
@@ -1382,13 +1403,15 @@ export class Auth implements AuthContract {
                   ctx.databaseConfig.type!,
                   this.__resources.user,
                   Utils.graphql.getParsedInfo(info),
-                  [user]
+                  [authUser]
                 )
 
-                return user
+                return authUser
               })
-              .authorize(({ user }) =>
-                this.config.rolesAndPermissions ? user && !user.public : !!user
+              .authorize(({ authUser }) =>
+                this.config.rolesAndPermissions
+                  ? authUser && !authUser.public
+                  : !!authUser
               ),
 
             graphQlQuery(`Disable Two Factor Auth`)
@@ -1397,7 +1420,7 @@ export class Auth implements AuthContract {
               .handle(async (_, args, ctx, info) => {
                 await this.TwoFactorAuth.disableTwoFactorAuth(ctx)
 
-                const { user } = ctx
+                const { authUser } = ctx
 
                 await Utils.graphql.populateFromResolvedNodes(
                   resources,
@@ -1405,13 +1428,15 @@ export class Auth implements AuthContract {
                   ctx.databaseConfig.type!,
                   this.__resources.user,
                   Utils.graphql.getParsedInfo(info),
-                  [user]
+                  [authUser]
                 )
 
-                return user
+                return authUser
               })
-              .authorize(({ user }) =>
-                this.config.rolesAndPermissions ? user && !user.public : !!user
+              .authorize(({ authUser }) =>
+                this.config.rolesAndPermissions
+                  ? authUser && !authUser.public
+                  : !!authUser
               )
           ]
         : []),
@@ -1423,7 +1448,7 @@ export class Auth implements AuthContract {
               .handle(async (_, args, ctx, info) => {
                 await this.confirmEmail(ctx)
 
-                const { user } = ctx
+                const { authUser } = ctx
 
                 await Utils.graphql.populateFromResolvedNodes(
                   resources,
@@ -1431,13 +1456,15 @@ export class Auth implements AuthContract {
                   ctx.databaseConfig.type!,
                   this.__resources.user,
                   Utils.graphql.getParsedInfo(info),
-                  [user]
+                  [authUser]
                 )
 
-                return user
+                return authUser
               })
-              .authorize(({ user }) =>
-                this.config.rolesAndPermissions ? user && !user.public : !!user
+              .authorize(({ authUser }) =>
+                this.config.rolesAndPermissions
+                  ? authUser && !authUser.public
+                  : !!authUser
               ),
             graphQlQuery(`Resend ${name} Verification Email`)
               .path('resendVerificationEmail')
@@ -1456,7 +1483,7 @@ export class Auth implements AuthContract {
                 .handle(async (_, args, ctx, info) => {
                   const payload = await this.socialAuth(ctx, 'login')
 
-                  const { user } = ctx
+                  const { authUser } = ctx
 
                   await Utils.graphql.populateFromResolvedNodes(
                     resources,
@@ -1464,12 +1491,12 @@ export class Auth implements AuthContract {
                     ctx.databaseConfig.type!,
                     this.__resources.user,
                     Utils.graphql.getParsedInfo(info),
-                    [user]
+                    [authUser]
                   )
 
                   return {
                     ...payload,
-                    [this.__resources.user.data.camelCaseName]: user
+                    [this.__resources.user.data.camelCaseName]: authUser
                   }
                 }),
               graphQlQuery('Social auth register')
@@ -1478,7 +1505,7 @@ export class Auth implements AuthContract {
                 .handle(async (_, args, ctx, info) => {
                   const payload = await this.socialAuth(ctx, 'register')
 
-                  const { user } = ctx
+                  const { authUser } = ctx
 
                   await Utils.graphql.populateFromResolvedNodes(
                     resources,
@@ -1486,12 +1513,12 @@ export class Auth implements AuthContract {
                     ctx.databaseConfig.type!,
                     this.__resources.user,
                     Utils.graphql.getParsedInfo(info),
-                    [user]
+                    [authUser]
                   )
 
                   return {
                     ...payload,
-                    [this.__resources.user.data.camelCaseName]: user
+                    [this.__resources.user.data.camelCaseName]: authUser
                   }
                 })
             ]
@@ -1502,7 +1529,7 @@ export class Auth implements AuthContract {
                 .handle(async (_, args, ctx, info) => {
                   const payload = await this.socialAuth(ctx)
 
-                  const { user } = ctx
+                  const { authUser } = ctx
 
                   await Utils.graphql.populateFromResolvedNodes(
                     resources,
@@ -1510,12 +1537,12 @@ export class Auth implements AuthContract {
                     ctx.databaseConfig.type!,
                     this.__resources.user,
                     Utils.graphql.getParsedInfo(info),
-                    [user]
+                    [authUser]
                   )
 
                   return {
                     ...payload,
-                    [this.__resources.user.data.camelCaseName]: user
+                    [this.__resources.user.data.camelCaseName]: authUser
                   }
                 })
             ]
@@ -1631,7 +1658,7 @@ export class Auth implements AuthContract {
 
     // TODO: Delete all refresh tokens older than a 24 hours. This will be custom and calculated in future.
 
-    ctx.user = token[userField]
+    ctx.authUser = token[userField]
 
     return this.getUserPayload(
       ctx,
@@ -1641,12 +1668,12 @@ export class Auth implements AuthContract {
 
   private getUserPayload(ctx: ApiContext, refreshToken?: string) {
     let userPayload: any = {
-      [this.__resources.user.data.camelCaseName]: ctx.user
+      [this.__resources.user.data.camelCaseName]: ctx.authUser
     }
 
     if (!this.config.httpOnlyCookiesAuth) {
       userPayload.accessToken = this.generateJwt({
-        id: ctx.user.id
+        id: ctx.authUser.id
       })
 
       userPayload.expiresIn = this.config.tokensConfig.accessTokenExpiresIn
@@ -1658,10 +1685,10 @@ export class Auth implements AuthContract {
 
     if (this.config.httpOnlyCookiesAuth) {
       if (ctx.req) {
-        ctx.req.session.user = ctx.user
+        ctx.req.session.user = ctx.authUser
       } else {
         // @ts-ignore
-        ctx.session.user = ctx.user
+        ctx.session.user = ctx.authUser
       }
     }
 
@@ -1943,7 +1970,7 @@ export class Auth implements AuthContract {
 
     await manager.populate([user], populates)
 
-    ctx.user = user
+    ctx.authUser = user
 
     await this.config.afterRegister(ctx, user)
 
@@ -1954,42 +1981,42 @@ export class Auth implements AuthContract {
 
   private resendVerificationEmail = async ({
     manager,
-    user,
+    authUser,
     emitter
   }: ApiContext) => {
-    if (!user.emailVerificationToken) {
+    if (!authUser.emailVerificationToken) {
       return false
     }
 
-    manager.assign(user, {
+    manager.assign(authUser, {
       emailVerificationToken: this.generateRandomToken(72)
     })
 
-    await manager.persistAndFlush(user)
+    await manager.persistAndFlush(authUser)
 
-    emitter.emit(USER_EVENTS.RESENT_VERIFICATION_EMAIL, user)
+    emitter.emit(USER_EVENTS.RESENT_VERIFICATION_EMAIL, authUser)
 
     return true
   }
 
   private confirmEmail = async (ctx: ApiContext) => {
-    const { manager, body, user } = ctx
+    const { manager, body, authUser } = ctx
     if (
-      user.emailVerificationToken ===
+      authUser.emailVerificationToken ===
       (body.object
         ? body.object.emailVerificationToken
         : body.emailVerificationToken)
     ) {
-      manager.assign(user, {
+      manager.assign(authUser, {
         emailVerificationToken: null,
         emailVerifiedAt: Dayjs().format()
       })
 
-      await manager.persistAndFlush(user)
+      await manager.persistAndFlush(authUser)
 
-      ctx.emitter.emit(USER_EVENTS.VERIFIED_EMAIL, user)
+      ctx.emitter.emit(USER_EVENTS.VERIFIED_EMAIL, authUser)
 
-      return user.toJSON()
+      return authUser.toJSON()
     }
 
     throw ctx.userInputError('Invalid email verification token.')
@@ -2120,7 +2147,7 @@ export class Auth implements AuthContract {
 
     await this.config.afterLogin(ctx, user)
 
-    ctx.user = user
+    ctx.authUser = user
 
     return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
   }
@@ -2208,7 +2235,7 @@ export class Auth implements AuthContract {
       await manager.populate([user], [this.getRolesAndPermissionsNames()])
     }
 
-    ctx.user = user
+    ctx.authUser = user
 
     await this.config.afterLogin(ctx, user)
 
@@ -2216,7 +2243,7 @@ export class Auth implements AuthContract {
   }
 
   public setAuthUserForPublicRoutes = async (ctx: GraphQLPluginContext) => {
-    const { manager, user } = ctx
+    const { manager, authUser } = ctx
 
     if (!this.config.rolesAndPermissions) {
       return
@@ -2233,8 +2260,8 @@ export class Auth implements AuthContract {
       }
     )
 
-    if (!user && publicRole) {
-      ctx.user = {
+    if (!authUser && publicRole) {
+      ctx.authUser = {
         public: true,
         [this.getRoleUserKey()]: [publicRole as UserRole],
         [this.getPermissionUserKey()]: publicRole[this.getPermissionUserKey()]
@@ -2245,11 +2272,11 @@ export class Auth implements AuthContract {
   }
 
   private ensureAuthUserIsNotBlocked = async (ctx: ApiContext) => {
-    if (!ctx.user || (ctx.user && ctx.user.public)) {
+    if (!ctx.authUser || (ctx.authUser && ctx.authUser.public)) {
       return
     }
 
-    if (ctx.user.blocked) {
+    if (ctx.authUser.blocked) {
       throw ctx.forbiddenError('Your account is temporarily disabled.')
     }
   }
@@ -2312,7 +2339,7 @@ export class Auth implements AuthContract {
           )
       }
 
-      ctx.user = user
+      ctx.authUser = user
     } catch (error) {}
   }
 
@@ -2581,7 +2608,7 @@ export class Auth implements AuthContract {
     await ctx.manager.nativeUpdate(
       this.__resources.token.data.pascalCaseName,
       {
-        [this.__resources.user.data.camelCaseName]: ctx.user.id
+        [this.__resources.user.data.camelCaseName]: ctx.authUser.id
       } as any,
       {
         expiresAt: Dayjs().subtract(1, 'second').format(),
@@ -2593,7 +2620,7 @@ export class Auth implements AuthContract {
       this.__resources.token.data.pascalCaseName,
       {
         token: plainTextToken,
-        [this.__resources.user.data.camelCaseName]: ctx.user.id,
+        [this.__resources.user.data.camelCaseName]: ctx.authUser.id,
         type: TokenTypes.REFRESH,
         expiresAt: previousTokenExpiry
           ? previousTokenExpiry
