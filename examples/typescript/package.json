@@ -1,16 +1,16 @@
 {
   "name": "@examples/typescript",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
     "@mikro-orm/sqlite": "^4.4.0",
-    "@tensei/cms": "^0.9.1",
-    "@tensei/core": "^0.9.1",
-    "@tensei/graphql": "^0.9.1",
-    "@tensei/mde": "^0.9.1",
-    "@tensei/media": "^0.9.1",
-    "@tensei/social-auth": "^0.9.1"
+    "@tensei/cms": "^0.9.2",
+    "@tensei/core": "^0.9.2",
+    "@tensei/graphql": "^0.9.2",
+    "@tensei/mde": "^0.9.2",
+    "@tensei/media": "^0.9.2",
+    "@tensei/social-auth": "^0.9.2"
   },
   "scripts": {
     "example:dev": "yarn ts-node-dev --respawn src/index.ts",

@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.2](https://github.com/tenseijs/tensei/compare/v0.9.1...v0.9.2) (2021-09-26)
+
+
+### Features
+
+* **cms:** fix login / logout on cms ([d401c4e](https://github.com/tenseijs/tensei/commit/d401c4e495cab8dba1df97ce2503c89ece806643))
+* **cms:** install evergreen ds\ ([669d21c](https://github.com/tenseijs/tensei/commit/669d21c26b06b86db930a1772a8cbcaf173c1ba4))
+* **cms:** merge cms redesign branch ([2f1e6a9](https://github.com/tenseijs/tensei/commit/2f1e6a9201288da647319378515f0c3f4f3067df))
+* **cms:** update authentication to use passport.js ([a02c777](https://github.com/tenseijs/tensei/commit/a02c777f171ccf9c9ce36cd4444dff281d3a1c8a))
+
+
+
+
+
 ## [0.9.1](https://github.com/tenseijs/tensei/compare/v0.9.0...v0.9.1) (2021-08-03)
 
 **Note:** Version bump only for package @tensei/cms

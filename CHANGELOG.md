@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.2](https://github.com/tenseijs/tensei/compare/v0.9.1...v0.9.2) (2021-09-26)
+
+
+### Bug Fixes
+
+* **core:** fix release script to require environment variable ([b9f74c9](https://github.com/tenseijs/tensei/commit/b9f74c90094a4314c4d16a4618adeb17d97ca082))
+
+
+### Features
+
+* **auth:** rename user to authUser in context ([c99f890](https://github.com/tenseijs/tensei/commit/c99f8902737d0e81e6c112d7379c2bc6c97e6978))
+* **cli:** add build command to @tensei/cli ([1771538](https://github.com/tenseijs/tensei/commit/17715388faef7972f49cddd31df648c03a9d8a8d))
+* **cli:** clone @adonisjs/ace into @tensei/cli package ([c8b75e8](https://github.com/tenseijs/tensei/commit/c8b75e8ddf38ff7e16d1858c66567204cac1ffc0))
+* **cms:** fix login / logout on cms ([d401c4e](https://github.com/tenseijs/tensei/commit/d401c4e495cab8dba1df97ce2503c89ece806643))
+* **cms:** install evergreen ds\ ([669d21c](https://github.com/tenseijs/tensei/commit/669d21c26b06b86db930a1772a8cbcaf173c1ba4))
+* **cms:** update authentication to use passport.js ([a02c777](https://github.com/tenseijs/tensei/commit/a02c777f171ccf9c9ce36cd4444dff281d3a1c8a))
+* **core:** fix failing social test ([115c332](https://github.com/tenseijs/tensei/commit/115c3320c7af17f93fe4bb2e14859abe3aad5fb2))
+* **create-tensei-app:** setup new create-tensei-app from create-adonis-ts-app template ([29291b5](https://github.com/tenseijs/tensei/commit/29291b578e75770d34890d3c04b274a9800b8bf5))
+
+
+
+
+
 ## [0.9.1](https://github.com/tenseijs/tensei/compare/v0.9.0...v0.9.1) (2021-08-03)
 
 
