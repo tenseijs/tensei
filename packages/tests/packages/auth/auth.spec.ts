@@ -682,6 +682,9 @@ test('can signup with social authentication', async () => {
     key: 'TEST_KEY',
     secret: 'TEST_SECRET'
   }
+  process.env.HOST = '0.0.0.0'
+  process.env.PORT = '4400'
+
   const { app, ctx } = await setup([
     auth()
       .verifyEmails()
@@ -697,7 +700,7 @@ test('can signup with social authentication', async () => {
 
   expect(getResponse.status).toBe(302)
   expect(getResponse.headers.location).toBe(
-    `https://github.com/login/oauth/authorize?client_id=${githubConfig.key}&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3Aundefined%2Fconnect%2Fgithub%2Fcallback&scope=user%2Cuser%3Aemail`
+    `https://github.com/login/oauth/authorize?client_id=${githubConfig.key}&response_type=code&redirect_uri=http%3A%2F%2F0.0.0.0%3A4400%2Fconnect%2Fgithub%2Fcallback&scope=user%2Cuser%3Aemail`
   )
 
   const fakeIdentity = {

@@ -1,5 +1,6 @@
 declare module '@tensei/common/config' {
   import { Logger } from 'pino'
+  import { Server } from 'http'
   import Emittery from 'emittery'
   import { Request, Response, Application } from 'express'
   import { EntityManager, AnyEntity } from '@mikro-orm/core'
@@ -197,7 +198,7 @@ declare module '@tensei/common/config' {
     resolvers: IResolvers
   }
 
-  interface GraphQLPluginContext extends TensieContext {
+  interface GraphQLPluginContext extends TenseiContext {
     req: Request
     res: Response
     pubsub: PubSub
@@ -339,6 +340,7 @@ declare module '@tensei/common/config' {
     repositories: import('@tensei/orm').OrmContract
     inProduction: boolean
     port: number
+    serverHost: string
     migrating: boolean
     root: string
     emitter: Emittery
@@ -384,7 +386,7 @@ declare module '@tensei/common/config' {
 
     graphQlExtensions: GraphQLPluginExtension[]
   }
-  export interface TensieContext extends Config {
+  export interface TenseiContext extends Config {
     manager: EntityManager
     body: DataPayload
   }
@@ -563,4 +565,31 @@ declare module '@tensei/common/config' {
   const graphQlQuery: (name?: string) => GraphQlQueryContract
   const route: (name?: string) => RouteContract
   const Utils: UtilsContract
+
+  export interface TenseiContract {
+    ctx: Config
+    app: Application
+    mode: TENSEI_MODE
+    server: Server
+    name: (name: string) => this
+    start(fn?: (ctx: Config) => any, listen?: boolean): Promise<this>
+    shutdown(): Promise<this>
+    boot(boot: PluginSetupFunction): this
+    register(register: PluginSetupFunction): this
+    listen(): Promise<Server>
+    migrate(): Promise<void>
+    routes(routes: RouteContract[]): this
+    graphQlQueries(routes: GraphQlQueryContract[]): this
+    graphQlTypeDefs(defs: TenseiContext['graphQlTypeDefs']): this
+    db(databaseConfig: DatabaseConfiguration): this
+    databaseConfig(databaseConfig: DatabaseConfiguration): this
+    events(events: EventContract<DataPayload>[]): this
+    serverUrl(url: string): this
+    clientUrl(url: string): this
+    root(path: string): this
+    mailer(driver: string): this
+    resources(resources: ResourceContract[]): this
+    dashboards(dashboards: DashboardContract[]): this
+    plugins(plugins: PluginContract[]): this
+  }
 }

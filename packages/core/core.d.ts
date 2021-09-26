@@ -1,4 +1,3 @@
-import { Signale } from 'signale'
 import { Mail } from '@tensei/mail'
 import indicative from 'indicative'
 import { ResourceContract, User, Asset } from '@tensei/common'

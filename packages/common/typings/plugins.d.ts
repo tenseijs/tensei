@@ -20,7 +20,7 @@ declare module '@tensei/common/plugins' {
     GraphQLPluginExtension,
     RouteContract,
     GraphQlQueryContract,
-    TensieContext,
+    TenseiContext,
     RouteConfig,
     EventContract,
     DataPayload

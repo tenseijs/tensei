@@ -8,7 +8,7 @@
     "baseUrl": "./src",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": false,
     "types": ["@types/jest", "node"]
   },
   "exclude": ["__tests__", "build", "templates"]

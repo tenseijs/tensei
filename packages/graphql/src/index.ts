@@ -659,6 +659,9 @@ input IdWhereQuery {
 
   plugin() {
     return plugin('GraphQl')
+      .extra({
+        path: this.getMiddlewareOptions.path || 'graphql'
+      })
       .register(async config => {
         const { extendGraphQlQueries, currentCtx, databaseConfig } = config
 
@@ -849,14 +852,6 @@ input IdWhereQuery {
         if (this.subscriptionsEnabled) {
           graphQlServer.installSubscriptionHandlers(config.server)
         }
-
-        extendEvents([
-          event('tensei::listening').listen(({ ctx }) => {
-            ctx.logger.info(
-              `📉 Access your graphql playground on ${playgroundEndpoint}`
-            )
-          })
-        ])
       })
   }
 }
