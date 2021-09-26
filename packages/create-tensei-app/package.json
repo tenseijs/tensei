@@ -4,12 +4,7 @@
   "license": "MIT",
   "main": "build/index.js",
   "files": [
-    "build/bin",
-    "build/src",
-    "build/Tasks",
-    "build/templates",
-    "build/index.d.ts",
-    "build/index.js"
+    "build/"
   ],
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
