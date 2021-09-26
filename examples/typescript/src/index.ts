@@ -23,6 +23,7 @@ export default tensei()
   .root(__dirname)
   .resources([
     resource('Post')
+      .canInsert(({ authUser }) => false)
       .fields([
         text('Title').rules('required'),
         slug('Slug')

@@ -31,9 +31,9 @@ export const isTeamOwnerMiddleware: RequestHandler = async (
   response,
   next
 ) => {
-  const { team, user, authenticationError } = request
+  const { team, authUser, authenticationError } = request
 
-  if (!user.ownsTeam(team)) {
+  if (!authUser.ownsTeam(team)) {
     throw authenticationError(`Unauthorized.`)
   }
 
@@ -60,10 +60,10 @@ const handleFetchAllTeams = (auth: AuthContract) => async (
   request: Request,
   response: Response
 ) => {
-  const { user } = request
+  const { authUser } = request
 
   return response.formatter.ok(
-    (await user.allTeams()).map((userTeam: any) => {
+    (await authUser.allTeams()).map((userTeam: any) => {
       const { team: removeTeam, ...rest } = userTeam
 
       return {
@@ -136,8 +136,8 @@ export class Teams {
   teamResource() {
     return resource(this.auth.config.teamResource)
       .hideOnFetchApi()
-      .canDelete(({ user, team }) => user.ownsTeam(team))
-      .canUpdate(({ user, team }) => user.ownsTeam(team))
+      .canDelete(({ authUser, team }) => authUser.ownsTeam(team))
+      .canUpdate(({ authUser, team }) => authUser.ownsTeam(team))
       .fields([
         text('Name').rules('required', 'min:2', 'max:24'),
         belongsTo(this.auth.config.userResource, 'owner')
@@ -156,7 +156,7 @@ export class Teams {
           belongsTo(this.auth.config.userResource).creationRules('required')
         ])
         // Only the owner of the team can delete the team.
-        .canDelete(({ user, team }) => user.ownsTeam(team))
+        .canDelete(({ authUser, team }) => authUser.ownsTeam(team))
         .hideOnUpdateApi()
         .hideOnCreateApi()
         .hideOnFetchApi()
@@ -212,7 +212,7 @@ export class Teams {
     return [
       graphQlQuery('Get team permissions')
         .path('teamPermissions')
-        .authorize(({ user, team }) => user.belongsToTeam(team))
+        .authorize(({ authUser, team }) => authUser.belongsToTeam(team))
         .query()
         .handle(async (_, args, ctx, info) => {
           return this.auth.config.teamPermissions.map(
@@ -222,7 +222,7 @@ export class Teams {
       graphQlQuery('Invite team member')
         .path('inviteTeamMember')
         .mutation()
-        .authorize(({ user, team }) => user.ownsTeam(team))
+        .authorize(({ authUser, team }) => authUser.ownsTeam(team))
         .middleware(findTeamQueryMiddleware)
         .handle(async (_, args, ctx, info) => {
           const permissions = ctx?.body?.object?.permissions?.map(
@@ -238,11 +238,11 @@ export class Teams {
         }),
       graphQlQuery('All teams for a user')
         .path('allTeams')
-        .authorize(({ user }) => !!user)
+        .authorize(({ authUser }) => !!authUser)
         .handle(async (_, args, ctx, info) => {
-          const { user } = ctx
+          const { authUser } = ctx
 
-          const teams = await user.allTeams()
+          const teams = await authUser.allTeams()
 
           await Utils.graphql.populateFromResolvedNodes(
             resources,
@@ -257,7 +257,9 @@ export class Teams {
         }),
       graphQlQuery('Get team memberships')
         .path('teamMemberships')
-        .authorize(async ({ user, team }) => await user.belongsToTeam(team))
+        .authorize(
+          async ({ authUser, team }) => await authUser.belongsToTeam(team)
+        )
         .handle(async (_, args, ctx, info) => {
           const { team, manager } = ctx
 
@@ -390,7 +392,7 @@ export class Teams {
     return [
       route('Get Team Permissions')
         .get()
-        .authorize(({ user }) => !!user)
+        .authorize(({ authUser }) => !!authUser)
         .description(`Get a list of all existing team permissions.`)
         .path(this.auth.__getApiPath('teams/permissions'))
         .handle((_, { formatter: { ok } }) =>
@@ -402,7 +404,7 @@ export class Teams {
         ),
       route('Get Team Memberships By ID')
         .get()
-        .authorize(({ user }) => !!user)
+        .authorize(({ authUser }) => !!authUser)
         .middleware([findTeamMiddleware])
         .path(this.auth.__getApiPath('teams/:team/memberships'))
         .handle(async ({ repositories, team }, { formatter: { ok } }) => {
@@ -429,7 +431,7 @@ export class Teams {
         }),
       route('Fetch all user teams')
         .get()
-        .authorize(({ user }) => !!user)
+        .authorize(({ authUser }) => !!authUser)
         .path(this.auth.__getApiPath('teams'))
         .handle(handleFetchAllTeams(this.auth))
     ]

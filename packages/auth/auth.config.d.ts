@@ -4,7 +4,7 @@ import { GraphQLPluginContext, DataPayload } from '@tensei/common'
 declare module '@tensei/common' {
   interface GraphQLPluginContext {
     // @ts-ignore
-    user: import('@tensei/orm').UserModel & DataPayload
+    authUser: import('@tensei/orm').UserModel & DataPayload
     // @ts-ignore
     team: import('@tensei/orm').TeamModel
   }

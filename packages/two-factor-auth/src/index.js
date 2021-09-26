@@ -10,45 +10,45 @@ const validateTwoFactorToken = async validator => {
 }
 
 module.exports = {
-  verifyTwoFactorAuthToken: async ({ userInputError, user }, token) => {
-    if (!user.twoFactorEnabled) {
+  verifyTwoFactorAuthToken: async ({ userInputError, authUser }, token) => {
+    if (!authUser.twoFactorEnabled) {
       throw userInputError(`You do not have two factor authentication enabled.`)
     }
 
     const verified = Speakeasy.totp.verify({
       encoding: 'base32',
       token,
-      secret: user.twoFactorSecret
+      secret: authUser.twoFactorSecret
     })
 
     return verified
   },
-  disableTwoFactorAuth: async ({ userInputError, manager, body, user }) => {
-    if (!user.twoFactorEnabled) {
+  disableTwoFactorAuth: async ({ userInputError, manager, body, authUser }) => {
+    if (!authUser.twoFactorEnabled) {
       throw userInputError(`You do not have two factor authentication enabled.`)
     }
 
     const verified = Speakeasy.totp.verify({
       encoding: 'base32',
       token: body.object ? body.object.token : body.token,
-      secret: user.twoFactorSecret
+      secret: authUser.twoFactorSecret
     })
 
     if (!verified) {
       throw userInputError(`Invalid two factor authentication code.`)
     }
 
-    manager.assign(user, {
+    manager.assign(authUser, {
       twoFactorSecret: null,
       twoFactorEnabled: false
     })
 
-    await manager.persistAndFlush(user)
+    await manager.persistAndFlush(authUser)
 
-    return user.toJSON()
+    return authUser.toJSON()
   },
   confirmEnableTwoFactorAuth: async ({
-    user,
+    authUser,
     body,
     manager,
     indicative,
@@ -68,43 +68,43 @@ module.exports = {
       })
     }
 
-    if (!user.twoFactorSecret) {
+    if (!authUser.twoFactorSecret) {
       throw userInputError(`You must enable two factor authentication first.`)
     }
 
     const verified = Speakeasy.totp.verify({
       encoding: 'base32',
       token: payload.token,
-      secret: user.twoFactorSecret
+      secret: authUser.twoFactorSecret
     })
 
     if (!verified) {
       throw userInputError(`Invalid two factor token.`)
     }
 
-    manager.assign(user, {
+    manager.assign(authUser, {
       twoFactorEnabled: true
     })
 
-    await manager.persistAndFlush(user)
+    await manager.persistAndFlush(authUser)
 
-    return user.toJSON()
+    return authUser.toJSON()
   },
-  enableTwoFactorAuth: async ({ user, manager }) => {
+  enableTwoFactorAuth: async ({ authUser, manager }) => {
     const { base32, ascii } = Speakeasy.generateSecret()
 
-    manager.assign(user, {
+    manager.assign(authUser, {
       twoFactorSecret: base32,
       twoFactorEnabled: null
     })
 
-    await manager.persistAndFlush(user)
+    await manager.persistAndFlush(authUser)
 
     return new Promise((resolve, reject) =>
       Qr.toDataURL(
         Speakeasy.otpauthURL({
           secret: ascii,
-          label: user.email,
+          label: authUser.email,
           issuer: process.env.APP_NAME || 'Tensei'
         }),
         (error, dataURL) => {
@@ -118,7 +118,7 @@ module.exports = {
 
           return resolve({
             dataURL,
-            user: user.toJSON()
+            user: authUser.toJSON()
           })
         }
       )

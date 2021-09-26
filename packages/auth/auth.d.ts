@@ -8,7 +8,7 @@ declare global {
   namespace Express {
     export interface Request {
       // @ts-ignore
-      user: import('@tensei/orm').UserModel & DataPayload
+      authUser: import('@tensei/orm').UserModel & DataPayload
       // @ts-ignore
       team: import('@tensei/orm').TeamModel
       verifyTwoFactorAuthToken: (token: string | number) => boolean
