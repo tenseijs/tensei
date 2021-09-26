@@ -1,4 +1,0 @@
-{
-    "watch": ["node_modules/", "index.js"],
-    "ext": "js, css"
-  }
