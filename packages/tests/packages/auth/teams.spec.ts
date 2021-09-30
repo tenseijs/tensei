@@ -42,7 +42,7 @@ test('the hasTeamPermission method checks if a user can perform a specific team 
   const {
     app,
     ctx: { db }
-  } = await setupTeams()
+  }: any = await setupTeams()
 
   const client = Supertest(app)
 
@@ -97,27 +97,27 @@ test('the hasTeamPermission method checks if a user can perform a specific team 
   expect(await secondCustomer.belongsToTeam(team)).toBe(true)
   expect(await thirdCustomer.belongsToTeam(team)).toBe(false)
 
-  expect(await firstCustomer.hasTeamPermission(team, 'create:databases')).toBe(
+  expect(await firstCustomer.hasTeamPermission(team, 'create-databases')).toBe(
     true
   )
-  expect(await secondCustomer.hasTeamPermission(team, 'create:databases')).toBe(
+  expect(await secondCustomer.hasTeamPermission(team, 'create-databases')).toBe(
     false
   )
-  expect(await secondCustomer.hasTeamPermission(team, 'attach:databases')).toBe(
+  expect(await secondCustomer.hasTeamPermission(team, 'attach-databases')).toBe(
     true
   )
-  expect(await thirdCustomer.hasTeamPermission(team, 'create:databases')).toBe(
+  expect(await thirdCustomer.hasTeamPermission(team, 'create-databases')).toBe(
     false
   )
-  expect(await thirdCustomer.hasTeamPermission(team, 'attach:databases')).toBe(
+  expect(await thirdCustomer.hasTeamPermission(team, 'attach-databases')).toBe(
     false
   )
 
   expect((await firstCustomer.teamPermissions(team)).sort()).toEqual(
-    ['attach:databases', 'create:databases', 'create:servers'].sort()
+    ['attach-databases', 'create-databases', 'create-servers'].sort()
   )
   expect(await secondCustomer.teamPermissions(team)).toEqual([
-    'attach:databases'
+    'attach-databases'
   ])
   expect(await thirdCustomer.teamPermissions(team)).toEqual([])
 })
@@ -236,7 +236,7 @@ test('can get allTeams a user is a member of and owns', async () => {
     .post(`/api/teams/${currentTeamId}/invites`)
     .send({
       email: secondCustomerStud.email,
-      permissions: ['create:databases']
+      permissions: ['create-databases']
     })
     .set('Authorization', `Bearer ${response.body.data.accessToken}`)
 

@@ -68,7 +68,7 @@ export const MustBeNotAuthComponent = (Component: React.FC<any>) => {
 const Wrapper: React.FC = () => {
   const authPluginConfig = window.Tensei.state.config.pluginsConfig['auth']
 
-  const rolesAndPermissionsEnabled = authPluginConfig.rolesAndPermissions
+  const rolesAndPermissionsEnabled = false
 
   const [routes, setRoutes] = useState<CmsRoute[]>([
     {

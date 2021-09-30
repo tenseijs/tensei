@@ -6,6 +6,7 @@
   "files": [
     "build/",
     "auth.d.ts",
+    "teams.d.ts",
     "auth.config.d.ts"
   ],
   "types": "./build/index.d.ts",

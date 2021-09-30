@@ -13,6 +13,7 @@ import {
   GraphQlMiddleware
 } from '@tensei/common'
 import { validateAll, validations } from 'indicative/validator'
+import { PermissionContract, RoleContract } from './Permission'
 
 export const findTeamMiddleware: RequestHandler = (request, response, next) => {
   const { team, params } = request
@@ -107,11 +108,11 @@ const handleInviteTeamMember = (auth: AuthContract) => async (
     })
   }
 
-  const invitedUser = await repositories[
-    auth.__resources.user.data.camelCaseNamePlural
-  ]().findOne({
-    email: payload.email
-  })
+  const invitedUser = await (repositories as any)
+    [auth.__resources.user.data.camelCaseNamePlural]()
+    .findOne({
+      email: payload.email
+    })
 
   if (!invitedUser) {
     throw userInputError('The invited user does not exist.')
@@ -121,8 +122,8 @@ const handleInviteTeamMember = (auth: AuthContract) => async (
     return
   }
 
-  await repositories.memberships().persistAndFlush(
-    repositories.memberships().create({
+  await (repositories as any).memberships().persistAndFlush(
+    (repositories as any).memberships().create({
       team,
       [auth.__resources.user.data.camelCaseName]: invitedUser,
       permissions: payload.permissions
@@ -170,10 +171,10 @@ export class Teams {
 
     return gql`
       enum TeamPermissionString {
-      ${this.auth.config.teamPermissions.map(permission =>
-        permission.config.slug.split(':').join('_').toUpperCase()
-      )}
-    }
+        ${this.auth.config.teamPermissions.map(permission =>
+          permission.formatForEnum()
+        )}
+      }
 
       type TeamPermission {
         slug: String!
@@ -221,7 +222,7 @@ export class Teams {
         .handle(async (_, args, ctx, info) => {
           const permissions = ctx?.body?.object?.permissions?.map(
             (permission: string) =>
-              permission.split('_').join(':').toLowerCase()
+              permission.split('_').join('-').toLowerCase()
           )
 
           ctx.body.object.permissions = permissions
@@ -403,7 +404,7 @@ export class Teams {
         .path(this.auth.__getApiPath('teams/:team/memberships'))
         .handle(async ({ repositories, team }, { formatter: { ok } }) => {
           return ok(
-            await repositories.memberships().find(
+            await (repositories as any).memberships().find(
               {
                 team
               },

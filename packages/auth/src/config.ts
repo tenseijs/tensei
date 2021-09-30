@@ -4,7 +4,7 @@ import { AnyEntity } from '@mikro-orm/core'
 import { UserRole } from '@tensei/common'
 import { ApiContext } from '@tensei/common'
 import { DataPayload } from '@tensei/common'
-import { PermissionContract } from 'teams/Permission'
+import { PermissionContract, RoleContract } from 'teams/Permission'
 
 export interface GrantConfig {
   key: string
@@ -57,15 +57,13 @@ export interface AuthPluginConfig {
   teamResource: string
   prefix: string
   teamPermissions: PermissionContract[]
+  roles: RoleContract[]
   autoFillUser: boolean
   autoFilterForUser: boolean
   excludedPathsFromCsrf: string[]
   enableRefreshTokens?: boolean
   registered?: (ctx: ApiContext) => Promise<void> | void
-  roleResource: string
-  permissionResource: string
   teams: boolean
-  rolesAndPermissions: boolean
   passwordResetResource: string
   apiPath: string
   tokensConfig: {

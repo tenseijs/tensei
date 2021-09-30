@@ -16,7 +16,8 @@ import {
   array,
   hasMany,
   belongsTo,
-  boolean
+  boolean,
+  route
 } from '@tensei/core'
 
 export default tensei()
@@ -59,7 +60,6 @@ export default tensei()
     welcome(),
     cms().plugin(),
     auth()
-      .teams()
       .verifyEmails()
       .configureTokens({
         accessTokenExpiresIn: 60,
@@ -81,8 +81,7 @@ export default tensei()
   ])
   .db({
     type: 'sqlite',
-    dbName: 'db.sqlite',
-    debug: true
+    dbName: 'db.sqlite'
   })
   .start()
   .catch(console.error)

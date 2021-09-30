@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import Bcrypt from 'bcryptjs'
 import Jwt from 'jsonwebtoken'
 import { ReferenceType } from '@mikro-orm/core'
-import { validateAll, validations } from 'indicative/validator'
+import { validateAll } from 'indicative/validator'
 import {
   plugin,
   resource,
@@ -52,7 +52,11 @@ export * from './config'
 import { setup } from './setup'
 import { request, Request } from 'express'
 import { Teams } from './teams/Teams'
-import { permission, PermissionContract } from './teams/Permission'
+import {
+  permission,
+  PermissionContract,
+  RoleContract
+} from './teams/Permission'
 
 type JwtPayload = {
   id: string
@@ -66,20 +70,17 @@ export class Auth implements AuthContract {
     setupFn: AuthSetupFn
   } = {
     prefix: '',
-    teamPermissions: [
-      permission('all').description('Permission to do everything.')
-    ],
+    teamPermissions: [],
+    roles: [],
     autoFillUser: true,
     autoFilterForUser: true,
     tokenResource: 'Token',
     enableRefreshTokens: false,
     userResource: 'User',
-    roleResource: 'Role',
     teamResource: 'Team',
     teams: false,
     excludedPathsFromCsrf: [],
     httpOnlyCookiesAuth: false,
-    permissionResource: 'Permission',
     passwordResetResource: 'Password Reset',
     fields: [],
     separateSocialLoginAndRegister: false,
@@ -103,7 +104,6 @@ export class Auth implements AuthContract {
     twoFactorAuth: false,
     verifyEmails: false,
     skipWelcomeEmail: false,
-    rolesAndPermissions: false,
     providers: {}
   }
 
@@ -143,10 +143,8 @@ export class Auth implements AuthContract {
 
   private refreshResources() {
     this.__resources.user = this.userResource()
-    this.__resources.role = this.roleResource()
     this.__resources.token = this.tokenResource()
     this.__resources.oauthIdentity = this.oauthResource()
-    this.__resources.permission = this.permissionResource()
     this.__resources.passwordReset = this.passwordResetResource()
 
     this.teamsInstance = new Teams(this)
@@ -257,26 +255,8 @@ export class Auth implements AuthContract {
     return this
   }
 
-  public role(name: string) {
-    this.config.roleResource = name
-
-    return this
-  }
-
   public token(name: string) {
     this.config.tokenResource = name
-
-    return this
-  }
-
-  public permission(name: string) {
-    this.config.permissionResource = name
-
-    return this
-  }
-
-  public rolesAndPermissions() {
-    this.config.rolesAndPermissions = true
 
     return this
   }
@@ -293,6 +273,12 @@ export class Auth implements AuthContract {
       ...this.config.teamPermissions,
       ...permissions
     ]
+
+    return this
+  }
+
+  public roles(roles: RoleContract[]) {
+    this.config.roles = roles
 
     return this
   }
@@ -329,6 +315,17 @@ export class Auth implements AuthContract {
           authUser && (params.id as string) === authUser.id.toString()
       )
       .fields([
+        array('Roles')
+          .default([])
+          .of('string')
+          .arrayRules(
+            'required',
+            `in:${[
+              ...this.config.roles.map(role => role.config.name),
+              ...this.config.roles.map(role => role.config.slug)
+            ].join(',')}`
+          )
+          .nullable(),
         text('Email')
           .unique()
           .searchable()
@@ -342,6 +339,12 @@ export class Auth implements AuthContract {
           .creationRules('required')
           .onlyOnForms()
           .hideOnUpdateApi(),
+        array('All Roles').virtual(function (this: any) {
+          return this.getAllRoles()
+        }),
+        array('All Permissions').virtual(function (this: any) {
+          return this.getAllPermissions()
+        }),
         boolean('Blocked')
           .nullable()
           .default(false)
@@ -352,9 +355,6 @@ export class Auth implements AuthContract {
           .hideOnApi(),
         ...socialFields,
         ...teamFields,
-        ...(this.config.rolesAndPermissions
-          ? [belongsToMany(this.config.roleResource).hideOnCreateApi()]
-          : []),
         ...(this.config.twoFactorAuth
           ? [
               boolean('Two Factor Enabled')
@@ -431,6 +431,131 @@ export class Auth implements AuthContract {
       this.teamsInstance.defineUserResourceMethods(userResource)
     }
 
+    // Roles and permissions methods.
+    userResource.method(
+      'hasRole',
+      function (this: any, roleNameOrSlug: string) {
+        const roles: RoleContract[] = this.getAllRoles()
+
+        return [
+          ...roles.map(role => role.config.name),
+          ...roles.map(role => role.config.slug)
+        ].includes(roleNameOrSlug)
+      }
+    )
+
+    userResource.method(
+      'hasPermission',
+      function (this: any, permissionNameOrSlug: string) {
+        const permissions: PermissionContract[] = this.getAllPermissions()
+
+        return [
+          ...permissions.map(permission => permission.config.name),
+          ...permissions.map(permission => permission.config.slug)
+        ].includes(permissionNameOrSlug)
+      }
+    )
+
+    const self = this
+
+    userResource.method(
+      'assignRole',
+      async function (this: any, roleNameOrSlug: string) {
+        // check if role actually exists
+        const role = self.config.roles.find(r =>
+          [r.config.name, r.config.slug].includes(roleNameOrSlug)
+        )
+
+        if (!role) {
+          throw new Error(`Role ${roleNameOrSlug} does not exist.`)
+        }
+
+        const roles: RoleContract[] = this.getAllRoles()
+
+        // check if already has role
+        const hasRole = roles.find(r =>
+          [r.config.name, r.config.slug].includes(roleNameOrSlug)
+        )
+
+        if (hasRole) {
+          return
+        }
+
+        // persist role for user
+        const { manager } = this.ctx
+
+        manager.assign(this, {
+          roles: [...roles.map(role => role.config.slug), role.config.slug]
+        })
+
+        await manager.persistAndFlush(this)
+      }
+    )
+
+    userResource.method(
+      'removeRole',
+      async function (this: any, roleNameOrSlug: string) {
+        // check if role actually exists
+        const role = self.config.roles.find(r =>
+          [r.config.name, r.config.slug].includes(roleNameOrSlug)
+        )
+
+        if (!role) {
+          throw new Error(`Role ${role} does not exist.`)
+        }
+
+        const roles: RoleContract[] = this.getAllRoles()
+
+        // check if already has role
+        const hasRole = roles.find(r =>
+          [r.config.name, r.config.slug].includes(roleNameOrSlug)
+        )
+
+        if (!hasRole) {
+          return
+        }
+
+        const { manager } = this.ctx
+
+        manager.assign(this, {
+          roles: roles
+            .filter(
+              role =>
+                ![role.config.name, role.config.slug].includes(roleNameOrSlug)
+            )
+            .map(role => role.config.slug)
+        })
+
+        await manager.persistAndFlush(this)
+      }
+    )
+
+    userResource.method('getAllPermissions', function (this: any) {
+      const roles = this.getAllRoles()
+
+      return (roles.reduce(
+        (permissions: PermissionContract[], role: RoleContract) => [
+          ...permissions,
+          ...role.config.permissions
+        ],
+        []
+      ) as PermissionContract[]).filter(
+        (permission, idx: number, items) =>
+          items.findIndex(t => t.config.slug === permission.config.slug) === idx
+      )
+    })
+
+    userResource.method('getAllRoles', function (this: any) {
+      return ((this.roles || []).map((role: string) =>
+        self.config.roles.find(r =>
+          [r.config.name, r.config.slug].includes(role)
+        )
+      ) as RoleContract[]).filter(
+        (role, idx: number, items) =>
+          items.findIndex(t => t.config.slug === role.config.slug) === idx
+      )
+    })
+
     return userResource
   }
 
@@ -456,39 +581,6 @@ export class Auth implements AuthContract {
       ])
       .hideFromNavigation()
       .hideOnApi()
-  }
-
-  private permissionResource() {
-    return resource(this.config.permissionResource)
-      .fields([
-        text('Name').searchable().rules('required'),
-        text('Slug').rules('required').unique().searchable().rules('required'),
-        belongsToMany(this.config.roleResource)
-      ])
-      .displayField('Name')
-      .hideOnDeleteApi()
-      .hideOnUpdateApi()
-      .hideFromNavigation()
-      .group('Authentication')
-  }
-
-  private roleResource() {
-    return resource(this.config.roleResource)
-      .fields([
-        text('Name').rules('required').unique().searchable().rules('required'),
-        text('Slug')
-          .rules('required')
-          .unique()
-          .searchable()
-          .hideOnUpdate()
-          .rules('required'),
-        belongsToMany(this.config.userResource),
-        belongsToMany(this.config.permissionResource).owner()
-      ])
-      .displayField('Name')
-      .hideFromNavigation()
-      .hideOnUpdateApi()
-      .group('Authentication')
   }
 
   private passwordResetResource() {
@@ -629,13 +721,6 @@ export class Auth implements AuthContract {
             this.__resources.passwordReset
           ])
 
-          if (this.config.rolesAndPermissions) {
-            extendResources([
-              this.__resources.role,
-              this.__resources.permission
-            ])
-          }
-
           if (this.config.teams) {
             extendResources([
               this.__resources.team,
@@ -700,13 +785,6 @@ export class Auth implements AuthContract {
           })
         }
 
-        if (this.config.rolesAndPermissions) {
-          await setup(config, [
-            this.__resources.role,
-            this.__resources.permission
-          ])
-        }
-
         const {
           app,
           serverUrl,
@@ -719,10 +797,7 @@ export class Auth implements AuthContract {
         this.forceRemoveInsertUserQueries(config.graphQlQueries)
 
         setPluginConfig('auth', {
-          rolesAndPermissions: this.config.rolesAndPermissions,
-          user: this.__resources.user.serialize(),
-          role: this.__resources.role.serialize(),
-          permission: this.__resources.permission.serialize()
+          user: this.__resources.user.serialize()
         })
 
         if (this.config.httpOnlyCookiesAuth) {
@@ -789,76 +864,12 @@ export class Auth implements AuthContract {
                 currentCtx().plugins
               )
 
-              await this.setAuthUserForPublicRoutes(context)
-
               await this.ensureAuthUserIsNotBlocked(context)
 
               return resolve(parent, args, context, info)
             },
             ...query.config.middleware
           ]
-          if (query.config.resource && this.config.rolesAndPermissions) {
-            const { path, internal } = query.config
-            const {
-              camelCaseNamePlural: plural,
-              camelCaseName: singular,
-              slug
-            } = query.config.resource.data
-
-            if (!internal) {
-              return
-            }
-
-            if ([`insert_${plural}`, `insert_${singular}`].includes(path)) {
-              return query.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `insert:${slug}`
-                  )
-              )
-            }
-
-            if ([`delete_${plural}`, `delete_${singular}`].includes(path)) {
-              return query.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `delete:${slug}`
-                  )
-              )
-            }
-
-            if ([`update_${plural}`, `update_${singular}`].includes(path)) {
-              return query.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `update:${slug}`
-                  )
-              )
-            }
-
-            if (path === plural || path === `${plural}Count`) {
-              return query.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `index:${slug}`
-                  )
-              )
-            }
-
-            if (path === singular) {
-              return query.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `show:${slug}`
-                  )
-              )
-            }
-          }
         })
 
         currentCtx().routes.forEach(route => {
@@ -871,91 +882,12 @@ export class Auth implements AuthContract {
                 currentCtx().plugins
               )
 
-              await this.setAuthUserForPublicRoutes(request as any)
-
               await this.ensureAuthUserIsNotBlocked(request as any)
 
               return next()
             },
             ...route.config.middleware
           ]
-
-          if (route.config.resource && this.config.rolesAndPermissions) {
-            const { resource, id } = route.config
-
-            const { slugSingular, slugPlural } = resource.data
-
-            route.extend({
-              ...route.config.extend,
-              docs: {
-                ...route.config.extend?.docs,
-                security: [
-                  {
-                    Bearer: []
-                  }
-                ]
-              }
-            })
-
-            if (
-              id === `insert_${slugPlural}` ||
-              id === `insert_${slugSingular}`
-            ) {
-              return route.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `insert:${slugPlural}`
-                  )
-              )
-            }
-
-            if (id === `index_${slugPlural}`) {
-              return route.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `index:${slugPlural}`
-                  )
-              )
-            }
-
-            if (id === `show_${slugSingular}`) {
-              return route.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `show:${slugPlural}`
-                  )
-              )
-            }
-
-            if (
-              id === `update_${slugSingular}` ||
-              id === `update_${slugPlural}`
-            ) {
-              return route.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]?.includes(
-                    `update:${slugPlural}`
-                  )
-              )
-            }
-
-            if (
-              id === `delete_${slugSingular}` ||
-              id === `delete_${slugPlural}`
-            ) {
-              return route.authorize(
-                ({ authUser }) =>
-                  authUser &&
-                  authUser[this.getPermissionUserKey()]!.includes(
-                    `delete:${slugPlural}`
-                  )
-              )
-            }
-          }
         })
       })
   }
@@ -1152,11 +1084,7 @@ export class Auth implements AuthContract {
         .group('Auth')
         .get()
         .id(this.getRouteId(`get_authenticated_${name}`))
-        .authorize(({ authUser }) =>
-          this.config.rolesAndPermissions
-            ? authUser && !authUser.public
-            : !!authUser
-        )
+        .authorize(({ authUser }) => !!authUser)
         .description(
           `Get the authenticated ${name} from a valid JWT or session.`
         )
@@ -1168,11 +1096,7 @@ export class Auth implements AuthContract {
               .path(this.__getApiPath('emails/verification/resend'))
               .post()
               .id(this.getRouteId(`resend_${name}_verification_email`))
-              .authorize(({ authUser }) =>
-                this.config.rolesAndPermissions
-                  ? authUser && !authUser.public
-                  : !!authUser
-              )
+              .authorize(({ authUser }) => !!authUser)
               .description(`Resend verification email to ${name} email.`)
               .handle(async (request, response) =>
                 response.formatter.ok(
@@ -1183,11 +1107,7 @@ export class Auth implements AuthContract {
               .path(this.__getApiPath('emails/verification/confirm'))
               .post()
               .group('Verify Emails')
-              .authorize(({ authUser }) =>
-                this.config.rolesAndPermissions
-                  ? authUser && !authUser.public
-                  : !!authUser
-              )
+              .authorize(({ authUser }) => !!authUser)
               .parameters([
                 {
                   in: 'body',
@@ -1359,11 +1279,7 @@ export class Auth implements AuthContract {
       )
         .path(`authenticated`)
         .query()
-        .authorize(({ authUser }) =>
-          this.config.rolesAndPermissions
-            ? authUser && !authUser.public
-            : !!authUser
-        )
+        .authorize(({ authUser }) => !!authUser)
         .handle(async (_, args, ctx, info) => {
           const { authUser } = ctx
 
@@ -1386,11 +1302,7 @@ export class Auth implements AuthContract {
               .handle(async (_, args, ctx, info) =>
                 this.TwoFactorAuth.enableTwoFactorAuth(ctx)
               )
-              .authorize(({ authUser }) =>
-                this.config.rolesAndPermissions
-                  ? authUser && !authUser.public
-                  : !!authUser
-              ),
+              .authorize(({ authUser }) => !!authUser),
             graphQlQuery('Confirm Enable Two Factor Auth')
               .path('confirmEnableTwoFactorAuth')
               .mutation()
@@ -1410,11 +1322,7 @@ export class Auth implements AuthContract {
 
                 return authUser
               })
-              .authorize(({ authUser }) =>
-                this.config.rolesAndPermissions
-                  ? authUser && !authUser.public
-                  : !!authUser
-              ),
+              .authorize(({ authUser }) => !!authUser),
 
             graphQlQuery(`Disable Two Factor Auth`)
               .path('disableTwoFactorAuth')
@@ -1435,11 +1343,7 @@ export class Auth implements AuthContract {
 
                 return authUser
               })
-              .authorize(({ authUser }) =>
-                this.config.rolesAndPermissions
-                  ? authUser && !authUser.public
-                  : !!authUser
-              )
+              .authorize(({ authUser }) => !!authUser)
           ]
         : []),
       ...(this.config.verifyEmails
@@ -1463,11 +1367,7 @@ export class Auth implements AuthContract {
 
                 return authUser
               })
-              .authorize(({ authUser }) =>
-                this.config.rolesAndPermissions
-                  ? authUser && !authUser.public
-                  : !!authUser
-              ),
+              .authorize(({ authUser }) => !!authUser),
             graphQlQuery(`Resend ${name} Verification Email`)
               .path('resendVerificationEmail')
               .mutation()
@@ -1610,13 +1510,7 @@ export class Auth implements AuthContract {
         type: TokenTypes.REFRESH
       },
       {
-        populate: [
-          `${userField}${
-            this.config.rolesAndPermissions
-              ? `.${this.getRolesAndPermissionsNames()}`
-              : ''
-          }`
-        ]
+        populate: [userField]
       }
     )
 
@@ -1891,10 +1785,6 @@ export class Auth implements AuthContract {
     return this
   }
 
-  private getRolesAndPermissionsNames() {
-    return `${this.__resources.role.data.camelCaseNamePlural}.${this.__resources.permission.data.camelCaseNamePlural}`
-  }
-
   private register = async (ctx: ApiContext) => {
     const { manager, body, emitter } = ctx
 
@@ -1912,25 +1802,6 @@ export class Auth implements AuthContract {
       throw ctx.userInputError('Validation failed.', {
         errors: createUserPayload
       })
-    }
-
-    if (this.config.rolesAndPermissions) {
-      const authenticatorRole: any = await manager.findOneOrFail(
-        this.__resources.role.data.pascalCaseName,
-        {
-          slug: 'authenticated'
-        }
-      )
-
-      if (!authenticatorRole) {
-        throw {
-          status: 400,
-          message:
-            'The authenticated role must be created to use roles and permissions.'
-        }
-      }
-
-      createUserPayload.roles = [authenticatorRole.id]
     }
 
     const UserResource = this.__resources.user
@@ -1961,10 +1832,6 @@ export class Auth implements AuthContract {
     await manager.persistAndFlush(toPersist)
 
     const populates = []
-
-    if (this.config.rolesAndPermissions) {
-      populates.push(this.getRolesAndPermissionsNames())
-    }
 
     if (this.config.teams) {
       populates.push('currentTeam')
@@ -2003,6 +1870,7 @@ export class Auth implements AuthContract {
 
   private confirmEmail = async (ctx: ApiContext) => {
     const { manager, body, authUser } = ctx
+
     if (
       authUser.emailVerificationToken ===
       (body.object
@@ -2188,11 +2056,6 @@ export class Auth implements AuthContract {
       this.__resources.user.data.pascalCaseName,
       {
         email
-      },
-      {
-        populate: this.config.rolesAndPermissions
-          ? [this.getRolesAndPermissionsNames()]
-          : []
       }
     )
 
@@ -2233,44 +2096,11 @@ export class Auth implements AuthContract {
       }
     }
 
-    if (this.config.rolesAndPermissions) {
-      await manager.populate([user], [this.getRolesAndPermissionsNames()])
-    }
-
     ctx.authUser = user
 
     await this.config.afterLogin(ctx, user)
 
     return this.getUserPayload(ctx, await this.generateRefreshToken(ctx))
-  }
-
-  public setAuthUserForPublicRoutes = async (ctx: GraphQLPluginContext) => {
-    const { manager, authUser } = ctx
-
-    if (!this.config.rolesAndPermissions) {
-      return
-    }
-
-    const publicRole: any = await manager.findOne(
-      this.__resources.role.data.pascalCaseName,
-      {
-        slug: 'public'
-      },
-      {
-        populate: [this.getPermissionUserKey()],
-        refresh: true
-      }
-    )
-
-    if (!authUser && publicRole) {
-      ctx.authUser = {
-        public: true,
-        [this.getRoleUserKey()]: [publicRole as UserRole],
-        [this.getPermissionUserKey()]: publicRole[this.getPermissionUserKey()]
-          .toJSON()
-          .map((permission: any) => permission.slug)
-      } as any
-    }
   }
 
   private ensureAuthUserIsNotBlocked = async (ctx: ApiContext) => {
@@ -2309,10 +2139,6 @@ export class Auth implements AuthContract {
 
       const populate = []
 
-      if (this.config.rolesAndPermissions) {
-        populate.push(this.getRolesAndPermissionsNames())
-      }
-
       if (this.config.teams) {
         populate.push('currentTeam')
       }
@@ -2327,30 +2153,8 @@ export class Auth implements AuthContract {
         }
       )
 
-      if (this.config.rolesAndPermissions && user) {
-        user[this.getPermissionUserKey()] = user[this.getRoleUserKey()]
-          ?.toJSON()
-          .reduce(
-            (acc: string[], role: UserRole) => [
-              ...acc,
-              ...(role as any)[this.getPermissionUserKey()].map(
-                (p: any) => p.slug
-              )
-            ],
-            []
-          )
-      }
-
       ctx.authUser = user
     } catch (error) {}
-  }
-
-  private getRoleUserKey() {
-    return this.__resources.role.data.camelCaseNamePlural
-  }
-
-  private getPermissionUserKey() {
-    return this.__resources.permission.data.camelCaseNamePlural
   }
 
   public getCurrentTeamFromContext = async (
@@ -2384,7 +2188,7 @@ export class Auth implements AuthContract {
       return
     }
 
-    const team = await ctx.repositories.teams().findOne({
+    const team = await (ctx.repositories as any).teams().findOne({
       id: currentTeamId
     })
 
@@ -2671,9 +2475,13 @@ export class Auth implements AuthContract {
 }
 
 export {
+  role,
   permission,
   PermissionConfig,
-  PermissionContract
+  PermissionContract,
+  Role,
+  RoleConfig,
+  RoleContract
 } from './teams/Permission'
 export const auth = () => new Auth()
 export { USER_EVENTS } from './config'

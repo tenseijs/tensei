@@ -8,13 +8,13 @@ import { auth, permission } from '@tensei/auth'
 export const setupTeams = () => {
   return setup([
     auth()
+      .teams()
       .teamPermissions([
-        permission('create:servers', 'Can create servers on the platform'),
-        permission('create:databases', 'Can create databases'),
-        permission('attach:databases', 'Can attach databases')
+        permission('Create servers', 'Can create servers on the platform'),
+        permission('Create databases', 'Can create databases'),
+        permission('Attach databases', 'Can attach databases')
       ])
       .user('Customer')
-      .teams()
       .plugin(),
     rest().plugin(),
     graphql().plugin()
