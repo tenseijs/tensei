@@ -31,7 +31,7 @@ const task: TaskFn = async (_, logger, { pkg, client, boilerplate, debug }) => {
     pkg.install(pkgName, boilerPlatePackages[pkgName].version, false)
   })
 
-  const TENSEI_PACKAGE_VERSION = process.env.TENSEI_PACKAGE_VERSION || 'latest'
+  const TENSEI_PACKAGE_VERSION = 'latest'
 
   /**
    * Required dependencies for all projects

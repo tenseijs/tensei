@@ -21,6 +21,8 @@ const task: TaskFn = (_, logger, { absPath }) => {
    */
   tsconfig.set('include', ['**/*'])
 
+  tsconfig.set('moduleResolution', 'node')
+
   /**
    * Except "node_modules" and the "build" folder
    */
@@ -36,6 +38,7 @@ const task: TaskFn = (_, logger, { absPath }) => {
     target: 'ES2020',
     strict: true,
     baseUrl: './',
+    module: 'commonjs',
     esModuleInterop: true,
     skipLibCheck: true,
     forceConsistentCasingInFileNames: true

@@ -115,6 +115,7 @@ export async function getState(
   pkg.set('name', options.projectName)
   pkg.set('version', '1.0.0')
   pkg.set('private', true)
+  pkg.set('main', 'server.ts')
 
   const npxOrYarn = options.client === 'npm' ? 'npx' : 'yarn'
   pkg.setScript('dev', `${npxOrYarn} tensei serve --watch`)

@@ -60,10 +60,7 @@ export async function runTasks(args: string[]) {
     client: usingYarn ? 'yarn' : 'npm',
     projectName: argv.name,
     debug: argv.debug,
-    boilerplate: argv.boilerplate,
-    eslint: argv.eslint,
-    prettier: argv.prettier,
-    encore: argv.encore
+    boilerplate: argv.boilerplate
   })
 
   /**

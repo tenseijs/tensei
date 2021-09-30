@@ -24,15 +24,6 @@ ${logger.colors.green('--boilerplate')} ${logger.colors.dim(
 ${logger.colors.green('--name')} ${logger.colors.dim(
   '<string>'
 )}                   ${logger.colors.dim('Specify application name')}
-${logger.colors.green('--eslint')} ${logger.colors.dim(
-  '<boolean>'
-)}                ${logger.colors.dim('Enable/disable eslint setup')}
-${logger.colors.green('--prettier')} ${logger.colors.dim(
-  '<boolean>'
-)}              ${logger.colors.dim('Enable/disable prettier setup')}
-${logger.colors.green('--encore')} ${logger.colors.dim(
-  '<boolean>'
-)}                ${logger.colors.dim('Enable/disable encore setup')}
 ${logger.colors.green('--debug')} ${logger.colors.dim(
   '<boolean>'
 )}                 ${logger.colors.dim('Turn on the debug mode')}`
