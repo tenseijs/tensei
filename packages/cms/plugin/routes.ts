@@ -1,4 +1,3 @@
-import * as formatter from 'express-response-formatter'
 import { FindOptions, ReferenceType } from '@mikro-orm/core'
 import { route, RouteContract, Utils, Config } from '@tensei/common'
 

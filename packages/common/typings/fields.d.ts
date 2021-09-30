@@ -196,14 +196,17 @@ declare module '@tensei/common/fields' {
     }
     fakerFn?: (fn: typeof Faker) => any
     property: FieldProperty
+    graphqlType: string
     relatedProperty: FieldProperty
     afterConfigSet(): void
+    type(type: string): this
     isRelationshipField: boolean
     onUpdate(hook: () => any): this
     onCreate(hook: () => any): this
     virtual(compute: (value: any) => any): this
     removeFromSidebarOnForms(): this
     dockToSidebarOnForms(): this
+    serializer(serializeFn: (value: any) => any): this
     formComponent(component: string): this
     indexComponent(component: string): this
     detailComponent(component: string): this

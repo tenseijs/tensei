@@ -45,6 +45,8 @@ export class Field implements FieldContract {
 
   public fakerFn = undefined
 
+  public graphqlType = ''
+
   public showHideFieldFromApi = {
     hideOnCreateApi: false,
     hideOnUpdateApi: false,
@@ -342,6 +344,18 @@ export class Field implements FieldContract {
       ...this.showHideField,
       showOnIndex: false
     }
+
+    return this
+  }
+
+  public type(type: string) {
+    this.graphqlType = type
+
+    return this
+  }
+
+  public serializer(serializeFn: (value: any) => any) {
+    this.property.serializer = serializeFn
 
     return this
   }

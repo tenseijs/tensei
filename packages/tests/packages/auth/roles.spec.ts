@@ -226,9 +226,7 @@ test('can virtually get allRoles and allPermissions', async () => {
   })
 
   expect(
-    customer
-      .toJSON()
-      .allRoles.map(role => [role.config.name, role.config.permissions.length])
+    customer.toJSON().allRoles.map(role => [role.name, role.permissions.length])
   ).toEqual([
     ['Writer', 2],
     ['Regular User', 3]

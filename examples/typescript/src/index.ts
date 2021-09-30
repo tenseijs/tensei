@@ -1,8 +1,8 @@
 import { cms } from '@tensei/cms'
-import { auth } from '@tensei/auth'
 import { rest } from '@tensei/rest'
 import { graphql } from '@tensei/graphql'
 import { mde, markdown } from '@tensei/mde'
+import { auth, permission, role } from '@tensei/auth'
 
 import {
   tensei,
@@ -60,6 +60,17 @@ export default tensei()
     welcome(),
     cms().plugin(),
     auth()
+      .teams()
+      .roles([
+        role('Chief Marketer').permissions([
+          permission('Create Pages'),
+          permission('Delete Pages'),
+          permission('Update Pages'),
+          permission('Link Menu To Pages')
+        ]),
+        role('Teacher').permissions([permission('Authorize Comments')])
+      ])
+      .teamPermissions([permission('Create Article')])
       .verifyEmails()
       .configureTokens({
         accessTokenExpiresIn: 60,

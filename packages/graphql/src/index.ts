@@ -173,8 +173,19 @@ class Graphql {
       }
     }
 
+    if (
+      field.property.type === 'json' &&
+      field.validationRules.includes('array')
+    ) {
+      FieldType = `[${FieldType}]`
+    }
+
     if (!field.serialize().isNullable || field.property.primary) {
       FieldType = `${FieldType}!`
+    }
+
+    if (field.graphqlType) {
+      FieldType = field.graphqlType
     }
 
     return `
@@ -685,8 +696,7 @@ input IdWhereQuery {
           app,
           graphQlMiddleware,
           serverUrl,
-          resources,
-          extendEvents
+          resources
         } = config
 
         const typeDefs = [

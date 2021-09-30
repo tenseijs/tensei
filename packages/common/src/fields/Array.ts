@@ -3,7 +3,7 @@ import Field from './Field'
 type ArrayTypes = 'string' | 'number' | 'decimal' | 'date'
 
 export class ArrayField extends Field {
-  protected arrayOf: ArrayTypes = 'string'
+  public arrayOf: ArrayTypes = 'string'
 
   public component = {
     form: 'Array',

@@ -174,6 +174,7 @@ export class Teams {
         ${this.auth.config.teamPermissions.map(permission =>
           permission.formatForEnum()
         )}
+        ${this.auth.config.teamPermissions.length === 0 ? `NOOB` : ``}
       }
 
       type TeamPermission {

@@ -122,10 +122,6 @@ export class Permission implements PermissionContract {
   formatForEnum() {
     return this.config.slug.split('-').join('_').toUpperCase()
   }
-
-  static formatToSlug(slug: string) {
-    return slug.toLowerCase().split('_').join('-')
-  }
 }
 
 export const permission = (slug: string, description?: string) =>

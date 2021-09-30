@@ -318,6 +318,7 @@ export class Auth implements AuthContract {
         array('Roles')
           .default([])
           .of('string')
+          .type('[RoleString]')
           .arrayRules(
             'required',
             `in:${[
@@ -339,12 +340,31 @@ export class Auth implements AuthContract {
           .creationRules('required')
           .onlyOnForms()
           .hideOnUpdateApi(),
-        array('All Roles').virtual(function (this: any) {
-          return this.getAllRoles()
-        }),
-        array('All Permissions').virtual(function (this: any) {
-          return this.getAllPermissions()
-        }),
+        array('All Roles')
+          .type('[Role]')
+          .virtual(function (this: any) {
+            return this.getAllRoles().map((role: RoleContract) => ({
+              slug: role.config.slug,
+              name: role.config.name,
+              description: role.config.description,
+              permissions: role.config.permissions.map(permission => ({
+                name: permission.config.name,
+                slug: permission.config.slug,
+                description: permission.config.description
+              }))
+            }))
+          }),
+        array('All Permissions')
+          .type('[Permission]')
+          .virtual(function (this: any) {
+            return this.getAllPermissions().map(
+              (permission: PermissionContract) => ({
+                slug: permission.config.slug,
+                name: permission.config.name,
+                description: permission.config.description
+              })
+            )
+          }),
         boolean('Blocked')
           .nullable()
           .default(false)
@@ -1609,6 +1629,23 @@ export class Auth implements AuthContract {
             }
 
             ${camelCaseName}: ${pascalCaseName}!
+        }
+
+        enum RoleString {
+          ${this.config.roles.map(role => role.formatForEnum())}
+        }
+
+        type Permission {
+          name: String
+          slug: String
+          description: String
+        }
+
+        type Role {
+          name: String
+          slug: String
+          description: String
+          permissions: [Permission]
         }
 
         type LoginResponse {
