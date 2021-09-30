@@ -169,23 +169,17 @@ export class Teams {
     }
 
     return gql`
-      ${this.auth.config.teamPermissions.length > 0
-        ? `
-    enum TeamPermissionString {
-      ${this.auth.config.teamPermissions.map(
-        permission => `
-        ${permission.config.slug.split(':').join('_').toUpperCase()}
-      `
+      enum TeamPermissionString {
+      ${this.auth.config.teamPermissions.map(permission =>
+        permission.config.slug.split(':').join('_').toUpperCase()
       )}
     }
 
-    type TeamPermission {
-      slug: String!
-      description: String
-      default: Boolean!
-    }
-    `
-        : ``}
+      type TeamPermission {
+        slug: String!
+        description: String
+        default: Boolean!
+      }
 
       input InviteTeamMemberInput {
         permissions: [TeamPermissionString]

@@ -13,7 +13,7 @@
     "@tensei/social-auth": "^0.9.5"
   },
   "scripts": {
-    "example:dev": "yarn ts-node-dev --respawn src/index.ts",
+    "example:dev": "yarn tensei serve --watch",
     "build": "tsc"
   },
   "devDependencies": {

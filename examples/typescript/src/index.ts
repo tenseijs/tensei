@@ -59,6 +59,7 @@ export default tensei()
     welcome(),
     cms().plugin(),
     auth()
+      .teams()
       .verifyEmails()
       .configureTokens({
         accessTokenExpiresIn: 60,
@@ -80,7 +81,8 @@ export default tensei()
   ])
   .db({
     type: 'sqlite',
-    dbName: 'db.sqlite'
+    dbName: 'db.sqlite',
+    debug: true
   })
   .start()
   .catch(console.error)

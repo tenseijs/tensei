@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-    "build": "tsc --p tsconfig.json",
+    "build": "tsc --p tsconfig.json && copyfiles \"templates/**/*\" build",
     "dev": "tsc --watch --p tsconfig.json",
     "test": "jest --verbose --runInBand --forceExit"
   },

@@ -66,7 +66,9 @@ export class Auth implements AuthContract {
     setupFn: AuthSetupFn
   } = {
     prefix: '',
-    teamPermissions: [],
+    teamPermissions: [
+      permission('all').description('Permission to do everything.')
+    ],
     autoFillUser: true,
     autoFilterForUser: true,
     tokenResource: 'Token',
