@@ -1,6 +1,6 @@
 {
   "name": "@tensei/orm",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "main": "./build/index.js",
   "license": "MIT",
   "files": [
