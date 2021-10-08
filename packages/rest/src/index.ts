@@ -39,7 +39,7 @@ const authorizeMiddleware = (checks: AuthorizeFunction[]) => {
 
     if (authorized.filter(result => result).length !== checks.length) {
       return response.status(401).json({
-        message: 'Unauthorized beans.'
+        message: 'Unauthorized.'
       })
     }
 
