@@ -1632,10 +1632,14 @@ export class Auth implements AuthContract {
 
     if (this.config.httpOnlyCookiesAuth) {
       if (ctx.req) {
-        ctx.req.session.user = ctx.authUser
+        ctx.req.session.user = {
+          id: ctx.authUser.id
+        }
       } else {
         // @ts-ignore
-        ctx.session.user = ctx.authUser
+        ctx.session.user = {
+          id: ctx.authUser.id
+        }
       }
     }
 
