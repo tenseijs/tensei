@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.7](https://github.com/tenseijs/tensei/compare/v0.9.6...v0.9.7) (2021-10-08)
+
+
+### Features
+
+* **auth:** add graphql types for role and permission ([783a9ad](https://github.com/tenseijs/tensei/commit/783a9ad68e4e1e2745e7b4e63c7a6d0e80ea98c1))
+* **auth:** add roles / permissions to auth package ([9ce722b](https://github.com/tenseijs/tensei/commit/9ce722b824ba5c09cffe819c999b9b487e70aceb))
+* **auth:** add roles and permissions, with support for graphql and rest virtual serialization ([d99dbc3](https://github.com/tenseijs/tensei/commit/d99dbc372f85f8eac60450db111f21a714fb0050))
+
+
+
+
+
 ## [0.9.6](https://github.com/tenseijs/tensei/compare/v0.9.5...v0.9.6) (2021-09-30)
 
 **Note:** Version bump only for package @tensei/common
