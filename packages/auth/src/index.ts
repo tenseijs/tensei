@@ -93,7 +93,7 @@ export class Auth implements AuthContract {
     beforePasswordReset: () => {},
     afterPasswordReset: () => {},
     tokensConfig: {
-      accessTokenExpiresIn: 60 * 20, // twenty minutes
+      accessTokenExpiresIn: 60 * 60, // sixty minutes
       secretKey: process.env.JWT_SECRET || 'auth-secret-key',
       refreshTokenExpiresIn: 60 * 60 * 24 * 30 * 6 // 6 months
     },
@@ -310,21 +310,25 @@ export class Auth implements AuthContract {
     }
 
     const userResource = resource(this.config.userResource)
-      .canUpdate(
-        ({ authUser, params, config }) =>
-          authUser && (params.id as string) === authUser.id.toString()
-      )
+      .canUpdate(({ authUser, params, body, isGraphqlRequest }) => {
+        if (!authUser) {
+          return false
+        }
+
+        if (isGraphqlRequest) {
+          return authUser.id.toString() === body.id
+        }
+
+        return (params?.id as string) === authUser.id.toString()
+      })
       .fields([
         array('Roles')
           .default([])
           .of('string')
-          .type('[RoleString]')
+          .type('[RoleString!]')
           .arrayRules(
             'required',
-            `in:${[
-              ...this.config.roles.map(role => role.config.name),
-              ...this.config.roles.map(role => role.config.slug)
-            ].join(',')}`
+            `in:${this.config.roles.map(role => role.config.slug).join(',')}`
           )
           .nullable(),
         text('Email')
@@ -570,10 +574,12 @@ export class Auth implements AuthContract {
         self.config.roles.find(r =>
           [r.config.name, r.config.slug].includes(role)
         )
-      ) as RoleContract[]).filter(
-        (role, idx: number, items) =>
-          items.findIndex(t => t.config.slug === role.config.slug) === idx
-      )
+      ) as RoleContract[])
+        .filter(Boolean)
+        .filter(
+          (role, idx: number, items) =>
+            items.findIndex(t => t.config.slug === role.config.slug) === idx
+        )
     })
 
     return userResource
@@ -770,7 +776,10 @@ export class Auth implements AuthContract {
           extendGraphQlTypeDefs([this.extendGraphQLTypeDefs(gql)])
 
           extendGraphQlQueries(
-            this.extendGraphQlQueries(currentCtx().resources)
+            this.extendGraphQlQueries(
+              (currentCtx()
+                .resources as unknown) as ResourceContract<'graphql'>[]
+            )
           )
           extendRoutes(this.extendRoutes())
 
@@ -779,6 +788,23 @@ export class Auth implements AuthContract {
             extendGraphQlQueries(
               this.teamsInstance.queries(currentCtx().resources)
             )
+          }
+
+          if (this.config.roles.length) {
+            extendGraphQlQueries([
+              graphQlQuery('RoleString')
+                .custom()
+                .path('RoleString')
+                .handle(() =>
+                  this.config.roles.reduce(
+                    (values, role) => ({
+                      ...values,
+                      [role.formatForEnum()]: role.config.slug
+                    }),
+                    {}
+                  )
+                )
+            ])
           }
 
           if (this.config.autoFillUser) {
@@ -1034,7 +1060,7 @@ export class Auth implements AuthContract {
               .description(
                 `Enable two factor authentication for an existing ${name}.`
               )
-              .authorize(({ authUser }) => authUser && !authUser.public)
+              .authorize(({ authUser }) => !!authUser)
               .handle(async (request, response) => {
                 const {
                   dataURL,
@@ -1062,7 +1088,7 @@ export class Auth implements AuthContract {
               .description(
                 `This endpoint confirms enabling 2fa for an account. A previous call to /${this.config.apiPath}/two-factor/enable is required to generate a 2fa secret for the ${name}'s account.`
               )
-              .authorize(({ authUser }) => authUser && !authUser.public)
+              .authorize(({ authUser }) => !!authUser)
               .handle(async (request, response) => {
                 const user = await this.TwoFactorAuth.confirmEnableTwoFactorAuth(
                   request as any
@@ -1087,7 +1113,6 @@ export class Auth implements AuthContract {
               .description(
                 `Disable two factor authentication for an existing ${name}.`
               )
-              .authorize(({ authUser }) => authUser && !authUser.public)
               .authorize(({ authUser }) => !!authUser)
               .handle(async (request, response) => {
                 const user = await this.TwoFactorAuth.disableTwoFactorAuth(
@@ -1225,7 +1250,7 @@ export class Auth implements AuthContract {
     return this
   }
 
-  private extendGraphQlQueries(resources: ResourceContract[]) {
+  private extendGraphQlQueries(resources: ResourceContract<'graphql'>[]) {
     const name = this.__resources.user.data.camelCaseName
     const pascalName = this.__resources.user.data.pascalCaseName
 
@@ -1242,7 +1267,7 @@ export class Auth implements AuthContract {
             resources,
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.__resources.user,
+            (this.__resources.user as unknown) as ResourceContract<'graphql'>,
             Utils.graphql.getParsedInfo(info)[name]?.['fieldsByTypeName']?.[
               pascalName
             ],
@@ -1276,7 +1301,7 @@ export class Auth implements AuthContract {
             resources,
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.__resources.user,
+            (this.__resources.user as unknown) as ResourceContract<'graphql'>,
             Utils.graphql.getParsedInfo(info),
             [authUser]
           )
@@ -1307,7 +1332,7 @@ export class Auth implements AuthContract {
             resources,
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.__resources.user,
+            (this.__resources.user as unknown) as ResourceContract<'graphql'>,
             Utils.graphql.getParsedInfo(info),
             [authUser]
           )
@@ -1335,7 +1360,8 @@ export class Auth implements AuthContract {
                   resources,
                   ctx.manager,
                   ctx.databaseConfig.type!,
-                  this.__resources.user,
+                  (this.__resources
+                    .user as unknown) as ResourceContract<'graphql'>,
                   Utils.graphql.getParsedInfo(info),
                   [authUser]
                 )
@@ -1356,7 +1382,8 @@ export class Auth implements AuthContract {
                   resources,
                   ctx.manager,
                   ctx.databaseConfig.type!,
-                  this.__resources.user,
+                  (this.__resources
+                    .user as unknown) as ResourceContract<'graphql'>,
                   Utils.graphql.getParsedInfo(info),
                   [authUser]
                 )
@@ -1380,7 +1407,8 @@ export class Auth implements AuthContract {
                   resources,
                   ctx.manager,
                   ctx.databaseConfig.type!,
-                  this.__resources.user,
+                  (this.__resources
+                    .user as unknown) as ResourceContract<'graphql'>,
                   Utils.graphql.getParsedInfo(info),
                   [authUser]
                 )
@@ -1411,7 +1439,8 @@ export class Auth implements AuthContract {
                     resources,
                     ctx.manager,
                     ctx.databaseConfig.type!,
-                    this.__resources.user,
+                    (this.__resources
+                      .user as unknown) as ResourceContract<'graphql'>,
                     Utils.graphql.getParsedInfo(info),
                     [authUser]
                   )
@@ -1433,7 +1462,8 @@ export class Auth implements AuthContract {
                     resources,
                     ctx.manager,
                     ctx.databaseConfig.type!,
-                    this.__resources.user,
+                    (this.__resources
+                      .user as unknown) as ResourceContract<'graphql'>,
                     Utils.graphql.getParsedInfo(info),
                     [authUser]
                   )
@@ -1457,7 +1487,8 @@ export class Auth implements AuthContract {
                     resources,
                     ctx.manager,
                     ctx.databaseConfig.type!,
-                    this.__resources.user,
+                    (this.__resources
+                      .user as unknown) as ResourceContract<'graphql'>,
                     Utils.graphql.getParsedInfo(info),
                     [authUser]
                   )
@@ -1633,6 +1664,7 @@ export class Auth implements AuthContract {
 
         enum RoleString {
           ${this.config.roles.map(role => role.formatForEnum())}
+          ${this.config.roles.length === 0 ? 'NOOB' : ''}
         }
 
         type Permission {
@@ -2141,7 +2173,7 @@ export class Auth implements AuthContract {
   }
 
   private ensureAuthUserIsNotBlocked = async (ctx: ApiContext) => {
-    if (!ctx.authUser || (ctx.authUser && ctx.authUser.public)) {
+    if (!ctx.authUser) {
       return
     }
 

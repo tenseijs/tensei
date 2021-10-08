@@ -17,14 +17,12 @@ import {
   hasMany,
   belongsTo,
   boolean,
-  route
+  select
 } from '@tensei/core'
 
 export default tensei()
-  .root(__dirname)
   .resources([
     resource('Post')
-      .canInsert(({ authUser }) => false)
       .fields([
         text('Title').rules('required'),
         slug('Slug')
@@ -52,6 +50,7 @@ export default tensei()
         text('Name').notNullable().rules('required'),
         textarea('Description'),
         belongsTo('User').nullable(),
+        select('Specificity').options(['None', 'Some', 'All']),
         hasMany('Post')
       ])
       .displayField('Name')
@@ -61,6 +60,9 @@ export default tensei()
     cms().plugin(),
     auth()
       .teams()
+      .configureTokens({
+        accessTokenExpiresIn: 60 * 60 * 60 * 60 * 60
+      })
       .roles([
         role('Chief Marketer').permissions([
           permission('Create Pages'),
@@ -72,10 +74,6 @@ export default tensei()
       ])
       .teamPermissions([permission('Create Article')])
       .verifyEmails()
-      .configureTokens({
-        accessTokenExpiresIn: 60,
-        refreshTokenExpiresIn: 240
-      })
       .setup(({ user }) => {
         user.fields([
           hasMany('Category'),

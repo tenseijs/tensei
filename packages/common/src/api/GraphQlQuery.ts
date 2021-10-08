@@ -31,7 +31,7 @@ export class GraphQlQuery implements GraphQlQueryContract {
     this.config.snakeCaseName = snakeCase(name)
   }
 
-  resource(resource: ResourceContract) {
+  resource(resource: ResourceContract<'graphql'>) {
     this.config.resource = resource
 
     return this
@@ -61,6 +61,12 @@ export class GraphQlQuery implements GraphQlQueryContract {
     return this
   }
 
+  custom() {
+    this.config.type = 'CUSTOM'
+
+    return this
+  }
+
   authorize(authorize: AuthorizeFunction) {
     this.config.authorize = [...this.config.authorize, authorize]
 
@@ -74,7 +80,19 @@ export class GraphQlQuery implements GraphQlQueryContract {
   }
 
   handle(handler: GraphQlQueryConfig['handler']) {
-    this.config.handler = handler
+    this.config.handler = (source, args, ctx, info) => {
+      if (!info) {
+        return (handler as any)()
+      }
+
+      // Bind the prepare function. This should be moved to somewhere better in future.
+      ctx.prepare = ctx.prepare.bind({
+        info,
+        manager: ctx.manager
+      })
+
+      return handler(source, args, ctx, info)
+    }
 
     return this
   }

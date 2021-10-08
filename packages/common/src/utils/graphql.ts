@@ -68,16 +68,41 @@ export const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
   return JSON.parse(whereArgumentString)
 }
 
+export const prepareVirtualFields = (
+  data: any,
+  resource: ResourceContract<'graphql'>
+) => {
+  const virtualFields = resource.data.fields.filter(
+    f => f.property.persist === false
+  )
+
+  virtualFields.forEach(field => {
+    if (Array.isArray(data)) {
+      data.forEach(item => {
+        const method = item[`__${field.databaseField}` as any]
+
+        if (method) {
+          item[field.databaseField] = new Promise(resolve => resolve(method))
+        }
+      })
+    } else {
+      const method = data[`__${field.databaseField}` as any]
+
+      if (method) {
+        data[field.databaseField] = new Promise(resolve => resolve(method))
+      }
+    }
+  })
+}
+
 export const populateFromResolvedNodes = async (
-  resources: ResourceContract[],
+  resources: ResourceContract<'graphql'>[],
   manager: EntityManager,
   database: keyof typeof Configuration.PLATFORMS,
-  resource: ResourceContract,
+  resource: ResourceContract<'graphql'>,
   fieldNode: any,
   data: any[]
 ) => {
-  if (!data.length) return
-
   const relationshipFields =
     resource?.data.fields.filter(f => f.relatedProperty.reference) || []
 

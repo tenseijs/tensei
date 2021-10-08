@@ -29,4 +29,5 @@ export default resource('Comment')
       .hideOnFetchApi(),
     belongsTo('Post').nullable()
   ])
+  .canUpdate(({ authUser }) => !!authUser)
   .showOnInsertSubscription()

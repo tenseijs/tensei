@@ -1,6 +1,7 @@
 import Supertest from 'supertest'
+import { auth } from '@tensei/auth'
 import { plugin, event } from '@tensei/common'
-import { setup, fakeUser, fakePost } from './setup'
+import { setup, fakeUser, fakePost, fakeComment } from './setup'
 
 test('Generates types only for resources not hidden from API', async () => {
   const { app } = await setup()
@@ -143,6 +144,44 @@ test('Only resources exposed to PUT AND PATCH API have update_resources endpoint
     200,
     404
   ])
+})
+
+test('can update a resource with authentication setup', async () => {
+  const {
+    app,
+    ctx: { orm }
+  } = await setup([auth().plugin()])
+
+  const client = Supertest(app)
+
+  const commentPayload = fakeComment()
+
+  await orm.em.persistAndFlush(orm.em.create('Comment', commentPayload))
+
+  const comment = await orm.em.findOne<{ id: number; title: string }>(
+    'Comment',
+    { title: commentPayload.title }
+  )
+
+  // Attempt updating without a bearer token
+  const response = await client
+    .patch(`/api/comments/${comment.id}`)
+    .send(fakeComment())
+
+  expect(response.status).toBe(401)
+  expect(response.body.message).toBe('Unauthorized.')
+
+  const registerResponse = await client.post('/api/register').send(fakeUser())
+
+  const newComment = fakeComment()
+
+  const authorizedResponse = await client
+    .patch(`/api/comments/${comment.id}`)
+    .set('Authorization', `Bearer ${registerResponse.body.data.accessToken}`)
+    .send(newComment)
+
+  expect(authorizedResponse.status).toBe(200)
+  expect(authorizedResponse.body.data.body).toBe(newComment.body)
 })
 
 test('canUpdate authorizer on resources authorize requests', async () => {

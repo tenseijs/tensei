@@ -36,6 +36,7 @@ declare global {
       // @ts-ignore
       team: import('@tensei/orm').TeamModel
       originatedFromDashboard: boolean | undefined
+      isGraphqlRequest?: boolean
       authenticationError: (message?: string) => unknown
       forbiddenError: (message?: string) => unknown
       validationError: (message?: string) => unknown

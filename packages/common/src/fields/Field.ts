@@ -631,9 +631,11 @@ export class Field implements FieldContract {
     this.property.persist = false
     this.property.getter = true
     this.property.type = 'method'
-    this.property.getterName = `__${this.databaseField}`
 
     this.property.virtualGetter = compute
+
+    this.hideOnCreateApi()
+    this.hideOnUpdateApi()
 
     this.hideOnIndex()
     this.hideOnUpdate()

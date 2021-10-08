@@ -16,7 +16,7 @@ import {
   defaultPlaygroundOptions
 } from 'apollo-server-express'
 import {
-  event,
+  Utils,
   plugin,
   FieldContract,
   ResourceContract,
@@ -106,6 +106,10 @@ class Graphql {
 
     if (field.property.type === 'Date') {
       FieldType = 'Date'
+    }
+
+    if (field.graphqlType) {
+      FieldType = field.graphqlType
     }
 
     return `
@@ -627,7 +631,7 @@ input IdWhereQuery {
   }
 
   getResolversFromGraphqlQueries(queries: GraphQlQueryContract[]) {
-    const resolvers: any = {
+    let resolvers: any = {
       Query: {},
       Mutation: {}
     }
@@ -641,6 +645,10 @@ input IdWhereQuery {
     queries.forEach(query => {
       if (query.config.type === 'MUTATION') {
         resolvers.Mutation[query.config.path] = query.config.handler
+      }
+
+      if (query.config.type === 'CUSTOM') {
+        resolvers[query.config.path] = (query.config as any).handler()
       }
 
       if (query.config.type === 'QUERY') {
@@ -680,7 +688,8 @@ input IdWhereQuery {
 
         extendGraphQlQueries(
           getResolvers(
-            currentCtx().resources.filter(
+            ((currentCtx()
+              .resources as unknown) as ResourceContract<'graphql'>[]).filter(
               resource => !resource.isHiddenOnApi()
             ),
             {
@@ -708,6 +717,8 @@ input IdWhereQuery {
           async (resolve, parent, args, context, info) => {
             // set body to equal args
             context.body = args
+            context.isGraphqlRequest = true
+            context.info = info
 
             // register filters
             resources.forEach(resource => {
@@ -751,9 +762,7 @@ input IdWhereQuery {
             context.userInputError = (message?: string, properties?: any) =>
               new UserInputError(message || 'Invalid user input.', properties)
 
-            const result = await resolve(parent, args, context, info)
-
-            return result
+            return resolve(parent, args, context, info)
           }
         )
 
@@ -820,14 +829,47 @@ input IdWhereQuery {
             ...querySpecificMiddleware
           ),
           ...this.appolloConfig,
-          context: ctx => ({
-            ...ctx,
-            ...config,
-            pubsub: this.pubsub,
-            db: currentCtx().db,
-            repositories: currentCtx().db,
-            manager: currentCtx().orm?.em?.fork()
-          }),
+          context: (ctx: any) => {
+            const { orm, resources, db } = currentCtx()
+
+            let prepare = async function (this: any, data: any) {
+              const guessedModelType = Array.isArray(data)
+                ? data[0].constructor.name
+                : data.constructor.name
+
+              // prepare virtual fields
+              const resource = (resources.find(r => {
+                return r.data.pascalCaseName === guessedModelType
+              }) as unknown) as ResourceContract<'graphql'>
+
+              if (!resource) {
+                return data
+              }
+
+              await Utils.graphql.populateFromResolvedNodes(
+                (resources as unknown) as ResourceContract<'graphql'>[],
+                this.manager,
+                orm?.config.get('type')!,
+                resource,
+                Utils.graphql.getParsedInfo(this.info),
+                Array.isArray(data) ? data : [data]
+              )
+
+              return data
+            }
+
+            const manager = orm?.em?.fork()!
+
+            return {
+              ...ctx,
+              ...config,
+              pubsub: this.pubsub,
+              db,
+              repositories: db,
+              manager,
+              prepare
+            }
+          },
           uploads: false,
           playground: false
         })

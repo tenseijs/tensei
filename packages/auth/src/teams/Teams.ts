@@ -241,10 +241,11 @@ export class Teams {
           const teams = await authUser.allTeams()
 
           await Utils.graphql.populateFromResolvedNodes(
-            resources,
+            (resources as unknown) as ResourceContract<'graphql'>[],
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.auth.__resources.team,
+            (this.auth.__resources
+              .team as unknown) as ResourceContract<'graphql'>,
             Utils.graphql.getParsedInfo(info),
             teams
           )
@@ -264,10 +265,11 @@ export class Teams {
           })
 
           await Utils.graphql.populateFromResolvedNodes(
-            resources,
+            (resources as unknown) as ResourceContract<'graphql'>[],
             ctx.manager,
             ctx.databaseConfig.type!,
-            this.auth.__resources.membership,
+            (this.auth.__resources
+              .membership as unknown) as ResourceContract<'graphql'>,
             Utils.graphql.getParsedInfo(info),
             memberships
           )

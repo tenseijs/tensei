@@ -11,7 +11,7 @@ import {
 } from '@tensei/common'
 
 export const getResolvers = (
-  resources: ResourceContract[],
+  resources: ResourceContract<'graphql'>[],
   {
     subscriptionsEnabled,
     database
@@ -23,7 +23,7 @@ export const getResolvers = (
   const resolversList: GraphQlQueryContract[] = []
 
   const fetchSingleEntityMiddleware: (
-    resource: ResourceContract
+    resource: ResourceContract<'graphql'>
   ) => GraphQlMiddleware = resource => async (
     resolve,
     parent,
@@ -99,6 +99,7 @@ export const getResolvers = (
           .query()
           .internal()
           .resource(resource)
+          .middleware(...resource.data.fetchMiddleware)
           .middleware(
             authorizeResourceMiddleware(
               resource.authorizeCallbacks.authorizedToFetch
@@ -122,6 +123,7 @@ export const getResolvers = (
           .path(resource.data.camelCaseName)
           .query()
           .internal()
+          .middleware(...resource.data.fetchMiddleware)
           .middleware(
             authorizeResourceMiddleware(
               resource.authorizeCallbacks.authorizedToShow
@@ -148,11 +150,12 @@ export const getResolvers = (
     !resource.isHiddenOnApi() &&
       !resource.data.hideOnCreateApi &&
       resolversList.push(
-        graphQlQuery(`Insert single ${resource.data.camelCaseName}`)
+        graphQlQuery(`Create single ${resource.data.camelCaseName}`)
           .path(`create${resource.data.pascalCaseName}`)
           .mutation()
           .internal()
           .resource(resource)
+          .middleware(...resource.data.createMiddleware)
           .middleware(
             authorizeResourceMiddleware(
               resource.authorizeCallbacks.authorizedToCreate
@@ -180,15 +183,6 @@ export const getResolvers = (
 
             await ctx.manager.persistAndFlush(data)
 
-            await Utils.graphql.populateFromResolvedNodes(
-              resources,
-              ctx.manager,
-              ctx.databaseConfig.type!,
-              resource,
-              getParsedInfo(info),
-              [data]
-            )
-
             subscriptionsEnabled &&
               ctx.pubsub.publish(`${resource.data.pascalCaseName}Created`, {
                 [`${resource.data.pascalCaseName}Created`]: data
@@ -196,17 +190,18 @@ export const getResolvers = (
 
             ctx.emitter.emit(`${resource.data.camelCaseName}::created`, data)
 
-            return data
+            return ctx.prepare(data)
           })
       )
 
     !resource.isHiddenOnApi() &&
       !resource.data.hideOnCreateApi &&
       resolversList.push(
-        graphQlQuery(`Insert multiple ${resource.data.camelCaseNamePlural}`)
+        graphQlQuery(`Create multiple ${resource.data.camelCaseNamePlural}`)
           .path(`createMany${resource.data.pascalCaseNamePlural}`)
           .mutation()
           .internal()
+          .middleware(...resource.data.createMiddleware)
           .resource(resource)
           .middleware(
             authorizeResourceMiddleware(
@@ -268,6 +263,7 @@ export const getResolvers = (
           .mutation()
           .internal()
           .resource(resource)
+          .middleware(...resource.data.updateMiddleware)
           .middleware(
             fetchSingleEntityMiddleware(resource),
             authorizeResourceMiddleware(
@@ -324,6 +320,7 @@ export const getResolvers = (
           .mutation()
           .internal()
           .resource(resource)
+          .middleware(...resource.data.updateMiddleware)
           .middleware(
             authorizeResourceMiddleware(
               resource.authorizeCallbacks.authorizedToUpdate
@@ -386,6 +383,7 @@ export const getResolvers = (
           .mutation()
           .internal()
           .resource(resource)
+          .middleware(...resource.data.deleteMiddleware)
           .middleware(
             fetchSingleEntityMiddleware(resource),
             authorizeResourceMiddleware(
@@ -424,6 +422,7 @@ export const getResolvers = (
           .path(`deleteMany${resource.data.pascalCaseNamePlural}`)
           .mutation()
           .internal()
+          .middleware(...resource.data.deleteMiddleware)
           .resource(resource)
           .middleware(
             authorizeResourceMiddleware(

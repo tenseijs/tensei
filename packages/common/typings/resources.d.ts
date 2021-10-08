@@ -13,7 +13,8 @@ declare module '@tensei/common/resources' {
     User,
     DataPayload,
     ResourceHelpers,
-    GraphQlMiddleware
+    GraphQlMiddleware,
+    ExpressMiddleware
   } from '@tensei/common/config'
   import { ActionResponse } from '@tensei/common/actions'
   export interface ValidationMessages {
@@ -25,7 +26,7 @@ declare module '@tensei/common/resources' {
     fn: Fn
     name: string
   }
-  export interface ResourceData {
+  export interface ResourceData<T extends ApiType = 'rest'> {
     name: string
     table: string
     icon: SupportedIcons
@@ -66,19 +67,31 @@ declare module '@tensei/common/resources' {
     displayInNavigation: boolean
     validationMessages: ValidationMessages
     extend: ResourceExtendContract
+    createMiddleware: MiddlewareFn<T>[]
+    fetchMiddleware: MiddlewareFn<T>[]
+    updateMiddleware: MiddlewareFn<T>[]
+    deleteMiddleware: MiddlewareFn<T>[]
   }
-  interface ResourceDataWithFields extends ResourceData {
+  interface ResourceDataWithFields<T extends ApiType = 'rest'>
+    extends ResourceData<T> {
     fields: FieldContract[]
     actions: ActionContract[]
   }
-  export interface SerializedResource extends Partial<ResourceData> {
+  export interface SerializedResource<T extends ApiType = 'rest'>
+    extends Partial<ResourceData<T>> {
     fields: SerializedField[]
     actions: SerializedAction[]
   }
 
   export interface ResourceExtendContract extends any {}
 
-  export interface ResourceContract {
+  export type ApiType = 'rest' | 'graphql'
+
+  export type MiddlewareFn<T extends ApiType = 'rest'> = T extends 'rest'
+    ? ExpressMiddleware
+    : GraphQlMiddleware
+
+  export interface ResourceContract<T extends ApiType = 'rest'> {
     authorizeCallbacks: {
       authorizedToShow: AuthorizeFunction[]
       authorizedToFetch: AuthorizeFunction[]
@@ -108,7 +121,7 @@ declare module '@tensei/common/resources' {
       onFlush: FlushHookFunction[]
       afterFlush: FlushHookFunction[]
     }
-    data: ResourceDataWithFields
+    data: ResourceDataWithFields<T>
     hideOnApi(): this
     icon(icon: SupportedIcons): this
     isHiddenOnApi(): boolean
@@ -133,14 +146,19 @@ declare module '@tensei/common/resources' {
     canFetchRelation(authorizeFunction: AuthorizeFunction): this
     canShow(authorizeFunction: AuthorizeFunction): this
 
+    createMiddleware(middlewareFn: MiddlewareFn<T>[]): this
+    fetchMiddleware(middlewareFn: MiddlewareFn<T>[]): this
+    updateMiddleware(middlewareFn: MiddlewareFn<T>[]): this
+    deleteMiddleware(middlewareFn: MiddlewareFn<T>[]): this
+
     canFetch(authorizeFunction: AuthorizeFunction): this
-    canInsert(authorizeFunction: AuthorizeFunction): this
+    canCreate(authorizeFunction: AuthorizeFunction): this
     canUpdate(authorizeFunction: AuthorizeFunction): this
     canDelete(authorizeFunction: AuthorizeFunction): this
     canRunAction(authorizeFunction: AuthorizeFunction): this
     canShowOnDashboard(authorizeFunction: AuthorizeFunction): this
     canFetchOnDashboard(authorizeFunction: AuthorizeFunction): this
-    canInsertOnDashboard(authorizeFunction: AuthorizeFunction): this
+    canCreateOnDashboard(authorizeFunction: AuthorizeFunction): this
     canUpdateOnDashboard(authorizeFunction: AuthorizeFunction): this
     canDeleteOnDashboard(authorizeFunction: AuthorizeFunction): this
     canRunActionOnDashboard(authorizeFunction: AuthorizeFunction): this
@@ -156,7 +174,7 @@ declare module '@tensei/common/resources' {
     group(groupName: string): this
     slug(slug: string): this
     label(label: string): this
-    serialize(): SerializedResource
+    serialize(): SerializedResource<T>
     beforeCreate(hook: HookFunction | HookFunctionPromised): this
     afterCreate(hook: HookFunction | HookFunctionPromised): this
     beforeUpdate(hook: HookFunction | HookFunctionPromised): this
@@ -166,7 +184,8 @@ declare module '@tensei/common/resources' {
     onInit(hook: HookFunction): this
   }
 
-  export class Resource implements ResourceContract {
+  export class Resource<T extends ApiType = 'rest'>
+    implements ResourceContract<T> {
     authorizeCallbacks: {
       authorizedToShow: AuthorizeFunction[]
       authorizedToFetch: AuthorizeFunction[]
@@ -226,17 +245,17 @@ declare module '@tensei/common/resources' {
     group(groupName: string): this
     slug(slug: string): this
     label(label: string): this
-    serialize(): SerializedResource
+    serialize(): SerializedResource<T>
     beforeCreate(hook: HookFunction): this
     beforeUpdate(hook: HookFunction): this
     afterCreate(hook: HookFunction): this
     afterUpdate(hook: HookFunction): this
   }
 
-  export const resource: (
+  export const resource: <T extends ApiType = 'rest'>(
     name: string,
     tableName?: string | undefined
-  ) => ResourceContract
+  ) => ResourceContract<T>
 
   export interface ManagerContract {
     repository: DatabaseRepositoryInterface

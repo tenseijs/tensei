@@ -12,6 +12,7 @@ declare global {
       // @ts-ignore
       team: import('@tensei/orm').TeamModel
       verifyTwoFactorAuthToken: (token: string | number) => boolean
+      isGraphqlRequest?: boolean
     }
   }
 }

@@ -71,5 +71,5 @@ export const resolveFieldTypescriptType = (
     return 'ID[]'
   }
 
-  return 'string'
+  return 'any'
 }

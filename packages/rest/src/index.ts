@@ -188,6 +188,7 @@ class Rest {
             .post()
             .internal()
             .group(resource.data.label)
+            .middleware(resource.data.createMiddleware as any)
             .parameters(
               resource.data.fields
                 .filter(
@@ -354,6 +355,7 @@ class Rest {
             .internal()
             .group(resource.data.label)
             .id(`fetchMany${camelPlural}`)
+            .middleware(resource.data.fetchMiddleware as any)
             .parameters(paginationParameters(resource))
             .resource(resource)
             .path(getApiPath(plural))
@@ -381,6 +383,7 @@ class Rest {
         routes.push(
           route(`Fetch single ${singular}`)
             .get()
+            .middleware(resource.data.fetchMiddleware as any)
             .parameters([
               {
                 in: 'path',
@@ -409,6 +412,7 @@ class Rest {
         routes.push(
           route(`Fetch ${singular} relations`)
             .get()
+            .middleware(resource.data.fetchMiddleware as any)
             .parameters([
               {
                 in: 'path',
@@ -558,6 +562,7 @@ class Rest {
           route(`Update multiple ${plural}`)
             .patch()
             .internal()
+            .middleware(resource.data.updateMiddleware as any)
             .parameters([
               {
                 in: 'body',
@@ -664,6 +669,7 @@ class Rest {
           route(`Update single ${singular}`)
             .patch()
             .internal()
+            .middleware(resource.data.updateMiddleware as any)
             .middleware([findSingleEntityMiddleware(resource)])
             .parameters(
               resource.data.fields
@@ -735,6 +741,7 @@ class Rest {
           route(`Delete single ${singular}`)
             .delete()
             .internal()
+            .middleware(resource.data.deleteMiddleware as any)
             .middleware([findSingleEntityMiddleware(resource)])
             .parameters([
               {
@@ -775,6 +782,7 @@ class Rest {
             .delete()
             .group(resource.data.label)
             .internal()
+            .middleware(resource.data.deleteMiddleware as any)
             .id(this.getRouteId(`deleteMany${singular}`))
             .resource(resource)
             .path(getApiPath(`${plural}`))

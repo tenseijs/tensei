@@ -21,14 +21,17 @@ import {
 import Pluralize from 'pluralize'
 // import { FilterContract } from '@tensei/filters'
 import { snakeCase, paramCase, camelCase, pascalCase } from 'change-case'
-import { ResourceMethod } from '@tensei/common/resources'
+import { ApiType, MiddlewareFn, ResourceMethod } from '@tensei/common/resources'
+import { ExpressMiddleware, GraphQlMiddleware } from '@tensei/common/config'
 
-interface ResourceDataWithFields extends ResourceData {
+interface ResourceDataWithFields<T extends ApiType = 'rest'>
+  extends ResourceData<T> {
   fields: FieldContract[]
   actions: Action[]
 }
 
-export class Resource implements ResourceContract {
+export class Resource<T extends ApiType = 'rest'>
+  implements ResourceContract<T> {
   public authorizeCallbacks: {
     authorizedToShow: AuthorizeFunction[]
     authorizedToFetch: AuthorizeFunction[]
@@ -131,7 +134,7 @@ export class Resource implements ResourceContract {
     return this
   }
 
-  public data: ResourceDataWithFields = {
+  public data: ResourceDataWithFields<T> = {
     fields: [
       id('ID'),
       timestamp('Created At')
@@ -169,6 +172,10 @@ export class Resource implements ResourceContract {
     extend: {},
     icon: 'category',
     description: '',
+    createMiddleware: [],
+    updateMiddleware: [],
+    deleteMiddleware: [],
+    fetchMiddleware: [],
     hideOnCreateApi: false,
     hideOnFetchApi: false,
     hideOnDeleteApi: false,
@@ -302,7 +309,7 @@ export class Resource implements ResourceContract {
     return this
   }
 
-  public canInsert(authorizeFunction: AuthorizeFunction) {
+  public canCreate(authorizeFunction: AuthorizeFunction) {
     this.authorizeCallbacks.authorizedToCreate.push(authorizeFunction)
 
     return this
@@ -338,7 +345,7 @@ export class Resource implements ResourceContract {
     return this
   }
 
-  public canInsertOnDashboard(authorizeFunction: AuthorizeFunction) {
+  public canCreateOnDashboard(authorizeFunction: AuthorizeFunction) {
     this.dashboardAuthorizeCallbacks.authorizedToCreate.push(authorizeFunction)
 
     return this
@@ -361,6 +368,24 @@ export class Resource implements ResourceContract {
       authorizeFunction
     )
 
+    return this
+  }
+
+  public createMiddleware(middleware: MiddlewareFn<T>[]) {
+    this.data.createMiddleware = [...this.data.createMiddleware, ...middleware]
+
+    return this
+  }
+  public fetchMiddleware(middleware: MiddlewareFn<T>[]) {
+    this.data.fetchMiddleware = [...this.data.fetchMiddleware, ...middleware]
+    return this
+  }
+  public updateMiddleware(middleware: MiddlewareFn<T>[]) {
+    this.data.updateMiddleware = [...this.data.updateMiddleware, ...middleware]
+    return this
+  }
+  public deleteMiddleware(middleware: MiddlewareFn<T>[]) {
+    this.data.deleteMiddleware = [...this.data.deleteMiddleware, ...middleware]
     return this
   }
 
@@ -475,7 +500,7 @@ export class Resource implements ResourceContract {
     return this
   }
 
-  public serialize(): SerializedResource {
+  public serialize(): SerializedResource<T> {
     const { table, ...rest } = this.data
 
     return {
@@ -580,7 +605,9 @@ export class Resource implements ResourceContract {
   }
 }
 
-export const resource = (name: string, tableName?: string) =>
-  new Resource(name, tableName)
+export const resource = <T extends ApiType = 'rest'>(
+  name: string,
+  tableName?: string
+) => new Resource<T>(name, tableName)
 
 export default Resource

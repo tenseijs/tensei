@@ -56,7 +56,28 @@ export class Select extends Field {
   }
 }
 
+class SelectOption {
+  config: Option = {
+    label: '',
+    value: ''
+  }
+
+  label(label: string) {
+    this.config.label = label
+
+    return this
+  }
+
+  value(value: string) {
+    this.config.value = value
+
+    return this
+  }
+}
+
 export const select = (name: string, databaseField?: string) =>
   new Select(name, databaseField)
+
+select.option = () => new SelectOption()
 
 export default Select

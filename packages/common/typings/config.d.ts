@@ -8,7 +8,7 @@ declare module '@tensei/common/config' {
   import { EventContract } from '@tensei/common/events'
   import { CommandContract } from '@tensei/common/commands'
   import { FindOptions, FilterQuery } from '@mikro-orm/core'
-  import { ResourceContract } from '@tensei/common/resources'
+  import { ApiType, ResourceContract } from '@tensei/common/resources'
   import { ExecutionParams } from 'subscriptions-transport-ws'
   import { DashboardContract } from '@tensei/common/dashboards'
   import { MailConfig, MailManagerContract } from '@tensei/mail'
@@ -91,11 +91,11 @@ declare module '@tensei/common/config' {
   }
 
   interface UtilsContract {
-    validator: (
-      resource: ResourceContract,
+    validator: <T extends ApiType = 'rest'>(
+      resource: ResourceContract<T>,
       manager: EntityManager,
       resourcesMap: {
-        [key: string]: ResourceContract
+        [key: string]: ResourceContract<T>
       },
       modelId?: string | number | undefined
     ) => UtilsContractValidator
@@ -104,10 +104,10 @@ declare module '@tensei/common/config' {
       getParsedInfo: (args: any) => any
       parseWhereArgumentsToWhereQuery: (where: any) => any
       populateFromResolvedNodes: (
-        resources: ResourceContract[],
+        resources: ResourceContract<'graphql'>[],
         manager: EntityManager,
         database: keyof typeof Configuration.PLATFORMS,
-        resource: ResourceContract,
+        resource: ResourceContract<'graphql'>,
         fieldNode: any,
         data: any[]
       ) => Promise<any[] | undefined>
@@ -116,7 +116,7 @@ declare module '@tensei/common/config' {
       parseSortFromStringToObject: (path: string, direction: string) => any
       parseQueryToFindOptions: (
         query: any,
-        resource: ResourceContract
+        resource: ResourceContract<'rest'>
       ) => FindOptions<any, import('@mikro-orm/core').Populate<any>>
       parseQueryToWhereOptions: (query: any) => any
     }
@@ -126,10 +126,11 @@ declare module '@tensei/common/config' {
     config: GraphQlQueryConfig
     path(path: string): this
     query(): this
+    custom(): this
     mutation(): this
     internal(): this
     subscription(): this
-    resource(resource: ResourceContract): this
+    resource(resource: ResourceContract<'graphql'>): this
     authorize(authorize: AuthorizeFunction): this
     filter(filter: GraphQlQueryConfig['filter']): this
     handle(handler: GraphQlQueryConfig['handler']): this
@@ -177,8 +178,8 @@ declare module '@tensei/common/config' {
     internal: boolean
     snakeCaseName: string
     paramCaseName: string
-    resource?: ResourceContract
-    type: 'QUERY' | 'MUTATION' | 'SUBSCRIPTION'
+    resource?: ResourceContract<'graphql'>
+    type: 'QUERY' | 'MUTATION' | 'SUBSCRIPTION' | 'CUSTOM'
     authorize: AuthorizeFunction[]
     handler: (
       source: TSource,
@@ -204,6 +205,9 @@ declare module '@tensei/common/config' {
     pubsub: PubSub
     connection?: ExecutionParams
     entity: AnyEntity
+    info: GraphQLResolveInfo
+    isGraphqlRequest?: boolean
+    prepare: (data: any) => any
     authenticationError: (message?: string) => unknown
     forbiddenError: (message?: string) => unknown
     validationError: (message?: string) => unknown
@@ -216,6 +220,7 @@ declare module '@tensei/common/config' {
     true = 'true',
     false = 'false'
   }
+
   type FilterOperators =
     | '_and'
     | '_or'

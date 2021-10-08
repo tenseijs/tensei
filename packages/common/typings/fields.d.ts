@@ -540,7 +540,7 @@ declare module '@tensei/common/fields' {
   }
   interface SelectContract extends FieldContract {
     selectOptions: Option[]
-    options(options: Option[]): this
+    options(options: (Option | string)[]): this
   }
   const select: (
     name: string,
