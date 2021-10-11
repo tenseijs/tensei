@@ -150,7 +150,7 @@ test('can update a resource with authentication setup', async () => {
   const {
     app,
     ctx: { orm }
-  } = await setup([auth().plugin()])
+  } = await setup([auth().user('Mister').plugin()])
 
   const client = Supertest(app)
 
