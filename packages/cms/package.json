@@ -83,7 +83,7 @@
     "csurf": "^1.11.0",
     "express-session": "^1.17.1",
     "express-session-mikro-orm": "^0.9.7",
-    "passport": "^0.4.1",
+    "passport": "^0.5.0",
     "passport-local": "^1.0.0"
   },
   "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
