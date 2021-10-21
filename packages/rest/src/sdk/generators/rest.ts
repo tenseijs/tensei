@@ -42,7 +42,7 @@ const generateApiClassForResource = (
              *      await tensei.${resource.data.camelCaseNamePlural}.findMany({
              *          where: { id: { _in: [1, 2] } },
              *          sort: { id: SortQueryInput.ASC },
-             *          pagination: { per_page: 30, page: 1 },
+             *          pagination: { perPage: 30, page: 1 },
              *      })
              *
              **/

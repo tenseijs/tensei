@@ -39,13 +39,13 @@ export const setupCms = async (
       slug: 'super-admin',
       description:
         'Manage the access and level of responsibility of all users on this network.',
-      admin_permissions: allPermissions
+      adminPermissions: allPermissions
     })
   }
 
   if (superAdminRole) {
     em.assign(superAdminRole, {
-      admin_permissions: allPermissions
+      adminPermissions: allPermissions
     })
   }
 

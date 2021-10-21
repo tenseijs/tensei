@@ -6,6 +6,7 @@
     "sourceMap": true,
     "allowJs": false,
     "jsx": "react",
+    "baseUrl": "./",
     "declaration": false,
     "moduleResolution": "node",
     "noImplicitReturns": true,
@@ -14,7 +15,11 @@
     "strictNullChecks": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@components": ["./pages/components/*"],
+      "@pages": ["./pages/*"]
+    }
   },
   "exclude": ["plugin/"]
 }

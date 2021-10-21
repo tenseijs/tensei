@@ -246,7 +246,6 @@ declare module '@tensei/common/config' {
   }
   interface FetchAllRequestQuery {
     perPage?: number
-    per_page?: number
     page?: number
     fields?: string[]
     search?: string
@@ -307,6 +306,7 @@ declare module '@tensei/common/config' {
   interface Asset {
     name: string
     path: string
+    chunk?: boolean
   }
   type SupportedDatabases =
     | 'mongo'

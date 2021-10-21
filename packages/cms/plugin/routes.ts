@@ -11,8 +11,8 @@ const getPageMetaFromFindOptions = (
       findOptions.offset || (findOptions.offset === 0 && findOptions.limit)
         ? Math.ceil((findOptions.offset + 1) / findOptions.limit!)
         : 0,
-    per_page: findOptions.limit ? findOptions.limit : 0,
-    page_count: Math.ceil(total / findOptions.limit!) || 0
+    perPage: findOptions.limit ? findOptions.limit : 0,
+    pageCount: Math.ceil(total / findOptions.limit!) || 0
   }
 }
 

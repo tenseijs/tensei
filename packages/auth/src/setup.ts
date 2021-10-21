@@ -35,7 +35,7 @@ export const setupCms = async (
 
   if (superAdminRole) {
     em.assign(superAdminRole, {
-      admin_permissions: allPermissions
+      adminPermissions: allPermissions
     })
   }
 
@@ -44,7 +44,7 @@ export const setupCms = async (
       em.create(RoleResource.data.pascalCaseName, {
         name: 'Super Admin',
         slug: 'super-admin',
-        admin_permissions: allPermissions
+        adminPermissions: allPermissions
       })
   )
 }

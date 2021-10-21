@@ -29,7 +29,7 @@ export const parseQueryToFindOptions = (
 
   if (query.page && query.page !== '-1') {
     findOptions.limit =
-      parseInt(query.per_page) || resource.data.perPageOptions[0]
+      parseInt(query.perPage) || resource.data.perPageOptions[0]
     findOptions.offset =
       query.page >= 1 ? (query.page - 1) * findOptions.limit : 0
   }

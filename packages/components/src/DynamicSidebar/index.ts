@@ -1,1 +1,0 @@
-export { DynamicSidebar } from './DynamicSidebar'

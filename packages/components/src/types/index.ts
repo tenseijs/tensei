@@ -10,17 +10,17 @@ export interface UserRole {
   id: number
   name: string
   slug: string
-  admin_permissions: UserPermission[]
+  adminPermissions: UserPermission[]
 }
 
 export interface User {
   id: string
   email: string
   roles: UserRole[]
-  created_at: string
-  updated_at: string
-  admin_roles: UserRole[]
-  admin_permissions: string[]
+  createdAt: string
+  updatedAt: string
+  adminRoles: UserRole[]
+  adminPermissions: string[]
 }
 
 export interface CmsRoute {
@@ -80,8 +80,8 @@ export interface AbstractData {
 export interface PaginatedData {
   meta: {
     page: number
-    per_page: number
-    page_count?: number
+    perPage: number
+    pageCount?: number
     total?: number
   }
   search?: string
@@ -210,35 +210,9 @@ interface TenseiRegisterParams {
   route: (route: Partial<CmsRoute>) => void
   formComponent: (name: string, Component: React.FC<any>) => void
   indexComponent: (name: string, Component: React.FC<any>) => void
-  detailComponent: (name: string, Component: React.FC<any>) => void
 }
 
 export type TenseiRegisterFunction = (params: TenseiRegisterParams) => void
-
-export interface ToastOptions {
-  duration?: number | null
-  type?: 'error' | 'success' | 'info' | 'warning'
-  action?: {
-    onClick: () => void
-    text?: string
-  }
-  theme?: string | null
-  position?:
-    | 'top-center'
-    | 'top-right'
-    | 'top-left'
-    | 'bottom-right'
-    | 'bottom-center'
-    | 'bottom-left'
-}
-
-export interface ToastInterface {
-  show: (message: string, options?: ToastOptions) => void
-  success: (message: string, options?: ToastOptions) => void
-  info: (message: string, options?: ToastOptions) => void
-  warning: (message: string, options?: ToastOptions) => void
-  error: (message: string, options?: ToastOptions) => void
-}
 
 export interface Tensei {
   boot: () => void
@@ -253,23 +227,13 @@ export interface Tensei {
     index: {
       [key: string]: React.FunctionComponent<any>
     }
-    detail: {
-      [key: string]: React.FunctionComponent<any>
-    }
   }
-  toast: ToastInterface
-  clear: () => void
   lib: {
     [key: string]: React.FunctionComponent<any>
   }
   route: (route: Partial<CmsRoute>) => void
-  show: (message: string, options?: ToastOptions) => void
-  success: (message: string, options?: ToastOptions) => void
-  info: (message: string, options?: ToastOptions) => void
-  warning: (message: string, options?: ToastOptions) => void
-  error: (message: string, options?: ToastOptions) => void
+
   formComponent: (name: string, Component: React.FC<any>) => void
   indexComponent: (name: string, Component: React.FC<any>) => void
-  detailComponent: (name: string, Component: React.FC<any>) => void
   register: (fn: TenseiRegisterFunction) => void
 }

@@ -1,40 +1,10 @@
 import Qs from 'qs'
 import Axios from 'axios'
-import Toasted from 'toastedjs'
-import { Link } from 'react-router-dom'
 import * as Lib from '@tensei/components'
 
-import Paginator from './components/Paginator'
-import PageWrapper from './components/PageWrapper'
-import DeleteModal from './components/DeleteModal'
-
-// Home
-import Home from './pages/Home'
-
 // Form
-import IndexID from './index/ID'
-import IndexText from './index/Text'
 
-// Details
-import DetailID from './detail/ID'
-import DetailDate from './detail/Date'
-import DetailText from './detail/Text'
-import DetailArray from './detail/Array'
-import DetailBoolean from './detail/Boolean'
-import DetailOneToOne from './detail/OneToOne'
-import DetailTextarea from './detail/Textarea'
-import DetailManyToMany from './detail/ManyToMany'
-
-// Form
-import FormText from './form/Text'
-import FormSlug from './form/Slug'
-import FormArray from './form/Array'
-import FormSelect from './form/Select'
-import FormBoolean from './form/Boolean'
-import FormDate from './form/DatePicker'
-import FormTextarea from './form/Textarea'
-import FormManyToOne from './form/ManyToOne'
-import FormManyToMany from './form/ManyToMany'
+// Index
 
 class Core {
   state = (() => {
@@ -62,7 +32,7 @@ class Core {
 
       admin = JSON.parse(___tensei___.admin || '')
 
-      admin.admin_permissions.forEach((permission: string) => {
+      admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
     } catch (errors) {}
@@ -81,74 +51,29 @@ class Core {
     const query = Qs.parse(window.location.search.split('?')[1])
 
     if (query.error) {
-      this.error(query.error as string)
+      // show an error message
     }
   }
-
-  toast = new Toasted({
-    duration: 3000,
-    position: 'bottom-right',
-    theme: 'tensei'
-  })
 
   getPath = (path: string) => `/${this.state.config.dashboardPath}/${path}`
 
   private hooks: Lib.TenseiRegisterFunction[] = []
 
   lib: Lib.Tensei['lib'] = {
-    ...Lib,
-    Link,
-    Paginator,
-    DeleteModal,
-    PageWrapper
+    ...Lib
   }
 
   components: Lib.Tensei['components'] = {
-    form: {
-      Text: FormText,
-      Slug: FormSlug,
-      Date: FormDate,
-      Array: FormArray,
-      DateTime: FormDate,
-      Timestamp: FormDate,
-      Select: FormSelect,
-      Boolean: FormBoolean,
-      Textarea: FormTextarea,
-      OneToOne: FormManyToOne,
-      ManyToOne: FormManyToOne,
-      OneToMany: FormManyToMany,
-      ManyToMany: FormManyToMany
-    },
-    index: {
-      ID: IndexID,
-      Text: IndexText,
-      Date: DetailDate,
-      DateTime: DetailDate,
-      Timestamp: DetailDate,
-      Boolean: DetailBoolean
-    },
-    detail: {
-      ID: DetailID,
-      Text: DetailText,
-      Date: DetailDate,
-      Array: DetailArray,
-      DateTime: DetailDate,
-      Timestamp: DetailDate,
-      Boolean: DetailBoolean,
-      OneToOne: DetailOneToOne,
-      Textarea: DetailTextarea,
-      ManyToOne: DetailOneToOne,
-      ManyToMany: DetailManyToMany,
-      OneToMany: DetailManyToMany
-    }
+    form: {},
+    index: {}
   }
 
   routes: Lib.CmsRoute[] = []
 
-  route = (route: Lib.CmsRoute) => {
+  route = (route: Partial<Lib.CmsRoute>) => {
     this.routes.push({
-      ...route,
-      path: this.getPath(route.path),
+      ...(route as any),
+      path: this.getPath(route.path!),
       settings: route.settings || false,
       group: route.settings ? route.group || 'Global Settings' : '',
       requiredPermissions: route.requiredPermissions || []
@@ -170,10 +95,6 @@ class Core {
     this.components.form[name] = Component
   }
 
-  detailComponent = (name: string, Component: React.FC<any>) => {
-    this.components.detail[name] = Component
-  }
-
   indexComponent = (name: string, Component: React.FC<any>) => {
     this.components.index[name] = Component
   }
@@ -183,8 +104,7 @@ class Core {
       hook({
         route: this.route,
         formComponent: this.formComponent,
-        indexComponent: this.indexComponent,
-        detailComponent: this.detailComponent
+        indexComponent: this.indexComponent
       })
     })
 
@@ -193,44 +113,6 @@ class Core {
     }
     this.ctx.setRoutes([...this.ctx.routes, ...this.routes])
     this.ctx.setBooted(true)
-  }
-
-  success = (message: string, options: Lib.ToastOptions = {}) => {
-    this.toast.success(message, {
-      type: 'success',
-      ...options
-    })
-  }
-
-  show = (message: string, options: Lib.ToastOptions = {}) => {
-    this.toast.success(message, {
-      ...options
-    })
-  }
-
-  error = (message: string, options: Lib.ToastOptions = {}) => {
-    this.toast.error(message, {
-      type: 'error',
-      ...options
-    })
-  }
-
-  info = (message: string, options: Lib.ToastOptions = {}) => {
-    this.toast.info(message, {
-      type: 'info',
-      ...options
-    })
-  }
-
-  warning = (message: string, options: Lib.ToastOptions = {}) => {
-    this.toast.info(message, {
-      type: 'warning',
-      ...options
-    })
-  }
-
-  clear = () => {
-    this.toast.clear()
   }
 }
 

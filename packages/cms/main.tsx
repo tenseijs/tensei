@@ -2,18 +2,45 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
 import './core'
+import './load-icons'
+import { ThemeProvider as StyledThemeProvider } from 'styled-components'
 
-// Styles
-import '@reach/accordion/styles.css'
-import 'toastedjs/dist/toasted.min.css'
-import '@tensei/components/styles/pulse.css'
-import '@tensei/components/styles/flatpickr.css'
+import '@tensei/eui/dist/eui_theme_tensei_light.css'
+import { AuthRoutes } from '@components/auth/routes'
+import { DashboardRoutes } from '@components/dashboard/routes'
+import { useEuiTheme, EuiThemeProvider } from '@tensei/eui/lib/services/theme'
 
-import Wrapper from './pages/Wrapper'
+interface ThemeExtensions {
+  colors: {
+    bgShade: string
+  }
+}
+
+const extensions = {
+  colors: {
+    LIGHT: {
+      bgShade: '#f9f9f9'
+    },
+    DARK: {
+      bgShade: '#f9f9f9'
+    }
+  }
+}
+
+const App: React.FunctionComponent = ({ children }) => {
+  const { euiTheme } = useEuiTheme<ThemeExtensions>()
+
+  return <StyledThemeProvider theme={euiTheme}>{children}</StyledThemeProvider>
+}
 
 ReactDOM.render(
   <BrowserRouter>
-    <Wrapper />
+    <EuiThemeProvider modify={extensions}>
+      <App>
+        <AuthRoutes />
+        <DashboardRoutes />
+      </App>
+    </EuiThemeProvider>
   </BrowserRouter>,
   document.querySelector('#app')
 )

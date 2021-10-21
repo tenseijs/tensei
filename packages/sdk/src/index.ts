@@ -38,7 +38,7 @@ function getSdk(instance: any, slug: string) {
         return instance.get(slug, {
           params: {
             populate: payload?.populate?.join(',') || [],
-            per_page: payload?.pagination?.per_page,
+            perPage: payload?.pagination?.perPage,
             page: payload?.pagination?.page,
             fields: payload?.fields?.join(',') || undefined,
             where: payload?.where

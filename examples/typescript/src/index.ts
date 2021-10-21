@@ -1,7 +1,8 @@
+import Path from 'path'
 import { cms } from '@tensei/cms'
 import { rest } from '@tensei/rest'
+import { markdown } from '@tensei/mde'
 import { graphql } from '@tensei/graphql'
-import { mde, markdown } from '@tensei/mde'
 import { auth, permission, role } from '@tensei/auth'
 
 import {
@@ -85,12 +86,14 @@ export default tensei()
       .plugin(),
     rest().plugin(),
     graphql().plugin(),
-    cors(),
-    mde().plugin()
+    cors()
   ])
   .db({
     type: 'sqlite',
     dbName: 'db.sqlite'
+  })
+  .boot(() => {
+    console.log('App running on http://localhost:8810')
   })
   .start()
   .catch(console.error)

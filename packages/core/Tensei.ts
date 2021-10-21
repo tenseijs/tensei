@@ -455,12 +455,17 @@ export class Tensei implements TenseiContract {
           }
         ]
       },
-      script: (name: Asset['name'], path: Asset['path']) => {
+      script: (
+        name: Asset['name'],
+        path: Asset['path'],
+        chunk?: Asset['chunk']
+      ) => {
         this.ctx.scripts = [
           ...this.ctx.scripts,
           {
             name,
-            path
+            path,
+            chunk
           }
         ]
       },

@@ -44,7 +44,8 @@ export const fakeTag = () =>
 
 export const fakeUser = () => ({
   id: undefined,
-  fullName: Faker.name.findName(),
+  firstName: Faker.name.firstName(),
+  lastName: Faker.name.lastName(),
   email:
     `${Math.floor(Math.random() * 9000000)}` +
     '.' +

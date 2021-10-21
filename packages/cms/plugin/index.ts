@@ -87,16 +87,7 @@ class CmsPlugin {
     return this
   }
 
-  private styles: Asset[] = [
-    {
-      name: 'tensei.css',
-      path: Path.resolve(__dirname, 'public', 'styles.css')
-    }
-    // {
-    //     name: 'main.css',
-    //     path: Path.resolve(__dirname, 'public', 'main.css')
-    // }
-  ]
+  private styles: Asset[] = []
 
   path(path: string) {
     this.config.path = path
@@ -292,14 +283,24 @@ class CmsPlugin {
   private userResource() {
     return resource(this.config.userResource)
       .fields([
-        text('Full name').searchable().nullable().sortable(),
+        text('First name')
+          .searchable()
+          .nullable()
+          .sortable()
+          .creationRules('required'),
+        text('Last name')
+          .searchable()
+          .nullable()
+          .sortable()
+          .creationRules('required'),
         text('Password').rules('required', 'min:12').nullable(),
         text('Email')
           .unique()
           .searchable()
           .sortable()
           .notNullable()
-          .rules('required', 'email', 'unique:email'),
+          .creationRules('required', 'email', 'unique:email')
+          .updateRules('unique:email'),
         boolean('Active')
           .nullable()
           .sortable()
@@ -308,7 +309,7 @@ class CmsPlugin {
           .rules('boolean'),
         belongsToMany(this.config.roleResource).rules('array')
       ])
-      .displayField('Full name')
+      .displayField('First name')
       .secondaryDisplayField('Email')
       .hideOnApi()
       .hideFromNavigation()
@@ -367,44 +368,6 @@ class CmsPlugin {
     return this
   }
 
-  private setAuth: RequestHandler = async (request, response, next) => {
-    const { manager, session } = request
-
-    try {
-      const user: any = await manager.findOne(
-        this.resources.user.data.pascalCaseName,
-        {
-          // @ts-ignore
-          id: session.user?.id
-        },
-        {
-          populate: [this.getRolesAndPermissionsNames()]
-        }
-      )
-
-      if (user) {
-        user[this.resources.permission.data.camelCaseNamePlural] = user[
-          this.getRoleUserKey()
-        ]
-          ?.toJSON()
-          .reduce(
-            (acc: string[], role: any) => [
-              ...acc,
-              ...(role as any)[this.getPermissionUserKey()].map(
-                (p: any) => p.slug
-              )
-            ],
-            []
-          )
-      }
-
-      // @ts-ignore
-      request.user = user
-    } catch (error) {}
-
-    next()
-  }
-
   plugin() {
     return plugin('CMS')
       .id('cms')
@@ -412,7 +375,7 @@ class CmsPlugin {
         path: this.config.path
       })
       .register(({ script, style, extendResources, databaseConfig }) => {
-        this.scripts.forEach(s => script(s.name, s.path))
+        this.scripts.forEach(s => script(s.name, s.path, s.chunk))
         this.styles.forEach(s => style(s.name, s.path))
 
         databaseConfig.entities = [
@@ -509,8 +472,12 @@ class CmsPlugin {
                 if (user === false) {
                   return response.status(422).json([
                     {
-                      message: 'The full name is required.',
-                      field: 'fullName'
+                      message: 'The first name is required.',
+                      field: 'firstName'
+                    },
+                    {
+                      message: 'The last name is required.',
+                      field: 'lastName'
                     },
                     {
                       message: 'The email is required.',
@@ -619,7 +586,7 @@ class CmsPlugin {
           response.send(
             Mustache.render(indexFileContent, {
               styles: request.styles,
-              scripts: request.scripts,
+              scripts: request.scripts.filter(script => !script.chunk), // Only non-chunk scripts will be mounted. The chunked scripts will be fetched by webpack during load time.
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({

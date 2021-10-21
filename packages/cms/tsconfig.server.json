@@ -27,6 +27,7 @@
     "evergreen",
     "components",
     "main.tsx",
-    "core.ts"
+    "core.ts",
+    "load-icons.ts"
   ]
 }

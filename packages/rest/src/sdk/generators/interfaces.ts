@@ -115,7 +115,7 @@ export enum SortQueryInput {
 }
 export interface PaginationOptions {
 	page: number
-	per_page: number
+	perPage: number
 }
 
 export interface FindResponse<Resource> {
@@ -127,8 +127,8 @@ export interface PaginatedResponse<Resource> {
 	meta: {
 		total: number
 		page: number
-		per_page: number
-		page_count: number
+		perPage: number
+		pageCount: number
     }
 }
 `

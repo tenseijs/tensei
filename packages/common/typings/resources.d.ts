@@ -283,13 +283,13 @@ declare module '@tensei/common/resources' {
     ): Promise<any>
     validateRequestQuery(
       {
-        per_page: perPage,
+        perPage,
         page,
         fields,
         search,
         filter,
         with: withRelationships,
-        no_pagination: noPagination
+        noPagination
       }: Request['query'],
       resource?: ResourceContract
     ): Promise<any>
@@ -371,13 +371,13 @@ declare module '@tensei/common/resources' {
     ): Promise<any>
     validateRequestQuery(
       {
-        per_page: perPage,
+        perPage,
         page,
         fields,
         search,
         filter,
         with: withRelationships,
-        no_pagination: noPagination
+        noPagination
       }: Request['query'],
       resource?: ResourceContract
     ): Promise<any>

@@ -5,6 +5,11 @@ mix
     externals: {
       react: 'window.React',
       '@tensei/components': 'window.Tensei.lib'
+    },
+    resolve: {
+      alias: {
+        moment: 'dayjs'
+      }
     }
   })
   .js('./client/index.js', 'build/public/app.js')

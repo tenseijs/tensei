@@ -49,7 +49,11 @@ declare module '@tensei/common/plugins' {
     setPluginConfig: (name: string, config: any) => void
     gql: (types: string | TemplateStringsArray) => DocumentNode
     style: (name: Asset['name'], path: Asset['path']) => void
-    script: (name: Asset['name'], path: Asset['path']) => void
+    script: (
+      name: Asset['name'],
+      path: Asset['path'],
+      chunk?: Asset['chunk']
+    ) => void
     extendGraphQlQueries: (queries: GraphQlQueryContract[]) => any
     extendGraphQlTypeDefs: (typeDefs: (string | DocumentNode)[]) => any
     extendRoutes: (queries: RouteContract[]) => any
