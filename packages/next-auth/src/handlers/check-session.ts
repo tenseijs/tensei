@@ -31,8 +31,8 @@ export default async function handleCheckSession(
 
   request.session.set('auth', {
     refresh_token: apiResponse.data.data.refresh_token,
-    access_token_expires_at: getAccessTokenExpiryTimeStamp(
-      apiResponse.data.data.expires_in
+    accessTokenExpiresAt: getAccessTokenExpiryTimeStamp(
+      apiResponse.data.data.expiresIn
     )
   })
 

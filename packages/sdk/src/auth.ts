@@ -30,16 +30,16 @@ export interface TokenStorage {
 }
 
 export interface TokenStorageValue {
-  access_token_expires_in: number
-  refresh_token: string
-  current_time: string
+  accessTokenExpiresIn: number
+  refreshToken: string
+  currentTime: string
 }
 
 export interface AccessTokenStorageValue {
-  access_token_expires_at: string
+  accessTokenExpiresAt: string
   accessToken: string
-  current_time: string
-  expires_in: number
+  currentTime: string
+  expiresIn: number
 }
 
 export interface DataResponse<Response> {
@@ -49,8 +49,8 @@ export interface DataResponse<Response> {
 export interface AuthResponse {
   customer: any
   accessToken: string
-  expires_in: number
-  refresh_token: string
+  expiresIn: number
+  refreshToken: string
 }
 
 export type ResetPasswordResponse = true
@@ -149,7 +149,7 @@ export class AuthAPI {
 
     this.auth_response = {
       accessToken: session.accessToken,
-      expires_in: session.expires_in
+      expires_in: session.expiresIn
     } as any
 
     this.updateUser(response.data.data)
@@ -212,7 +212,7 @@ export class AuthAPI {
     }
 
     try {
-      const response = await this.refreshToken({ token: session.refresh_token })
+      const response = await this.refreshToken({ token: session.refreshToken })
 
       this.auth_response = response.data.data
       this.invokeAuthChange()
@@ -258,14 +258,14 @@ export class AuthAPI {
     const token_expires_at = new Date()
 
     token_expires_at.setSeconds(
-      token_expires_at.getSeconds() + this.auth_response.expires_in
+      token_expires_at.getSeconds() + this.auth_response.expiresIn
     )
 
     this.storage.set<AccessTokenStorageValue>({
-      current_time: new Date().toISOString(),
-      expires_in: this.auth_response.expires_in,
+      currentTime: new Date().toISOString(),
+      expiresIn: this.auth_response.expiresIn,
       accessToken: this.auth_response.accessToken,
-      access_token_expires_at: token_expires_at.toISOString()
+      accessTokenExpiresAt: token_expires_at.toISOString()
     })
   }
 
@@ -281,19 +281,16 @@ export class AuthAPI {
     }
 
     // if refresh tokens are not turned on on the API:
-    if (
-      !this.auth_response?.refresh_token ||
-      !this.auth_response?.accessToken
-    ) {
+    if (!this.auth_response?.refreshToken || !this.auth_response?.accessToken) {
       return
     }
 
-    const current_time = new Date().toISOString()
+    const currentTime = new Date().toISOString()
 
     this.storage.set<TokenStorageValue>({
-      current_time,
-      refresh_token: this.auth_response.refresh_token,
-      access_token_expires_in: this.auth_response.expires_in
+      currentTime,
+      refreshToken: this.auth_response.refreshToken,
+      accessTokenExpiresIn: this.auth_response.expiresIn
     })
 
     if (this.session_interval) {
@@ -303,7 +300,7 @@ export class AuthAPI {
     // Trigger a token refresh 10 seconds before the current access token expires.
     this.session_interval = setInterval(() => {
       this.silentLogin()
-    }, (this.auth_response.expires_in - 10) * 1000)
+    }, (this.auth_response.expiresIn - 10) * 1000)
   }
 
   refreshToken(payload: { token: string }) {
@@ -315,16 +312,16 @@ export class AuthAPI {
   }
 
   private isSessionValid(session: AccessTokenStorageValue) {
-    const token_expires_at = new Date(session.access_token_expires_at)
+    const token_expires_at = new Date(session.accessTokenExpiresAt)
 
     return token_expires_at > new Date()
   }
 
   isRefreshSessionValid(session: TokenStorageValue) {
-    const token_created_at = new Date(session.current_time)
+    const token_created_at = new Date(session.currentTime)
 
     token_created_at.setSeconds(
-      token_created_at.getSeconds() + session.access_token_expires_in
+      token_created_at.getSeconds() + session.accessTokenExpiresIn
     )
 
     return token_created_at > new Date()

@@ -8,9 +8,9 @@ export const getAuthUserResponseInterface = (
   authConfig: AuthPluginConfig
 ) => {
   return `
-    export interface DataResponse<Response> {
-        data: Response
-    }
+    export type DataResponse<Response> = AxiosResponse<{
+      data: Response
+    }>
 
     export interface AuthResponse {
         ${userResource.data.snakeCaseName}: ${userResource.data.pascalCaseName}

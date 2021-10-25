@@ -194,7 +194,7 @@ class Rest {
                 .filter(
                   field =>
                     !field.showHideFieldFromApi.hideOnCreateApi &&
-                    !['id', '_id', 'created_at', 'updated_at'].includes(
+                    !['id', '_id', 'createdAt', 'updatedAt'].includes(
                       field.databaseField
                     )
                 )

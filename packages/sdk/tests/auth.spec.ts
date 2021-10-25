@@ -96,9 +96,9 @@ test('can login with access tokens', async () => {
   const storage = new LocalStorageStore('___tensei__session___')
 
   expect(storage.get()).toEqual({
-    current_time: expect.any(String),
-    access_token_expires_at: expect.any(String),
-    expires_in: responsePayload.data.data.expires_in,
+    currentTime: expect.any(String),
+    accessTokenExpiresAt: expect.any(String),
+    expiresIn: responsePayload.data.data.expires_in,
     accessToken: responsePayload.data.data.accessToken
   })
 })

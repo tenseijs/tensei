@@ -13,7 +13,7 @@
     "release": "./scripts/release.sh",
     "commit": "yarn git-cz",
     "setup": "yarn && yarn build && cd examples/blog && yarn && cd ../typescript && yarn",
-    "example": "wsrun -p '@examples/typescript' && yarn example:dev",
+    "example": "wsrun -p '@examples/typescript' -c example:dev",
     "cms:dev": "wsrun -p '@tensei/cms' -c dev-client",
     "cms:dev:server": "wsrun -p '@tensei/cms' -c dev",
     "cms:build": "wsrun -p '@tensei/cms' -c build",

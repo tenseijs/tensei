@@ -719,7 +719,7 @@ export class Auth implements AuthContract {
                 : resource.data.noTimestamps
                 ? false
                 : {
-                    created_at: Dayjs().add(1, 'month').toDate()
+                    createdAt: Dayjs().add(1, 'month').toDate()
                   }
             )
         ])
