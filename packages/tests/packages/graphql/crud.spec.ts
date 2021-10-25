@@ -487,7 +487,8 @@ test('generates indexResources resolvers for all registered resources', async ()
             }
             user {
               id
-              fullName
+              firstName
+              lastName
               postsCount
               posts(offset: 0, limit: 1) {
                 id
@@ -604,7 +605,8 @@ test('generates indexResources resolvers for all registered resources', async ()
             }
             user {
               id
-              fullName
+              firstName
+              lastName
               postsCount
               posts(offset: 0, limit: 1) {
                 id

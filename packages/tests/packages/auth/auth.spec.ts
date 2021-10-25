@@ -66,7 +66,7 @@ test('Can enable email verification for auth', async () => {
       }
     `,
     variables: {
-      name: user.fullName,
+      name: user.firstName,
       email: user.email,
       password: user.password
     }

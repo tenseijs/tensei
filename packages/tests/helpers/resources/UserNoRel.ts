@@ -2,7 +2,8 @@ import { text, hasMany, resource } from '@tensei/common'
 
 export default resource('User')
   .fields([
-    text('Full name').searchable().rules('required'),
+    text('First name').searchable().rules('required'),
+    text('Last name').searchable().rules('required'),
     text('Email')
       .unique()
       .searchable()
@@ -21,5 +22,5 @@ export default resource('User')
       .notNullable(),
     hasMany('Pizza')
   ])
-  .displayField('Full name')
+  .displayField('First name')
   .perPageOptions([2, 5, 10])
