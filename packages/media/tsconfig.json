@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
     "module": "commonjs",
-    "declaration": true,
-    "outDir": "./build",
-    "strict": true,
-    "baseUrl": "./server",
+    "target": "es5",
+    "lib": ["es6", "dom"],
+    "sourceMap": true,
+    "allowJs": false,
+    "jsx": "react",
+    "declaration": false,
+    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["@types/jest"]
+    "forceConsistentCasingInFileNames": false,
+    "allowSyntheticDefaultImports": true
   },
-  "exclude": ["__tests__", "build"]
+  "exclude": ["server/"]
 }
