@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.8](https://github.com/tenseijs/tensei/compare/v0.9.7...v0.9.8) (2021-10-25)
+
+
+### Bug Fixes
+
+* **next-auth:** fix next auth to use new sdk updates ([5c5275a](https://github.com/tenseijs/tensei/commit/5c5275a74dd8ffa1c5f537382dd982b8ec2153c1))
+* **sdk:** fix broken types with DataResponse type ([5d6843e](https://github.com/tenseijs/tensei/commit/5d6843e2d6d6fa0f3aea2bcd2dd7664d6c313805))
+
+
+
+
+
 ## [0.9.7](https://github.com/tenseijs/tensei/compare/v0.9.6...v0.9.7) (2021-10-08)
 
 **Note:** Version bump only for package @tensei/sdk

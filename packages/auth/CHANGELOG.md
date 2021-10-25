@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.8](https://github.com/tenseijs/tensei/compare/v0.9.7...v0.9.8) (2021-10-25)
+
+
+### Bug Fixes
+
+* **sdk:** fix broken types with DataResponse type ([5d6843e](https://github.com/tenseijs/tensei/commit/5d6843e2d6d6fa0f3aea2bcd2dd7664d6c313805))
+
+
+
+
+
 ## [0.9.7](https://github.com/tenseijs/tensei/compare/v0.9.6...v0.9.7) (2021-10-08)
 
 
