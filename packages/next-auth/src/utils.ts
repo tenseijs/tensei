@@ -10,7 +10,7 @@ export type NextIronHandler = (
 ) => void | Promise<void>
 
 export const prepareAuthData = (payload: any) => {
-  const { refresh_token, ...rest } = payload
+  const { refreshToken, ...rest } = payload
 
   return rest
 }

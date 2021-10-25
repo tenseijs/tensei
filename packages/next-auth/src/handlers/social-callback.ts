@@ -19,7 +19,7 @@ export default async function handleSocialCallback(
   })
 
   request.session.set('auth', {
-    refreshToken: apiResponse.data.data.refresh_token,
+    refreshToken: apiResponse.data.data.refreshToken,
     accessTokenExpiresAt: getAccessTokenExpiryTimeStamp(
       apiResponse.data.data.expiresIn
     )

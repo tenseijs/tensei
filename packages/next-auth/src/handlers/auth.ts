@@ -1,6 +1,3 @@
-import { withIronSession } from 'next-iron-session'
-import { NextApiHandler, NextApiResponse } from 'next'
-
 import { NextIronHandler, wrapErrorHandling, withSession } from '../utils'
 
 import handleLogin from './login'

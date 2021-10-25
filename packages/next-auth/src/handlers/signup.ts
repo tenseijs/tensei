@@ -21,7 +21,7 @@ export default async function handleSignup(
   })
 
   request.session.set('auth', {
-    refresh_token: apiResponse.data.data.refresh_token,
+    refreshToken: apiResponse.data.data.refreshToken,
     accessTokenExpiresAt: getAccessTokenExpiryTimeStamp(
       apiResponse.data.data.expiresIn
     )

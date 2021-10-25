@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
   useContext,
-  useRef,
+  useRef
 } from 'react'
 
 import { getLoginUrl } from '../utils'
@@ -14,8 +14,8 @@ const UserContextDefaultData = {
   setAuth() {},
   logout() {},
   config: {
-    loginPath: getLoginUrl(),
-  },
+    loginPath: getLoginUrl()
+  }
 }
 
 interface AuthConfig {
@@ -25,7 +25,7 @@ interface AuthConfig {
 interface UserContextData {
   // @ts-ignore These types will be available after the tensei-sdk generate command is run by the developer.
   user?: import('@tensei/sdk').User
-  expires_in?: number
+  expiresIn?: number
   accessToken?: string
   loading: boolean
   setAuth: (auth: UserContextData) => void
@@ -45,13 +45,13 @@ export const UserProvider: FunctionComponent = ({ children }) => {
 
   const checkSession = () => {
     fetch('/api/auth/check-session')
-      .then((response) => response.json())
-      .then((data) => {
+      .then(response => response.json())
+      .then(data => {
         // Set an interval to dynamically call the API and call /api/auth/check-session
 
         setAuth({
           ...auth,
-          ...data,
+          ...data
         })
         setLoading(false)
       })
@@ -63,8 +63,8 @@ export const UserProvider: FunctionComponent = ({ children }) => {
     setAuth({
       ...auth,
       accessToken: undefined,
-      expires_in: undefined,
-      user: undefined,
+      expiresIn: undefined,
+      user: undefined
     })
   }
 
@@ -72,7 +72,7 @@ export const UserProvider: FunctionComponent = ({ children }) => {
     checkSession()
   }, [])
 
-  const delay = auth?.expires_in ? (auth.expires_in - 10) * 1000 : 60 * 14 * 1000
+  const delay = auth?.expiresIn ? (auth.expiresIn - 10) * 1000 : 60 * 14 * 1000
 
   useInterval(
     () => {
@@ -89,7 +89,7 @@ export const UserProvider: FunctionComponent = ({ children }) => {
         ...auth,
         loading,
         setAuth,
-        logout,
+        logout
       }}
     >
       {children}

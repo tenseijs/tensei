@@ -149,7 +149,7 @@ export class AuthAPI {
 
     this.auth_response = {
       accessToken: session.accessToken,
-      expires_in: session.expiresIn
+      expiresIn: session.expiresIn
     } as any
 
     this.updateUser(response.data.data)

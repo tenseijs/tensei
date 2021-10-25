@@ -12,7 +12,7 @@ export default async function handleCheckSession(
 ) {
   const auth = request.session.get('auth')
 
-  if (!auth || !auth.refresh_token) {
+  if (!auth || !auth.refreshToken) {
     return response.status(200).json({})
   }
 
@@ -20,7 +20,7 @@ export default async function handleCheckSession(
 
   try {
     apiResponse = await tensei.auth().refreshToken({
-      token: auth.refresh_token
+      token: auth.refreshToken
     })
   } catch (error) {
     // Terminate the existing session.
@@ -30,7 +30,7 @@ export default async function handleCheckSession(
   }
 
   request.session.set('auth', {
-    refresh_token: apiResponse.data.data.refresh_token,
+    refreshToken: apiResponse.data.data.refreshToken,
     accessTokenExpiresAt: getAccessTokenExpiryTimeStamp(
       apiResponse.data.data.expiresIn
     )
