@@ -72,7 +72,7 @@ export const fakePost = () => ({
 })
 
 export const getDatabaseCredentials = () => {
-  const databaseType = (process.env.DATABASE_TYPE || 'mysql') as any
+  const databaseType = (process.env.DATABASE_TYPE || 'sqlite') as any
 
   const config: DatabaseConfiguration = {
     type: databaseType,

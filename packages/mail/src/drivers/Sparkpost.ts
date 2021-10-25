@@ -13,11 +13,11 @@ import nodemailer from 'nodemailer'
 import { Config } from '@tensei/common'
 
 import {
-	MessageNode,
-	SparkPostConfig,
-	SparkPostResponse,
-	SparkPostRuntimeConfig,
-	SparkPostDriverContract,
+  MessageNode,
+  SparkPostConfig,
+  SparkPostResponse,
+  SparkPostRuntimeConfig,
+  SparkPostDriverContract
 } from '@tensei/mail'
 
 import { SparkPostTransport } from '../transports/SparkPost'
@@ -26,27 +26,30 @@ import { SparkPostTransport } from '../transports/SparkPost'
  * Ses driver to send email using ses
  */
 export class SparkPostDriver implements SparkPostDriverContract {
-	constructor(private config: SparkPostConfig, private logger: Config['logger']) {}
+  constructor(
+    private config: SparkPostConfig,
+    private logger: Config['logger']
+  ) {}
 
-	/**
-	 * Send message
-	 */
-	public async send(
-		message: MessageNode,
-		config?: SparkPostRuntimeConfig
-	): Promise<SparkPostResponse> {
-		const transporter = nodemailer.createTransport(
-			new SparkPostTransport(
-				{
-					...this.config,
-					...config,
-				},
-				this.logger
-			)
-		)
+  /**
+   * Send message
+   */
+  public async send(
+    message: MessageNode,
+    config?: SparkPostRuntimeConfig
+  ): Promise<SparkPostResponse> {
+    const transporter = nodemailer.createTransport(
+      new SparkPostTransport(
+        {
+          ...this.config,
+          ...config
+        },
+        this.logger
+      )
+    )
 
-		return transporter.sendMail(message as any)
-	}
+    return transporter.sendMail(message as any)
+  }
 
-	public async close() {}
+  public async close() {}
 }

@@ -1,22 +1,22 @@
 {
-    "name": "@tensei/social-auth",
-    "version": "0.9.7",
-    "main": "./src/index.js",
-    "license": "MIT",
-    "files": [
-        "src/"
-    ],
-    "publishConfig": {
-        "access": "public"
-    },
-    "dependencies": {
-        "@purest/providers": "^1.0.1",
-        "@types/express-session": "^1.17.3",
-        "express-session": "^1.17.1",
-        "express-session-mikro-orm": "^0.9.7",
-        "grant": "^5.4.4",
-        "purest": "^3.1.0",
-        "request": "^2.88.2"
-    },
-    "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
+  "name": "@tensei/social-auth",
+  "version": "0.9.7",
+  "main": "./src/index.js",
+  "license": "MIT",
+  "files": [
+    "src/"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@purest/providers": "^1.0.1",
+    "@types/express-session": "^1.17.3",
+    "express-session": "^1.17.1",
+    "express-session-mikro-orm": "^0.9.7",
+    "grant": "^5.4.4",
+    "purest": "^3.1.0",
+    "request": "^2.88.2"
+  },
+  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
 }

@@ -1,61 +1,61 @@
 {
-	"name": "@tensei/mail",
-	"version": "0.9.7",
-	"description": "Mail provider for @tensei (derived from @adonisjs mail provider)",
-	"main": "build/src/index.js",
-	"files": [
-		"build/src",
-		"build/types"
-	],
-	"typings": "./build/types/index.d.ts",
-	"scripts": {
-		"dev": "tsc --watch",
-		"test": "node japaFile.js",
-		"build": "rimraf build && tsc && yarn copy:files",
-		"format": "prettier --write .",
-		"copy:files": "copyfiles src/templates/* build/"
-	},
-	"keywords": [
-		"tenseijs",
-		"mailer",
-		"node-mailer",
-		"adonisjs"
-	],
-	"author": "virk",
-	"license": "MIT",
-	"devDependencies": {
-		"@adonisjs/require-ts": "^1.1.1",
-		"@poppinss/dev-utils": "^1.0.11",
-		"@types/node": "^14.14.10",
-		"aws-sdk": "^2.799.0",
-		"commitizen": "^4.2.2",
-		"copyfiles": "^2.4.1",
-		"japa": "^3.1.1",
-		"mrm": "^2.5.13",
-		"np": "^7.0.0",
-		"prettier": "^2.2.1",
-		"typescript": "^4.2.4"
-	},
-	"dependencies": {
-		"@poppinss/colors": "^2.0.3",
-		"@poppinss/manager": "^3.0.8",
-		"@poppinss/utils": "^2.5.9",
-		"@types/nodemailer": "^6.4.0",
-		"edge-supercharged": "^1.1.0",
-		"edge.js": "^3.5.1",
-		"fastq": "^1.9.0",
-		"get-stream": "^6.0.0",
-		"got": "^11.8.0",
-		"multi-part": "^3.0.0",
-		"nodemailer": "^6.4.16"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/tenseijs/tensei.git"
-	},
-	"bugs": {
-		"url": "https://github.com/tenseijs/tensei/issues"
-	},
-	"homepage": "https://github.com/tenseijs/tensei#readme",
-	"gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
+  "name": "@tensei/mail",
+  "version": "0.9.7",
+  "description": "Mail provider for @tensei (derived from @adonisjs mail provider)",
+  "main": "build/src/index.js",
+  "files": [
+    "build/src",
+    "build/types"
+  ],
+  "typings": "./build/types/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch",
+    "test": "node japaFile.js",
+    "build": "rimraf build && tsc && yarn copy:files",
+    "format": "prettier --write .",
+    "copy:files": "copyfiles src/templates/* build/"
+  },
+  "keywords": [
+    "tenseijs",
+    "mailer",
+    "node-mailer",
+    "adonisjs"
+  ],
+  "author": "virk",
+  "license": "MIT",
+  "devDependencies": {
+    "@adonisjs/require-ts": "^1.1.1",
+    "@poppinss/dev-utils": "^1.0.11",
+    "@types/node": "^14.14.10",
+    "aws-sdk": "^2.799.0",
+    "commitizen": "^4.2.2",
+    "copyfiles": "^2.4.1",
+    "japa": "^3.1.1",
+    "mrm": "^2.5.13",
+    "np": "^7.0.0",
+    "prettier": "^2.2.1",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@poppinss/colors": "^2.0.3",
+    "@poppinss/manager": "^3.0.8",
+    "@poppinss/utils": "^2.5.9",
+    "@types/nodemailer": "^6.4.0",
+    "edge-supercharged": "^1.1.0",
+    "edge.js": "^3.5.1",
+    "fastq": "^1.9.0",
+    "get-stream": "^6.0.0",
+    "got": "^11.8.0",
+    "multi-part": "^3.0.0",
+    "nodemailer": "^6.4.16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenseijs/tensei.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tenseijs/tensei/issues"
+  },
+  "homepage": "https://github.com/tenseijs/tensei#readme",
+  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
 }

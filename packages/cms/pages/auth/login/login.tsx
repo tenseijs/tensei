@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { AuthLayout } from '@components/auth/layout'
+import { AuthLayout } from '../../components/auth/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'

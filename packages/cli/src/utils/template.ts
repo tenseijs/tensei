@@ -53,7 +53,11 @@ export function template(
  * Loads template file from the disk and process it contents
  * using the [[template]] method
  */
-export function templateFromFile(file: string, data: object, isMustache: boolean): string {
+export function templateFromFile(
+  file: string,
+  data: object,
+  isMustache: boolean
+): string {
   const contents = readFileSync(file, 'utf8')
   return template(contents, data, file, isMustache)
 }

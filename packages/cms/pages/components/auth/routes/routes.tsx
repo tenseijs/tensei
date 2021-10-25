@@ -1,8 +1,8 @@
 import React from 'react'
 import { Route } from 'react-router-dom'
 
-import { Login } from '@pages/auth/login'
-import { Register } from '@pages/auth/register'
+import { Login } from '../../../auth/login'
+import { Register } from '../../../auth/register'
 
 export const AuthRoutes: React.FunctionComponent = () => {
   return (

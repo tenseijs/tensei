@@ -241,7 +241,8 @@ test('emits created event after resource is inserted', async () => {
   expect(response.status).toBe(201)
   expect(response.body.data).toEqual({
     id: expect.anything(),
-    fullName: fake_user.fullName,
+    firstName: fake_user.firstName,
+    lastName: fake_user.lastName,
     password: fake_user.password,
     email: fake_user.email,
     posts: [],
@@ -282,11 +283,13 @@ test('emits updated event after resource is updated', async () => {
 
   const response = await client.patch(`/api/users/${user.id}`).send({
     email: updatedUserPayload.email,
-    fullName: updatedUserPayload.fullName
+    firstName: updatedUserPayload.firstName,
+    lastName: updatedUserPayload.lastName
   })
 
   const expectedPayload: any = {
-    fullName: updatedUserPayload.fullName,
+    firstName: updatedUserPayload.firstName,
+    lastName: updatedUserPayload.lastName,
     password: user.password,
     email: updatedUserPayload.email
   }

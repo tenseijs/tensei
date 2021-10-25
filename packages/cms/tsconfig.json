@@ -6,7 +6,6 @@
     "sourceMap": true,
     "allowJs": false,
     "jsx": "react",
-    "baseUrl": "./",
     "declaration": false,
     "moduleResolution": "node",
     "noImplicitReturns": true,

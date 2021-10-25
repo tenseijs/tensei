@@ -1,8 +1,8 @@
 import React from 'react'
 import { Route } from 'react-router-dom'
 
-import { Home } from '@pages/home'
-import { Resource } from '@pages/resources/resource'
+import { Home } from '../../../home'
+import { Resource } from '../../../resources/resource'
 
 export const DashboardRoutes: React.FunctionComponent = () => {
   return (
@@ -11,7 +11,7 @@ export const DashboardRoutes: React.FunctionComponent = () => {
         component={Resource}
         path={window.Tensei.getPath('resources/:resource')}
       />
-      <Route component={Home} path={window.Tensei.getPath('')} />
+      <Route exact component={Home} path={window.Tensei.getPath('')} />
     </>
   )
 }
