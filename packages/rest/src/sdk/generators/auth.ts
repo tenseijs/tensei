@@ -15,8 +15,8 @@ export const getAuthUserResponseInterface = (
     export interface AuthResponse {
         ${userResource.data.snakeCaseName}: ${userResource.data.pascalCaseName}
         ${authConfig.httpOnlyCookiesAuth ? '' : 'accessToken: string'}
-        ${authConfig.httpOnlyCookiesAuth ? '' : 'expires_in: number'}
-        ${authConfig.enableRefreshTokens ? 'refresh_token: string' : ''}
+        ${authConfig.httpOnlyCookiesAuth ? '' : 'expiresIn: number'}
+        ${authConfig.enableRefreshTokens ? 'refreshToken: string' : ''}
     }
 
     export type ResetPasswordResponse = true
@@ -77,7 +77,7 @@ export const generateAuthTypes = (
         export interface ${interfaces.LoginInput} {
             email: string
             password: string
-            two_factor_token?: string
+            twoFactorToken?: string
         }
 
         ${
@@ -119,20 +119,20 @@ export const generateAuthTypes = (
         }
 
         export interface TokenStorageValue {
-            access_token_expires_in: number
-            refresh_token: string
-            current_time: string
+            accessTokenExpiresIn: number
+            refreshToken: string
+            currentTime: string
         }
 
         export interface AccessTokenStorageValue {
-            access_token_expires_at: string
+            accessTokenExpiresAt: string
             accessToken: string
-            current_time: string
-            expires_in: number
+            currentTime: string
+            expiresIn: number
         }
 
         export interface ConfirmEmailInput {
-            email_verification_token: string
+            emailVerificationToken: string
         }
 
         export interface TwoFactorInput {
@@ -184,8 +184,10 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          * Login an existing ${authConfig.userResource.toLowerCase()}.
          *      Example:
          *          await tensei.auth().login({
-         *              email: 'hey@tenseijs.com',
-         *              password: 'password'
+         *              object: {
+         *                email: 'hey@tenseijs.com',
+         *                password: 'password'
+         *              }
          *          })
          *
          **/

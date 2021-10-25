@@ -80,8 +80,8 @@ export interface AuthPluginConfig {
     roles: string[]
     email: string
     password: string
-    email_verified_at?: string
-    email_verification_token?: string | null
+    emailVerifiedAt?: string
+    emailVerificationToken?: string | null
 
     [key: string]: any
   }>
@@ -107,11 +107,11 @@ export interface UserEntity extends AnyEntity {
   permissions: string[]
 
   public: boolean
-  two_factor_secret?: string
-  two_factor_enabled?: boolean
+  twoFactorSecret?: string
+  twoFactorEnabled?: boolean
 
-  email_verified_at?: string
-  email_verification_token?: string
+  emailVerifiedAt?: string
+  emailVerificationToken?: string
 }
 
 export type AuthData = { email: string; password: string; name?: string }

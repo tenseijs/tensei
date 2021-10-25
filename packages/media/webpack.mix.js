@@ -3,15 +3,8 @@ const mix = require('laravel-mix')
 mix
   .webpackConfig({
     externals: {
-      react: 'window.React',
-      '@tensei/components': 'window.Tensei.lib'
-    },
-    resolve: {
-      alias: {
-        moment: 'dayjs'
-      }
+      react: 'window.React'
     }
   })
-  .js('./client/index.js', 'build/public/app.js')
-  .postCss('./client/app.css', 'build/public/app.css', [require('tailwindcss')])
+  .ts('client/index.tsx', 'build/public/app.js')
   .react()

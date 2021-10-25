@@ -6,8 +6,8 @@ import './load-icons'
 import { ThemeProvider as StyledThemeProvider } from 'styled-components'
 
 import '@tensei/eui/dist/eui_theme_tensei_light.css'
-import { AuthRoutes } from '@components/auth/routes'
-import { DashboardRoutes } from '@components/dashboard/routes'
+import { AuthRoutes } from './pages/components/auth/routes'
+import { DashboardRoutes } from './pages/components/dashboard/routes'
 import { useEuiTheme, EuiThemeProvider } from '@tensei/eui/lib/services/theme'
 
 interface ThemeExtensions {

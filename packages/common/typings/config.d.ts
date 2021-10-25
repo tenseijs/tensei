@@ -571,6 +571,8 @@ declare module '@tensei/common/config' {
   const route: (name?: string) => RouteContract
   const Utils: UtilsContract
 
+  export type TENSEI_MODE = 'default' | 'cli' | 'serverless'
+
   export interface TenseiContract {
     ctx: Config
     app: Application

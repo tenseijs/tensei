@@ -36,7 +36,7 @@ import {
   PluginSetupConfig,
   PluginSetupFunction,
   TENSEI_MODE
-} from '@tensei/core'
+} from '@tensei/common'
 
 export enum TENSEI_MODES {
   cli = 'cli',
