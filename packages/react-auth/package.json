@@ -14,7 +14,7 @@
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "dev": "tsc --watch",
     "test": "jest --verbose --runInBand --forceExit",
-    "build": "rimraf dist/ && tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@tensei/sdk": "^0.9.8"

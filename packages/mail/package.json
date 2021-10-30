@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "test": "node japaFile.js",
-    "build": "rimraf build && tsc && yarn copy:files",
+    "build": "tsc && yarn copy:files",
     "format": "prettier --write .",
     "copy:files": "copyfiles src/templates/* build/"
   },

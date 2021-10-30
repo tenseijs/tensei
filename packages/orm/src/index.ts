@@ -84,7 +84,7 @@ export class Orm {
               .join('\n')}
             export interface OrmContract {
                 ${this.ctx.resources.map(resource => {
-                  return `${resource.data.camelCaseNamePlural}: ${resource.data.pascalCaseName}Repository`
+                  return `${resource.data.camelCaseNamePlural}: () => ${resource.data.pascalCaseName}Repository`
                 })}
             }
         }

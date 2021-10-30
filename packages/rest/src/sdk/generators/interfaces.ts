@@ -118,19 +118,19 @@ export interface PaginationOptions {
 	perPage: number
 }
 
-export interface FindResponse<Resource> {
+export type FindResponse<Resource> =  AxiosResponse<{
 	data: Resource
-}
+}>
 
-export interface PaginatedResponse<Resource> {
+export type PaginatedResponse<Resource>  = AxiosResponse<{
 	data: Resource[]
 	meta: {
 		total: number
 		page: number
 		perPage: number
 		pageCount: number
-    }
-}
+  }
+}>
 `
 }
 

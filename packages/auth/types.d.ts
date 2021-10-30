@@ -1,3 +1,5 @@
+export * from './build'
+
 declare module '@tensei/orm' {
   import { TeamModel, MembershipModel } from '@tensei/orm'
 
@@ -8,5 +10,7 @@ declare module '@tensei/orm' {
     teamPermissions: (team: TeamModel) => Promise<string[]>
     teamMembership: (team: TeamModel) => Promise<MembershipModel>
     hasTeamPermission: (team: TeamModel, permission: string) => Promise<boolean>
+
+    // Roles and permissions
   }
 }

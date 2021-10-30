@@ -18,7 +18,7 @@
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "dev": "tsc --watch",
     "test": "jest --verbose --runInBand --forceExit",
-    "build": "rimraf build/ && siroc build -i src/index.ts -o build/index.js -f cjs && node scripts/build-types.js"
+    "build": "siroc build -i src/index.ts -o build/index.js -f cjs && node scripts/build-types.js"
   },
   "dependencies": {
     "@types/axios": "^0.14.0",

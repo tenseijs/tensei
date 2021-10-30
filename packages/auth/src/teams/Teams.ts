@@ -184,17 +184,24 @@ export class Teams {
       }
 
       input InviteTeamMemberInput {
+        ### A list of all permissions the new team meber will have.
         permissions: [TeamPermissionString]
+
+        ### The email of invited member. This has to be the email of that user in the application.
         email: String!
       }
 
       extend type Mutation {
+        ### Invite an existing user to join the team
         inviteTeamMember(teamId: ID!, object: InviteTeamMemberInput): Boolean!
       }
 
       extend type Query {
+        # Get all teams the authenticated user belongs to
         allTeams: [Team]
+        # Get a list of all permissions this user has on the currently selected team
         teamPermissions: [TeamPermission]
+        # Get all memberships of a specific team. This includes information about all the team members.
         teamMemberships(teamId: ID!): [Membership]
       }
     `
@@ -208,7 +215,8 @@ export class Teams {
     return [
       graphQlQuery('Get team permissions')
         .path('teamPermissions')
-        .authorize(({ authUser, team }) => authUser.belongsToTeam(team))
+        .description(`Get a list of all existing team permissions.`)
+        .authorize(({ authUser, team }) => authUser?.belongsToTeam(team))
         .query()
         .handle(async (_, args, ctx, info) => {
           return this.auth.config.teamPermissions.map(
@@ -218,7 +226,8 @@ export class Teams {
       graphQlQuery('Invite team member')
         .path('inviteTeamMember')
         .mutation()
-        .authorize(({ authUser, team }) => authUser.ownsTeam(team))
+        .description('Invite an existing user to join a team')
+        .authorize(({ authUser, team }) => authUser?.ownsTeam(team))
         .middleware(findTeamQueryMiddleware)
         .handle(async (_, args, ctx, info) => {
           const permissions = ctx?.body?.object?.permissions?.map(
@@ -232,7 +241,7 @@ export class Teams {
 
           return true
         }),
-      graphQlQuery('All teams for a user')
+      graphQlQuery('Get all teams for a user')
         .path('allTeams')
         .authorize(({ authUser }) => !!authUser)
         .handle(async (_, args, ctx, info) => {
@@ -255,7 +264,7 @@ export class Teams {
       graphQlQuery('Get team memberships')
         .path('teamMemberships')
         .authorize(
-          async ({ authUser, team }) => await authUser.belongsToTeam(team)
+          async ({ authUser, team }) => await authUser?.belongsToTeam(team)
         )
         .handle(async (_, args, ctx, info) => {
           const { team, manager } = ctx

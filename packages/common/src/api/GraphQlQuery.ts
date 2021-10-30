@@ -14,6 +14,7 @@ export class GraphQlQuery implements GraphQlQueryContract {
     internal: false,
     type: 'QUERY',
     middleware: [],
+    description: '',
     snakeCaseName: '',
     paramCaseName: '',
     authorize: [],
@@ -27,6 +28,7 @@ export class GraphQlQuery implements GraphQlQueryContract {
     }
 
     this.config.name = name
+    this.config.description = name
     this.config.paramCaseName = paramCase(name)
     this.config.snakeCaseName = snakeCase(name)
   }
@@ -39,6 +41,12 @@ export class GraphQlQuery implements GraphQlQueryContract {
 
   path(path: string) {
     this.config.path = path
+
+    return this
+  }
+
+  description(description: string) {
+    this.config.description = description
 
     return this
   }

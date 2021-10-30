@@ -7,7 +7,8 @@
   "scripts": {
     "test": "wsrun -p '@tensei/tests' -c test",
     "test:watch": "wsrun -p '@tensei/tests' -c test:watch",
-    "build": "yarn lerna run build",
+    "build": " yarn clean && yarn lerna run build",
+    "clean": "node scripts/clean.js",
     "dev": "yarn lerna run dev",
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "release": "./scripts/release.sh",
@@ -47,7 +48,8 @@
     "commitizen": "^4.2.2",
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
     "wsrun": "^5.2.4"

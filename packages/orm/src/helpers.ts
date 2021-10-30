@@ -71,5 +71,12 @@ export const resolveFieldTypescriptType = (
     return 'ID[]'
   }
 
+  if (
+    field.property.columnTypes?.includes('varchar(255)') ||
+    field.property.columnTypes?.includes('text')
+  ) {
+    return 'string'
+  }
+
   return 'any'
 }

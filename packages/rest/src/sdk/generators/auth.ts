@@ -287,10 +287,10 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          * 
          * Register a ${authConfig.userResource.toLowerCase()}.
          *      Example:
-         *          await tensei.auth().register({
+         *          await tensei.auth().register({ object: {
          *              email: 'hey@tenseijs.com',
          *              password: 'password'
-         *          })
+         *          }})
          **/
         register(payload: { object: ${
           interfaces.RegisterInput
@@ -312,14 +312,14 @@ export const generateAuthApi = (config: PluginSetupConfig) => {
          * 
          * Reset a password for a ${authConfig.userResource.toLowerCase()} using a password reset token.
          *      Example:
-         *          await tensei.auth().resetPassword({
+         *          await tensei.auth().resetPassword({ object: {
          *              token: 'b8e9957f3d4e331a821823065c2cde0c32c8b54c',
          *              password: 'new-password'
-         *          })
+         *          }})
          **/
         resetPassword(payload: { object: ${
           interfaces.ResetPasswordInput
-        } }): Promise<DataResponse<ForgotPasswordResponse>>
+        } }): Promise<DataResponse<ResetPasswordResponse>>
 
         ${
           twoFactorAuth

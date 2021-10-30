@@ -130,6 +130,7 @@ declare module '@tensei/common/config' {
     mutation(): this
     internal(): this
     subscription(): this
+    description(description: string): this
     resource(resource: ResourceContract<'graphql'>): this
     authorize(authorize: AuthorizeFunction): this
     filter(filter: GraphQlQueryConfig['filter']): this
@@ -178,6 +179,7 @@ declare module '@tensei/common/config' {
     internal: boolean
     snakeCaseName: string
     paramCaseName: string
+    description?: string
     resource?: ResourceContract<'graphql'>
     type: 'QUERY' | 'MUTATION' | 'SUBSCRIPTION' | 'CUSTOM'
     authorize: AuthorizeFunction[]

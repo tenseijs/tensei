@@ -15,7 +15,7 @@
   },
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
-    "build": "rimraf build/ && tsc --p tsconfig.json && yarn copy:files",
+    "build": "tsc --p tsconfig.json && yarn copy:files",
     "dev": "tsc --watch --p tsconfig.json",
     "copy:files": "copyfiles welcome.html build/"
   },

@@ -16,7 +16,7 @@
     "copy-files": "copyfiles -u 1 plugin/template/index.mustache build/",
     "dev-client": "webpack --config=node_modules/laravel-mix/setup/webpack.config.js --stats=errors-only --watch",
     "build-client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "build": "rimraf build && yarn build-server && yarn build-client"
+    "build": "yarn build-server && yarn build-client"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.12.1",

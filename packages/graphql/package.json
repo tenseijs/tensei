@@ -30,7 +30,6 @@
     "dataloader": "^2.0.0",
     "graphql": "^15.5.0",
     "graphql-parse-resolve-info": "^4.9.0",
-    "graphql-playground-middleware-express": "^1.7.22",
     "graphql-type-json": "^0.3.2"
   },
   "config": {

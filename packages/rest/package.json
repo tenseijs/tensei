@@ -21,7 +21,7 @@
     "dev": "tsc --watch",
     "copy:files": "copyfiles -u 1 src/docs/index.mustache build/",
     "test": "jest --verbose --runInBand --forceExit",
-    "build": "rimraf build && tsc"
+    "build": "tsc"
   },
   "dependencies": {
     "@tensei/common": "^0.9.8",

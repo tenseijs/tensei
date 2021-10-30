@@ -1,6 +1,5 @@
 import { applyMiddleware } from 'graphql-middleware'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
-import expressPlayground from 'graphql-playground-middleware-express'
 import {
   gql,
   PubSub,
@@ -12,8 +11,7 @@ import {
   AuthenticationError,
   makeExecutableSchema,
   GetMiddlewareOptions,
-  Config as ApolloConfig,
-  defaultPlaygroundOptions
+  Config as ApolloConfig
 } from 'apollo-server-express'
 import {
   Utils,
@@ -37,6 +35,7 @@ import {
   defineDeleteSubscriptionsForResource,
   defineUpdateSubscriptionsForResource
 } from './Subscriptions'
+import { HTML } from './graphiql'
 
 type OmittedApolloConfig = Omit<ApolloConfig, 'typeDefs' | 'resolvers'>
 
@@ -874,27 +873,11 @@ input IdWhereQuery {
           playground: false
         })
 
-        app.get(
-          `/${this.getMiddlewareOptions.path || 'graphql'}`,
-          (request, response, next) =>
-            expressPlayground({
-              endpoint: `${playgroundEndpoint}?headers=${encodeURIComponent(
-                JSON.stringify({
-                  // @ts-ignore
-                  'x-xsrf-token': request.csrfToken
-                    ? // @ts-ignore
-                      request.csrfToken()
-                    : undefined
-                })
-              )}`,
-              settings: {
-                ...defaultPlaygroundOptions.settings,
-                'request.credentials': 'same-origin',
-                'editor.fontFamily':
-                  "'Dank Mono', 'Operator Mono', 'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace"
-              } as any
-            })(request, response, next)
-        )
+        const path = `/${this.getMiddlewareOptions.path || 'graphql'}`
+
+        app.get(path, (request, response, next) => {
+          return response.send(HTML(path))
+        })
 
         graphQlServer.applyMiddleware({
           app,

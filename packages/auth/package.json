@@ -5,11 +5,9 @@
   "license": "MIT",
   "files": [
     "build/",
-    "auth.d.ts",
-    "teams.d.ts",
-    "auth.config.d.ts"
+    "auth.d.ts"
   ],
-  "types": "./build/index.d.ts",
+  "types": "types.d.ts",
   "devDependencies": {
     "@types/express": "^4.17.6",
     "@types/jest": "^25.2.3",
