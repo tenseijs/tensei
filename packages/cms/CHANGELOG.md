@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.9](https://github.com/tenseijs/tensei/compare/v0.9.8...v0.9.9) (2021-10-30)
+
+
+### Features
+
+* **auth:** fix types ([5c17503](https://github.com/tenseijs/tensei/commit/5c175038812e959af5a1a6a7dab0b4a5b35b890b))
+
+
+
+
+
 ## [0.9.8](https://github.com/tenseijs/tensei/compare/v0.9.7...v0.9.8) (2021-10-25)
 
 **Note:** Version bump only for package @tensei/cms
