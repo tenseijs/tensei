@@ -17,8 +17,7 @@
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "build": "tsc --p tsconfig.json && yarn copy:files",
     "dev": "tsc --watch --p tsconfig.json",
-    "copy:files": "copyfiles welcome.html build/",
-    "postinstall": "yarn tensei orm:types"
+    "copy:files": "copyfiles welcome.html build/"
   },
   "dependencies": {
     "@mikro-orm/core": "^4.3.2",
