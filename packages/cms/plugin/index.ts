@@ -350,18 +350,6 @@ class CmsPlugin {
     }
   }
 
-  private getRolesAndPermissionsNames() {
-    return `${this.resources.role.data.camelCaseNamePlural}.${this.resources.permission.data.camelCaseNamePlural}`
-  }
-
-  private getRoleUserKey() {
-    return this.resources.role.data.camelCaseNamePlural
-  }
-
-  private getPermissionUserKey() {
-    return this.resources.permission.data.camelCaseNamePlural
-  }
-
   public dashboards(dashboards: DashboardContract[]) {
     this.config.dashboards = [...this.config.dashboards, ...dashboards]
 
@@ -472,19 +460,19 @@ class CmsPlugin {
                 if (user === false) {
                   return response.status(422).json([
                     {
-                      message: 'The first name is required.',
+                      message: 'Please provide your first name.',
                       field: 'firstName'
                     },
                     {
-                      message: 'The last name is required.',
+                      message: 'Please provide your last name.',
                       field: 'lastName'
                     },
                     {
-                      message: 'The email is required.',
+                      message: 'Please provide your email',
                       field: 'email'
                     },
                     {
-                      message: 'The password is required.',
+                      message: 'Please provide your password',
                       field: 'password'
                     }
                   ])
@@ -513,11 +501,11 @@ class CmsPlugin {
               if (user === false) {
                 return response.status(422).json([
                   {
-                    message: 'The email is required.',
+                    message: 'Please provide your email.',
                     field: 'email'
                   },
                   {
-                    message: 'The password is required.',
+                    message: 'Please provide your password.',
                     field: 'password'
                   }
                 ])

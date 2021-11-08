@@ -7,17 +7,45 @@ import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useEuiTheme } from '@tensei/eui/lib/services/theme'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiButton } from '@tensei/eui/lib/components/button'
+import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
+import { EuiButtonEmpty } from '@tensei/eui/lib/components/button/button_empty'
 
 const Sidebar = styled.div<{
   bg?: string
 }>`
   display: flex;
   flex-direction: column;
-  width: 248px;
+  width: 64px;
   height: 100%;
   position: relative;
   border-right: ${({ theme }) => theme.border.thin};
-  background-color: ${({ theme }) => theme.colors.bgShade};
+`
+
+const NestedSidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  height: 100%;
+  position: relative;
+  border-right: ${({ theme }) => theme.border.thin};
+`
+
+const NestedSidebarHeader = styled.div`
+  height: 75px;
+  padding: 0 1.75rem;
+  display: flex;
+  align-items: center;
+`
+
+const NestedSidebarTitleUnderline = styled.div`
+  width: 25%;
+  margin: 0 1.75rem;
+  ${({ theme }) => `border-bottom: ${theme.border.thin}`}
+`
+
+const SidebarWrapper = styled.div`
+  display: flex;
+  height: 100%;
 `
 
 const Wrapper = styled.div`
@@ -27,10 +55,18 @@ const Wrapper = styled.div`
 `
 
 const Workspace = styled.div`
-  padding: 18px 25px;
   display: flex;
   align-items: center;
+  justify-content: center;
   height: 75px;
+  border-bottom: ${({ theme }) => theme.border.thin};
+`
+
+const GroupName = styled(EuiText)`
+  font-size: 10px;
+  text-align: center;
+  text-transform: uppercase;
+  ${({ theme }) => `color: ${theme.colors.subdued}`}
 `
 
 const SidebarContainer = styled.div`
@@ -38,28 +74,46 @@ const SidebarContainer = styled.div`
 `
 
 const Footer = styled.div`
-  height: 160px;
+  height: 170px;
   width: 100%;
-  padding: 18px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
   border-top: ${({ theme }) => theme.border.thin};
 `
 
-const NavItem = styled.div`
+const NavItem = styled.button<{
+  active?: boolean
+}>`
   display: flex;
   align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  ${({ active, theme }) =>
+    active
+      ? `
+    background-color: ${theme.colors.primaryTransparent};
+    border-radius: ${theme.border.radius.medium};
+    `
+      : ``}
 
   svg {
-    margin-right: 10px;
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+    ${({ active, theme }) =>
+      active
+        ? `
+    color: ${theme.colors.primaryText};
+    `
+        : ``}
   }
 `
 
-const WorkspaceName = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 12px;
+const Logo = styled.img`
+  ${({ theme }) => `border-radius: 10px;`}
 `
-
-const Logo = styled.img``
 
 const Body = styled.div`
   display: flex;
@@ -103,54 +157,82 @@ const CollapseExpandIcon = styled.button`
   background-color: ${({ theme }) => theme.colors.ghost};
 `
 
+const StyledAvatarButton = styled.button`
+  margin-top: 0.75rem;
+`
+
+const TitleAndBackButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`
+
 export const DashboardLayout: React.FunctionComponent = ({ children }) => {
   const { euiTheme } = useEuiTheme()
+  console.log(euiTheme)
   return (
     <Wrapper>
-      <Sidebar>
-        <CollapseExpandIcon>
-          <EuiIcon size="s" type="arrowLeft" />
-        </CollapseExpandIcon>
+      <SidebarWrapper>
+        <Sidebar>
+          <SidebarContainer>
+            <Workspace>
+              <Logo
+                width={40}
+                height={40}
+                src={
+                  'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
+                }
+              ></Logo>
+            </Workspace>
 
-        <SidebarContainer>
-          <Workspace>
-            <Logo
-              width={40}
-              height={40}
-              src={
-                'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
-              }
-            ></Logo>
-            <WorkspaceName>
-              <EuiTitle size="xs">
-                <h1>Tensei</h1>
-              </EuiTitle>
-              <EuiText size="xs" color="slategray">
-                Workspace
-              </EuiText>
-            </WorkspaceName>
-          </Workspace>
+            <EuiSpacer size="l" />
 
-          <EuiSpacer size="l" />
-        </SidebarContainer>
+            <GroupName textAlign="center">Main</GroupName>
 
-        <Footer>
-          <NavItem>
-            <EuiIcon type="gear" />
-            <EuiText>Settings</EuiText>
-          </NavItem>
-          <EuiSpacer size="s" />
-          <NavItem>
-            <EuiIcon type="help" />
-            <EuiText>Help</EuiText>
-          </NavItem>
-        </Footer>
-      </Sidebar>
+            <EuiSpacer size="l" />
+
+            <GroupName textAlign="center">Team</GroupName>
+          </SidebarContainer>
+
+          <Footer>
+            <NavItem active>
+              <EuiIcon type="gear" />
+            </NavItem>
+            <EuiSpacer size="s" />
+            <NavItem>
+              <EuiIcon type="help" />
+            </NavItem>
+
+            <StyledAvatarButton>
+              <EuiAvatar
+                name="Kati Frantz"
+                imageUrl="https://avatars2.githubusercontent.com/u/19477966?v=4"
+              />
+            </StyledAvatarButton>
+          </Footer>
+        </Sidebar>
+        <NestedSidebar>
+          <CollapseExpandIcon>
+            <EuiIcon size="s" type="arrowLeft" />
+          </CollapseExpandIcon>
+          <NestedSidebarHeader>
+            <EuiTitle size="s">
+              <h1>Content</h1>
+            </EuiTitle>
+          </NestedSidebarHeader>
+          <NestedSidebarTitleUnderline />
+        </NestedSidebar>
+      </SidebarWrapper>
       <Body>
         <Topbar>
-          <EuiTitle size="s">
-            <h1>Content</h1>
-          </EuiTitle>
+          <TitleAndBackButtonContainer>
+            <EuiButtonEmpty iconType="arrowLeft" href="/back">
+              Back
+            </EuiButtonEmpty>
+            <EuiTitle size="xs">
+              <h3>Content</h3>
+            </EuiTitle>
+          </TitleAndBackButtonContainer>
 
           <EuiButton fill color="primary">
             Add new product

@@ -32,7 +32,7 @@ declare global {
       styles: Asset[]
       logger: Logger
       // @ts-ignore
-      authUser: DataPayload & import('@tensei/orm').UserModel
+      authUser: import('@tensei/orm').UserModel & DataPayload
       // @ts-ignore
       team: import('@tensei/orm').TeamModel
       originatedFromDashboard: boolean | undefined

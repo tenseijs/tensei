@@ -34,7 +34,7 @@ const task: TaskFn = (_, logger, { absPath }) => {
   tsconfig.set('compilerOptions', {
     outDir: 'build',
     rootDir: './',
-    sourceMap: true,
+    sourceMap: false,
     target: 'ES2020',
     strict: true,
     baseUrl: './',

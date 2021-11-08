@@ -1,8 +1,7 @@
+import { PermissionContract, RoleContract } from './build'
 export * from './build'
 
 declare module '@tensei/orm' {
-  import { TeamModel, MembershipModel } from '@tensei/orm'
-
   export interface UserModel {
     allTeams: () => Promise<TeamModel[]>
     ownsTeam: (team: TeamModel) => Promise<boolean>
@@ -12,5 +11,11 @@ declare module '@tensei/orm' {
     hasTeamPermission: (team: TeamModel, permission: string) => Promise<boolean>
 
     // Roles and permissions
+    hasRole: () => boolean
+    hasPermission: () => boolean
+    assignRole: () => Promise<void>
+    removeRole: () => Promise<void>
+    getAllPermissions: () => PermissionContract[]
+    getAllRoles: () => RoleContract[]
   }
 }
