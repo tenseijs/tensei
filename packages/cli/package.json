@@ -34,7 +34,7 @@
     "concurrently": "^5.3.0",
     "cpy": "^8.1.2",
     "decache": "^4.6.0",
-    "edge.js": "^1.1.4",
+    "edge.js": "^5.3.2",
     "execa": "^5.0.0",
     "fs-extra": "^9.1.0",
     "getopts": "^2.3.0",
