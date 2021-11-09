@@ -9,6 +9,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "scripts": {
+    "build": "exit 0",
+    "dev": "exit 0"
+  },
   "dependencies": {
     "@types/express-session": "^1.17.3",
     "csurf": "^1.11.0",

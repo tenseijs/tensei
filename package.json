@@ -7,10 +7,10 @@
   "scripts": {
     "test": "wsrun -p '@tensei/tests' -c test",
     "test:watch": "wsrun -p '@tensei/tests' -c test:watch",
-    "build": " yarn clean && yarn lerna run build",
+    "build": "yarn clean && yarn lerna run build",
     "clean": "node scripts/clean.js",
-    "dev": "yarn lerna run dev",
-    "prettier": "prettier --write './**/*.{js,json,ts,css}'",
+    "dev": "wsrun -p '@tensei/*' -c dev",
+    "prettier": "wsrun -p '@tensei/*' -c prettier",
     "release": "./scripts/release.sh",
     "commit": "yarn git-cz",
     "setup": "yarn && yarn build && cd examples/blog && yarn && cd ../typescript && yarn",

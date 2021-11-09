@@ -16,7 +16,10 @@
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "test": "jest --verbose --runInBand --forceExit",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "build": "exit 0",
+    "dev": "exit 0",
+    "clean": "exit 0"
   },
   "dependencies": {
     "@mikro-orm/mongodb": "^4.3.0",

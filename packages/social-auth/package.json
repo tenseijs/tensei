@@ -6,6 +6,10 @@
   "files": [
     "src/"
   ],
+  "scripts": {
+    "build": "exit 0",
+    "dev": "exit 0"
+  },
   "publishConfig": {
     "access": "public"
   },
