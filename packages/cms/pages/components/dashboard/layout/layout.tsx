@@ -52,6 +52,7 @@ const Wrapper = styled.div`
   width: 100%;
   height: 100vh;
   display: flex;
+  background-color: #fff;
 `
 
 const Workspace = styled.div`
@@ -63,10 +64,28 @@ const Workspace = styled.div`
 `
 
 const GroupName = styled(EuiText)`
-  font-size: 10px;
-  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
   ${({ theme }) => `color: ${theme.colors.subdued}`}
+`
+
+const NestedSidebarGroupName = styled(EuiText)`
+  font-size: 11px;
+  font-weight: 500;
+  padding: 0rem 1.75rem;
+  text-transform: uppercase;
+  ${({ theme }) => `color: ${theme.colors.subdued}`}
+`
+
+const NestedSidebarNavItem = styled.li`
+  width: 100%;
+`
+
+const Group = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 `
 
 const SidebarContainer = styled.div`
@@ -169,7 +188,7 @@ const TitleAndBackButtonContainer = styled.div`
 
 export const DashboardLayout: React.FunctionComponent = ({ children }) => {
   const { euiTheme } = useEuiTheme()
-  console.log(euiTheme)
+
   return (
     <Wrapper>
       <SidebarWrapper>
@@ -221,6 +240,12 @@ export const DashboardLayout: React.FunctionComponent = ({ children }) => {
             </EuiTitle>
           </NestedSidebarHeader>
           <NestedSidebarTitleUnderline />
+
+          <EuiSpacer size="l" />
+
+          <Group>
+            <NestedSidebarGroupName>Resources</NestedSidebarGroupName>
+          </Group>
         </NestedSidebar>
       </SidebarWrapper>
       <Body>
