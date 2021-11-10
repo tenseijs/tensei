@@ -11,10 +11,11 @@
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "build:server": "tsc --p tsconfig.server.json",
     "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "dev:server": "tsc --watch --p tsconfig.server.json",
-    "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+    "dev-server": "tsc --watch --p tsconfig.server.json",
+    "dev-client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
     "test": "jest --verbose --runInBand --forceExit",
-    "build": "yarn build:server && yarn build:client"
+    "build": "yarn build:server && yarn build:client",
+    "dev": "concurrently 'npm:dev-client' 'npm:dev-server'"
   },
   "dependencies": {
     "@tensei/common": "^0.9.9",

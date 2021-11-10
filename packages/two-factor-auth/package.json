@@ -6,11 +6,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "scripts": {
+    "build": "exit 0",
+    "dev": "exit 0"
+  },
   "dependencies": {
     "@types/qrcode": "^1.3.5",
     "@types/speakeasy": "^2.0.5",
     "qrcode": "^1.4.4",
     "speakeasy": "^2.0.0"
-  },
-  "gitHead": "92a29de45627693db340d3b4a503f52eddc2fb27"
+  }
 }

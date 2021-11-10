@@ -111,7 +111,7 @@ class Core {
     if (this.state.admin) {
       this.ctx.setUser(this.state.admin)
     }
-    this.ctx.setRoutes([...this.ctx.routes, ...this.routes])
+    this.ctx.setRoutes([...this.ctx?.routes, ...this.routes])
     this.ctx.setBooted(true)
   }
 }
