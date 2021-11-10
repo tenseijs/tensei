@@ -105,19 +105,18 @@ const getBaseTypes = () => {
 export type DateString = string
 export type Decimal = number
 export type ID = number
-export enum SortQueryInput {
-    ASC = 'asc',
-    ASC_NULLS_LAST = 'asc_nulls_last',
-    ASC_NULLS_FIRST = 'asc_nulls_first',
-    DESC = 'desc',
-    DESC_NULLS_LAST = 'desc_nulls_last',
-    DESC_NULLS_FIRST = 'desc_nulls_first',
-}
 export interface PaginationOptions {
 	page: number
 	perPage: number
 }
-
+export declare enum SortQueryInput {
+  ASC = "asc",
+  ASC_NULLS_LAST = "asc_nulls_last",
+  ASC_NULLS_FIRST = "asc_nulls_first",
+  DESC = "desc",
+  DESC_NULLS_LAST = "desc_nulls_last",
+  DESC_NULLS_FIRST = "desc_nulls_first"
+}
 export type FindResponse<Resource> =  AxiosResponse<{
 	data: Resource
 }>
@@ -143,6 +142,12 @@ const getRelationshipFieldsForRelatedResource = (
       !field.isHidden &&
       field.isRelationshipField
   )
+}
+
+const getImports = () => {
+  return `
+import { AxiosResponse } from 'axios'
+`
 }
 
 const getResourcePopulateFields = (
@@ -196,7 +201,7 @@ const getResourceFieldsSelectList = (resource: ResourceContract) => {
     field => !field.showHideFieldFromApi.hideOnFetchApi && !field.isHidden
   )
 
-  if (possibleSelectFields.length > 0) {
+  if (possibleSelectFields.length === 0) {
     return `export type ${resource.data.pascalCaseName}SelectFields = ''`
   }
 
@@ -326,7 +331,7 @@ const getInsertResourceInterface = (
   }
 
   return `
-        export interface ${resource.data.pascalCaseName}InsertInput {
+        export interface ${resource.data.pascalCaseName}CreateInput {
             ${resource.data.fields
               .filter(
                 field =>
@@ -410,6 +415,7 @@ export const generateResourceInterfaces = async ({
   resources
 }: PluginSetupConfig) => {
   return `
+    ${getImports()}
     ${resources
       .map(
         resource => `
