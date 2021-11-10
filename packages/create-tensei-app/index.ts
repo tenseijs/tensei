@@ -21,7 +21,7 @@ import { getState, usingYarn } from './helpers'
  * Running all the tasks to create a new project.
  */
 export async function runTasks(args: string[]) {
-  console.log(await showArt())
+  showArt()
 
   /**
    * Setup command line arguments

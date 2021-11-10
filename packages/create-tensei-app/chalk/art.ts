@@ -7,16 +7,16 @@
  * file that was distributed with this source code.
  */
 // @ts-ignore
-import art from 'ascii-art'
 
+const art = `
+ _____                          _       ___
+|_   _|                        (_)     |_  |
+  | |    ___  _ __   ___   ___  _        | | ___
+  | |   / _ \\| '_ \\ / __| / _ \\| |       | |/ __| 
+  | |  |  __/| | | |\\__ \\|  __/| | _ /\\__/ /\\__ \\
+  \\_/   \\___||_| |_||___/ \\___||_|(_)\\____/ |___/
+
+`
 export const showArt = () => {
-  return new Promise((resolve, reject) => {
-    art.font('Tensei.Js', 'doom', ((error: any, rendered: any) => {
-      if (error) {
-        return reject(error)
-      }
-
-      resolve(rendered)
-    }) as any)
-  })
+  console.log(art)
 }
