@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
+
+
+### Bug Fixes
+
+* **create-tensei-app:** ascii art bug ([#176](https://github.com/tenseijs/tensei/issues/176)) ([91e66eb](https://github.com/tenseijs/tensei/commit/91e66eb95c079b8446bf0c92e5e54fb5eb598d11))
+* **sdk:** fix generated interfaces and SortQueryInput enum ([0557a08](https://github.com/tenseijs/tensei/commit/0557a083022c5d195497ca12d1f8f3445218dcc5))
+
+
+### Features
+
+* **cms:** add static code for pages/dashboard/resource view ([2247390](https://github.com/tenseijs/tensei/commit/22473908e67377d888276a5013a5d5d290168183))
+* **cms:** reformat sidebar navigation ([5553add](https://github.com/tenseijs/tensei/commit/5553add3cf944b021fe4352d726bdfafbde2e094))
+
+
+
+
+
 ## [0.9.9](https://github.com/tenseijs/tensei/compare/v0.9.8...v0.9.9) (2021-10-30)
 
 

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
+
+**Note:** Version bump only for package @tensei/media
+
+
+
+
+
 ## [0.9.9](https://github.com/tenseijs/tensei/compare/v0.9.8...v0.9.9) (2021-10-30)
 
 **Note:** Version bump only for package @tensei/media
