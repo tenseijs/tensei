@@ -121,6 +121,7 @@ export async function getState(
   pkg.setScript('dev', `${npxOrYarn} tensei serve --watch`)
   pkg.setScript('build', `${npxOrYarn} tensei build --production`)
   pkg.setScript('start', `node build/index.js`)
+  pkg.setScript('postinstall', `tensei orm:types`)
 
   return {
     baseName: projectRoot,
