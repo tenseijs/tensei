@@ -12,12 +12,30 @@ import { EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
 import { EuiFieldPassword } from '@tensei/eui/lib/components/form/field_password'
 import { EuiFlexItem } from '@tensei/eui/lib/components/flex/flex_item'
+import { useState } from 'react'
 
 const H3 = styled.h3`
   text-align: center;
 `
 
 export const Register: React.FunctionComponent = () => {
+  const [user, setUser] = useState({
+    firstname: '',
+    lastname: '',
+    email: '',
+    password: ''
+  })
+
+  const submitRegistration = async (e: any) => {
+    try {
+      e.preventDefault()
+      let resp = await window.Tensei.client.post('users', user)
+      console.log(resp)
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+
   return (
     <AuthLayout>
       <EuiTitle size="s">
@@ -31,36 +49,58 @@ export const Register: React.FunctionComponent = () => {
 
       <EuiSpacer size="xl" />
 
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormRow label="First name">
-            <EuiFieldText autoFocus />
-          </EuiFormRow>
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiFormRow label="Last name">
-            <EuiFieldText />
-          </EuiFormRow>
-        </EuiFlexItem>
-      </EuiFlexGroup>
+      <form method="post" onSubmit={submitRegistration}>
+        <EuiFlexGroup>
+          <EuiFlexItem>
+            <EuiFormRow label="First name">
+              <EuiFieldText
+                autoFocus
+                onChange={e => {
+                  setUser({ ...user, firstname: e.target.value })
+                }}
+              />
+            </EuiFormRow>
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiFormRow label="Last name">
+              <EuiFieldText
+                onChange={e => {
+                  setUser({ ...user, lastname: e.target.value })
+                }}
+              />
+            </EuiFormRow>
+          </EuiFlexItem>
+        </EuiFlexGroup>
 
-      <EuiSpacer size="l" />
+        <EuiSpacer size="l" />
 
-      <EuiFormRow label="Email">
-        <EuiFieldText fullWidth />
-      </EuiFormRow>
+        <EuiFormRow label="Email">
+          <EuiFieldText
+            fullWidth
+            onChange={e => {
+              setUser({ ...user, email: e.target.value })
+            }}
+          />
+        </EuiFormRow>
 
-      <EuiSpacer size="l" />
+        <EuiSpacer size="l" />
 
-      <EuiFormRow label="Password">
-        <EuiFieldPassword type="dual" fullWidth />
-      </EuiFormRow>
+        <EuiFormRow label="Password">
+          <EuiFieldPassword
+            type="dual"
+            fullWidth
+            onChange={e => {
+              setUser({ ...user, password: e.target.value })
+            }}
+          />
+        </EuiFormRow>
 
-      <EuiSpacer size="l" />
+        <EuiSpacer size="l" />
 
-      <EuiButton fullWidth fill>
-        Get started
-      </EuiButton>
+        <EuiButton fullWidth fill type="submit">
+          Get started
+        </EuiButton>
+      </form>
 
       <EuiSpacer size="m" />
       <EuiText size="xs" textAlign="center">
