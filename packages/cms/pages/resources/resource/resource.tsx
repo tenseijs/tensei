@@ -79,20 +79,16 @@ export const FilterList: React.FunctionComponent = () => {
       id: 0,
       title: 'Select a field',
       items: [
-        {
-          name: 'Title',
+        ...currentResource.fields.map(resource => ({
+          name: resource.name,
           panel: 1
-        },
-        {
-          name: currentResource.name,
-          panel: 1
-        }
+        }))
       ]
     },
 
     {
       id: 1,
-      title: 'Filter products where title',
+      title: `Filter products where ${currentResource.name}`,
       items: [
         ...filterCompareValues.map(value => ({
           name: value,
@@ -103,7 +99,7 @@ export const FilterList: React.FunctionComponent = () => {
 
     {
       id: 2,
-      title: 'Filter products where title is greater than:',
+      title: `Filter products where ${currentResource.name} is greater than:`,
       width: 400,
       content: (
         <FilterContent>
