@@ -67,6 +67,13 @@ export const FilterList: React.FunctionComponent = () => {
     prefix: 'contextMenuPopover'
   })
 
+  const urlSlug = window.location.href.split('resources/')[1]
+
+  const resources = window.Tensei.state.resources
+  const [currentResource] = resources.filter(
+    resource => urlSlug === resource.slug
+  )
+
   const panels: EuiContextMenuPanelDescriptor[] = [
     {
       id: 0,
@@ -75,9 +82,14 @@ export const FilterList: React.FunctionComponent = () => {
         {
           name: 'Title',
           panel: 1
+        },
+        {
+          name: currentResource.name,
+          panel: 1
         }
       ]
     },
+
     {
       id: 1,
       title: 'Filter products where title',
@@ -88,6 +100,7 @@ export const FilterList: React.FunctionComponent = () => {
         }))
       ]
     },
+
     {
       id: 2,
       title: 'Filter products where title is greater than:',
@@ -141,6 +154,7 @@ export const Table: React.FunctionComponent = () => {
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [sortField, setSortField] = useState('firstName')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
   const columns: EuiBasicTableColumn<any>[] = [
     {
       field: 'firstName',
