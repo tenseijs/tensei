@@ -195,9 +195,13 @@ class CmsPlugin {
 
     if (adminCount !== 0) {
       return done(
-        {
-          message: 'Admin user already exists.'
-        },
+        [
+          {
+            message:
+              'An administrator already exists. Please join the team by requesting an invitation.',
+            field: 'email'
+          }
+        ],
         null
       )
     }
@@ -456,30 +460,29 @@ class CmsPlugin {
                 successRedirect: `${this.getApiPath('')}`,
                 failureRedirect: `${this.getApiPath('auth/register')}`
               },
-              (error, user, info) => {
-                if (user === false) {
-                  return response.status(422).json([
-                    {
-                      message: 'Please provide your first name.',
-                      field: 'firstName'
-                    },
-                    {
-                      message: 'Please provide your last name.',
-                      field: 'lastName'
-                    },
-                    {
-                      message: 'Please provide your email',
-                      field: 'email'
-                    },
-                    {
-                      message: 'Please provide your password',
-                      field: 'password'
-                    }
-                  ])
+              async (error, user) => {
+                if (user === false && !error) {
+                  // This is a unique case, where the user did not provide the email or password.
+                  // Passport is weird, so they do not even send the request to the controller when this happens.
+                  // In this scenario, we'll perform validation here on the data, and send the correct validation errors back to the frontend.
+
+                  const validator = Utils.validator(
+                    self.userResource(),
+                    request.manager,
+                    request.resources
+                  )
+
+                  const [, payload] = await validator.validate(request.body)
+
+                  return response.status(422).json({
+                    errors: payload
+                  })
                 }
 
-                if (error || !user) {
-                  return response.status(400).json(error)
+                if (error) {
+                  return response.status(422).json({
+                    errors: error
+                  })
                 }
 
                 request.logIn(user, error => {

@@ -11,6 +11,7 @@ import copyTemplates from './scaffold/copyTemplates'
 import createTsConfig from './scaffold/createTsConfig'
 import installDependencies from './install-dependencies'
 import createGitIgnore from './scaffold/createGitIgnore'
+import generateOrmTypes from './generate-orm-types'
 
 /**
  * An array of tasks to be executed in chronological order
@@ -24,6 +25,10 @@ export const tasks = function () {
     {
       title: 'Install dependencies',
       actions: [installDependencies]
+    },
+    {
+      title: 'Generate types',
+      actions: [generateOrmTypes]
     }
   ]
 }
