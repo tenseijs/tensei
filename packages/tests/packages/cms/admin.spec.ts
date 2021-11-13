@@ -93,8 +93,111 @@ test('cannot register another administrator if a super admin already exists', as
       password: user.password + user.password
     })
 
-  expect(response.status).toBe(400)
-  expect(response.body.message).toBe('Admin user already exists.')
+  expect(response.status).toBe(422)
+  expect(response.body).toEqual({
+    errors: [
+      {
+        message:
+          'An administrator already exists. Please join the team by requesting an invitation.',
+        field: 'email'
+      }
+    ]
+  })
+})
+
+test('cannot register administrator without all valid data', async () => {
+  const mailerMock = getFakeMailer()
+
+  const user = fakeUser()
+
+  const {
+    app,
+    ctx: {
+      orm: { em }
+    }
+  } = await setup([cms().plugin(), setupFakeMailer(mailerMock)], false)
+
+  const client = (SupertestSession(app) as unknown) as SI<any>
+
+  const csrf = await getCmsCsrfToken(client)
+
+  // Clear all existing administrators and passwordless tokens.
+  await em.nativeDelete('AdminToken', {})
+  await em.nativeDelete('AdminUser', {})
+
+  const response = await client
+    .post('/cms/api/auth/register')
+    .set('X-XSRF-TOKEN', csrf)
+    .send({})
+
+  expect(response.body).toEqual({
+    errors: [
+      {
+        message: 'The firstName is required.',
+        validation: 'required',
+        field: 'firstName'
+      },
+      {
+        message: 'The lastName is required.',
+        validation: 'required',
+        field: 'lastName'
+      },
+      {
+        message: 'The password is required.',
+        validation: 'required',
+        field: 'password'
+      },
+      {
+        message: 'The email is required.',
+        validation: 'required',
+        field: 'email'
+      }
+    ]
+  })
+})
+
+test('cannot register administrator with only some valid data', async () => {
+  const mailerMock = getFakeMailer()
+
+  const user = fakeUser()
+
+  const {
+    app,
+    ctx: {
+      orm: { em }
+    }
+  } = await setup([cms().plugin(), setupFakeMailer(mailerMock)], false)
+
+  const client = (SupertestSession(app) as unknown) as SI<any>
+
+  const csrf = await getCmsCsrfToken(client)
+
+  // Clear all existing administrators and passwordless tokens.
+  await em.nativeDelete('AdminToken', {})
+  await em.nativeDelete('AdminUser', {})
+
+  const response = await client
+    .post('/cms/api/auth/register')
+    .set('X-XSRF-TOKEN', csrf)
+    .send({
+      email: 'x@y.co',
+      password: 'password-password'
+    })
+
+  expect(response.body).toEqual({
+    errors: [
+      {
+        message: 'The firstName is required.',
+        validation: 'required',
+        field: 'firstName'
+      },
+      {
+        message: 'The lastName is required.',
+        validation: 'required',
+        field: 'lastName'
+      }
+    ]
+  })
 })
 
 test('can login an existing administrator user', async () => {
