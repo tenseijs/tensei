@@ -78,6 +78,7 @@
     "moment": "^2.29.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
-    "styled-components": "^5.3.3"
+    "styled-components": "^5.3.3",
+    "zustand": "^3.6.5"
   }
 }
