@@ -1,6 +1,6 @@
 {
   "name": "@tensei/rest",
-  "version": "0.9.9",
+  "version": "0.10.0",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./build/index.d.ts",
@@ -24,8 +24,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@tensei/common": "^0.9.9",
-    "@tensei/core": "^0.9.9",
+    "@tensei/common": "^0.10.0",
+    "@tensei/core": "^0.10.0",
     "express-response-formatter": "^2.0.2",
     "pluralize": "^8.0.0",
     "prettier": "^2.0.5",

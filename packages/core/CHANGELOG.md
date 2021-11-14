@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
+
+
+### Features
+
+* **cms:** reformat sidebar navigation ([5553add](https://github.com/tenseijs/tensei/commit/5553add3cf944b021fe4352d726bdfafbde2e094))
+
+
+
+
+
 ## [0.9.9](https://github.com/tenseijs/tensei/compare/v0.9.8...v0.9.9) (2021-10-30)
 
 

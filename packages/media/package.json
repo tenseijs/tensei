@@ -1,6 +1,6 @@
 {
   "name": "@tensei/media",
-  "version": "0.9.9",
+  "version": "0.10.0",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./build/index.d.ts",
@@ -11,13 +11,14 @@
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "build:server": "tsc --p tsconfig.server.json",
     "build:client": "cross-env NODE_ENV=production webpack --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "dev:server": "tsc --watch --p tsconfig.server.json",
-    "dev:client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
+    "dev-server": "tsc --watch --p tsconfig.server.json",
+    "dev-client": "cross-env NODE_ENV=development webpack --config=node_modules/laravel-mix/setup/webpack.config.js --watch",
     "test": "jest --verbose --runInBand --forceExit",
-    "build": "yarn build:server && yarn build:client"
+    "build": "yarn build:server && yarn build:client",
+    "dev": "concurrently 'npm:dev-client' 'npm:dev-server'"
   },
   "dependencies": {
-    "@tensei/common": "^0.9.9",
+    "@tensei/common": "^0.10.0",
     "@types/busboy": "^0.2.3",
     "@types/fs-capacitor": "^2.0.0",
     "@types/http-errors": "^1.8.0",

@@ -90,3 +90,12 @@ export class Sdk extends BaseSdk {
 }
 
 export const sdk = (options?: SdkOptions) => new Sdk(options)
+
+export enum SortQueryInput {
+  ASC = 'asc',
+  ASC_NULLS_LAST = 'asc_nulls_last',
+  ASC_NULLS_FIRST = 'asc_nulls_first',
+  DESC = 'desc',
+  DESC_NULLS_LAST = 'desc_nulls_last',
+  DESC_NULLS_FIRST = 'desc_nulls_first'
+}

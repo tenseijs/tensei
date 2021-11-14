@@ -1,6 +1,6 @@
 {
   "name": "@tensei/tests",
-  "version": "0.9.9",
+  "version": "0.10.0",
   "license": "MIT",
   "devDependencies": {
     "@types/faker": "^4.1.12",
@@ -16,15 +16,18 @@
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",
     "test": "jest --verbose --runInBand --forceExit",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "build": "exit 0",
+    "dev": "exit 0",
+    "clean": "exit 0"
   },
   "dependencies": {
     "@mikro-orm/mongodb": "^4.3.0",
     "@mikro-orm/mysql": "^4.3.0",
     "@mikro-orm/postgresql": "^4.3.0",
     "@mikro-orm/sqlite": "^4.3.0",
-    "@tensei/common": "^0.9.9",
-    "@tensei/core": "^0.9.9"
+    "@tensei/common": "^0.10.0",
+    "@tensei/core": "^0.10.0"
   },
   "config": {
     "commitizen": {

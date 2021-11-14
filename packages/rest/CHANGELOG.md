@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
+
+
+### Bug Fixes
+
+* **sdk:** fix generated interfaces and SortQueryInput enum ([0557a08](https://github.com/tenseijs/tensei/commit/0557a083022c5d195497ca12d1f8f3445218dcc5))
+
+
+
+
+
 ## [0.9.9](https://github.com/tenseijs/tensei/compare/v0.9.8...v0.9.9) (2021-10-30)
 
 
