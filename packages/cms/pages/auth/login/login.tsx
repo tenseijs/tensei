@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { FormEventHandler, useState } from 'react'
 import styled from 'styled-components'
 import { AuthLayout } from '../../components/auth/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
-import { EuiFormRow } from '@tensei/eui/lib/components/form'
+import { EuiForm, EuiFormRow } from '@tensei/eui/lib/components/form'
 import { EuiButton } from '@tensei/eui/lib/components/button'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
@@ -15,6 +15,41 @@ const H3 = styled.h3`
 `
 
 export const Login: React.FunctionComponent = () => {
+  const [userDetails, setUserDetails] = useState({
+    email: '',
+    password: ''
+  })
+
+  const [errors, setErrors] = useState(false)
+
+  const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const {value} = e.target
+    setUserDetails({...userDetails, email: value})
+  } 
+
+  const onChangePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const {value} = e.target
+    setUserDetails({...userDetails, password: value})
+  }
+
+  const onLogin: FormEventHandler = async (event) => {
+    event.preventDefault()
+
+    await window.Tensei.client.post('/auth/login', userDetails)
+    .then(response => {
+      console.log(response)
+    })
+    .catch(error => {
+      console.log(error)
+
+      setErrors(true)
+
+     if(!error) {
+        window.location.href = window.Tensei.getPath('')
+      }
+    })
+  }
+
   return (
     <AuthLayout>
       <EuiTitle size="s">
@@ -26,22 +61,29 @@ export const Login: React.FunctionComponent = () => {
       </EuiText>
 
       <EuiSpacer size="xl" />
+      <EuiForm component="div" isInvalid={errors}>
+        <EuiFormRow label="Email">
+          <EuiFieldText fullWidth isInvalid={errors}
+            onChange={onChangeEmail} 
+          />
+        </EuiFormRow>
 
-      <EuiFormRow label="Email">
-        <EuiFieldText fullWidth />
-      </EuiFormRow>
+        <EuiSpacer size="l" />
 
-      <EuiSpacer size="l" />
+        <EuiFormRow label="Password">
+          <EuiFieldPassword type="dual" fullWidth isInvalid={errors}
+            onChange={onChangePassword} 
+          />
+        </EuiFormRow>
 
-      <EuiFormRow label="Password">
-        <EuiFieldPassword type="dual" fullWidth />
-      </EuiFormRow>
+        <EuiSpacer size="xl" />
 
-      <EuiSpacer size="xl" />
+        <EuiButton fullWidth fill onClick={onLogin} type='submit' >
+            Log in
+        </EuiButton>
+      
+      </EuiForm>
 
-      <EuiButton fullWidth fill>
-        Log in
-      </EuiButton>
     </AuthLayout>
   )
 }

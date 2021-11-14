@@ -4,7 +4,6 @@
   "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "@mikro-orm/sqlite": "^4.4.0",
     "@tensei/cms": "^0.9.9",
     "@tensei/core": "^0.9.9",
     "@tensei/graphql": "^0.9.9",
@@ -20,7 +19,7 @@
   "devDependencies": {
     "@types/node": "^15.12.4",
     "nodemon": "^2.0.7",
-    "ts-node": "^10.0.0",
+    "ts-node": "^10.4.0",
     "typescript": "^4.3.4"
   },
   "private": true
