@@ -1,6 +1,6 @@
 import Path from 'path'
 import sharp from 'sharp'
-import { snakeCase } from 'change-case'
+import { camelCase } from 'change-case'
 import {
   plugin,
   belongsTo,
@@ -107,7 +107,6 @@ class MediaLibrary {
         extendGraphQlTypeDefs,
         extendGraphQlQueries
       }) => {
-        style('media.css', Path.resolve(__dirname, 'public/app.css'))
         script('media.js', Path.resolve(__dirname, 'public/app.js'))
 
         if (!this.config.disk) {
@@ -174,13 +173,13 @@ class MediaLibrary {
 export const transform = sharp
 
 export const files = (databaseField?: string) =>
-  hasMany('File', databaseField ? snakeCase(databaseField) : undefined)
+  hasMany('File', databaseField ? camelCase(databaseField) : undefined)
     .label(databaseField || 'Files')
     .formComponent('Files')
     .detailComponent('Files')
 
 export const file = (databaseField?: string) =>
-  hasOne('File', databaseField ? snakeCase(databaseField) : undefined)
+  hasOne('File', databaseField ? camelCase(databaseField) : undefined)
     .label(databaseField || 'File')
     .formComponent('File')
     .detailComponent('File')

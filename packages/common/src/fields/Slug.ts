@@ -1,5 +1,5 @@
 import Text from './Text'
-import { snakeCase } from 'change-case'
+import { camelCase } from 'change-case'
 import { SlugContract, SlugTypes } from '@tensei/common'
 
 export class Slug extends Text implements SlugContract {
@@ -18,7 +18,7 @@ export class Slug extends Text implements SlugContract {
 
   public from(field: string, inputName?: string) {
     this.config.from = field
-    this.config.inputName = inputName || snakeCase(field)
+    this.config.inputName = inputName || camelCase(field)
 
     return this
   }

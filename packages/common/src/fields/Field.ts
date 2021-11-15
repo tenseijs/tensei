@@ -877,6 +877,7 @@ export class Field implements FieldContract {
       camelCaseName: camelCase(this.name),
       pascalCaseName: this.pascalCaseName,
       updateRules: this.updateValidationRules,
+      isVirtual: this.property.persist === false,
       creationRules: this.creationValidationRules,
       camelCaseNamePlural: this.camelCaseNamePlural,
       isRelationshipField: this.isRelationshipField,

@@ -106,33 +106,47 @@ export const FilterList: React.FunctionComponent = () => {
     setOpen(false)
   }
 
-  const panels: EuiContextMenuPanelDescriptor[] = useMemo(
-    () => [
+  const panels: EuiContextMenuPanelDescriptor[] = useMemo(() => {
+    // For now, we won't support filtering by relationship fields.
+    const fields =
+      resource?.fields.filter(
+        field => !field.isRelationshipField && !field.isVirtual
+      ) || []
+
+    const getClausesForField = (field: FieldContract) => {
+      // Checking field type, find all the clauses that apply to this field.
+      // For example, integer, decimal, float, number field types should only
+      // be shown clauses with type of "number".
+      return filterClauses
+    }
+
+    return [
       {
         id: 0,
         title: 'Select a field',
         items: [
-          ...resource!.fields.map((field, idx) => ({
+          ...fields.map((field, idx) => ({
             name: field.name,
             panel: `where-${field.databaseField}-${idx}`
           }))
         ]
       },
 
-      ...resource!.fields.map((field, idx) => ({
+      ...fields.map((field, idx) => ({
         id: `where-${field.databaseField}-${idx}`,
-        title: `Filter ${resource?.label?.toLowerCase()} where ${field?.name?.toLowerCase()}`,
+        width: 350,
+        title: `Filter ${resource?.label?.toLowerCase()} where ${field?.name?.toLowerCase()}:`,
         items: [
-          ...filterClauses.map((clause, clauseIdx) => ({
+          ...getClausesForField(field).map((clause, clauseIdx) => ({
             name: clause.name,
             panel: `filter-value-${field.databaseField}-${clauseIdx}-${idx}`
           }))
         ]
       })),
 
-      ...resource!.fields
+      ...fields
         .map((field, idx) =>
-          filterClauses.map((clause, clauseIdx) => ({
+          getClausesForField(field).map((clause, clauseIdx) => ({
             id: `filter-value-${field.databaseField}-${clauseIdx}-${idx}`,
             title: `Filter ${resource?.label?.toLowerCase()} where ${field?.name?.toLowerCase()} ${clause.name.toLowerCase()}:`,
             width: 400,
@@ -147,9 +161,8 @@ export const FilterList: React.FunctionComponent = () => {
           }))
         )
         .flat()
-    ],
-    [resource]
-  )
+    ]
+  }, [resource])
 
   return (
     <EuiPopover

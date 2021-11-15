@@ -135,6 +135,7 @@ export interface FieldContract {
   isSortable: boolean
   description: string
   rules: string[]
+  isVirtual: boolean
   defaultValue: string | boolean | number
   isNullable: boolean
   isUnique: boolean
