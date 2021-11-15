@@ -192,28 +192,16 @@ export const Table: React.FunctionComponent = () => {
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [sortField, setSortField] = useState('firstName')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const { resource, applyFilter } = useResourceStore()
 
   const columns: EuiBasicTableColumn<any>[] = [
-    {
-      field: 'firstName',
-      name: 'First name',
-      sortable: true,
-      truncateText: true
-    },
-    {
-      field: 'lastName',
-      name: 'Last name',
-      sortable: true,
-      truncateText: true
-    },
-    {
-      name: 'Date of birth',
-      field: 'dateOfBirth'
-    },
-    {
-      name: 'Nationality',
-      field: 'nationality'
-    },
+    ...(resource?.fields
+      .filter((resource, idx) => resource.showOnIndex && idx != 0)
+      .map(resource => ({
+        field: resource.name,
+        name: resource.name,
+        sortable: resource.isSortable
+      })) || []),
     {
       name: 'Actions',
       actions: [
