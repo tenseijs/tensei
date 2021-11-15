@@ -1,9 +1,8 @@
-import Path from 'path'
 import { cms } from '@tensei/cms'
 import { rest } from '@tensei/rest'
+import { auth } from '@tensei/auth'
 import { graphql } from '@tensei/graphql'
 import { files, media } from '@tensei/media'
-import { auth, permission, role } from '@tensei/auth'
 
 import {
   tensei,
