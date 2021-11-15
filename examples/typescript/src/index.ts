@@ -111,29 +111,10 @@ export default tensei()
     media().plugin(),
     auth()
       .user('Customer')
-      .teams()
       .configureTokens({
         accessTokenExpiresIn: 60 * 60 * 60 * 60 * 60
       })
-      .roles([
-        role('Chief Marketer').permissions([
-          permission('Create Pages'),
-          permission('Delete Pages'),
-          permission('Update Pages'),
-          permission('Link Menu To Pages')
-        ]),
-        role('Teacher').permissions([permission('Authorize Comments')])
-      ])
-      .teamPermissions([permission('Create Article')])
       .verifyEmails()
-      .setup(({ user }) => {
-        user.fields([
-          hasMany('Category'),
-          boolean('Accepted Terms And Conditions')
-            .rules('required')
-            .default(false)
-        ])
-      })
       .plugin(),
     rest().plugin(),
     graphql().plugin(),
