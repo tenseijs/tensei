@@ -26,7 +26,6 @@ import {
   filterClauses,
   FilterClause
 } from '../../../store/resource'
-import { truncate } from 'lodash'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -195,29 +194,31 @@ export const Table: React.FunctionComponent = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const { resource, applyFilter } = useResourceStore()
 
-  const columns: EuiBasicTableColumn<any>[] = [
-    ...(resource?.fields
-      .filter((resource, idx) => resource.showOnIndex && idx != 0)
-      .map(resource => ({
-        field: resource.name,
-        name: resource.name,
-        sortable: resource.isSortable,
-        truncateText: true
-      })) || []),
-    {
-      name: 'Actions',
-      actions: [
-        {
-          name: 'Delete',
-          description: 'Delete this item',
-          icon: 'trash',
-          type: 'icon',
-          color: 'danger',
-          onClick: console.log
-        }
-      ]
-    }
-  ]
+  const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
+    return [
+      ...(resource?.fields
+        .filter(field => field.showOnIndex)
+        .map(field => ({
+          field: field.name,
+          name: field.databaseField,
+          sortable: field.isSortable,
+          truncateText: true
+        })) || []),
+      {
+        name: 'Actions',
+        actions: [
+          {
+            name: 'Delete',
+            description: 'Delete this item',
+            icon: 'trash',
+            type: 'icon',
+            color: 'danger',
+            onClick: console.log
+          }
+        ]
+      }
+    ]
+  }, [resource])
 
   const items = [
     {
