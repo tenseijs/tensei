@@ -4,6 +4,24 @@ import Supertest from 'supertest'
 import { auth } from '@tensei/auth'
 import { graphql } from '@tensei/graphql'
 
+const generateTotp = (secret: string) => {
+  const Speakeasy = require('speakeasy')
+
+  const getTotp = () =>
+    Speakeasy.totp({
+      secret,
+      encoding: 'base32'
+    })
+
+  let totp: string = getTotp()
+
+  while (totp.startsWith('0')) {
+    totp = getTotp()
+  }
+
+  return totp
+}
+
 test('registered user can enable, confirm and disable 2-factor authentication', async () => {
   const { app, ctx } = await setup([
     auth().twoFactorAuth().user('Student').plugin(),
@@ -63,12 +81,7 @@ test('registered user can enable, confirm and disable 2-factor authentication', 
     email: fakeUserDetails.email
   })
 
-  const Speakeasy = require('speakeasy')
-
-  const totp = Speakeasy.totp({
-    secret: user.twoFactorSecret,
-    encoding: 'base32'
-  })
+  const totp = generateTotp(user.twoFactorSecret)
 
   const confirm_enable_2fa_response = await client
     .post(`/graphql`)

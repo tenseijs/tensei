@@ -433,6 +433,17 @@ export class Resource<T extends ApiType = 'rest'>
 
     this.data.fields = [...this.data.fields, ...fields]
 
+    // Find a way to reorder and place `Created At` and `Updated At` at the bottom
+    const timestamps = this.data.fields.filter(field =>
+      ['Created At', 'Updated At'].includes(field.name)
+    )
+
+    const others = this.data.fields.filter(
+      field => !['Created At', 'Updated At'].includes(field.name)
+    )
+
+    this.data.fields = [...others, ...timestamps]
+
     return this
   }
 

@@ -1,5 +1,5 @@
 import Qs from 'qs'
-import Axios from 'axios'
+import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import * as Lib from '@tensei/components'
 
 // Form
@@ -86,6 +86,54 @@ class Core {
     baseURL: this.state.config.apiPath,
     xsrfCookieName: 'x-csrf-token'
   })
+
+  api = {
+    get: async (uri: string, config?: AxiosRequestConfig) => {
+      try {
+        const response = await this.client.get(uri, config)
+
+        return [response, null] as any
+      } catch (error) {
+        return [null, error] as any
+      }
+    },
+    post: async (uri: string, data?: any, config?: AxiosRequestConfig) => {
+      try {
+        const response = await this.client.post(uri, data, config)
+
+        return [response, null] as any
+      } catch (error) {
+        return [null, error] as any
+      }
+    },
+    put: async (uri: string, data?: any, config?: AxiosRequestConfig) => {
+      try {
+        const response = await this.client.put(uri, data, config)
+
+        return [response, null] as any
+      } catch (error) {
+        return [null, error] as any
+      }
+    },
+    patch: async (uri: string, data?: any, config?: AxiosRequestConfig) => {
+      try {
+        const response = await this.client.patch(uri, data, config)
+
+        return [response, null] as any
+      } catch (error) {
+        return [null, error] as any
+      }
+    },
+    delete: async (uri: string, config?: AxiosRequestConfig) => {
+      try {
+        const response = await this.client.delete(uri, config)
+
+        return [response, null] as any
+      } catch (error) {
+        return [null, error] as any
+      }
+    }
+  }
 
   register = (fn: Lib.TenseiRegisterFunction) => {
     this.hooks.push(fn)

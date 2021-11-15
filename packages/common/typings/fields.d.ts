@@ -107,6 +107,7 @@ declare module '@tensei/common/fields' {
   interface SerializedField {
     name: string
     sidebar: boolean
+    isVirtual: boolean
     component: FieldContract['component']
     inputName: string
     isSortable: boolean

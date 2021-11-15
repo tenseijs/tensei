@@ -71,7 +71,10 @@ test('Exposes fields in resource types only if they are not hidden', async () =>
   const schema = await getSchema()
 
   expect(
-    schema.types.find(t => t.name === 'Comment').fields.map(f => f.name)
+    schema.types
+      .find(t => t.name === 'Comment')
+      .fields.map(f => f.name)
+      .sort()
   ).toEqual(
     [
       'id',
@@ -82,13 +85,15 @@ test('Exposes fields in resource types only if they are not hidden', async () =>
       'titleHiddenFromInsertAndFetchApi',
       'titleHiddenFromUpdateAndFetchApi',
       'post'
-    ].filter(
-      f =>
-        ![
-          'titleHiddenFromInsertAndFetchApi',
-          'titleHiddenFromUpdateAndFetchApi'
-        ].includes(f)
-    )
+    ]
+      .filter(
+        f =>
+          ![
+            'titleHiddenFromInsertAndFetchApi',
+            'titleHiddenFromUpdateAndFetchApi'
+          ].includes(f)
+      )
+      .sort()
   )
 })
 
