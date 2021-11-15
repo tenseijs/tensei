@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios'
+import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 export interface UserPermission {
   id: number
@@ -135,6 +135,7 @@ export interface FieldContract {
   isSortable: boolean
   description: string
   rules: string[]
+  isVirtual: boolean
   defaultValue: string | boolean | number
   isNullable: boolean
   isUnique: boolean
@@ -220,6 +221,31 @@ export interface Tensei {
   ctx: TenseiCtxInterface
   getPath: (path: string) => string
   client: AxiosInstance
+  api: {
+    get<T = any, R = AxiosResponse<T>>(
+      url: string,
+      config?: AxiosRequestConfig
+    ): Promise<[R | null, Error | null]>
+    delete<T = any, R = AxiosResponse<T>>(
+      url: string,
+      config?: AxiosRequestConfig
+    ): Promise<[R | null, Error | null]>
+    post<T = any, R = AxiosResponse<T>>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig
+    ): Promise<[R | null, Error | null]>
+    put<T = any, R = AxiosResponse<T>>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig
+    ): Promise<[R | null, Error | null]>
+    patch<T = any, R = AxiosResponse<T>>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig
+    ): Promise<[R | null, Error | null]>
+  }
   components: {
     form: {
       [key: string]: React.FunctionComponent<any>

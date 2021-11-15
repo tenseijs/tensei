@@ -1,5 +1,5 @@
 import Field from './Field'
-import { snakeCase } from 'change-case'
+import { camelCase } from 'change-case'
 
 export interface Option {
   label: string
@@ -36,7 +36,7 @@ export class Select extends Field {
       typeof option === 'string'
         ? {
             label: option,
-            value: snakeCase(option)
+            value: camelCase(option)
           }
         : option
     )

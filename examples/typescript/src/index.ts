@@ -1,9 +1,8 @@
-import Path from 'path'
 import { cms } from '@tensei/cms'
 import { rest } from '@tensei/rest'
-import { markdown } from '@tensei/mde'
+import { auth } from '@tensei/auth'
 import { graphql } from '@tensei/graphql'
-import { auth, permission, role } from '@tensei/auth'
+import { files, media } from '@tensei/media'
 
 import {
   tensei,
@@ -12,77 +11,109 @@ import {
   resource,
   text,
   textarea,
-  dateTime,
+  integer,
   slug,
-  array,
-  hasMany,
   belongsTo,
-  boolean,
-  select
+  belongsToMany,
+  hasMany,
+  boolean
 } from '@tensei/core'
 
 export default tensei()
   .resources([
-    resource('Post')
+    resource('Product')
       .fields([
-        text('Title').rules('required'),
+        text('Name').rules('required'),
         slug('Slug')
           .creationRules('required', 'unique:slug')
           .unique()
-          .from('Title'),
-        markdown('Description').creationRules('required', 'max:255'),
-        textarea('Content').nullable().rules('required'),
-        dateTime('Published At').creationRules('required'),
-        belongsTo('Category').alwaysLoad(),
-        array('Procedure')
-          .of('decimal')
-          .rules('min:3', 'max:10')
-          .creationRules('required', 'max:24'),
-        array('Prices')
-          .nullable()
-          .of('string')
-          .rules('max:10', 'min:2')
-          .creationRules('required', 'max:500')
+          .from('Name'),
+        textarea('Description').creationRules('required', 'max:255'),
+        integer('Price').rules('required'),
+        belongsToMany('Category'),
+        belongsToMany('Product Option'),
+        belongsToMany('Order Item'),
+        belongsToMany('Collection'),
+        belongsToMany('Review'),
+        files('Image')
       ])
-      .icon('library')
-      .displayField('Title'),
+      .displayField('Name'),
     resource('Category')
       .fields([
         text('Name').notNullable().rules('required'),
-        textarea('Description'),
-        belongsTo('User').nullable(),
-        select('Specificity').options(['None', 'Some', 'All']),
-        hasMany('Post')
+        slug('Slug')
+          .creationRules('required', 'unique:slug')
+          .unique()
+          .from('Name'),
+        textarea('Description').nullable(),
+        belongsToMany('Product')
       ])
-      .displayField('Name')
+      .displayField('Name'),
+    resource('Collection')
+      .fields([
+        text('Name').notNullable().rules('required'),
+        slug('Slug')
+          .creationRules('required', 'unique:slug')
+          .unique()
+          .from('Name'),
+        textarea('Description').nullable(),
+        belongsToMany('Product')
+      ])
+      .displayField('Name'),
+    resource('Review').fields([
+      text('Headline').rules('required'),
+      belongsTo('Customer').nullable(),
+      text('Name').nullable(),
+      text('Email').nullable(),
+      textarea('Content').rules('required'),
+      integer('Rating').rules('required', 'min:0', 'max:5'),
+      boolean('Approved').default(false).hideOnCreate().hideOnCreateApi(),
+      belongsTo('Product')
+    ]),
+    resource('Order').fields([
+      integer('Total').rules('required'),
+      belongsTo('Customer'),
+      text('Stripe Checkout ID'),
+      belongsToMany('Product')
+    ]),
+    resource('Order Item').fields([
+      integer('Quantity').min(0).rules('min:0', 'required'),
+      integer('Total').rules('required', 'min:0'),
+      belongsTo('Order').rules('required'),
+      belongsTo('Product').rules('required')
+    ]),
+    resource('Option').fields([
+      text('Name').rules('Required'),
+      slug('Short name')
+        .creationRules('required', 'unique:slug')
+        .unique()
+        .from('Name')
+    ]),
+    resource('Option Value').fields([
+      text('Name').rules('Required'),
+      slug('Short name')
+        .creationRules('required', 'unique:slug')
+        .unique()
+        .from('Name'),
+      belongsToMany('Option')
+    ]),
+    resource('Product Option').fields([
+      belongsToMany('Option'),
+      belongsToMany('Option Value'),
+      belongsToMany('Product'),
+      files('Image')
+    ])
   ])
   .plugins([
     welcome(),
     cms().plugin(),
+    media().plugin(),
     auth()
-      .teams()
+      .user('Customer')
       .configureTokens({
         accessTokenExpiresIn: 60 * 60 * 60 * 60 * 60
       })
-      .roles([
-        role('Chief Marketer').permissions([
-          permission('Create Pages'),
-          permission('Delete Pages'),
-          permission('Update Pages'),
-          permission('Link Menu To Pages')
-        ]),
-        role('Teacher').permissions([permission('Authorize Comments')])
-      ])
-      .teamPermissions([permission('Create Article')])
       .verifyEmails()
-      .setup(({ user }) => {
-        user.fields([
-          hasMany('Category'),
-          boolean('Accepted Terms And Conditions')
-            .rules('required')
-            .default(false)
-        ])
-      })
       .plugin(),
     rest().plugin(),
     graphql().plugin(),

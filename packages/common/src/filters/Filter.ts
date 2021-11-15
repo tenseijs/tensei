@@ -1,4 +1,4 @@
-import { snakeCase } from 'change-case'
+import { camelCase } from 'change-case'
 import { FieldContract } from '@tensei/common'
 import {
   FilterCondition,
@@ -16,7 +16,7 @@ export class Filter<T = any> implements FilterContract {
     fields: []
   }
 
-  constructor(name: string, shortName = snakeCase(name)) {
+  constructor(name: string, shortName = camelCase(name)) {
     this.config.name = name
     this.config.shortName = shortName
   }
