@@ -199,8 +199,8 @@ export const Table: React.FunctionComponent = () => {
       ...(resource?.fields
         .filter(field => field.showOnIndex)
         .map(field => ({
-          field: field.name,
-          name: field.databaseField,
+          name: field.name,
+          field: field.databaseField,
           sortable: field.isSortable,
           truncateText: true
         })) || []),
