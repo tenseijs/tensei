@@ -55,7 +55,7 @@ export const Register: React.FunctionComponent = () => {
       let emailErrors: String[] = []
       let passwordErrors: String[] = []
 
-      // get the error message for each field
+      // get the error message for each field *
       errorData.forEach((error: { message: String; field: String }) => {
         if (error.field == 'firstName') firstNameErrors.push(error.message)
         if (error.field == 'lastName') lastNameErrors.push(error.message)
