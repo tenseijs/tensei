@@ -189,10 +189,27 @@ export const FilterList: React.FunctionComponent = () => {
 export const Table: React.FunctionComponent = () => {
   const [pageSize, setPageSize] = useState(10)
   const [pageIndex, setPageIndex] = useState(0)
+
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [sortField, setSortField] = useState('firstName')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const { resource, applyFilter } = useResourceStore()
+  const { resource, applyFilter, fetchTableData } = useResourceStore()
+  const [items, setItems] = useState([])
+
+  useEffect(() => {
+    const getData = async () => {
+      const [{ data }, error] = await fetchTableData(
+        resource?.slugPlural.toLowerCase()!,
+        pageSize,
+        pageIndex
+      )
+      if (!error) {
+        setItems(data.data)
+        setPageIndex(data.meta.page)
+      }
+    }
+    getData()
+  }, [resource, pageIndex, pageSize])
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -220,22 +237,10 @@ export const Table: React.FunctionComponent = () => {
     ]
   }, [resource])
 
-  const items = [
-    {
-      id: '1',
-      firstName: 'John',
-      lastName: 'Doe',
-      github: 'johndoe',
-      dateOfBirth: Date.now(),
-      nationality: 'NL',
-      online: true
-    }
-  ]
-
   const pagination: EuiBasicTableProps<any>['pagination'] = {
-    pageIndex: 0,
-    pageSize: 10,
-    totalItemCount: 344,
+    pageIndex,
+    pageSize,
+    totalItemCount: items.length,
     pageSizeOptions: [10, 25, 50, 100]
   }
 

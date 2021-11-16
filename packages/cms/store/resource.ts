@@ -64,6 +64,11 @@ interface ResourceState extends State {
 
 interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
+  fetchTableData: (
+    slug: string,
+    page?: number,
+    perPage?: number
+  ) => Promise<any>
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
 }
@@ -84,6 +89,14 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
 
       return resource
     },
+
+    async fetchTableData(slug: string, perPage: number, page: number) {
+      const data = await window.Tensei.api.get(
+        `/${slug}?perPage=${perPage}&page=${page}`
+      )
+      return data
+    },
+
     applyFilter(filter: ActiveFilter) {
       set({
         filters: [...get().filters, filter]
