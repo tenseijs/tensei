@@ -16,7 +16,7 @@
   "scripts": {
     "example:dev": "nodemon --watch src/** --exec 'ts-node src/index.ts'",
     "example:dev:server": "nodemon --watch ../../node_modules/ --watch src/** --exec 'ts-node src/index.ts'",
-    "build": "../../node_modules/.bin/tensei orm:types && tsc"
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/node": "^15.12.4",
