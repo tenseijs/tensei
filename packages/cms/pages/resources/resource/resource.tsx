@@ -205,7 +205,6 @@ export const Table: React.FunctionComponent = () => {
       )
       if (!error) {
         setItems(data.data)
-        setPageIndex(data.meta.page)
       }
     }
     getData()
