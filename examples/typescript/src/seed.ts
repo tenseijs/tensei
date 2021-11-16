@@ -1,6 +1,5 @@
 import Faker from 'faker'
 import { paramCase } from 'change-case'
-import { OrmContract } from '@tensei/orm'
 
 export function product() {
   return {
@@ -56,27 +55,27 @@ export function generate(fn: () => any, length = 5) {
   return Array.from({ length }, () => fn())
 }
 
-export async function seed(db: OrmContract) {
-  const customers = generate(customer).map(c => db.customers().create(c))
+export async function seed(db: any) {
+  const customers = generate(customer).map((c: any) => db.customers().create(c))
   const orders = generate(order)
-    .map(o => db.orders().create(o))
-    .map(o => {
+    .map((o: any) => db.orders().create(o))
+    .map((o: any) => {
       o.customer = customers[Math.floor(Math.random() * customers.length)]
 
       return o
     })
 
-  const categories = generate(category).map(c => db.categories().create(c))
+  const categories = generate(category).map((c: any) => db.categories().create(c))
 
   const products = generate(product)
-    .map(p => db.products().create(p))
-    .map(p => {
+    .map((p: any) => db.products().create(p))
+    .map((p: any) => {
       p.categories = categories
 
       return p
     })
 
-  orders.forEach(order => {
+  orders.forEach((order: any) => {
     order.products = products
 
     return order

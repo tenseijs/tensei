@@ -10,12 +10,13 @@
     "@tensei/graphql": "^0.10.0",
     "@tensei/mde": "^0.9.7",
     "@tensei/media": "^0.10.0",
+    "@tensei/cli": "^0.10.0",
     "@tensei/social-auth": "^0.10.0"
   },
   "scripts": {
     "example:dev": "nodemon --watch src/** --exec 'ts-node src/index.ts'",
     "example:dev:server": "nodemon --watch ../../node_modules/ --watch src/** --exec 'ts-node src/index.ts'",
-    "build": "tensei orm:types && tsc"
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/node": "^15.12.4",
