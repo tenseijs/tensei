@@ -1,3 +1,4 @@
+import { AxiosResponse } from 'axios'
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
@@ -8,14 +9,26 @@ interface AuthState extends State {
   setUser: (user: User) => void
 }
 
-interface AuthMethods extends State {}
+export interface AuthMethods extends State {
+  login: (
+    credentials: LoginCredentials
+  ) => Promise<[AxiosResponse | null, Error | null]>
+  register: (
+    credentials: LoginCredentials
+  ) => Promise<[AxiosResponse | null, Error | null]>
+}
 
 export interface LoginCredentials {
   email: string
   password: string
 }
 
-export interface RegisterCredentials {}
+export interface RegisterCredentials {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+}
 
 export const useAuthStore = create<AuthState & AuthMethods>(
   devtools((set, get) => ({

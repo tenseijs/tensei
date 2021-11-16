@@ -18,6 +18,7 @@ import {
   hasMany,
   boolean
 } from '@tensei/core'
+import { seed } from './seed'
 
 export default tensei()
   .resources([
@@ -123,7 +124,8 @@ export default tensei()
     type: 'sqlite',
     dbName: 'db.sqlite'
   })
-  .boot(() => {
+  .boot(async ({ repositories }) => {
+    await seed(repositories)
     console.log('App running on http://localhost:8810')
   })
   .start()

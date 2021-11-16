@@ -10,6 +10,7 @@ import { useAuthStore } from './store/auth'
 
 import '@tensei/eui/dist/eui_theme_tensei_light.css'
 import { AuthRoutes } from './pages/components/auth/routes'
+import { SettingsRoutes } from './pages/components/settings/routes'
 import { DashboardRoutes } from './pages/components/dashboard/routes'
 import { useEuiTheme, EuiThemeProvider } from '@tensei/eui/lib/services/theme'
 
@@ -67,6 +68,7 @@ ReactDOM.render(
     <EuiThemeProvider modify={extensions}>
       <App>
         <AuthRoutes />
+        <SettingsRoutes />
         <DashboardRoutes />
       </App>
     </EuiThemeProvider>
