@@ -13,6 +13,7 @@
     "@tensei/graphql": "^0.10.0",
     "@tensei/mde": "^0.9.7",
     "@tensei/media": "^0.10.0",
+    "@tensei/cli": "^0.10.0",
     "@tensei/social-auth": "^0.10.0"
   },
   "scripts": {

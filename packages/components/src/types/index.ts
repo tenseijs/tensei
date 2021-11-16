@@ -1,4 +1,9 @@
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  AxiosError
+} from 'axios'
 
 export interface UserPermission {
   id: number
@@ -225,26 +230,26 @@ export interface Tensei {
     get<T = any, R = AxiosResponse<T>>(
       url: string,
       config?: AxiosRequestConfig
-    ): Promise<[R | null, Error | null]>
+    ): Promise<[R | null, AxiosError | null]>
     delete<T = any, R = AxiosResponse<T>>(
       url: string,
       config?: AxiosRequestConfig
-    ): Promise<[R | null, Error | null]>
+    ): Promise<[R | null, AxiosError | null]>
     post<T = any, R = AxiosResponse<T>>(
       url: string,
       data?: any,
       config?: AxiosRequestConfig
-    ): Promise<[R | null, Error | null]>
+    ): Promise<[R | null, AxiosError | null]>
     put<T = any, R = AxiosResponse<T>>(
       url: string,
       data?: any,
       config?: AxiosRequestConfig
-    ): Promise<[R | null, Error | null]>
+    ): Promise<[R | null, AxiosError | null]>
     patch<T = any, R = AxiosResponse<T>>(
       url: string,
       data?: any,
       config?: AxiosRequestConfig
-    ): Promise<[R | null, Error | null]>
+    ): Promise<[R | null, AxiosError | null]>
   }
   components: {
     form: {
