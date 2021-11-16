@@ -1,6 +1,8 @@
-import React, { FormEventHandler, useState } from 'react'
+import React, { FormEvent, useState } from 'react'
 import styled from 'styled-components'
 import { AuthLayout } from '../../components/auth/layout'
+
+import { useAuthStore, LoginCredentials } from '../../../store/auth'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
@@ -14,13 +16,19 @@ const H3 = styled.h3`
   text-align: center;
 `
 
+type LoginErrors = Partial<Record<keyof LoginCredentials, string[]>>
+
+
 export const Login: React.FunctionComponent = () => {
-  const [userDetails, setUserDetails] = useState({
+  const [userDetails, setUserDetails] = useState<LoginCredentials>({
     email: '',
     password: ''
   })
 
-  const [errors, setErrors] = useState(false)
+  const [errors, setErrors] = useState<LoginErrors>({})
+  const [loading, setLoading] = useState(false)
+
+  const { login } = useAuthStore()
 
   const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {value} = e.target
@@ -32,22 +40,28 @@ export const Login: React.FunctionComponent = () => {
     setUserDetails({...userDetails, password: value})
   }
 
-  const onLogin: FormEventHandler = async (event) => {
+  const onLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    await window.Tensei.client.post('/auth/login', userDetails)
-    .then(response => {
-      console.log(response)
-    })
-    .catch(error => {
-      console.log(error)
+    setLoading(true)
+    
+    const [response, error] = await login(userDetails)
 
-      setErrors(true)
+    if (error) {
+      let errors: LoginErrors = {}
 
-     if(!error) {
-        window.location.href = window.Tensei.getPath('')
-      }
-    })
+      error.response?.data.forEach((error: { message: string; field: string }) => {
+        errors[error.field as keyof LoginErrors] = [error.message]
+      })
+
+      setErrors({ ...errors })
+      setLoading(false)
+      
+      return
+    }
+
+    window.location.href = window.Tensei.getPath('')
+    setLoading(false)
   }
 
   return (
@@ -61,25 +75,27 @@ export const Login: React.FunctionComponent = () => {
       </EuiText>
 
       <EuiSpacer size="xl" />
-      <EuiForm component="div" isInvalid={errors}>
-        <EuiFormRow label="Email">
-          <EuiFieldText fullWidth isInvalid={errors}
+      <EuiForm component="form" onSubmit={onLogin}>
+        <EuiFormRow label="Email" isInvalid={errors.email && true}  error={errors.email} >
+          <EuiFieldText fullWidth 
             onChange={onChangeEmail} 
+            isInvalid={errors.email && true}
           />
         </EuiFormRow>
 
         <EuiSpacer size="l" />
 
-        <EuiFormRow label="Password">
-          <EuiFieldPassword type="dual" fullWidth isInvalid={errors}
+        <EuiFormRow label="Password" isInvalid={errors.password && true} error={errors.password}>
+          <EuiFieldPassword type="dual" fullWidth 
             onChange={onChangePassword} 
+            isInvalid={errors.password && true}
           />
         </EuiFormRow>
 
         <EuiSpacer size="xl" />
 
-        <EuiButton fullWidth fill onClick={onLogin} type='submit' >
-            Log in
+        <EuiButton fullWidth fill type='submit' isLoading={loading} >
+            {loading ? 'Loading' : 'Log in'}
         </EuiButton>
       
       </EuiForm>
