@@ -32,11 +32,8 @@ export const Register: React.FunctionComponent = () => {
     password: ''
   })
 
-  // on submit, and if error
-
-  // declare errors state
+  // declare page states
   const [errors, setErrors] = useState<RegisterErrors>({})
-
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onSubmit = async (submitEvent: FormEvent<HTMLFormElement>) => {
@@ -48,13 +45,12 @@ export const Register: React.FunctionComponent = () => {
 
       let errors: RegisterErrors = {}
 
-      // get the error message for each field
+      // get error messages
       errorData.forEach((error: { message: string; field: string }) => {
         errors[error.field as keyof RegisterErrors] = [error.message]
       })
-      console.log(errors)
-      setErrors({ ...errors })
 
+      setErrors({ ...errors })
       setIsSubmitting(false)
       return
     }
