@@ -37,10 +37,10 @@ export default (config: Config, cmsConfig: any) => {
     } = resource.data
 
     routes.push(
-      route(`CMS: Insert ${singular}`)
+      route(`CMS: Create ${singular}`)
         .post()
         .internal()
-        .id(getRouteId(`insert_${singular}`))
+        .id(getRouteId(`create${singular}`))
         .resource(resource)
         .path(getApiPath(plural))
         .handle(async (request, response) => {
@@ -90,7 +90,7 @@ export default (config: Config, cmsConfig: any) => {
       route(`CMS: Fetch multiple ${plural}`)
         .get()
         .internal()
-        .id(getRouteId(`index_${plural}`))
+        .id(getRouteId(`index${plural}`))
         .resource(resource)
         .path(getApiPath(plural))
         .extend({
@@ -122,7 +122,7 @@ export default (config: Config, cmsConfig: any) => {
       route(`Fetch single ${singular}`)
         .get()
         .internal()
-        .id(getRouteId(`show_${singular}`))
+        .id(getRouteId(`show${singular}`))
         .resource(resource)
         .extend({
           docs: {
