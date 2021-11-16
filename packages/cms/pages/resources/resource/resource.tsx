@@ -192,42 +192,33 @@ export const Table: React.FunctionComponent = () => {
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [sortField, setSortField] = useState('firstName')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const { resource, applyFilter } = useResourceStore()
 
-  const columns: EuiBasicTableColumn<any>[] = [
-    {
-      field: 'firstName',
-      name: 'First name',
-      sortable: true,
-      truncateText: true
-    },
-    {
-      field: 'lastName',
-      name: 'Last name',
-      sortable: true,
-      truncateText: true
-    },
-    {
-      name: 'Date of birth',
-      field: 'dateOfBirth'
-    },
-    {
-      name: 'Nationality',
-      field: 'nationality'
-    },
-    {
-      name: 'Actions',
-      actions: [
-        {
-          name: 'Delete',
-          description: 'Delete this item',
-          icon: 'trash',
-          type: 'icon',
-          color: 'danger',
-          onClick: console.log
-        }
-      ]
-    }
-  ]
+  const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
+    return [
+      ...(resource?.fields
+        .filter(field => field.showOnIndex)
+        .map(field => ({
+          name: field.name,
+          field: field.databaseField,
+          sortable: field.isSortable,
+          truncateText: true
+        })) || []),
+      {
+        name: 'Actions',
+        actions: [
+          {
+            name: 'Delete',
+            description: 'Delete this item',
+            icon: 'trash',
+            type: 'icon',
+            color: 'danger',
+            onClick: console.log
+          }
+        ]
+      }
+    ]
+  }, [resource])
 
   const items = [
     {
