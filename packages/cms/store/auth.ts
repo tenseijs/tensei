@@ -16,6 +16,7 @@ export interface AuthMethods extends State {
   register: (
     credentials: RegisterCredentials
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
+  logout: () => Promise<[AxiosResponse | null, AxiosError | null]>
 }
 
 export interface LoginCredentials {
@@ -43,6 +44,9 @@ export const useAuthStore = create<AuthState & AuthMethods>(
     },
     async register(credentials: RegisterCredentials) {
       return window.Tensei.api.post('/auth/register', credentials)
-    }
+    },
+    async logout() {
+      return window.Tensei.api.post('/auth/logout')
+    },
   }))
 )
