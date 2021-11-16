@@ -19,6 +19,9 @@ const H3 = styled.h3`
   text-align: center;
 `
 
+// Define errors type
+type RegisterErrors = Partial<Record<keyof RegisterCredentials, string[]>>
+
 export const Register: React.FunctionComponent = () => {
   const { register } = useAuthStore()
 
@@ -29,17 +32,10 @@ export const Register: React.FunctionComponent = () => {
     password: ''
   })
 
-  const [errors, setErrors] = useState<{
-    firstName: String[]
-    lastName: String[]
-    email: String[]
-    password: String[]
-  }>({
-    firstName: [],
-    lastName: [],
-    email: [],
-    password: []
-  })
+  // on submit, and if error
+
+  // declare errors state
+  const [errors, setErrors] = useState<RegisterErrors>({})
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -50,24 +46,14 @@ export const Register: React.FunctionComponent = () => {
     if (error) {
       let errorData = error.response?.data?.errors
 
-      let firstNameErrors: String[] = []
-      let lastNameErrors: String[] = []
-      let emailErrors: String[] = []
-      let passwordErrors: String[] = []
+      let errors: RegisterErrors = {}
 
-      // get the error message for each field *
-      errorData.forEach((error: { message: String; field: String }) => {
-        if (error.field == 'firstName') firstNameErrors.push(error.message)
-        if (error.field == 'lastName') lastNameErrors.push(error.message)
-        if (error.field == 'email') emailErrors.push(error.message)
-        if (error.field == 'password') passwordErrors.push(error.message)
+      // get the error message for each field
+      errorData.forEach((error: { message: string; field: string }) => {
+        errors[error.field as keyof RegisterErrors] = [error.message]
       })
-      setErrors({
-        firstName: firstNameErrors,
-        lastName: lastNameErrors,
-        email: emailErrors,
-        password: passwordErrors
-      })
+      console.log(errors)
+      setErrors({ ...errors })
 
       setIsSubmitting(false)
       return
@@ -96,29 +82,29 @@ export const Register: React.FunctionComponent = () => {
             <EuiFlexItem>
               <EuiFormRow
                 label="First name"
-                isInvalid={errors.firstName.length > 0}
-                error={errors.firstName}
+                isInvalid={errors?.firstName && true}
+                error={errors?.firstName}
               >
                 <EuiFieldText
                   autoFocus
                   onChange={changeEvent => {
                     setUser({ ...user, firstName: changeEvent.target.value })
                   }}
-                  isInvalid={errors.firstName.length > 0}
+                  isInvalid={errors?.firstName && true}
                 />
               </EuiFormRow>
             </EuiFlexItem>
             <EuiFlexItem>
               <EuiFormRow
                 label="Last name"
-                isInvalid={errors.lastName.length > 0}
-                error={errors.lastName}
+                isInvalid={errors?.lastName && true}
+                error={errors?.lastName}
               >
                 <EuiFieldText
                   onChange={changeEvent => {
                     setUser({ ...user, lastName: changeEvent.target.value })
                   }}
-                  isInvalid={errors.lastName.length > 0}
+                  isInvalid={errors?.lastName && true}
                 />
               </EuiFormRow>
             </EuiFlexItem>
@@ -128,15 +114,15 @@ export const Register: React.FunctionComponent = () => {
 
           <EuiFormRow
             label="Email"
-            isInvalid={errors.email.length > 0}
-            error={errors.email}
+            isInvalid={errors?.email && true}
+            error={errors?.email}
           >
             <EuiFieldText
               fullWidth
               onChange={changeEvent => {
                 setUser({ ...user, email: changeEvent.target.value })
               }}
-              isInvalid={errors.email.length > 0}
+              isInvalid={errors?.email && true}
             />
           </EuiFormRow>
 
@@ -144,8 +130,8 @@ export const Register: React.FunctionComponent = () => {
 
           <EuiFormRow
             label="Password"
-            isInvalid={errors.password.length > 0}
-            error={errors.password}
+            isInvalid={errors?.password && true}
+            error={errors?.password}
           >
             <EuiFieldPassword
               type="dual"
@@ -153,7 +139,7 @@ export const Register: React.FunctionComponent = () => {
               onChange={changeEvent => {
                 setUser({ ...user, password: changeEvent.target.value })
               }}
-              isInvalid={errors.password.length > 0}
+              isInvalid={errors?.password && true}
             />
           </EuiFormRow>
 
