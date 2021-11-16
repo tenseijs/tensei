@@ -38,6 +38,7 @@ export const Register: React.FunctionComponent = () => {
 
   const onSubmit = async (submitEvent: FormEvent<HTMLFormElement>) => {
     submitEvent.preventDefault()
+    setIsSubmitting(true)
     const [response, error] = await register(user)
 
     if (error) {
@@ -55,8 +56,8 @@ export const Register: React.FunctionComponent = () => {
       return
     }
 
-    setIsSubmitting(false)
     window.location.href = window.Tensei.getPath('')
+    setIsSubmitting(false)
   }
 
   return (
@@ -84,6 +85,7 @@ export const Register: React.FunctionComponent = () => {
                 <EuiFieldText
                   autoFocus
                   onChange={changeEvent => {
+                    errors.firstName = undefined
                     setUser({ ...user, firstName: changeEvent.target.value })
                   }}
                   isInvalid={errors?.firstName && true}
@@ -98,6 +100,7 @@ export const Register: React.FunctionComponent = () => {
               >
                 <EuiFieldText
                   onChange={changeEvent => {
+                    errors.lastName = undefined
                     setUser({ ...user, lastName: changeEvent.target.value })
                   }}
                   isInvalid={errors?.lastName && true}
@@ -116,6 +119,7 @@ export const Register: React.FunctionComponent = () => {
             <EuiFieldText
               fullWidth
               onChange={changeEvent => {
+                errors.email = undefined
                 setUser({ ...user, email: changeEvent.target.value })
               }}
               isInvalid={errors?.email && true}
@@ -133,6 +137,7 @@ export const Register: React.FunctionComponent = () => {
               type="dual"
               fullWidth
               onChange={changeEvent => {
+                errors.password = undefined
                 setUser({ ...user, password: changeEvent.target.value })
               }}
               isInvalid={errors?.password && true}
