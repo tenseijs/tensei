@@ -1,6 +1,7 @@
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { ResourceContract, FieldContract } from '@tensei/components'
+import { AxiosError, AxiosResponse } from 'axios'
 
 export interface ActiveFilter {
   field: FieldContract
@@ -65,10 +66,9 @@ interface ResourceState extends State {
 interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
   fetchTableData: (
-    slug: string,
     page?: number,
     perPage?: number
-  ) => Promise<any>
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
 }
@@ -90,11 +90,13 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       return resource
     },
 
-    async fetchTableData(slug: string, perPage: number, page: number) {
-      const data = await window.Tensei.api.get(
-        `/${slug}?perPage=${perPage}&page=${page}`
+    async fetchTableData(perPage: number, page: number) {
+      const { resource } = get()
+      const [response, error] = await window.Tensei.api.get(
+        `/${resource?.slug}?perPage=${perPage}&page=${page}`
       )
-      return data
+      if (error) return [null, error]
+      return [response, null]
     },
 
     applyFilter(filter: ActiveFilter) {

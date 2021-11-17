@@ -185,26 +185,29 @@ export const FilterList: React.FunctionComponent = () => {
     </EuiPopover>
   )
 }
+interface MetaData {
+  page: number
+  pageCount: number
+  perPage: number
+  total: number
+}
 
 export const Table: React.FunctionComponent = () => {
-  const [pageSize, setPageSize] = useState(10)
+  const { resource, applyFilter, fetchTableData } = useResourceStore()
+  const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
 
   const [selectedItems, setSelectedItems] = useState<any[]>([])
-  const [sortField, setSortField] = useState('firstName')
+  const [sortField, setSortField] = useState('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const { resource, applyFilter, fetchTableData } = useResourceStore()
   const [items, setItems] = useState([])
-
+  const [metaData, setMetaData] = useState<MetaData>()
   useEffect(() => {
     const getData = async () => {
-      const [{ data }, error] = await fetchTableData(
-        resource?.slugPlural.toLowerCase()!,
-        pageSize,
-        pageIndex
-      )
+      const [data, error] = await fetchTableData(pageSize, pageIndex)
       if (!error) {
-        setItems(data.data)
+        setItems(data?.data.data)
+        setMetaData(data?.data.meta)
       }
     }
     getData()
@@ -238,9 +241,9 @@ export const Table: React.FunctionComponent = () => {
 
   const pagination: EuiBasicTableProps<any>['pagination'] = {
     pageIndex,
-    pageSize,
-    totalItemCount: items.length,
-    pageSizeOptions: [10, 25, 50, 100]
+    pageSize: pageSize!,
+    totalItemCount: metaData?.total!,
+    pageSizeOptions: [metaData?.perPage!]
   }
 
   const onTableChange = ({ page, sort }: CriteriaWithPagination<any>) => {
