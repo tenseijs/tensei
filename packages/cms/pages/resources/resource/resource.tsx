@@ -196,7 +196,7 @@ export const Table: React.FunctionComponent = () => {
   const { resource, applyFilter, fetchTableData } = useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
-
+  const [loading, setLoading] = useState(true)
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [sortField, setSortField] = useState('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -204,11 +204,12 @@ export const Table: React.FunctionComponent = () => {
   const [metaData, setMetaData] = useState<MetaData>()
   useEffect(() => {
     const getData = async () => {
-      const [data, error] = await fetchTableData(pageIndex, pageSize)
+      const [data, error] = await fetchTableData(pageIndex + 1, pageSize)
       console.log(data)
       if (!error) {
         setItems(data?.data.data)
         setMetaData(data?.data.meta)
+        setLoading(false)
       }
     }
     getData()
@@ -260,6 +261,7 @@ export const Table: React.FunctionComponent = () => {
       itemId={'id'}
       columns={columns}
       hasActions={true}
+      loading={loading}
       selection={{
         selectable: () => true,
         onSelectionChange: setSelectedItems,
