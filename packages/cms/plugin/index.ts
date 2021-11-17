@@ -159,7 +159,7 @@ class CmsPlugin {
           [
             {
               field: 'email',
-              message: 'This user does not exist.'
+              message: 'These credentials do not match our records.'
             }
           ],
           null
@@ -170,8 +170,8 @@ class CmsPlugin {
         return done(
           [
             {
-              field: 'password',
-              message: 'Your password is incorrect.'
+              field: 'email',
+              message: 'These credentials do not match our records.'
             }
           ],
           null
@@ -315,7 +315,10 @@ class CmsPlugin {
           .nullable()
           .sortable()
           .creationRules('required'),
-        text('Password').rules('required', 'min:12').nullable().hidden(),
+        text('Password')
+          .rules('required', 'min:12')
+          .nullable()
+          .hideOnFetchApi(),
         text('Email')
           .unique()
           .searchable()
@@ -523,20 +526,24 @@ class CmsPlugin {
           (request, response, next) => {
             Passport.authenticate('local-login', {}, (error, user, info) => {
               if (user === false) {
-                return response.status(422).json([
-                  {
-                    message: 'Please provide your email.',
-                    field: 'email'
-                  },
-                  {
-                    message: 'Please provide your password.',
-                    field: 'password'
-                  }
-                ])
+                return response.status(422).json({
+                  errors: [
+                    {
+                      message: 'Please provide your email.',
+                      field: 'email'
+                    },
+                    {
+                      message: 'Please provide your password.',
+                      field: 'password'
+                    }
+                  ]
+                })
               }
 
               if (error || !user) {
-                return response.status(400).json(error)
+                return response.status(400).json({
+                  errors: error
+                })
               }
 
               request.logIn(user, error => {
