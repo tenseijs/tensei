@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState & AuthMethods>(
       return window.Tensei.api.post('/auth/register', credentials)
     },
     async logout() {
-      return window.Tensei.api.post('/auth/logout')
+      return window.Tensei.api.post('/logout')
     },
   }))
 )
