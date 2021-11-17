@@ -120,9 +120,9 @@ class CmsPlugin {
 
         return response.status(204).json()
       }),
-    route('Passwordless Logout')
+    route('Logout')
       .path(this.getApiPath('logout'))
-      .id('passwordless_logout')
+      .id('logout')
       .post()
       .handle(async (request, response) => {
         request.session.destroy(error => {
@@ -159,7 +159,7 @@ class CmsPlugin {
           [
             {
               field: 'email',
-              message: 'This user does not exist.'
+              message: 'These credentials do not match our records.'
             }
           ],
           null
@@ -170,8 +170,8 @@ class CmsPlugin {
         return done(
           [
             {
-              field: 'password',
-              message: 'Your password is incorrect.'
+              field: 'email',
+              message: 'These credentials do not match our records.'
             }
           ],
           null
@@ -185,7 +185,7 @@ class CmsPlugin {
   }
 
   private registerPassport = async (request: Request, done: any) => {
-    const { config, manager, body, resources } = request
+    const { config, manager, body, resources, repositories } = request
     const { emitter } = config
 
     const adminCount = await manager.count(
@@ -214,9 +214,27 @@ class CmsPlugin {
       return done(payload, null)
     }
 
+    let superAdminRole = await repositories.adminRoles().findOne({
+      slug: 'super-admin'
+    })
+
+    if (!superAdminRole) {
+      return done(
+        [
+          {
+            message:
+              'The Super Admin Role must exist before you create an administrator account.',
+            field: 'role'
+          }
+        ],
+        null
+      )
+    }
+
     let createUserPayload: any = {
       ...payload,
-      active: true
+      active: true,
+      adminRoles: [superAdminRole]
     }
 
     const admin: User = manager.create(
@@ -248,8 +266,8 @@ class CmsPlugin {
       .fields([
         select('Type').options([
           {
-            label: 'Passwordless',
-            value: 'PASSWORDLESS'
+            label: 'Invite',
+            value: 'INVITATION'
           }
         ]),
         text('Token'),
@@ -297,7 +315,10 @@ class CmsPlugin {
           .nullable()
           .sortable()
           .creationRules('required'),
-        text('Password').rules('required', 'min:12').nullable(),
+        text('Password')
+          .rules('required', 'min:12')
+          .nullable()
+          .hideOnFetchApi(),
         text('Email')
           .unique()
           .searchable()
@@ -446,6 +467,9 @@ class CmsPlugin {
             this.resources.user.data.pascalCaseName,
             {
               id: id.id
+            },
+            {
+              populate: ['adminRoles.adminPermissions']
             }
           )
 
@@ -502,20 +526,24 @@ class CmsPlugin {
           (request, response, next) => {
             Passport.authenticate('local-login', {}, (error, user, info) => {
               if (user === false) {
-                return response.status(422).json([
-                  {
-                    message: 'Please provide your email.',
-                    field: 'email'
-                  },
-                  {
-                    message: 'Please provide your password.',
-                    field: 'password'
-                  }
-                ])
+                return response.status(422).json({
+                  errors: [
+                    {
+                      message: 'Please provide your email.',
+                      field: 'email'
+                    },
+                    {
+                      message: 'Please provide your password.',
+                      field: 'password'
+                    }
+                  ]
+                })
               }
 
               if (error || !user) {
-                return response.status(400).json(error)
+                return response.status(400).json({
+                  errors: error
+                })
               }
 
               request.logIn(user, error => {
