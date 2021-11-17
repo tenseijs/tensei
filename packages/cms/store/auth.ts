@@ -1,4 +1,4 @@
-import { AxiosResponse } from 'axios'
+import { AxiosResponse, AxiosError } from 'axios'
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
@@ -12,10 +12,10 @@ interface AuthState extends State {
 export interface AuthMethods extends State {
   login: (
     credentials: LoginCredentials
-  ) => Promise<[AxiosResponse | null, Error | null]>
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
   register: (
-    credentials: LoginCredentials
-  ) => Promise<[AxiosResponse | null, Error | null]>
+    credentials: RegisterCredentials
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
 }
 
 export interface LoginCredentials {
