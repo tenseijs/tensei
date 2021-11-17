@@ -18,7 +18,6 @@ const H3 = styled.h3`
 
 type LoginErrors = Partial<Record<keyof LoginCredentials, string[]>>
 
-
 export const Login: React.FunctionComponent = () => {
   const [userDetails, setUserDetails] = useState<LoginCredentials>({
     email: '',
@@ -31,32 +30,38 @@ export const Login: React.FunctionComponent = () => {
   const { login } = useAuthStore()
 
   const onChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {value} = event.target
-    setUserDetails({...userDetails, email: value})
-  } 
+    const { value } = event.target
+    setErrors({
+      ...errors,
+      email: undefined
+    })
+    setUserDetails({ ...userDetails, email: value })
+  }
 
   const onChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {value} = event.target
-    setUserDetails({...userDetails, password: value})
+    const { value } = event.target
+    setUserDetails({ ...userDetails, password: value })
   }
 
   const onLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     setLoading(true)
-    
+
     const [response, error] = await login(userDetails)
 
     if (error) {
       let errors: LoginErrors = {}
 
-      error.response?.data.forEach((error: { message: string; field: string }) => {
-        errors[error.field as keyof LoginErrors] = [error.message]
-      })
+      error.response?.data?.errors?.forEach(
+        (error: { message: string; field: string }) => {
+          errors[error.field as keyof LoginErrors] = [error.message]
+        }
+      )
 
       setErrors({ ...errors })
       setLoading(false)
-      
+
       return
     }
 
@@ -76,30 +81,39 @@ export const Login: React.FunctionComponent = () => {
 
       <EuiSpacer size="xl" />
       <EuiForm component="form" onSubmit={onLogin}>
-        <EuiFormRow label="Email" isInvalid={errors.email && true}  error={errors.email} >
-          <EuiFieldText fullWidth 
-            onChange={onChangeEmail} 
+        <EuiFormRow
+          label="Email"
+          isInvalid={errors.email && true}
+          error={errors.email}
+        >
+          <EuiFieldText
+            fullWidth
+            onChange={onChangeEmail}
             isInvalid={errors.email && true}
           />
         </EuiFormRow>
 
         <EuiSpacer size="l" />
 
-        <EuiFormRow label="Password" isInvalid={errors.password && true} error={errors.password}>
-          <EuiFieldPassword type="dual" fullWidth 
-            onChange={onChangePassword} 
+        <EuiFormRow
+          label="Password"
+          isInvalid={errors.password && true}
+          error={errors.password}
+        >
+          <EuiFieldPassword
+            type="dual"
+            fullWidth
+            onChange={onChangePassword}
             isInvalid={errors.password && true}
           />
         </EuiFormRow>
 
         <EuiSpacer size="xl" />
 
-        <EuiButton fullWidth fill type='submit' isLoading={loading} >
-            Log in
+        <EuiButton fullWidth fill type="submit" isLoading={loading}>
+          Log in
         </EuiButton>
-      
       </EuiForm>
-
     </AuthLayout>
   )
 }
