@@ -30,13 +30,13 @@ export const Login: React.FunctionComponent = () => {
 
   const { login } = useAuthStore()
 
-  const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const {value} = e.target
+  const onChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {value} = event.target
     setUserDetails({...userDetails, email: value})
   } 
 
-  const onChangePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const {value} = e.target
+  const onChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const {value} = event.target
     setUserDetails({...userDetails, password: value})
   }
 
@@ -95,7 +95,7 @@ export const Login: React.FunctionComponent = () => {
         <EuiSpacer size="xl" />
 
         <EuiButton fullWidth fill type='submit' isLoading={loading} >
-            {loading ? 'Loading' : 'Log in'}
+            Log in
         </EuiButton>
       
       </EuiForm>
