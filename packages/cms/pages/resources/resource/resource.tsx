@@ -204,7 +204,8 @@ export const Table: React.FunctionComponent = () => {
   const [metaData, setMetaData] = useState<MetaData>()
   useEffect(() => {
     const getData = async () => {
-      const [data, error] = await fetchTableData(pageSize, pageIndex)
+      const [data, error] = await fetchTableData(pageIndex, pageSize)
+      console.log(data)
       if (!error) {
         setItems(data?.data.data)
         setMetaData(data?.data.meta)
@@ -243,7 +244,7 @@ export const Table: React.FunctionComponent = () => {
     pageIndex,
     pageSize: pageSize!,
     totalItemCount: metaData?.total!,
-    pageSizeOptions: [metaData?.perPage!]
+    pageSizeOptions: resource?.perPageOptions
   }
 
   const onTableChange = ({ page, sort }: CriteriaWithPagination<any>) => {
