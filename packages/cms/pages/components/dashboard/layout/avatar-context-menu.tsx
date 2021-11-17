@@ -25,6 +25,11 @@ export const AvatarContextMenu: React.FunctionComponent = () => {
     setPopover(false)
   }
 
+  const onSettingsClick = () => {
+    window.location.href = window.Tensei.getPath('settings/profile')
+    closePopover()
+  }
+
   const onLogoutClick = async () => {
     await logout()
     window.location.href = window.Tensei.getPath('auth/login')
@@ -35,7 +40,7 @@ export const AvatarContextMenu: React.FunctionComponent = () => {
     <EuiContextMenuItem
       key="settings"
       icon={<EuiIcon type="gear" />}
-      onClick={closePopover}
+      onClick={onSettingsClick}
     >
       Settings
     </EuiContextMenuItem>,
