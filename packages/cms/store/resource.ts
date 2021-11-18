@@ -62,14 +62,16 @@ interface ResourceState extends State {
   resource?: ResourceContract
   filters: ActiveFilter[]
 }
-
+interface TableDataParams {
+  perPage?: number
+  page?: number
+  sort?: string
+  sortField: string
+}
 interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
   fetchTableData: (
-    page?: number,
-    perPage?: number,
-    sortField?: string,
-    sortDirection?: string
+    params: TableDataParams
   ) => Promise<[AxiosResponse | null, Error | null]>
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
@@ -92,17 +94,22 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       return resource
     },
 
-    async fetchTableData(page, perPage, sortField, sortDirection) {
+    async fetchTableData(params: TableDataParams) {
       const { resource } = get()
-      if (!sortField || !sortDirection) {
-        return await window.Tensei.api.get(
-          `/${resource?.slug}?page=${page}&perPage=${perPage}`
-        )
+      const { page, perPage, sort, sortField } = params
+      if (!sortField) {
+        return await window.Tensei.api.get(`/${resource?.slug}`, {
+          params: { page, perPage }
+        })
       }
-      return await window.Tensei.api.get(
-        `/${resource?.slug}?page=${page}&perPage=${perPage}&sort=${sortField}:${sortDirection}`
-      )
+      return await window.Tensei.api.get(`/${resource?.slug}`, {
+        params: { page, perPage, sort }
+      })
     },
+
+    // return await window.Tensei.api.get(
+    //   `/${resource?.slug}?page=${page}&perPage=${perPage}&sort=${sortField}:${sortDirection}`
+    // )
 
     applyFilter(filter: ActiveFilter) {
       set({

@@ -204,12 +204,13 @@ export const Table: React.FunctionComponent = () => {
   const [metaData, setMetaData] = useState<MetaData>()
   useEffect(() => {
     const getData = async () => {
-      const [data, error] = await fetchTableData(
-        pageIndex + 1,
-        pageSize,
-        sortField,
-        sortDirection
-      )
+      const params = {
+        page: pageIndex + 1,
+        perPage: pageSize,
+        sort: `${sortField}:${sortDirection}`,
+        sortField
+      }
+      const [data, error] = await fetchTableData(params)
       if (!error) {
         setItems(data?.data.data)
         setMetaData(data?.data.meta)
