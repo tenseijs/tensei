@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState & AuthMethods>(
       return window.Tensei.api.post('/auth/register', credentials)
     },
     async logout() {
-      return window.Tensei.api.post('/logout')
+      return window.Tensei.api.post('/auth/logout')
     },
     async updateProfile(input: UpdateUserProfileInput) {
       return window.Tensei.api.patch('/auth/update-profile', input)
