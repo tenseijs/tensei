@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import React, { FunctionComponent, Fragment } from 'react'
+import React, { FunctionComponent, Fragment, FormEvent } from 'react'
 import { DashboardLayout } from '../../components/dashboard/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
@@ -15,7 +15,9 @@ import {
   EuiForm,
   EuiFormRow
 } from '@tensei/eui/lib/components/form'
-import { useAuthStore } from '../../../store/auth'
+import { UpdateProfileCredentials, useAuthStore } from '../../../store/auth'
+import { useState } from 'react'
+import { useEffect } from 'react'
 
 const PageTitle = styled.div`
   display: flex;
@@ -39,8 +41,52 @@ const SpacerBottom = styled(EuiSpacer)`
 
 interface ProfileProps {}
 
+type UpdateProfileErrors = Partial<
+  Record<keyof UpdateProfileCredentials, string[]>
+>
+
 export const Profile: FunctionComponent<ProfileProps> = () => {
-  const { user } = useAuthStore()
+  const { user, setUser, updateProfile } = useAuthStore()
+  const [profile, setProfile] = useState<UpdateProfileCredentials>()
+  const [pageHasLoaded, setPageLoaded] = useState(false)
+  const [isUpdatingProfile, setUpdatingProfile] = useState(false)
+  const [
+    updateProfileErrors,
+    setUpdateProfileErrors
+  ] = useState<UpdateProfileErrors>({})
+
+  useEffect(() => {
+    if (!pageHasLoaded) {
+      const { firstName, lastName, email } = user
+      setProfile({ firstName, lastName, email })
+      setPageLoaded(true)
+    }
+  })
+
+  const onUpdateProfile = async (onSubmitEvent: FormEvent<HTMLFormElement>) => {
+    onSubmitEvent.preventDefault()
+
+    setUpdatingProfile(true)
+    const [response, error] = await updateProfile(profile!)
+
+    if (error) {
+      let errorData = error.response?.data?.errors
+
+      let errors: UpdateProfileErrors = {}
+
+      // get error messages
+      errorData.forEach((error: { message: string; field: string }) => {
+        errors[error.field as keyof UpdateProfileErrors] = [error.message]
+      })
+
+      setUpdateProfileErrors({ ...errors })
+      setUpdatingProfile(false)
+      return
+    }
+
+    setUpdatingProfile(false)
+    setUser({ ...user, ...profile })
+  }
 
   return (
     <DashboardLayout>
@@ -60,7 +106,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
         </PageTitle>
 
         <FormWrapper>
-          <EuiForm component="form">
+          <EuiForm component="form" onSubmit={onUpdateProfile}>
             <EuiDescribedFormGroup
               fullWidth
               title={<h3>Profile</h3>}
@@ -73,27 +119,73 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
             >
               <EuiFlexGroup>
                 <EuiFlexItem>
-                  <EuiFormRow label="First name">
-                    <EuiFieldText value={user.firstName} />
+                  <EuiFormRow
+                    label="First name"
+                    error={updateProfileErrors?.firstName}
+                    isInvalid={updateProfileErrors?.firstName && true}
+                  >
+                    <EuiFieldText
+                      value={profile?.firstName}
+                      onChange={onChangeEvent => {
+                        updateProfileErrors.firstName = undefined
+                        setProfile({
+                          ...profile!,
+                          firstName: onChangeEvent.target.value
+                        })
+                      }}
+                      isInvalid={updateProfileErrors?.firstName && true}
+                    />
                   </EuiFormRow>
                 </EuiFlexItem>
                 <EuiFlexItem>
-                  <EuiFormRow label="Last name">
-                    <EuiFieldText value={user.lastName} />
+                  <EuiFormRow
+                    label="Last name"
+                    error={updateProfileErrors?.lastName}
+                    isInvalid={updateProfileErrors?.lastName && true}
+                  >
+                    <EuiFieldText
+                      value={profile?.lastName}
+                      onChange={onChangeEvent => {
+                        updateProfileErrors.lastName = undefined
+                        setProfile({
+                          ...profile!,
+                          lastName: onChangeEvent.target.value
+                        })
+                      }}
+                      isInvalid={updateProfileErrors?.lastName && true}
+                    />
                   </EuiFormRow>
                 </EuiFlexItem>
               </EuiFlexGroup>
 
               <EuiSpacer size="l" />
 
-              <EuiFormRow fullWidth label="Email">
-                <EuiFieldText fullWidth value={user.email} />
+              <EuiFormRow
+                fullWidth
+                label="Email"
+                error={updateProfileErrors?.email}
+                isInvalid={updateProfileErrors?.email && true}
+              >
+                <EuiFieldText
+                  fullWidth
+                  value={profile?.email}
+                  onChange={onChangeEvent => {
+                    updateProfileErrors.email = undefined
+                    setProfile({
+                      ...profile!,
+                      email: onChangeEvent.target.value
+                    })
+                  }}
+                  isInvalid={updateProfileErrors?.email && true}
+                />
               </EuiFormRow>
 
               <EuiSpacer size="l" />
 
               <div>
-                <EuiButton fill>Update profile</EuiButton>
+                <EuiButton fill type="submit" isLoading={isUpdatingProfile}>
+                  Update profile
+                </EuiButton>
               </div>
             </EuiDescribedFormGroup>
 
