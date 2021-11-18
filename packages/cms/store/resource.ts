@@ -97,19 +97,11 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
     async fetchTableData(params: TableDataParams) {
       const { resource } = get()
       const { page, perPage, sort, sortField } = params
-      if (!sortField) {
-        return await window.Tensei.api.get(`/${resource?.slug}`, {
-          params: { page, perPage }
-        })
-      }
+
       return await window.Tensei.api.get(`/${resource?.slug}`, {
-        params: { page, perPage, sort }
+        params: { page, perPage, ...(sortField && { sort }) }
       })
     },
-
-    // return await window.Tensei.api.get(
-    //   `/${resource?.slug}?page=${page}&perPage=${perPage}&sort=${sortField}:${sortDirection}`
-    // )
 
     applyFilter(filter: ActiveFilter) {
       set({
