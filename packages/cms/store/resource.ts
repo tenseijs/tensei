@@ -67,7 +67,9 @@ interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
   fetchTableData: (
     page?: number,
-    perPage?: number
+    perPage?: number,
+    sortField?: string,
+    sortDirection?: string
   ) => Promise<[AxiosResponse | null, Error | null]>
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
@@ -90,10 +92,15 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       return resource
     },
 
-    async fetchTableData(page: number, perPage: number) {
+    async fetchTableData(page, perPage, sortField, sortDirection) {
       const { resource } = get()
+      if (!sortField || !sortDirection) {
+        return await window.Tensei.api.get(
+          `/${resource?.slug}?page=${page}&perPage=${perPage}`
+        )
+      }
       return await window.Tensei.api.get(
-        `/${resource?.slug}?perPage=${perPage}&page=${page}`
+        `/${resource?.slug}?page=${page}&perPage=${perPage}&sort=${sortField}:${sortDirection}`
       )
     },
 

@@ -204,8 +204,12 @@ export const Table: React.FunctionComponent = () => {
   const [metaData, setMetaData] = useState<MetaData>()
   useEffect(() => {
     const getData = async () => {
-      const [data, error] = await fetchTableData(pageIndex + 1, pageSize)
-      console.log(data)
+      const [data, error] = await fetchTableData(
+        pageIndex + 1,
+        pageSize,
+        sortField,
+        sortDirection
+      )
       if (!error) {
         setItems(data?.data.data)
         setMetaData(data?.data.meta)
@@ -213,7 +217,7 @@ export const Table: React.FunctionComponent = () => {
       }
     }
     getData()
-  }, [resource, pageIndex, pageSize])
+  }, [resource, pageIndex, pageSize, sortField, sortDirection])
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
