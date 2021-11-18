@@ -3,10 +3,7 @@ import React, { FunctionComponent, Fragment, FormEvent } from 'react'
 import { DashboardLayout } from '../../components/dashboard/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
-import {
-  EuiGlobalToastList,
-  EuiGlobalToastListProps
-} from '@tensei/eui/lib/components/toast/global_toast_list'
+import { EuiGlobalToastList } from '@tensei/eui/lib/components/toast/global_toast_list'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiButton } from '@tensei/eui/lib/components/button'
