@@ -33,7 +33,7 @@ export interface RegisterCredentials {
 
 export const useAuthStore = create<AuthState & AuthMethods>(
   devtools((set, get) => ({
-    user: null as any,
+    user: window.Tensei.state.admin,
     setUser(user: User) {
       set({
         user
@@ -48,5 +48,8 @@ export const useAuthStore = create<AuthState & AuthMethods>(
     async logout() {
       return window.Tensei.api.post('/logout')
     },
+    async updateProfile() {
+
+    }
   }))
 )
