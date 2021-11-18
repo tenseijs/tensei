@@ -3,7 +3,10 @@ import { User } from '@tensei/common'
 declare global {
   namespace Express {
     interface User {
-      id: number
+      password: string
+      firstName: string
+      lastName: string
+      email: string
     }
   }
 }

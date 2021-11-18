@@ -36,6 +36,8 @@ import {
 import getRoutes from './routes'
 import { setupCms } from './setup'
 import { DataPayload } from '@tensei/common/config'
+import { changePasswordRoute } from './routes/change-password'
+import { updateProfileRoute } from './routes/update-profile'
 
 const indexFileContent = Fs.readFileSync(
   Path.resolve(__dirname, 'template', 'index.mustache')
@@ -120,8 +122,10 @@ class CmsPlugin {
 
         return response.status(204).json()
       }),
+    changePasswordRoute.path(this.getApiPath('auth/change-password')),
+    updateProfileRoute.path(this.getApiPath('auth/update-profile')),
     route('Logout')
-      .path(this.getApiPath('logout'))
+      .path(this.getApiPath('auth/logout'))
       .id('logout')
       .post()
       .handle(async (request, response) => {
