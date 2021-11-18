@@ -15,6 +15,7 @@ import {
   EuiForm,
   EuiFormRow
 } from '@tensei/eui/lib/components/form'
+import { useAuthStore } from '../../../store/auth'
 
 const PageTitle = styled.div`
   display: flex;
@@ -39,6 +40,8 @@ const SpacerBottom = styled(EuiSpacer)`
 interface ProfileProps {}
 
 export const Profile: FunctionComponent<ProfileProps> = () => {
+  const { user } = useAuthStore()
+
   return (
     <DashboardLayout>
       <Wrapper>
@@ -46,11 +49,13 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
           <EuiAvatar
             size="xl"
             imageUrl="https://avatars0.githubusercontent.com/u/19477966"
-            name="Frantz Kati"
+            name={`${user.firstName} ${user.lastName}`}
           ></EuiAvatar>
 
           <EuiText>
-            <h1>Frantz Kati</h1>
+            <h1>
+              {user.firstName} {user.lastName}
+            </h1>
           </EuiText>
         </PageTitle>
 
@@ -69,12 +74,12 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
               <EuiFlexGroup>
                 <EuiFlexItem>
                   <EuiFormRow label="First name">
-                    <EuiFieldText />
+                    <EuiFieldText value={user.firstName} />
                   </EuiFormRow>
                 </EuiFlexItem>
                 <EuiFlexItem>
                   <EuiFormRow label="Last name">
-                    <EuiFieldText />
+                    <EuiFieldText value={user.lastName} />
                   </EuiFormRow>
                 </EuiFlexItem>
               </EuiFlexGroup>
@@ -82,7 +87,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
               <EuiSpacer size="l" />
 
               <EuiFormRow fullWidth label="Email">
-                <EuiFieldText fullWidth />
+                <EuiFieldText fullWidth value={user.email} />
               </EuiFormRow>
 
               <EuiSpacer size="l" />
