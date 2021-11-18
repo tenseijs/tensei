@@ -3,7 +3,10 @@ import React, { FunctionComponent, Fragment, FormEvent } from 'react'
 import { DashboardLayout } from '../../components/dashboard/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { EuiLink } from '@tensei/eui/lib/components/link'
+import {
+  EuiGlobalToastList,
+  EuiGlobalToastListProps
+} from '@tensei/eui/lib/components/toast/global_toast_list'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiButton } from '@tensei/eui/lib/components/button'
@@ -54,6 +57,9 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
     updateProfileErrors,
     setUpdateProfileErrors
   ] = useState<UpdateProfileErrors>({})
+  const [toasts, setToasts] = useState<any>([])
+
+  let toastId = 0
 
   useEffect(() => {
     if (!pageHasLoaded) {
@@ -86,6 +92,17 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
 
     setUpdatingProfile(false)
     setUser({ ...user, ...profile })
+    const toast = {
+      id: `toast${toastId++}`,
+      title: 'Saved!',
+      color: 'success',
+      text: <p>Your profile information is updated!</p>
+    }
+    setToasts(toasts.concat(toast))
+  }
+
+  const removeToast = (removedToast: any) => {
+    setToasts(toasts.filter((toast: any) => toast.id !== removedToast.id))
   }
 
   return (
@@ -219,6 +236,12 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
               </div>
             </EuiDescribedFormGroup>
           </EuiForm>
+
+          <EuiGlobalToastList
+            toasts={toasts}
+            dismissToast={removeToast}
+            toastLifeTimeMs={6000}
+          />
         </FormWrapper>
       </Wrapper>
     </DashboardLayout>
