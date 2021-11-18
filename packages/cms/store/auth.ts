@@ -18,7 +18,7 @@ export interface AuthMethods extends State {
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
   logout: () => Promise<[AxiosResponse | null, AxiosError | null]>
   updateProfile: (
-    credential: UpdateProfileCredentials
+    credential: UpdateUserProfileInput
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 }
 
@@ -34,7 +34,7 @@ export interface RegisterCredentials {
   password: string
 }
 
-export interface UpdateProfileCredentials {
+export interface UpdateUserProfileInput {
   firstName: string
   lastName: string
   email: string
@@ -57,8 +57,8 @@ export const useAuthStore = create<AuthState & AuthMethods>(
     async logout() {
       return window.Tensei.api.post('/logout')
     },
-    async updateProfile(credential: UpdateProfileCredentials) {
-      return window.Tensei.api.patch('/auth/update-profile', credential)
+    async updateProfile(input: UpdateUserProfileInput) {
+      return window.Tensei.api.patch('/auth/update-profile', input)
     }
   }))
 )

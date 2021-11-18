@@ -18,7 +18,7 @@ import {
   EuiForm,
   EuiFormRow
 } from '@tensei/eui/lib/components/form'
-import { UpdateProfileCredentials, useAuthStore } from '../../../store/auth'
+import { UpdateUserProfileInput, useAuthStore } from '../../../store/auth'
 import { useState } from 'react'
 import { useEffect } from 'react'
 
@@ -45,12 +45,12 @@ const SpacerBottom = styled(EuiSpacer)`
 interface ProfileProps {}
 
 type UpdateProfileErrors = Partial<
-  Record<keyof UpdateProfileCredentials, string[]>
+  Record<keyof UpdateUserProfileInput, string[]>
 >
 
 export const Profile: FunctionComponent<ProfileProps> = () => {
   const { user, setUser, updateProfile } = useAuthStore()
-  const [profile, setProfile] = useState<UpdateProfileCredentials>()
+  const [profile, setProfile] = useState<UpdateUserProfileInput>()
   const [pageHasLoaded, setPageLoaded] = useState(false)
   const [isUpdatingProfile, setUpdatingProfile] = useState(false)
   const [
