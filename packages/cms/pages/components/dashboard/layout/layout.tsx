@@ -7,8 +7,8 @@ import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useEuiTheme } from '@tensei/eui/lib/services/theme'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiButton } from '@tensei/eui/lib/components/button'
-import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiButtonEmpty } from '@tensei/eui/lib/components/button/button_empty'
+import { AvatarContextMenu } from './avatar-context-menu'
 
 const Sidebar = styled.div<{
   bg?: string
@@ -176,10 +176,6 @@ const CollapseExpandIcon = styled.button`
   background-color: ${({ theme }) => theme.colors.ghost};
 `
 
-const StyledAvatarButton = styled.button`
-  margin-top: 0.75rem;
-`
-
 const TitleAndBackButtonContainer = styled.div`
   display: flex;
   align-items: center;
@@ -222,12 +218,7 @@ export const DashboardLayout: React.FunctionComponent = ({ children }) => {
               <EuiIcon type="help" />
             </NavItem>
 
-            <StyledAvatarButton>
-              <EuiAvatar
-                name="Kati Frantz"
-                imageUrl="https://avatars2.githubusercontent.com/u/19477966?v=4"
-              />
-            </StyledAvatarButton>
+            <AvatarContextMenu />
           </Footer>
         </Sidebar>
         <NestedSidebar>
