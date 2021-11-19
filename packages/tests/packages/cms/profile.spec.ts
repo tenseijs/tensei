@@ -109,7 +109,7 @@ test('cannot change password of an administrator user with invalid payload', asy
   expect(response.body).toEqual({
     errors: [
       {
-        message: 'The password is required.',
+        message: 'The current password is required.',
         validation: 'required',
         field: 'password'
       },
