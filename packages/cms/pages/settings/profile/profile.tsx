@@ -15,7 +15,11 @@ import {
   EuiForm,
   EuiFormRow
 } from '@tensei/eui/lib/components/form'
-import { UpdateUserProfileInput, useAuthStore } from '../../../store/auth'
+import {
+  UpdateUserProfileInput,
+  UpdateUserPasswordInput,
+  useAuthStore
+} from '../../../store/auth'
 import { useState } from 'react'
 import { useEffect } from 'react'
 
@@ -45,15 +49,25 @@ type UpdateProfileErrors = Partial<
   Record<keyof UpdateUserProfileInput, string[]>
 >
 
+type UpdatePasswordErrors = Partial<
+  Record<keyof UpdateUserPasswordInput, string[]>
+>
+
 export const Profile: FunctionComponent<ProfileProps> = () => {
-  const { user, setUser, updateProfile } = useAuthStore()
+  const { user, setUser, updateProfile, updatePassword } = useAuthStore()
   const [profile, setProfile] = useState<UpdateUserProfileInput>()
+  const [password, setPassword] = useState<UpdateUserPasswordInput>()
   const [pageHasLoaded, setPageLoaded] = useState(false)
   const [isUpdatingProfile, setUpdatingProfile] = useState(false)
+  const [isUpdatingPassword, setUpdatingPassword] = useState(false)
   const [
     updateProfileErrors,
     setUpdateProfileErrors
   ] = useState<UpdateProfileErrors>({})
+  const [
+    updatePasswordErrors,
+    setUpdatePasswordErrors
+  ] = useState<UpdatePasswordErrors>({})
   const [toasts, setToasts] = useState<any>([])
 
   let toastId = 0
@@ -94,6 +108,40 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
       title: 'Saved!',
       color: 'success',
       text: <p>Your profile information is updated!</p>
+    }
+    setToasts(toasts.concat(toast))
+  }
+
+  const onUpdatePassword = async (
+    onSubmitEvent: FormEvent<HTMLFormElement>
+  ) => {
+    onSubmitEvent.preventDefault()
+
+    setUpdatingPassword(true)
+    const [response, error] = await updatePassword(password!)
+
+    if (error) {
+      let errorData = error.response?.data?.errors
+
+      let errors: UpdatePasswordErrors = {}
+
+      // get error messages
+      errorData.forEach((error: { message: string; field: string }) => {
+        errors[error.field as keyof UpdatePasswordErrors] = [error.message]
+      })
+
+      setUpdatePasswordErrors({ ...errors })
+      setUpdatingPassword(false)
+      return
+    }
+
+    setUpdatingPassword(false)
+    setPassword({ ...password, currentPassword: '', newPassword: '' })
+    const toast = {
+      id: `toast${toastId++}`,
+      title: 'Saved!',
+      color: 'success',
+      text: <p>Your new password information is updated!</p>
     }
     setToasts(toasts.concat(toast))
   }
@@ -208,7 +256,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
 
           <EuiSpacer size="xl" />
 
-          <EuiForm component="form">
+          <EuiForm component="form" onSubmit={onUpdatePassword}>
             <EuiDescribedFormGroup
               fullWidth
               title={<h3>Update password</h3>}
@@ -219,17 +267,49 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
                 </Fragment>
               }
             >
-              <EuiFormRow label="Current password">
-                <EuiFieldPassword type="dual" />
+              <EuiFormRow
+                label="Current password"
+                isInvalid={updatePasswordErrors.currentPassword && true}
+                error={updatePasswordErrors.currentPassword}
+              >
+                <EuiFieldPassword
+                  type="dual"
+                  value={password?.currentPassword}
+                  onChange={onChangeEvent => {
+                    updatePasswordErrors.currentPassword = undefined
+                    setPassword({
+                      ...password!,
+                      currentPassword: onChangeEvent.target.value
+                    })
+                  }}
+                  isInvalid={updatePasswordErrors.currentPassword && true}
+                />
               </EuiFormRow>
-              <EuiFormRow label="New password">
-                <EuiFieldPassword type="dual" />
+              <EuiFormRow
+                label="New password"
+                isInvalid={updatePasswordErrors.newPassword && true}
+                error={updatePasswordErrors.newPassword}
+              >
+                <EuiFieldPassword
+                  type="dual"
+                  value={password?.newPassword}
+                  onChange={onChangeEvent => {
+                    updatePasswordErrors.newPassword = undefined
+                    setPassword({
+                      ...password!,
+                      newPassword: onChangeEvent.target.value
+                    })
+                  }}
+                  isInvalid={updatePasswordErrors.newPassword && true}
+                />
               </EuiFormRow>
 
               <EuiSpacer size="l" />
 
               <div>
-                <EuiButton fill>Update password</EuiButton>
+                <EuiButton fill type="submit" isLoading={isUpdatingPassword}>
+                  Update password
+                </EuiButton>
               </div>
             </EuiDescribedFormGroup>
           </EuiForm>
