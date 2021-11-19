@@ -111,7 +111,7 @@ test('cannot change password of an administrator user with invalid payload', asy
       {
         message: 'The current password is required.',
         validation: 'required',
-        field: 'password'
+        field: 'currentPassword'
       },
       {
         message: 'The new password is required.',
