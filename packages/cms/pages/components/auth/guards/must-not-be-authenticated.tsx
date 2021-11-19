@@ -2,7 +2,7 @@ import React from 'react'
 import { Redirect } from 'react-router-dom'
 import { useAuthStore } from '../../../../store/auth'
 
-export const MustBeNotAuthComponent = (Component: React.FC) => {
+export const MustNotBeAuthComponent = (Component: React.FC) => {
   const { user } = useAuthStore()
 
   const Comp = (props: any) => {
