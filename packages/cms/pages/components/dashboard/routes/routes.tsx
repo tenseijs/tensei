@@ -3,16 +3,21 @@ import { Route } from 'react-router-dom'
 
 import { Dashboard } from '../../../dashboard'
 import { Resource } from '../../../resources/resource'
+import { MustBeAuthComponent } from '../../auth/guards/must-be-authenticated'
 
 export const DashboardRoutes: React.FunctionComponent = () => {
   return (
     <>
       <Route
         exact
-        component={Resource}
+        component={MustBeAuthComponent(Resource)}
         path={window.Tensei.getPath('resources/:resource')}
       />
-      <Route exact component={Dashboard} path={window.Tensei.getPath('')} />
+      <Route
+        exact
+        component={MustBeAuthComponent(Dashboard)}
+        path={window.Tensei.getPath('')}
+      />
     </>
   )
 }
