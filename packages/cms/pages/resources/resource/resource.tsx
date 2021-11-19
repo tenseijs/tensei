@@ -203,6 +203,7 @@ export const Table: React.FunctionComponent = () => {
   const [items, setItems] = useState([])
   const [metaData, setMetaData] = useState<MetaData>()
   useEffect(() => {
+    setLoading(true)
     const getData = async () => {
       const params = {
         page: pageIndex + 1,
@@ -216,6 +217,7 @@ export const Table: React.FunctionComponent = () => {
         setMetaData(data?.data.meta)
         setLoading(false)
       }
+      setLoading(false) // if there is an error so it doesn't load forever
     }
     getData()
   }, [resource, pageIndex, pageSize, sortField, sortDirection])
