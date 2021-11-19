@@ -21,7 +21,10 @@ export interface UserRole {
 export interface User {
   id: string
   email: string
+  firstName: string
+  lastName: string
   roles: UserRole[]
+  active: boolean
   createdAt: string
   updatedAt: string
   adminRoles: UserRole[]

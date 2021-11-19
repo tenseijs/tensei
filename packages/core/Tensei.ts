@@ -498,7 +498,7 @@ export class Tensei implements TenseiContract {
   }
 
   public mailer(driver: string) {
-    this.mailerConfig.mailer = (driver as unknown) as never
+    this.mailerConfig.mailer = driver as unknown as never
 
     return this
   }

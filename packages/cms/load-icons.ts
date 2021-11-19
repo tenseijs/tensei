@@ -17,6 +17,7 @@ import { icon as EuiArrowDownIcon } from '@tensei/eui/lib/components/icon/assets
 import { icon as EuiEyeClosedIcon } from '@tensei/eui/lib/components/icon/assets/eye_closed'
 import { icon as EuiArrowRightIcon } from '@tensei/eui/lib/components/icon/assets/arrow_right'
 import { icon as EuiExitIcon } from '@tensei/eui/lib/components/icon/assets/exit'
+import { icon as EuiUserIcon } from '@tensei/eui/lib/components/icon/assets/user'
 
 appendIconComponentCache({
   gear: EuiGear,
@@ -36,5 +37,6 @@ appendIconComponentCache({
   eyeClosed: EuiEyeClosedIcon,
   arrowDown: EuiArrowDownIcon,
   arrowRight: EuiArrowRightIcon,
-  exit: EuiExitIcon
+  exit: EuiExitIcon,
+  user: EuiUserIcon
 })

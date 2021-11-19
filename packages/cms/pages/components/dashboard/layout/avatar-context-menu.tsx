@@ -9,10 +9,16 @@ import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiTextColor } from '@tensei/eui/lib/components/text'
 import { useAuthStore } from '../../../../store/auth'
+import { Link, useHistory } from 'react-router-dom'
+
+const StyledAvatarButton = styled.button`
+  margin-top: 0.75rem;
+`
 
 export const AvatarContextMenu: React.FunctionComponent = () => {
-  const { logout } = useAuthStore()
+  const { logout, user } = useAuthStore()
   const [isPopoverOpen, setPopover] = useState(false)
+  const { push } = useHistory()
   const avatarButtonContextMenuPopoverId = useGeneratedHtmlId({
     prefix: 'avatarButtonContextMenuPopover'
   })
@@ -32,13 +38,11 @@ export const AvatarContextMenu: React.FunctionComponent = () => {
   }
 
   const items = [
-    <EuiContextMenuItem
-      key="settings"
-      icon={<EuiIcon type="gear" />}
-      onClick={closePopover}
-    >
-      Settings
-    </EuiContextMenuItem>,
+    <Link to={window.Tensei.getPath('settings/profile')}>
+      <EuiContextMenuItem key="profile" icon={<EuiIcon type="user" />}>
+        Profile
+      </EuiContextMenuItem>
+    </Link>,
     <EuiContextMenuItem
       key="logout"
       icon={<EuiIcon type="exit" color="danger" />}
@@ -49,14 +53,10 @@ export const AvatarContextMenu: React.FunctionComponent = () => {
     </EuiContextMenuItem>
   ]
 
-  const StyledAvatarButton = styled.button`
-    margin-top: 0.75rem;
-  `
-
   const avatarButton = (
     <StyledAvatarButton onClick={onAvatarButtonClick}>
       <EuiAvatar
-        name="Kati Frantz"
+        name={`${user.firstName} ${user.lastName}`}
         imageUrl="https://avatars2.githubusercontent.com/u/19477966?v=4"
       />
     </StyledAvatarButton>

@@ -158,9 +158,8 @@ class Database {
     resource: ResourceContract
   ) {
     if (field.relatedProperty.reference === ReferenceType.MANY_TO_MANY) {
-      const relatedResource = this.config.resourcesMap[
-        field.relatedProperty.type!
-      ]
+      const relatedResource =
+        this.config.resourcesMap[field.relatedProperty.type!]
 
       if (!relatedResource) {
         this.config.logger.warn(
@@ -189,9 +188,8 @@ class Database {
     }
 
     if (field.relatedProperty.reference === ReferenceType.MANY_TO_ONE) {
-      const relatedResource = this.config.resourcesMap[
-        field.relatedProperty.type!
-      ]
+      const relatedResource =
+        this.config.resourcesMap[field.relatedProperty.type!]
 
       if (!relatedResource) {
         this.config.logger.warn(
@@ -216,9 +214,8 @@ class Database {
     }
 
     if (field.relatedProperty.reference === ReferenceType.ONE_TO_MANY) {
-      const relatedResource = this.config.resourcesMap[
-        field.relatedProperty.type!
-      ]
+      const relatedResource =
+        this.config.resourcesMap[field.relatedProperty.type!]
 
       if (!relatedResource) {
         this.config.logger.warn(
@@ -244,9 +241,8 @@ class Database {
     }
 
     if (field.relatedProperty.reference === ReferenceType.ONE_TO_ONE) {
-      const relatedResource = this.config.resourcesMap[
-        field.relatedProperty.type!
-      ]
+      const relatedResource =
+        this.config.resourcesMap[field.relatedProperty.type!]
 
       if (!relatedResource) {
         this.config.logger.warn(

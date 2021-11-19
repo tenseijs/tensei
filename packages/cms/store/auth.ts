@@ -17,6 +17,9 @@ export interface AuthMethods extends State {
     credentials: RegisterCredentials
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
   logout: () => Promise<[AxiosResponse | null, AxiosError | null]>
+  updateProfile: (
+    credential: UpdateUserProfileInput
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
 }
 
 export interface LoginCredentials {
@@ -31,9 +34,15 @@ export interface RegisterCredentials {
   password: string
 }
 
+export interface UpdateUserProfileInput {
+  firstName: string
+  lastName: string
+  email: string
+}
+
 export const useAuthStore = create<AuthState & AuthMethods>(
   devtools((set, get) => ({
-    user: null as any,
+    user: window.Tensei.state.admin,
     setUser(user: User) {
       set({
         user
@@ -46,7 +55,10 @@ export const useAuthStore = create<AuthState & AuthMethods>(
       return window.Tensei.api.post('/auth/register', credentials)
     },
     async logout() {
-      return window.Tensei.api.post('/logout')
+      return window.Tensei.api.post('/auth/logout')
     },
+    async updateProfile(input: UpdateUserProfileInput) {
+      return window.Tensei.api.patch('/auth/update-profile', input)
+    }
   }))
 )
