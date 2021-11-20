@@ -24,13 +24,13 @@ export default tensei()
   .resources([
     resource('Product')
       .fields([
-        text('Name').rules('required'),
+        text('Name').rules('required').sortable(),
         slug('Slug')
           .creationRules('required', 'unique:slug')
           .unique()
           .from('Name'),
         textarea('Description').creationRules('required', 'max:255'),
-        integer('Price').rules('required'),
+        integer('Price').rules('required').sortable(),
         belongsToMany('Category'),
         belongsToMany('Product Option'),
         belongsToMany('Order Item'),

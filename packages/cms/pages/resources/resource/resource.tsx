@@ -185,14 +185,42 @@ export const FilterList: React.FunctionComponent = () => {
     </EuiPopover>
   )
 }
+interface MetaData {
+  page: number
+  pageCount: number
+  perPage: number
+  total: number
+}
 
 export const Table: React.FunctionComponent = () => {
-  const [pageSize, setPageSize] = useState(10)
+  const { resource, applyFilter, fetchTableData } = useResourceStore()
+  const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [selectedItems, setSelectedItems] = useState<any[]>([])
-  const [sortField, setSortField] = useState('firstName')
+  const [sortField, setSortField] = useState('')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const { resource, applyFilter } = useResourceStore()
+  const [items, setItems] = useState([])
+  const [metaData, setMetaData] = useState<MetaData>()
+  useEffect(() => {
+    setLoading(true)
+    const getData = async () => {
+      const params = {
+        page: pageIndex + 1,
+        perPage: pageSize,
+        sort: `${sortField}:${sortDirection}`,
+        sortField
+      }
+      const [data, error] = await fetchTableData(params)
+      if (!error) {
+        setItems(data?.data.data)
+        setMetaData(data?.data.meta)
+        setLoading(false)
+      }
+      setLoading(false) // if there is an error so it doesn't load forever
+    }
+    getData()
+  }, [resource, pageIndex, pageSize, sortField, sortDirection])
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -220,23 +248,11 @@ export const Table: React.FunctionComponent = () => {
     ]
   }, [resource])
 
-  const items = [
-    {
-      id: '1',
-      firstName: 'John',
-      lastName: 'Doe',
-      github: 'johndoe',
-      dateOfBirth: Date.now(),
-      nationality: 'NL',
-      online: true
-    }
-  ]
-
   const pagination: EuiBasicTableProps<any>['pagination'] = {
-    pageIndex: 0,
-    pageSize: 10,
-    totalItemCount: 344,
-    pageSizeOptions: [10, 25, 50, 100]
+    pageIndex,
+    pageSize: pageSize!,
+    totalItemCount: metaData?.total!,
+    pageSizeOptions: resource?.perPageOptions
   }
 
   const onTableChange = ({ page, sort }: CriteriaWithPagination<any>) => {
@@ -252,6 +268,7 @@ export const Table: React.FunctionComponent = () => {
       itemId={'id'}
       columns={columns}
       hasActions={true}
+      loading={loading}
       selection={{
         selectable: () => true,
         onSelectionChange: setSelectedItems,
