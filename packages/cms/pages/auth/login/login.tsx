@@ -2,7 +2,7 @@ import React, { FormEvent, useState } from 'react'
 import styled from 'styled-components'
 import { AuthLayout } from '../../components/auth/layout'
 
-import { useAuthStore, LoginCredentials } from '../../../store/auth'
+import { useAuthStore, LoginInput } from '../../../store/auth'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
@@ -11,63 +11,27 @@ import { EuiButton } from '@tensei/eui/lib/components/button'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
 import { EuiFieldPassword } from '@tensei/eui/lib/components/form/field_password'
+import { useForm } from '../../hooks/forms'
 
 const H3 = styled.h3`
   text-align: center;
 `
 
-type LoginErrors = Partial<Record<keyof LoginCredentials, string[]>>
+type LoginErrors = Partial<Record<keyof LoginInput, string[]>>
 
 export const Login: React.FunctionComponent = () => {
-  const [userDetails, setUserDetails] = useState<LoginCredentials>({
-    email: '',
-    password: ''
-  })
-
-  const [errors, setErrors] = useState<LoginErrors>({})
-  const [loading, setLoading] = useState(false)
-
   const { login } = useAuthStore()
 
-  const onChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target
-    setErrors({
-      ...errors,
-      email: undefined
-    })
-    setUserDetails({ ...userDetails, email: value })
-  }
-
-  const onChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target
-    setUserDetails({ ...userDetails, password: value })
-  }
-
-  const onLogin = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    setLoading(true)
-
-    const [response, error] = await login(userDetails)
-
-    if (error) {
-      let errors: LoginErrors = {}
-
-      error.response?.data?.errors?.forEach(
-        (error: { message: string; field: string }) => {
-          errors[error.field as keyof LoginErrors] = [error.message]
-        }
-      )
-
-      setErrors({ ...errors })
-      setLoading(false)
-
-      return
+  const { form, errors, submit, loading, setValue } = useForm<LoginInput>({
+    defaultValues: {
+      email: '',
+      password: ''
+    },
+    onSubmit: login,
+    onSuccess: () => {
+      window.location.href = window.Tensei.getPath('')
     }
-
-    window.location.href = window.Tensei.getPath('')
-    setLoading(false)
-  }
+  })
 
   return (
     <AuthLayout>
@@ -80,16 +44,17 @@ export const Login: React.FunctionComponent = () => {
       </EuiText>
 
       <EuiSpacer size="xl" />
-      <EuiForm component="form" onSubmit={onLogin}>
+      <EuiForm component="form" onSubmit={submit}>
         <EuiFormRow
           label="Email"
-          isInvalid={errors.email && true}
-          error={errors.email}
+          error={errors?.email}
+          isInvalid={!!errors?.email}
         >
           <EuiFieldText
             fullWidth
-            onChange={onChangeEmail}
-            isInvalid={errors.email && true}
+            value={form.email}
+            isInvalid={!!errors?.email}
+            onChange={event => setValue('email', event.target.value)}
           />
         </EuiFormRow>
 
@@ -97,14 +62,15 @@ export const Login: React.FunctionComponent = () => {
 
         <EuiFormRow
           label="Password"
-          isInvalid={errors.password && true}
-          error={errors.password}
+          error={errors?.password}
+          isInvalid={!!errors?.password}
         >
           <EuiFieldPassword
             type="dual"
             fullWidth
-            onChange={onChangePassword}
-            isInvalid={errors.password && true}
+            value={form.password}
+            isInvalid={!!errors?.email}
+            onChange={event => setValue('password', event.target.value)}
           />
         </EuiFormRow>
 

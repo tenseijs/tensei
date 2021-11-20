@@ -7,12 +7,14 @@ import { ThemeProvider as StyledThemeProvider } from 'styled-components'
 
 import { CmsRoute } from '@tensei/components'
 import { useAuthStore } from './store/auth'
+import { useToastStore } from './store/toast'
 
 import '@tensei/eui/dist/eui_theme_tensei_light.css'
 import { AuthRoutes } from './pages/components/auth/routes'
 import { SettingsRoutes } from './pages/components/settings/routes'
 import { DashboardRoutes } from './pages/components/dashboard/routes'
 import { useEuiTheme, EuiThemeProvider } from '@tensei/eui/lib/services/theme'
+import { EuiGlobalToastList } from '@tensei/eui/lib/components/toast/global_toast_list'
 
 interface ThemeExtensions {
   colors: {
@@ -38,6 +40,7 @@ const App: React.FunctionComponent = ({ children }) => {
   const [booted, setBooted] = useState(false)
   const [routes, setRoutes] = useState<CmsRoute[]>([])
   const { euiTheme } = useEuiTheme<ThemeExtensions>()
+  const { toasts, remove } = useToastStore()
 
   const { user, setUser } = useAuthStore()
 
@@ -57,15 +60,22 @@ const App: React.FunctionComponent = ({ children }) => {
   }, [])
 
   return (
-    <StyledThemeProvider theme={euiTheme}>
-      {booted ? children : 'Booting app...'}
-    </StyledThemeProvider>
+    <>
+      <EuiGlobalToastList
+        toasts={toasts}
+        toastLifeTimeMs={6000}
+        dismissToast={remove}
+      ></EuiGlobalToastList>
+      <StyledThemeProvider theme={euiTheme}>
+        {booted ? children : 'Booting app...'}
+      </StyledThemeProvider>
+    </>
   )
 }
 
 ReactDOM.render(
   <BrowserRouter>
-    <EuiThemeProvider modify={extensions}>
+    <EuiThemeProvider>
       <App>
         <AuthRoutes />
         <SettingsRoutes />

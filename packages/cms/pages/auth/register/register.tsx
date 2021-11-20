@@ -1,4 +1,4 @@
-import React, { FormEvent } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { AuthLayout } from '../../components/auth/layout'
 
@@ -12,53 +12,34 @@ import { EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
 import { EuiFieldPassword } from '@tensei/eui/lib/components/form/field_password'
 import { EuiFlexItem } from '@tensei/eui/lib/components/flex/flex_item'
-import { useState } from 'react'
-import { RegisterCredentials, useAuthStore } from '../../../store/auth'
+import { RegisterUserInput, useAuthStore } from '../../../store/auth'
+import { useForm } from '../../hooks/forms'
 
 const H3 = styled.h3`
   text-align: center;
 `
 
-// Define errors type
-type RegisterErrors = Partial<Record<keyof RegisterCredentials, string[]>>
-
 export const Register: React.FunctionComponent = () => {
   const { register } = useAuthStore()
 
-  const [user, setUser] = useState<RegisterCredentials>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: ''
-  })
-
-  // declare page states
-  const [errors, setErrors] = useState<RegisterErrors>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const onSubmit = async (submitEvent: FormEvent<HTMLFormElement>) => {
-    submitEvent.preventDefault()
-    setIsSubmitting(true)
-    const [response, error] = await register(user)
-
-    if (error) {
-      let errorData = error.response?.data?.errors
-
-      let errors: RegisterErrors = {}
-
-      // get error messages
-      errorData.forEach((error: { message: string; field: string }) => {
-        errors[error.field as keyof RegisterErrors] = [error.message]
-      })
-
-      setErrors({ ...errors })
-      setIsSubmitting(false)
-      return
+  const {
+    form,
+    errors,
+    submit,
+    loading,
+    setValue
+  } = useForm<RegisterUserInput>({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: ''
+    },
+    onSubmit: register,
+    onSuccess: () => {
+      window.location.href = window.Tensei.getPath('')
     }
-
-    window.location.href = window.Tensei.getPath('')
-    setIsSubmitting(false)
-  }
+  })
 
   return (
     <AuthLayout>
@@ -73,37 +54,31 @@ export const Register: React.FunctionComponent = () => {
 
       <EuiSpacer size="xl" />
 
-      <form method="post" onSubmit={onSubmit} noValidate>
+      <form method="post" onSubmit={submit} noValidate>
         <EuiForm component="div">
           <EuiFlexGroup>
             <EuiFlexItem>
               <EuiFormRow
                 label="First name"
-                isInvalid={errors?.firstName && true}
+                isInvalid={!!errors?.firstName}
                 error={errors?.firstName}
               >
                 <EuiFieldText
                   autoFocus
-                  onChange={changeEvent => {
-                    errors.firstName = undefined
-                    setUser({ ...user, firstName: changeEvent.target.value })
-                  }}
-                  isInvalid={errors?.firstName && true}
+                  isInvalid={!!errors?.firstName}
+                  onChange={event => setValue('firstName', event.target.value)}
                 />
               </EuiFormRow>
             </EuiFlexItem>
             <EuiFlexItem>
               <EuiFormRow
                 label="Last name"
-                isInvalid={errors?.lastName && true}
                 error={errors?.lastName}
+                isInvalid={!!errors?.lastName}
               >
                 <EuiFieldText
-                  onChange={changeEvent => {
-                    errors.lastName = undefined
-                    setUser({ ...user, lastName: changeEvent.target.value })
-                  }}
-                  isInvalid={errors?.lastName && true}
+                  isInvalid={!!errors?.lastName}
+                  onChange={event => setValue('lastName', event.target.value)}
                 />
               </EuiFormRow>
             </EuiFlexItem>
@@ -113,16 +88,13 @@ export const Register: React.FunctionComponent = () => {
 
           <EuiFormRow
             label="Email"
-            isInvalid={errors?.email && true}
             error={errors?.email}
+            isInvalid={!!errors?.email}
           >
             <EuiFieldText
               fullWidth
-              onChange={changeEvent => {
-                errors.email = undefined
-                setUser({ ...user, email: changeEvent.target.value })
-              }}
-              isInvalid={errors?.email && true}
+              isInvalid={!!errors?.lastName}
+              onChange={event => setValue('email', event.target.value)}
             />
           </EuiFormRow>
 
@@ -130,23 +102,20 @@ export const Register: React.FunctionComponent = () => {
 
           <EuiFormRow
             label="Password"
-            isInvalid={errors?.password && true}
+            isInvalid={!!errors?.password}
             error={errors?.password}
           >
             <EuiFieldPassword
               type="dual"
               fullWidth
-              onChange={changeEvent => {
-                errors.password = undefined
-                setUser({ ...user, password: changeEvent.target.value })
-              }}
-              isInvalid={errors?.password && true}
+              onChange={event => setValue('password', event.target.value)}
+              isInvalid={!!errors?.password}
             />
           </EuiFormRow>
 
           <EuiSpacer size="l" />
 
-          <EuiButton fullWidth fill type="submit" isLoading={isSubmitting}>
+          <EuiButton fullWidth fill type="submit" isLoading={loading}>
             Get started
           </EuiButton>
         </EuiForm>

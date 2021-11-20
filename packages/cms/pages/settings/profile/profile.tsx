@@ -1,9 +1,8 @@
 import styled from 'styled-components'
-import React, { FunctionComponent, Fragment, FormEvent } from 'react'
+import React, { FunctionComponent, Fragment } from 'react'
 import { DashboardLayout } from '../../components/dashboard/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { EuiGlobalToastList } from '@tensei/eui/lib/components/toast/global_toast_list'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiButton } from '@tensei/eui/lib/components/button'
@@ -20,8 +19,8 @@ import {
   UpdateUserPasswordInput,
   useAuthStore
 } from '../../../store/auth'
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useToastStore } from '../../../store/toast'
+import { useForm } from '../../hooks/forms'
 
 const PageTitle = styled.div`
   display: flex;
@@ -45,110 +44,54 @@ const SpacerBottom = styled(EuiSpacer)`
 
 interface ProfileProps {}
 
-type UpdateProfileErrors = Partial<
-  Record<keyof UpdateUserProfileInput, string[]>
->
-
-type UpdatePasswordErrors = Partial<
-  Record<keyof UpdateUserPasswordInput, string[]>
->
-
 export const Profile: FunctionComponent<ProfileProps> = () => {
   const { user, setUser, updateProfile, updatePassword } = useAuthStore()
-  const [profile, setProfile] = useState<UpdateUserProfileInput>()
-  const [password, setPassword] = useState<UpdateUserPasswordInput>()
-  const [pageHasLoaded, setPageLoaded] = useState(false)
-  const [isUpdatingProfile, setUpdatingProfile] = useState(false)
-  const [isUpdatingPassword, setUpdatingPassword] = useState(false)
-  const [
-    updateProfileErrors,
-    setUpdateProfileErrors
-  ] = useState<UpdateProfileErrors>({})
-  const [
-    updatePasswordErrors,
-    setUpdatePasswordErrors
-  ] = useState<UpdatePasswordErrors>({})
-  const [toasts, setToasts] = useState<any>([])
+  const {
+    setValue: setProfileFormValue,
+    form: updateProfileForm,
+    loading: isUpdatingProfile,
+    submit: onProfileUpdateSubmit,
+    errors: updateProfileErrors
+  } = useForm<UpdateUserProfileInput>({
+    defaultValues: {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email
+    },
+    onSubmit: updateProfile,
+    onSuccess: ({ form }) => {
+      setUser({
+        ...user,
+        ...form
+      })
 
-  let toastId = 0
-
-  useEffect(() => {
-    if (!pageHasLoaded) {
-      const { firstName, lastName, email } = user
-      setProfile({ firstName, lastName, email })
-      setPageLoaded(true)
+      toast('Saved.', <p>Profile information updated successfully.</p>)
     }
   })
 
-  const onUpdateProfile = async (onSubmitEvent: FormEvent<HTMLFormElement>) => {
-    onSubmitEvent.preventDefault()
-
-    setUpdatingProfile(true)
-    const [response, error] = await updateProfile(profile!)
-
-    if (error) {
-      let errorData = error.response?.data?.errors
-
-      let errors: UpdateProfileErrors = {}
-
-      // get error messages
-      errorData.forEach((error: { message: string; field: string }) => {
-        errors[error.field as keyof UpdateProfileErrors] = [error.message]
+  const {
+    setValue: setPasswordFormValue,
+    form: updatePasswordForm,
+    loading: isUpdatingPassword,
+    submit: onUpdatePasswordSubmit,
+    errors: updatePasswordErrors
+  } = useForm<UpdateUserPasswordInput>({
+    defaultValues: {
+      currentPassword: '',
+      newPassword: ''
+    },
+    onSubmit: updatePassword,
+    onSuccess: ({ form }) => {
+      setUser({
+        ...user,
+        ...form
       })
 
-      setUpdateProfileErrors({ ...errors })
-      setUpdatingProfile(false)
-      return
+      toast('Saved.', <p>Your password has been updated successfully.</p>)
     }
+  })
 
-    setUpdatingProfile(false)
-    setUser({ ...user, ...profile })
-    const toast = {
-      id: `toast${toastId++}`,
-      title: 'Saved!',
-      color: 'success',
-      text: <p>Your profile information is updated!</p>
-    }
-    setToasts(toasts.concat(toast))
-  }
-
-  const onUpdatePassword = async (
-    onSubmitEvent: FormEvent<HTMLFormElement>
-  ) => {
-    onSubmitEvent.preventDefault()
-
-    setUpdatingPassword(true)
-    const [response, error] = await updatePassword(password!)
-
-    if (error) {
-      let errorData = error.response?.data?.errors
-
-      let errors: UpdatePasswordErrors = {}
-
-      // get error messages
-      errorData.forEach((error: { message: string; field: string }) => {
-        errors[error.field as keyof UpdatePasswordErrors] = [error.message]
-      })
-
-      setUpdatePasswordErrors({ ...errors })
-      setUpdatingPassword(false)
-      return
-    }
-
-    setUpdatingPassword(false)
-    setPassword({ ...password, currentPassword: '', newPassword: '' })
-    const toast = {
-      id: `toast${toastId++}`,
-      title: 'Saved!',
-      color: 'success',
-      text: <p>Your new password information is updated!</p>
-    }
-    setToasts(toasts.concat(toast))
-  }
-
-  const removeToast = (removedToast: any) => {
-    setToasts(toasts.filter((toast: any) => toast.id !== removedToast.id))
-  }
+  const { toast } = useToastStore()
 
   return (
     <DashboardLayout>
@@ -168,7 +111,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
         </PageTitle>
 
         <FormWrapper>
-          <EuiForm component="form" onSubmit={onUpdateProfile}>
+          <EuiForm component="form" onSubmit={onProfileUpdateSubmit}>
             <EuiDescribedFormGroup
               fullWidth
               title={<h3>Profile</h3>}
@@ -184,18 +127,14 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
                   <EuiFormRow
                     label="First name"
                     error={updateProfileErrors?.firstName}
-                    isInvalid={updateProfileErrors?.firstName && true}
+                    isInvalid={!!updateProfileErrors?.firstName}
                   >
                     <EuiFieldText
-                      value={profile?.firstName}
-                      onChange={onChangeEvent => {
-                        updateProfileErrors.firstName = undefined
-                        setProfile({
-                          ...profile!,
-                          firstName: onChangeEvent.target.value
-                        })
-                      }}
-                      isInvalid={updateProfileErrors?.firstName && true}
+                      value={updateProfileForm?.firstName}
+                      onChange={event =>
+                        setProfileFormValue('firstName', event?.target.value)
+                      }
+                      isInvalid={!!updateProfileErrors?.firstName}
                     />
                   </EuiFormRow>
                 </EuiFlexItem>
@@ -203,18 +142,14 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
                   <EuiFormRow
                     label="Last name"
                     error={updateProfileErrors?.lastName}
-                    isInvalid={updateProfileErrors?.lastName && true}
+                    isInvalid={!!updateProfileErrors?.lastName}
                   >
                     <EuiFieldText
-                      value={profile?.lastName}
-                      onChange={onChangeEvent => {
-                        updateProfileErrors.lastName = undefined
-                        setProfile({
-                          ...profile!,
-                          lastName: onChangeEvent.target.value
-                        })
+                      value={updateProfileForm?.lastName}
+                      onChange={event => {
+                        setProfileFormValue('lastName', event.target.value)
                       }}
-                      isInvalid={updateProfileErrors?.lastName && true}
+                      isInvalid={!!updateProfileErrors?.lastName}
                     />
                   </EuiFormRow>
                 </EuiFlexItem>
@@ -226,19 +161,15 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
                 fullWidth
                 label="Email"
                 error={updateProfileErrors?.email}
-                isInvalid={updateProfileErrors?.email && true}
+                isInvalid={!!updateProfileErrors?.email}
               >
                 <EuiFieldText
                   fullWidth
-                  value={profile?.email}
-                  onChange={onChangeEvent => {
-                    updateProfileErrors.email = undefined
-                    setProfile({
-                      ...profile!,
-                      email: onChangeEvent.target.value
-                    })
+                  value={updateProfileForm?.email}
+                  onChange={event => {
+                    setProfileFormValue('email', event.target.value)
                   }}
-                  isInvalid={updateProfileErrors?.email && true}
+                  isInvalid={!!updateProfileErrors?.email}
                 />
               </EuiFormRow>
 
@@ -256,7 +187,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
 
           <EuiSpacer size="xl" />
 
-          <EuiForm component="form" onSubmit={onUpdatePassword}>
+          <EuiForm component="form" onSubmit={onUpdatePasswordSubmit}>
             <EuiDescribedFormGroup
               fullWidth
               title={<h3>Update password</h3>}
@@ -269,38 +200,30 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
             >
               <EuiFormRow
                 label="Current password"
-                isInvalid={updatePasswordErrors.currentPassword && true}
-                error={updatePasswordErrors.currentPassword}
+                isInvalid={!!updatePasswordErrors?.currentPassword}
+                error={updatePasswordErrors?.currentPassword}
               >
                 <EuiFieldPassword
                   type="dual"
-                  value={password?.currentPassword}
-                  onChange={onChangeEvent => {
-                    updatePasswordErrors.currentPassword = undefined
-                    setPassword({
-                      ...password!,
-                      currentPassword: onChangeEvent.target.value
-                    })
-                  }}
-                  isInvalid={updatePasswordErrors.currentPassword && true}
+                  value={updatePasswordForm?.currentPassword}
+                  isInvalid={!!updatePasswordErrors?.currentPassword}
+                  onChange={event =>
+                    setPasswordFormValue('currentPassword', event.target.value)
+                  }
                 />
               </EuiFormRow>
               <EuiFormRow
                 label="New password"
-                isInvalid={updatePasswordErrors.newPassword && true}
-                error={updatePasswordErrors.newPassword}
+                error={updatePasswordErrors?.newPassword}
+                isInvalid={!!updatePasswordErrors?.newPassword}
               >
                 <EuiFieldPassword
                   type="dual"
-                  value={password?.newPassword}
-                  onChange={onChangeEvent => {
-                    updatePasswordErrors.newPassword = undefined
-                    setPassword({
-                      ...password!,
-                      newPassword: onChangeEvent.target.value
-                    })
-                  }}
-                  isInvalid={updatePasswordErrors.newPassword && true}
+                  value={updatePasswordForm?.newPassword}
+                  onChange={event =>
+                    setPasswordFormValue('newPassword', event.target.value)
+                  }
+                  isInvalid={!!updatePasswordErrors?.newPassword}
                 />
               </EuiFormRow>
 
@@ -313,12 +236,6 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
               </div>
             </EuiDescribedFormGroup>
           </EuiForm>
-
-          <EuiGlobalToastList
-            toasts={toasts}
-            dismissToast={removeToast}
-            toastLifeTimeMs={6000}
-          />
         </FormWrapper>
       </Wrapper>
     </DashboardLayout>
