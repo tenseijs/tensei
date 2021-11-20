@@ -9,11 +9,11 @@ export const changePasswordRoute = route('Change password')
       await request.config.indicative.validator.validateAll(
         request.body,
         {
-          password: 'required',
+          currentPassword: 'required',
           newPassword: 'required|min:12'
         },
         {
-          'password.required': 'The password is required.',
+          'currentPassword.required': 'The current password is required.',
           'newPassword.required': 'The new password is required.'
         }
       )
@@ -24,16 +24,16 @@ export const changePasswordRoute = route('Change password')
     }
 
     const payload = {
-      password: request.body.password,
+      currentPassword: request.body.currentPassword,
       newPassword: request.body.newPassword
     }
 
-    if (!Bcrypt.compareSync(payload.password, request.user?.password)) {
+    if (!Bcrypt.compareSync(payload.currentPassword, request.user?.password)) {
       return response.status(422).json({
         errors: [
           {
             message: 'Your current password is incorrect',
-            field: 'password'
+            field: 'currentPassword'
           }
         ]
       })

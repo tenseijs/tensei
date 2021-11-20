@@ -51,7 +51,7 @@ test('can change password of an administrator user', async () => {
     .set('X-XSRF-TOKEN', csrf)
     .send({
       ...user,
-      password: passwords.currentPassword,
+      currentPassword: passwords.currentPassword,
       newPassword: passwords.newPassword
     })
 
@@ -109,9 +109,9 @@ test('cannot change password of an administrator user with invalid payload', asy
   expect(response.body).toEqual({
     errors: [
       {
-        message: 'The password is required.',
+        message: 'The current password is required.',
         validation: 'required',
-        field: 'password'
+        field: 'currentPassword'
       },
       {
         message: 'The new password is required.',
@@ -166,7 +166,7 @@ test('cannot change password if not logged in', async () => {
     .post('/cms/api/auth/change-password')
     .set('X-XSRF-TOKEN', newCsrf)
     .send({
-      password: passwords.currentPassword,
+      currentPassword: passwords.currentPassword,
       newPassword: passwords.newPassword
     })
 
