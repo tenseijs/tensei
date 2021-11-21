@@ -75,7 +75,7 @@ const App: React.FunctionComponent = ({ children }) => {
 
 ReactDOM.render(
   <BrowserRouter>
-    <EuiThemeProvider>
+    <EuiThemeProvider modify={extensions}>
       <App>
         <AuthRoutes />
         <SettingsRoutes />
