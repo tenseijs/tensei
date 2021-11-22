@@ -3,14 +3,9 @@ import styled from 'styled-components'
 
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useEuiTheme } from '@tensei/eui/lib/services/theme'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
-import { EuiButton } from '@tensei/eui/lib/components/button'
-import { EuiButtonEmpty } from '@tensei/eui/lib/components/button/button_empty'
 import { AvatarContextMenu } from './avatar-context-menu'
-
-import { SidebarMenu } from './sidebar'
 
 const Sidebar = styled.div<{
   bg?: string
@@ -22,7 +17,6 @@ const Sidebar = styled.div<{
   position: relative;
   border-right: ${({ theme }) => theme.border.thin};
 `
-
 
 const SidebarWrapper = styled.div`
   display: flex;
@@ -104,16 +98,6 @@ const Body = styled.div`
   height: 100vh;
 `
 
-const Topbar = styled.div`
-  width: 100%;
-  padding: 17px 40px;
-  position: sticky;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: ${({ theme }) => theme.border.thin};
-`
-
 const Content = styled.div`
   width: 100%;
   padding: 40px;
@@ -123,15 +107,16 @@ const Content = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
 `
+interface DashboardLayoutProps {
+  topbar: React.ReactNode
+  sidebar: React.ReactNode
+}
 
-
-const TitleAndBackButtonContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`
-
-export const DashboardLayout: React.FunctionComponent = ({ children }) => {
+export const DashboardLayout: React.FunctionComponent<DashboardLayoutProps> = ({
+  children,
+  topbar,
+  sidebar
+}) => {
   const { euiTheme } = useEuiTheme()
 
   return (
@@ -170,23 +155,10 @@ export const DashboardLayout: React.FunctionComponent = ({ children }) => {
             <AvatarContextMenu />
           </Footer>
         </Sidebar>
-        <SidebarMenu />
+        {sidebar}
       </SidebarWrapper>
       <Body>
-        <Topbar>
-          <TitleAndBackButtonContainer>
-            <EuiButtonEmpty iconType="arrowLeft" href="/back">
-              Back
-            </EuiButtonEmpty>
-            <EuiTitle size="xs">
-              <h3>Content</h3>
-            </EuiTitle>
-          </TitleAndBackButtonContainer>
-
-          <EuiButton fill color="primary">
-            Add new product
-          </EuiButton>
-        </Topbar>
+        {topbar}
 
         <Content>{children}</Content>
       </Body>
