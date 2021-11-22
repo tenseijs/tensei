@@ -16,6 +16,7 @@ import {
   EuiContextMenu,
   EuiContextMenuPanelDescriptor
 } from '@tensei/eui/lib/components/context_menu'
+import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 
@@ -26,6 +27,7 @@ import {
   filterClauses,
   FilterClause
 } from '../../../store/resource'
+import { useToastStore } from '../../../store/toast'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -193,7 +195,8 @@ interface MetaData {
 }
 
 export const Table: React.FunctionComponent = () => {
-  const { resource, applyFilter, fetchTableData } = useResourceStore()
+  const { resource, applyFilter, fetchTableData, deleteTableData } =
+    useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -202,25 +205,43 @@ export const Table: React.FunctionComponent = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [items, setItems] = useState([])
   const [metaData, setMetaData] = useState<MetaData>()
+  const [deleteId, setDeleteId] = useState('')
+  const [isModalVisible, setIsModalVisible] = useState(false)
+
+  console.log(selectedItems)
+  const getData = async () => {
+    const params = {
+      page: pageIndex + 1,
+      perPage: pageSize,
+      sort: `${sortField}:${sortDirection}`,
+      sortField
+    }
+    const [data, error] = await fetchTableData(params)
+    if (!error) {
+      setItems(data?.data.data)
+      setMetaData(data?.data.meta)
+      setLoading(false)
+    }
+    setLoading(false) // if there is an error so it doesn't load forever
+  }
   useEffect(() => {
     setLoading(true)
-    const getData = async () => {
-      const params = {
-        page: pageIndex + 1,
-        perPage: pageSize,
-        sort: `${sortField}:${sortDirection}`,
-        sortField
-      }
-      const [data, error] = await fetchTableData(params)
-      if (!error) {
-        setItems(data?.data.data)
-        setMetaData(data?.data.meta)
-        setLoading(false)
-      }
-      setLoading(false) // if there is an error so it doesn't load forever
-    }
+
     getData()
   }, [resource, pageIndex, pageSize, sortField, sortDirection])
+
+  const { toast } = useToastStore()
+  useEffect(() => {
+    const deleteItem = async () => {
+      if (deleteId === '') return
+      const [response, error] = await deleteTableData(deleteId)
+      if (!error) {
+        toast('Deleted', <p>Item has been deleted successfully</p>)
+      }
+      getData()
+    }
+    deleteItem()
+  }, [deleteId])
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -241,12 +262,39 @@ export const Table: React.FunctionComponent = () => {
             icon: 'trash',
             type: 'icon',
             color: 'danger',
-            onClick: console.log
+
+            onClick: item => {
+              setIsModalVisible(true)
+              setDeleteId(item.id)
+            }
           }
         ]
       }
     ]
   }, [resource])
+
+  const ConfirmDeleteModal = () => {
+    const closeModal = () => setIsModalVisible(false)
+
+    if (isModalVisible) {
+      return (
+        <EuiConfirmModal
+          title="Do this destructive thing"
+          onCancel={closeModal}
+          onConfirm={closeModal}
+          cancelButtonText="No, don't do it"
+          confirmButtonText="Yes, do it"
+          buttonColor="danger"
+          defaultFocusedButton="confirm"
+        >
+          <p>You&rsquo;re about to destroy something.</p>
+          <p>Are you sure you want to d this?</p>
+        </EuiConfirmModal>
+      )
+    } else {
+      return null
+    }
+  }
 
   const pagination: EuiBasicTableProps<any>['pagination'] = {
     pageIndex,
@@ -263,28 +311,31 @@ export const Table: React.FunctionComponent = () => {
   }
 
   return (
-    <EuiBasicTable
-      items={items}
-      itemId={'id'}
-      columns={columns}
-      hasActions={true}
-      loading={loading}
-      selection={{
-        selectable: () => true,
-        onSelectionChange: setSelectedItems,
-        selectableMessage: selectable =>
-          selectable ? '' : 'Cannot select this product.'
-      }}
-      isSelectable={true}
-      sorting={{
-        sort: {
-          field: sortField,
-          direction: sortDirection
-        }
-      }}
-      pagination={pagination}
-      onChange={onTableChange}
-    />
+    <>
+      <EuiBasicTable
+        items={items}
+        itemId={'id'}
+        columns={columns}
+        hasActions={true}
+        loading={loading}
+        selection={{
+          selectable: () => true,
+          onSelectionChange: setSelectedItems,
+          selectableMessage: selectable =>
+            selectable ? '' : 'Cannot select this product.'
+        }}
+        isSelectable={true}
+        sorting={{
+          sort: {
+            field: sortField,
+            direction: sortDirection
+          }
+        }}
+        pagination={pagination}
+        onChange={onTableChange}
+      />
+      <ConfirmDeleteModal />
+    </>
   )
 }
 
@@ -315,8 +366,8 @@ export const Resource: React.FunctionComponent = () => {
             <EuiFieldSearch
               placeholder={`Search ${resource.label.toLowerCase()}`}
             />
-
             <FilterList />
+            <EuiButton color="danger"> DELETE</EuiButton>
           </SearchAndFilterContainer>
         </HeaderContainer>
 

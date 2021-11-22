@@ -70,9 +70,13 @@ interface TableDataParams {
 }
 interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
+
   fetchTableData: (
     params: TableDataParams
   ) => Promise<[AxiosResponse | null, Error | null]>
+
+  deleteTableData: (id: string) => Promise<[AxiosResponse | null, Error | null]>
+
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
 }
@@ -93,16 +97,6 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
 
       return resource
     },
-
-    async fetchTableData(params: TableDataParams) {
-      const { resource } = get()
-      const { page, perPage, sort, sortField } = params
-
-      return await window.Tensei.api.get(`/${resource?.slug}`, {
-        params: { page, perPage, ...(sortField && { sort }) }
-      })
-    },
-
     applyFilter(filter: ActiveFilter) {
       set({
         filters: [...get().filters, filter]
@@ -115,6 +109,20 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
             activeFilter.field.databaseField === filter.field.databaseField
         )
       })
+    },
+
+    async fetchTableData(params: TableDataParams) {
+      const { resource } = get()
+      const { page, perPage, sort, sortField } = params
+
+      return await window.Tensei.api.get(`/${resource?.slug}`, {
+        params: { page, perPage, ...(sortField && { sort }) }
+      })
+    },
+
+    async deleteTableData(id: string) {
+      const { resource } = get()
+      return await window.Tensei.api.delete(`/${resource?.slug}/${id}`)
     }
   }))
 )
