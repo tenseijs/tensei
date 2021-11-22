@@ -205,9 +205,8 @@ export const Table: React.FunctionComponent = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [items, setItems] = useState([])
   const [metaData, setMetaData] = useState<MetaData>()
-  const [deleteId, setDeleteId] = useState('')
+  const [deleteId, setDeleteId] = useState<string[]>([])
   const [isModalVisible, setIsModalVisible] = useState(false)
-
   console.log(selectedItems)
   const getData = async () => {
     const params = {
@@ -231,17 +230,19 @@ export const Table: React.FunctionComponent = () => {
   }, [resource, pageIndex, pageSize, sortField, sortDirection])
 
   const { toast } = useToastStore()
-  useEffect(() => {
-    const deleteItem = async () => {
-      if (deleteId === '') return
-      const [response, error] = await deleteTableData(deleteId)
-      if (!error) {
-        toast('Deleted', <p>Item has been deleted successfully</p>)
+  const deleteItem = async () => {
+    if (deleteId === []) return
+    const [response, error] = await deleteTableData(deleteId)
+    if (!error) {
+      if (selectedItems.length > 1) {
+        toast('Deleted', <p>Selected items have been deleted successfully</p>)
+        getData()
+        return
       }
+      toast('Deleted', <p>Item has been deleted successfully</p>)
       getData()
     }
-    deleteItem()
-  }, [deleteId])
+  }
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -265,7 +266,7 @@ export const Table: React.FunctionComponent = () => {
 
             onClick: item => {
               setIsModalVisible(true)
-              setDeleteId(item.id)
+              setDeleteId([item.id])
             }
           }
         ]
@@ -279,16 +280,24 @@ export const Table: React.FunctionComponent = () => {
     if (isModalVisible) {
       return (
         <EuiConfirmModal
-          title="Do this destructive thing"
+          title={`Do you want to delete the selected item${
+            selectedItems.length > 1 ? 's' : ''
+          }`}
           onCancel={closeModal}
-          onConfirm={closeModal}
+          onConfirm={() => {
+            deleteItem()
+            closeModal()
+          }}
           cancelButtonText="No, don't do it"
           confirmButtonText="Yes, do it"
           buttonColor="danger"
           defaultFocusedButton="confirm"
         >
-          <p>You&rsquo;re about to destroy something.</p>
-          <p>Are you sure you want to d this?</p>
+          <p>
+            You&rsquo;re about to permanently delete the selected item
+            {selectedItems.length > 1 ? 's' : ''}
+          </p>
+          <p>Are you sure you want to do this?</p>
         </EuiConfirmModal>
       )
     } else {
@@ -309,9 +318,32 @@ export const Table: React.FunctionComponent = () => {
     setSortDirection(sort?.direction!)
     setSortField(sort?.field as string)
   }
+  const DeleteButtonContainer = styled.div`
+    display: flex;
+    align-self: flex-end;
+  `
 
   return (
     <>
+      {selectedItems.length ? (
+        <>
+          <DeleteButtonContainer>
+            <EuiButton
+              onClick={() => {
+                const items: string[] = selectedItems.map(item => item.id)
+                setDeleteId([...items])
+                setIsModalVisible(true)
+              }}
+              color="danger"
+              size="s"
+            >
+              DELETE {selectedItems.length} ITEM
+              {selectedItems.length > 1 ? 'S' : ''}
+            </EuiButton>
+          </DeleteButtonContainer>
+        </>
+      ) : null}
+
       <EuiBasicTable
         items={items}
         itemId={'id'}
@@ -367,7 +399,6 @@ export const Resource: React.FunctionComponent = () => {
               placeholder={`Search ${resource.label.toLowerCase()}`}
             />
             <FilterList />
-            <EuiButton color="danger"> DELETE</EuiButton>
           </SearchAndFilterContainer>
         </HeaderContainer>
 

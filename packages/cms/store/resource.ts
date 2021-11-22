@@ -75,7 +75,9 @@ interface ResourceMethods extends State {
     params: TableDataParams
   ) => Promise<[AxiosResponse | null, Error | null]>
 
-  deleteTableData: (id: string) => Promise<[AxiosResponse | null, Error | null]>
+  deleteTableData: (
+    id: string[]
+  ) => Promise<[AxiosResponse | null, Error | null]>
 
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
@@ -120,9 +122,11 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       })
     },
 
-    async deleteTableData(id: string) {
+    async deleteTableData(ids: string[]) {
       const { resource } = get()
-      return await window.Tensei.api.delete(`/${resource?.slug}/${id}`)
+      return await window.Tensei.api.delete(`/${resource?.slug}`, {
+        params: { where: { id: { _in: [...ids] } } }
+      })
     }
   }))
 )
