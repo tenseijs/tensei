@@ -21,6 +21,9 @@ import {
 } from '../../../store/auth'
 import { useToastStore } from '../../../store/toast'
 import { useForm } from '../../hooks/forms'
+import { SidebarMenu } from '../../components/dashboard/layout/sidebar'
+import { TopbarMenu } from '../../components/dashboard/layout/topbar'
+import { EuiTitle } from '@tensei/eui/lib/components/title'
 
 const PageTitle = styled.div`
   display: flex;
@@ -94,7 +97,16 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      topbar={
+        <TopbarMenu>
+          <EuiTitle size="xs">
+            <h3>Profile</h3>
+          </EuiTitle>
+        </TopbarMenu>
+      }
+      sidebar={<SidebarMenu title="Profile" />}
+    >
       <Wrapper>
         <PageTitle>
           <EuiAvatar

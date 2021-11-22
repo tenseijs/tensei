@@ -26,6 +26,9 @@ import {
   filterClauses,
   FilterClause
 } from '../../../store/resource'
+import { EuiTitle } from '@tensei/eui/lib/components/title'
+import { TopbarMenu } from '../../components/dashboard/layout/topbar'
+import { SidebarMenu } from '../../components/dashboard/layout/sidebar'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -308,7 +311,16 @@ export const Resource: React.FunctionComponent = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      topbar={
+        <TopbarMenu>
+          <EuiTitle size="xs">
+            <h3>Resources</h3>
+          </EuiTitle>
+        </TopbarMenu>
+      }
+      sidebar={<SidebarMenu title="Resources" />}
+    >
       <TableWrapper>
         <HeaderContainer>
           <SearchAndFilterContainer>
