@@ -19,7 +19,10 @@ import {
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 
-import { DashboardLayout } from '../../components/dashboard/layout'
+import {
+  DashboardLayout,
+  DashboardLayoutComponents
+} from '../../components/dashboard/layout'
 import { useEffect } from 'react'
 import {
   useResourceStore,
@@ -27,8 +30,6 @@ import {
   FilterClause
 } from '../../../store/resource'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
-import { TopbarMenu } from '../../components/dashboard/layout/topbar'
-import { SidebarMenu } from '../../components/dashboard/layout/sidebar'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -311,31 +312,34 @@ export const Resource: React.FunctionComponent = () => {
   }
 
   return (
-    <DashboardLayout
-      topbar={
-        <TopbarMenu>
+    <DashboardLayout>
+      <DashboardLayoutComponents.Sidebar title="Resources"></DashboardLayoutComponents.Sidebar>
+
+      <DashboardLayoutComponents.Body>
+        <DashboardLayoutComponents.Topbar>
           <EuiTitle size="xs">
             <h3>Resources</h3>
           </EuiTitle>
-        </TopbarMenu>
-      }
-      sidebar={<SidebarMenu title="Resources" />}
-    >
-      <TableWrapper>
-        <HeaderContainer>
-          <SearchAndFilterContainer>
-            <EuiFieldSearch
-              placeholder={`Search ${resource.label.toLowerCase()}`}
-            />
+        </DashboardLayoutComponents.Topbar>
 
-            <FilterList />
-          </SearchAndFilterContainer>
-        </HeaderContainer>
+        <DashboardLayoutComponents.Content>
+          <TableWrapper>
+            <HeaderContainer>
+              <SearchAndFilterContainer>
+                <EuiFieldSearch
+                  placeholder={`Search ${resource.label.toLowerCase()}`}
+                />
 
-        <EuiSpacer size="xl" />
+                <FilterList />
+              </SearchAndFilterContainer>
+            </HeaderContainer>
 
-        <Table />
-      </TableWrapper>
+            <EuiSpacer size="xl" />
+
+            <Table />
+          </TableWrapper>
+        </DashboardLayoutComponents.Content>
+      </DashboardLayoutComponents.Body>
     </DashboardLayout>
   )
 }
