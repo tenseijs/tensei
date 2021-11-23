@@ -2,6 +2,7 @@ import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { ResourceContract, FieldContract } from '@tensei/components'
 import { AxiosError, AxiosResponse } from 'axios'
+import { useState } from 'react'
 
 export interface ActiveFilter {
   field: FieldContract
@@ -78,6 +79,7 @@ interface ResourceMethods extends State {
   deleteTableData: (
     id: string[]
   ) => Promise<[AxiosResponse | null, Error | null]>
+  fetchDeleteId: () => [string[], any]
 
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
@@ -124,9 +126,18 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
 
     async deleteTableData(ids: string[]) {
       const { resource } = get()
+
       return await window.Tensei.api.delete(`/${resource?.slug}`, {
         params: { where: { id: { _in: [...ids] } } }
       })
+    },
+
+    fetchDeleteId() {
+      const [itemsSelectedForDelete, setItemsSelectedForDelete] = useState<
+        string[]
+      >([])
+
+      return [itemsSelectedForDelete, setItemsSelectedForDelete]
     }
   }))
 )

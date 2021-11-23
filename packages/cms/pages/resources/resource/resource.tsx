@@ -195,8 +195,13 @@ interface MetaData {
 }
 
 export const Table: React.FunctionComponent = () => {
-  const { resource, applyFilter, fetchTableData, deleteTableData } =
-    useResourceStore()
+  const {
+    resource,
+    applyFilter,
+    fetchTableData,
+    deleteTableData,
+    fetchDeleteId
+  } = useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -205,7 +210,7 @@ export const Table: React.FunctionComponent = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [items, setItems] = useState([])
   const [metaData, setMetaData] = useState<MetaData>()
-  const [deleteId, setDeleteId] = useState<string[]>([])
+  const [itemsSelectedForDelete, setItemsSelectedForDelete] = fetchDeleteId()
   const [isModalVisible, setIsModalVisible] = useState(false)
   console.log(selectedItems)
   const getData = async () => {
@@ -215,7 +220,9 @@ export const Table: React.FunctionComponent = () => {
       sort: `${sortField}:${sortDirection}`,
       sortField
     }
+
     const [data, error] = await fetchTableData(params)
+
     if (!error) {
       setItems(data?.data.data)
       setMetaData(data?.data.meta)
@@ -230,9 +237,10 @@ export const Table: React.FunctionComponent = () => {
   }, [resource, pageIndex, pageSize, sortField, sortDirection])
 
   const { toast } = useToastStore()
+
   const deleteItem = async () => {
-    if (deleteId === []) return
-    const [response, error] = await deleteTableData(deleteId)
+    if (itemsSelectedForDelete.length === 0) return
+    const [response, error] = await deleteTableData(itemsSelectedForDelete)
     if (!error) {
       if (selectedItems.length > 1) {
         toast('Deleted', <p>Selected items have been deleted successfully</p>)
@@ -266,7 +274,7 @@ export const Table: React.FunctionComponent = () => {
 
             onClick: item => {
               setIsModalVisible(true)
-              setDeleteId([item.id])
+              setItemsSelectedForDelete([item.id])
             }
           }
         ]
@@ -280,22 +288,25 @@ export const Table: React.FunctionComponent = () => {
     if (isModalVisible) {
       return (
         <EuiConfirmModal
-          title={`Do you want to delete the selected item${
-            selectedItems.length > 1 ? 's' : ''
-          }`}
+          title={`Do you want to delete the selected ${
+            selectedItems.length > 1 ? resource?.slugPlural : resource?.name
+          }
+          `}
           onCancel={closeModal}
-          onConfirm={() => {
-            deleteItem()
+          onConfirm={async () => {
+            await deleteItem()
             closeModal()
           }}
-          cancelButtonText="No, don't do it"
-          confirmButtonText="Yes, do it"
+          cancelButtonText="Cancel"
+          confirmButtonText={`Delete ${
+            selectedItems.length > 1 ? resource?.slugPlural : resource?.name
+          }`}
           buttonColor="danger"
           defaultFocusedButton="confirm"
         >
           <p>
-            You&rsquo;re about to permanently delete the selected item
-            {selectedItems.length > 1 ? 's' : ''}
+            You&rsquo;re about to permanently delete the selected{' '}
+            {selectedItems.length > 1 ? resource?.slugPlural : resource?.name}
           </p>
           <p>Are you sure you want to do this?</p>
         </EuiConfirmModal>
@@ -331,14 +342,14 @@ export const Table: React.FunctionComponent = () => {
             <EuiButton
               onClick={() => {
                 const items: string[] = selectedItems.map(item => item.id)
-                setDeleteId([...items])
+                setItemsSelectedForDelete([...items])
                 setIsModalVisible(true)
               }}
               color="danger"
               size="s"
             >
-              DELETE {selectedItems.length} ITEM
-              {selectedItems.length > 1 ? 'S' : ''}
+              Delete {selectedItems.length} item
+              {selectedItems.length > 1 ? 's' : ''}
             </EuiButton>
           </DeleteButtonContainer>
         </>
