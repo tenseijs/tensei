@@ -3,9 +3,10 @@ import styled from 'styled-components'
 
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { useEuiTheme } from '@tensei/eui/lib/services/theme'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { AvatarContextMenu } from './avatar-context-menu'
+import { TopbarMenu } from '../layout/topbar'
+import { SidebarMenu } from '../layout/sidebar'
 
 const Sidebar = styled.div<{
   bg?: string
@@ -107,20 +108,42 @@ const Content = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
 `
-interface DashboardLayoutProps {
-  topbar: React.ReactNode
-  sidebar: React.ReactNode
+
+export const DashboardLayout: React.FunctionComponent = ({ children }) => {
+  return <Wrapper>{children}</Wrapper>
 }
 
-export const DashboardLayout: React.FunctionComponent<DashboardLayoutProps> = ({
-  children,
-  topbar,
-  sidebar
-}) => {
-  const { euiTheme } = useEuiTheme()
+interface DashboardLayoutProps {
+  Body(
+    props: { children?: React.ReactNode },
+    context?: any
+  ): React.ReactElement<any, any> | null
+  Content(
+    props: { children?: React.ReactNode },
+    context?: any
+  ): React.ReactElement<any, any> | null
+  Topbar(
+    props: { children?: React.ReactNode },
+    context?: any
+  ): React.ReactElement<any, any> | null
+  Sidebar(
+    props: { children?: React.ReactNode; title: string },
+    context?: any
+  ): React.ReactElement<any, any> | null
+}
 
-  return (
-    <Wrapper>
+export const DashboardLayoutComponents: DashboardLayoutProps = {
+  Body: ({ children }) => {
+    return <Body>{children}</Body>
+  },
+  Content: ({ children }) => {
+    return <Content>{children}</Content>
+  },
+  Topbar: ({ children }) => {
+    return <TopbarMenu>{children}</TopbarMenu>
+  },
+  Sidebar: ({ children, title }) => {
+    return (
       <SidebarWrapper>
         <Sidebar>
           <SidebarContainer>
@@ -155,13 +178,8 @@ export const DashboardLayout: React.FunctionComponent<DashboardLayoutProps> = ({
             <AvatarContextMenu />
           </Footer>
         </Sidebar>
-        {sidebar}
+        <SidebarMenu title={title}>{children}</SidebarMenu>
       </SidebarWrapper>
-      <Body>
-        {topbar}
-
-        <Content>{children}</Content>
-      </Body>
-    </Wrapper>
-  )
+    )
+  }
 }
