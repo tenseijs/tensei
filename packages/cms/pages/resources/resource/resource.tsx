@@ -195,7 +195,7 @@ interface MetaData {
   total: number
 }
 
-export const Table: React.FunctionComponent = () => {
+export const Table: React.FunctionComponent = ({ children }) => {
   const { resource, applyFilter, fetchTableData, deleteTableData } =
     useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
@@ -211,12 +211,15 @@ export const Table: React.FunctionComponent = () => {
   >([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
+  const searchValue = children?.toString()
+
   const getData = async () => {
     const params = {
       page: pageIndex + 1,
       perPage: pageSize,
       sort: `${sortField}:${sortDirection}`,
-      sortField
+      sortField,
+      search: searchValue
     }
 
     const [data, error] = await fetchTableData(params)
@@ -234,6 +237,17 @@ export const Table: React.FunctionComponent = () => {
 
     getData()
   }, [resource, pageIndex, pageSize, sortField, sortDirection])
+
+  useEffect(() => {
+    if (searchValue === '') return
+    const timeOut = setTimeout(() => {
+      setLoading(true)
+      getData()
+    }, 500)
+    return () => {
+      clearTimeout(timeOut)
+    }
+  }, [searchValue])
 
   const { toast } = useToastStore()
 
@@ -406,6 +420,7 @@ export const Resource: React.FunctionComponent = () => {
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
+  const [searchValue, setSearchValue] = useState('')
 
   useEffect(() => {
     const found = findResource(resourceSlug)
@@ -415,10 +430,13 @@ export const Resource: React.FunctionComponent = () => {
     }
   }, [resourceSlug])
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
+  }
+
   if (!resource) {
     return <p>Loading ...</p> // show full page loader here.
   }
-
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
@@ -436,6 +454,7 @@ export const Resource: React.FunctionComponent = () => {
               <SearchAndFilterContainer>
                 <EuiFieldSearch
                   placeholder={`Search ${resource.label.toLowerCase()}`}
+                  onChange={handleChange}
                 />
 
                 <FilterList />
@@ -444,7 +463,7 @@ export const Resource: React.FunctionComponent = () => {
 
             <EuiSpacer size="xl" />
 
-            <Table />
+            <Table>{searchValue}</Table>
           </TableWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
