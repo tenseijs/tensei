@@ -56,7 +56,26 @@ const NestedSidebarGroupName = styled(EuiText)`
   ${({ theme }) => `color: ${theme.colors.subdued}`}
 `
 
-export const SidebarMenu: React.FunctionComponent = () => {
+export interface SidebarNavGroup {
+  name: string
+  items: SidebarNavItem[]
+}
+
+export interface SidebarNavItem {
+  name: string
+  link: string
+}
+
+interface SidebarProps {
+  title: string
+  groups: SidebarNavGroup[]
+}
+
+export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
+  children,
+  title,
+  groups
+}) => {
   const [close, setClose] = useState(false)
 
   const onCloseSideBar = () => setClose(!close)
@@ -72,16 +91,18 @@ export const SidebarMenu: React.FunctionComponent = () => {
       </CollapseExpandIcon>
       <NestedSidebarHeader close={close}>
         <EuiTitle size="s">
-          <h1>Content</h1>
+          <h1>{title}</h1>
         </EuiTitle>
       </NestedSidebarHeader>
       <NestedSidebarTitleUnderline />
 
       <EuiSpacer size="l" />
 
-      <Group close={close}>
-        <NestedSidebarGroupName>Resources</NestedSidebarGroupName>
-      </Group>
+      {groups.map(group => (
+        <Group key={group.name} close={close}>
+          <NestedSidebarGroupName>{group.name}</NestedSidebarGroupName>
+        </Group>
+      ))}
     </NestedSidebar>
   )
 }

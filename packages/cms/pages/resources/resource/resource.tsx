@@ -26,6 +26,7 @@ import {
   filterClauses,
   FilterClause
 } from '../../../store/resource'
+import { EuiTitle } from '@tensei/eui/lib/components/title'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -309,21 +310,33 @@ export const Resource: React.FunctionComponent = () => {
 
   return (
     <DashboardLayout>
-      <TableWrapper>
-        <HeaderContainer>
-          <SearchAndFilterContainer>
-            <EuiFieldSearch
-              placeholder={`Search ${resource.label.toLowerCase()}`}
-            />
+      <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
 
-            <FilterList />
-          </SearchAndFilterContainer>
-        </HeaderContainer>
+      <DashboardLayout.Body>
+        <DashboardLayout.Topbar>
+          <EuiTitle size="xs">
+            <h3>{resource?.name}</h3>
+          </EuiTitle>
+        </DashboardLayout.Topbar>
 
-        <EuiSpacer size="xl" />
+        <DashboardLayout.Content>
+          <TableWrapper>
+            <HeaderContainer>
+              <SearchAndFilterContainer>
+                <EuiFieldSearch
+                  placeholder={`Search ${resource.label.toLowerCase()}`}
+                />
 
-        <Table />
-      </TableWrapper>
+                <FilterList />
+              </SearchAndFilterContainer>
+            </HeaderContainer>
+
+            <EuiSpacer size="xl" />
+
+            <Table />
+          </TableWrapper>
+        </DashboardLayout.Content>
+      </DashboardLayout.Body>
     </DashboardLayout>
   )
 }

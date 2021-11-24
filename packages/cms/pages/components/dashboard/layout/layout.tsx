@@ -3,16 +3,12 @@ import styled from 'styled-components'
 
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { EuiTitle } from '@tensei/eui/lib/components/title'
-import { useEuiTheme } from '@tensei/eui/lib/services/theme'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
-import { EuiButton } from '@tensei/eui/lib/components/button'
-import { EuiButtonEmpty } from '@tensei/eui/lib/components/button/button_empty'
 import { AvatarContextMenu } from './avatar-context-menu'
+import { TopbarMenu } from '../layout/topbar'
+import { SidebarMenu } from '../layout/sidebar'
 
-import { SidebarMenu } from './sidebar'
-
-const Sidebar = styled.div<{
+const StyledSidebar = styled.div<{
   bg?: string
 }>`
   display: flex;
@@ -22,7 +18,6 @@ const Sidebar = styled.div<{
   position: relative;
   border-right: ${({ theme }) => theme.border.thin};
 `
-
 
 const SidebarWrapper = styled.div`
   display: flex;
@@ -104,16 +99,6 @@ const Body = styled.div`
   height: 100vh;
 `
 
-const Topbar = styled.div`
-  width: 100%;
-  padding: 17px 40px;
-  position: sticky;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: ${({ theme }) => theme.border.thin};
-`
-
 const Content = styled.div`
   width: 100%;
   padding: 40px;
@@ -124,72 +109,67 @@ const Content = styled.div`
   overflow-x: hidden;
 `
 
+interface SidebarProps {
+  title: string
+}
 
-const TitleAndBackButtonContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`
-
-export const DashboardLayout: React.FunctionComponent = ({ children }) => {
-  const { euiTheme } = useEuiTheme()
-
+const Sidebar: React.FunctionComponent<SidebarProps> = ({
+  title,
+  children
+}) => {
   return (
-    <Wrapper>
-      <SidebarWrapper>
-        <Sidebar>
-          <SidebarContainer>
-            <Workspace>
-              <Logo
-                width={40}
-                height={40}
-                src={
-                  'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
-                }
-              ></Logo>
-            </Workspace>
+    <SidebarWrapper>
+      <StyledSidebar>
+        <SidebarContainer>
+          <Workspace>
+            <Logo
+              width={40}
+              height={40}
+              src={
+                'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
+              }
+            ></Logo>
+          </Workspace>
 
-            <EuiSpacer size="l" />
+          <EuiSpacer size="l" />
 
-            <GroupName textAlign="center">Main</GroupName>
+          <GroupName textAlign="center">Main</GroupName>
 
-            <EuiSpacer size="l" />
+          <EuiSpacer size="l" />
 
-            <GroupName textAlign="center">Team</GroupName>
-          </SidebarContainer>
+          <GroupName textAlign="center">Team</GroupName>
+        </SidebarContainer>
 
-          <Footer>
-            <NavItem active>
-              <EuiIcon type="gear" />
-            </NavItem>
-            <EuiSpacer size="s" />
-            <NavItem>
-              <EuiIcon type="help" />
-            </NavItem>
+        <Footer>
+          <NavItem active>
+            <EuiIcon type="gear" />
+          </NavItem>
+          <EuiSpacer size="s" />
+          <NavItem>
+            <EuiIcon type="help" />
+          </NavItem>
 
-            <AvatarContextMenu />
-          </Footer>
-        </Sidebar>
-        <SidebarMenu />
-      </SidebarWrapper>
-      <Body>
-        <Topbar>
-          <TitleAndBackButtonContainer>
-            <EuiButtonEmpty iconType="arrowLeft" href="/back">
-              Back
-            </EuiButtonEmpty>
-            <EuiTitle size="xs">
-              <h3>Content</h3>
-            </EuiTitle>
-          </TitleAndBackButtonContainer>
-
-          <EuiButton fill color="primary">
-            Add new product
-          </EuiButton>
-        </Topbar>
-
-        <Content>{children}</Content>
-      </Body>
-    </Wrapper>
+          <AvatarContextMenu />
+        </Footer>
+      </StyledSidebar>
+      <SidebarMenu title={title} groups={[]}>
+        {children}
+      </SidebarMenu>
+    </SidebarWrapper>
   )
 }
+
+export const DashboardLayout: React.FunctionComponent & {
+  Content: typeof Content
+  Body: typeof Body
+  Sidebar: typeof Sidebar
+  Topbar: typeof TopbarMenu
+} = ({ children }) => {
+  return <Wrapper>{children}</Wrapper>
+}
+
+DashboardLayout.Content = Content
+DashboardLayout.Body = Body
+DashboardLayout.Body = Body
+DashboardLayout.Topbar = TopbarMenu
+DashboardLayout.Sidebar = Sidebar
