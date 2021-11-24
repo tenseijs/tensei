@@ -27,6 +27,7 @@ import {
   filterClauses,
   FilterClause
 } from '../../../store/resource'
+import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useToastStore } from '../../../store/toast'
 
 const HeaderContainer = styled.div`
@@ -420,20 +421,33 @@ export const Resource: React.FunctionComponent = () => {
 
   return (
     <DashboardLayout>
-      <TableWrapper>
-        <HeaderContainer>
-          <SearchAndFilterContainer>
-            <EuiFieldSearch
-              placeholder={`Search ${resource.label.toLowerCase()}`}
-            />
-            <FilterList />
-          </SearchAndFilterContainer>
-        </HeaderContainer>
+      <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
 
-        <EuiSpacer size="xl" />
+      <DashboardLayout.Body>
+        <DashboardLayout.Topbar>
+          <EuiTitle size="xs">
+            <h3>{resource?.name}</h3>
+          </EuiTitle>
+        </DashboardLayout.Topbar>
 
-        <Table />
-      </TableWrapper>
+        <DashboardLayout.Content>
+          <TableWrapper>
+            <HeaderContainer>
+              <SearchAndFilterContainer>
+                <EuiFieldSearch
+                  placeholder={`Search ${resource.label.toLowerCase()}`}
+                />
+
+                <FilterList />
+              </SearchAndFilterContainer>
+            </HeaderContainer>
+
+            <EuiSpacer size="xl" />
+
+            <Table />
+          </TableWrapper>
+        </DashboardLayout.Content>
+      </DashboardLayout.Body>
     </DashboardLayout>
   )
 }
