@@ -194,8 +194,11 @@ interface MetaData {
   perPage: number
   total: number
 }
+interface TableProps {
+  searchValue: string
+}
 
-export const Table: React.FunctionComponent = ({ children }) => {
+export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
   const { resource, applyFilter, fetchTableData, deleteTableData } =
     useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
@@ -211,7 +214,6 @@ export const Table: React.FunctionComponent = ({ children }) => {
   >([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
-  const searchValue = children?.toString()
 
   const getData = async () => {
     const params = {
@@ -463,7 +465,7 @@ export const Resource: React.FunctionComponent = () => {
 
             <EuiSpacer size="xl" />
 
-            <Table>{searchValue}</Table>
+            <Table searchValue={searchValue} />
           </TableWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>

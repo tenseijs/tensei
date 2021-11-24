@@ -125,7 +125,7 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
           page,
           perPage,
           ...(sortField && { sort }),
-          ...(sort && { search })
+          ...(search && { search })
         }
       })
     },
