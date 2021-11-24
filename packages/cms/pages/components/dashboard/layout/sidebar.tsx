@@ -56,13 +56,25 @@ const NestedSidebarGroupName = styled(EuiText)`
   ${({ theme }) => `color: ${theme.colors.subdued}`}
 `
 
+export interface SidebarNavGroup {
+  name: string
+  items: SidebarNavItem[]
+}
+
+export interface SidebarNavItem {
+  name: string
+  link: string
+}
+
 interface SidebarProps {
   title: string
+  groups: SidebarNavGroup[]
 }
 
 export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
   children,
-  title
+  title,
+  groups
 }) => {
   const [close, setClose] = useState(false)
 
@@ -86,9 +98,11 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
 
       <EuiSpacer size="l" />
 
-      <Group close={close}>
-        <NestedSidebarGroupName>{children}</NestedSidebarGroupName>
-      </Group>
+      {groups.map(group => (
+        <Group key={group.name} close={close}>
+          <NestedSidebarGroupName>{group.name}</NestedSidebarGroupName>
+        </Group>
+      ))}
     </NestedSidebar>
   )
 }

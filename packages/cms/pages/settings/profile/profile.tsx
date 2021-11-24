@@ -1,9 +1,6 @@
 import styled from 'styled-components'
 import React, { FunctionComponent, Fragment } from 'react'
-import {
-  DashboardLayout,
-  DashboardLayoutComponents
-} from '../../components/dashboard/layout'
+import { DashboardLayout } from '../../components/dashboard/layout'
 
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
@@ -99,16 +96,16 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
 
   return (
     <DashboardLayout>
-      <DashboardLayoutComponents.Sidebar title="Profile" />
+      <DashboardLayout.Sidebar title="Profile" />
 
-      <DashboardLayoutComponents.Body>
-        <DashboardLayoutComponents.Topbar>
+      <DashboardLayout.Body>
+        <DashboardLayout.Topbar>
           <EuiTitle size="xs">
             <h3>Profile</h3>
           </EuiTitle>
-        </DashboardLayoutComponents.Topbar>
+        </DashboardLayout.Topbar>
 
-        <DashboardLayoutComponents.Content>
+        <DashboardLayout.Content>
           <Wrapper>
             <PageTitle>
               <EuiAvatar
@@ -263,8 +260,8 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
               </EuiForm>
             </FormWrapper>
           </Wrapper>
-        </DashboardLayoutComponents.Content>
-      </DashboardLayoutComponents.Body>
+        </DashboardLayout.Content>
+      </DashboardLayout.Body>
     </DashboardLayout>
   )
 }

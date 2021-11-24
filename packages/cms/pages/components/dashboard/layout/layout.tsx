@@ -8,7 +8,7 @@ import { AvatarContextMenu } from './avatar-context-menu'
 import { TopbarMenu } from '../layout/topbar'
 import { SidebarMenu } from '../layout/sidebar'
 
-const Sidebar = styled.div<{
+const StyledSidebar = styled.div<{
   bg?: string
 }>`
   display: flex;
@@ -109,77 +109,67 @@ const Content = styled.div`
   overflow-x: hidden;
 `
 
-export const DashboardLayout: React.FunctionComponent = ({ children }) => {
+interface SidebarProps {
+  title: string
+}
+
+const Sidebar: React.FunctionComponent<SidebarProps> = ({
+  title,
+  children
+}) => {
+  return (
+    <SidebarWrapper>
+      <StyledSidebar>
+        <SidebarContainer>
+          <Workspace>
+            <Logo
+              width={40}
+              height={40}
+              src={
+                'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
+              }
+            ></Logo>
+          </Workspace>
+
+          <EuiSpacer size="l" />
+
+          <GroupName textAlign="center">Main</GroupName>
+
+          <EuiSpacer size="l" />
+
+          <GroupName textAlign="center">Team</GroupName>
+        </SidebarContainer>
+
+        <Footer>
+          <NavItem active>
+            <EuiIcon type="gear" />
+          </NavItem>
+          <EuiSpacer size="s" />
+          <NavItem>
+            <EuiIcon type="help" />
+          </NavItem>
+
+          <AvatarContextMenu />
+        </Footer>
+      </StyledSidebar>
+      <SidebarMenu title={title} groups={[]}>
+        {children}
+      </SidebarMenu>
+    </SidebarWrapper>
+  )
+}
+
+export const DashboardLayout: React.FunctionComponent & {
+  Content: typeof Content
+  Body: typeof Body
+  Sidebar: typeof Sidebar
+  Topbar: typeof TopbarMenu
+} = ({ children }) => {
   return <Wrapper>{children}</Wrapper>
 }
 
-interface DashboardLayoutProps {
-  Body(
-    props: { children?: React.ReactNode },
-    context?: any
-  ): React.ReactElement<any, any> | null
-  Content(
-    props: { children?: React.ReactNode },
-    context?: any
-  ): React.ReactElement<any, any> | null
-  Topbar(
-    props: { children?: React.ReactNode },
-    context?: any
-  ): React.ReactElement<any, any> | null
-  Sidebar(
-    props: { children?: React.ReactNode; title: string },
-    context?: any
-  ): React.ReactElement<any, any> | null
-}
-
-export const DashboardLayoutComponents: DashboardLayoutProps = {
-  Body: ({ children }) => {
-    return <Body>{children}</Body>
-  },
-  Content: ({ children }) => {
-    return <Content>{children}</Content>
-  },
-  Topbar: ({ children }) => {
-    return <TopbarMenu>{children}</TopbarMenu>
-  },
-  Sidebar: ({ children, title }) => {
-    return (
-      <SidebarWrapper>
-        <Sidebar>
-          <SidebarContainer>
-            <Workspace>
-              <Logo
-                width={40}
-                height={40}
-                src={
-                  'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
-                }
-              ></Logo>
-            </Workspace>
-
-            <EuiSpacer size="l" />
-
-            <GroupName textAlign="center">Main</GroupName>
-
-            <EuiSpacer size="l" />
-
-            <GroupName textAlign="center">Team</GroupName>
-          </SidebarContainer>
-
-          <Footer>
-            <NavItem active>
-              <EuiIcon type="gear" />
-            </NavItem>
-            <EuiSpacer size="s" />
-            <NavItem>
-              <EuiIcon type="help" />
-            </NavItem>
-
-            <AvatarContextMenu />
-          </Footer>
-        </Sidebar>
-        <SidebarMenu title={title}>{children}</SidebarMenu>
-      </SidebarWrapper>
-    )
-  }
-}
+DashboardLayout.Content = Content
+DashboardLayout.Body = Body
+DashboardLayout.Body = Body
+DashboardLayout.Topbar = TopbarMenu
+DashboardLayout.Sidebar = Sidebar

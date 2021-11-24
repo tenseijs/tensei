@@ -19,10 +19,7 @@ import {
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 
-import {
-  DashboardLayout,
-  DashboardLayoutComponents
-} from '../../components/dashboard/layout'
+import { DashboardLayout } from '../../components/dashboard/layout'
 import { useEffect } from 'react'
 import {
   useResourceStore,
@@ -313,16 +310,16 @@ export const Resource: React.FunctionComponent = () => {
 
   return (
     <DashboardLayout>
-      <DashboardLayoutComponents.Sidebar title="Resources"></DashboardLayoutComponents.Sidebar>
+      <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
 
-      <DashboardLayoutComponents.Body>
-        <DashboardLayoutComponents.Topbar>
+      <DashboardLayout.Body>
+        <DashboardLayout.Topbar>
           <EuiTitle size="xs">
-            <h3>Resources</h3>
+            <h3>{resource?.name}</h3>
           </EuiTitle>
-        </DashboardLayoutComponents.Topbar>
+        </DashboardLayout.Topbar>
 
-        <DashboardLayoutComponents.Content>
+        <DashboardLayout.Content>
           <TableWrapper>
             <HeaderContainer>
               <SearchAndFilterContainer>
@@ -338,8 +335,8 @@ export const Resource: React.FunctionComponent = () => {
 
             <Table />
           </TableWrapper>
-        </DashboardLayoutComponents.Content>
-      </DashboardLayoutComponents.Body>
+        </DashboardLayout.Content>
+      </DashboardLayout.Body>
     </DashboardLayout>
   )
 }
