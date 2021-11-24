@@ -195,13 +195,8 @@ interface MetaData {
 }
 
 export const Table: React.FunctionComponent = () => {
-  const {
-    resource,
-    applyFilter,
-    fetchTableData,
-    deleteTableData,
-    fetchDeleteId
-  } = useResourceStore()
+  const { resource, applyFilter, fetchTableData, deleteTableData } =
+    useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -210,9 +205,11 @@ export const Table: React.FunctionComponent = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [items, setItems] = useState([])
   const [metaData, setMetaData] = useState<MetaData>()
-  const [itemsSelectedForDelete, setItemsSelectedForDelete] = fetchDeleteId()
+  const [itemsSelectedForDelete, setItemsSelectedForDelete] = useState<
+    string[]
+  >([])
   const [isModalVisible, setIsModalVisible] = useState(false)
-  console.log(selectedItems)
+  const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
   const getData = async () => {
     const params = {
       page: pageIndex + 1,
@@ -230,6 +227,7 @@ export const Table: React.FunctionComponent = () => {
     }
     setLoading(false) // if there is an error so it doesn't load forever
   }
+
   useEffect(() => {
     setLoading(true)
 
@@ -240,15 +238,24 @@ export const Table: React.FunctionComponent = () => {
 
   const deleteItem = async () => {
     if (itemsSelectedForDelete.length === 0) return
+
     const [response, error] = await deleteTableData(itemsSelectedForDelete)
     if (!error) {
       if (selectedItems.length > 1) {
-        toast('Deleted', <p>Selected items have been deleted successfully</p>)
+        toast(
+          'Deleted',
+          <p>Selected {resource?.slugPlural} have been deleted successfully</p>
+        )
         getData()
         return
       }
-      toast('Deleted', <p>Item has been deleted successfully</p>)
+      toast(
+        'Deleted',
+        <p>{resource?.name.toLowerCase()} has been deleted successfully</p>
+      )
       getData()
+    } else {
+      toast('Failed to delete', <p>An error occured, please try again.</p>)
     }
   }
 
@@ -288,25 +295,34 @@ export const Table: React.FunctionComponent = () => {
     if (isModalVisible) {
       return (
         <EuiConfirmModal
-          title={`Do you want to delete the selected ${
-            selectedItems.length > 1 ? resource?.slugPlural : resource?.name
+          title={`Do you want to delete ${
+            selectedItems.length > 1
+              ? `these ${resource?.slugPlural}?`
+              : `this ${resource?.name.toLowerCase()}?`
           }
           `}
           onCancel={closeModal}
           onConfirm={async () => {
+            setDeleteButtonLoading(true)
             await deleteItem()
+            setDeleteButtonLoading(false)
             closeModal()
           }}
           cancelButtonText="Cancel"
           confirmButtonText={`Delete ${
-            selectedItems.length > 1 ? resource?.slugPlural : resource?.name
+            selectedItems.length > 1
+              ? resource?.slugPlural
+              : resource?.name.toLowerCase()
           }`}
+          isLoading={deleteButtonLoading}
           buttonColor="danger"
           defaultFocusedButton="confirm"
         >
           <p>
-            You&rsquo;re about to permanently delete the selected{' '}
-            {selectedItems.length > 1 ? resource?.slugPlural : resource?.name}
+            You&rsquo;re about to permanently delete
+            {selectedItems.length > 1
+              ? ` these ${resource?.slugPlural}`
+              : ` this ${resource?.name.toLowerCase()}`}
           </p>
           <p>Are you sure you want to do this?</p>
         </EuiConfirmModal>
@@ -329,6 +345,7 @@ export const Table: React.FunctionComponent = () => {
     setSortDirection(sort?.direction!)
     setSortField(sort?.field as string)
   }
+
   const DeleteButtonContainer = styled.div`
     display: flex;
     align-self: flex-end;

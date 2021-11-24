@@ -79,7 +79,6 @@ interface ResourceMethods extends State {
   deleteTableData: (
     id: string[]
   ) => Promise<[AxiosResponse | null, Error | null]>
-  fetchDeleteId: () => [string[], any]
 
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
@@ -88,6 +87,7 @@ interface ResourceMethods extends State {
 export const useResourceStore = create<ResourceState & ResourceMethods>(
   devtools((set, get) => ({
     filters: [],
+
     findResource(slug: string) {
       const resource = window.Tensei.state.resources?.find(
         resource => resource.slug === slug
@@ -119,7 +119,7 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       const { resource } = get()
       const { page, perPage, sort, sortField } = params
 
-      return await window.Tensei.api.get(`/${resource?.slug}`, {
+      return window.Tensei.api.get(`/${resource?.slug}`, {
         params: { page, perPage, ...(sortField && { sort }) }
       })
     },
@@ -127,17 +127,9 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
     async deleteTableData(ids: string[]) {
       const { resource } = get()
 
-      return await window.Tensei.api.delete(`/${resource?.slug}`, {
+      return window.Tensei.api.delete(`/${resource?.slug}`, {
         params: { where: { id: { _in: [...ids] } } }
       })
-    },
-
-    fetchDeleteId() {
-      const [itemsSelectedForDelete, setItemsSelectedForDelete] = useState<
-        string[]
-      >([])
-
-      return [itemsSelectedForDelete, setItemsSelectedForDelete]
     }
   }))
 )
