@@ -59,6 +59,12 @@ const TableWrapper = styled.div`
   flex-direction: column;
 `
 
+const PageWrapper = styled.div`
+  width: 100%;
+  padding: 40px;
+  margin-bottom: 40px;
+`
+
 type FieldWithPanelId = FieldContract & {
   panel: string
 }
@@ -325,21 +331,23 @@ export const Resource: React.FunctionComponent = () => {
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <TableWrapper>
-            <HeaderContainer>
-              <SearchAndFilterContainer>
-                <EuiFieldSearch
-                  placeholder={`Search ${resource.label.toLowerCase()}`}
-                />
+          <PageWrapper>
+            <TableWrapper>
+              <HeaderContainer>
+                <SearchAndFilterContainer>
+                  <EuiFieldSearch
+                    placeholder={`Search ${resource.label.toLowerCase()}`}
+                  />
 
-                <FilterList />
-              </SearchAndFilterContainer>
-            </HeaderContainer>
+                  <FilterList />
+                </SearchAndFilterContainer>
+              </HeaderContainer>
 
-            <EuiSpacer size="xl" />
+              <EuiSpacer size="xl" />
 
-            <Table />
-          </TableWrapper>
+              <Table />
+            </TableWrapper>
+          </PageWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>

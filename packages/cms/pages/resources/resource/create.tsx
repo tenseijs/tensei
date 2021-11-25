@@ -22,10 +22,11 @@ const Sidebar = styled.div<{ close: boolean }>`
   width: ${({ close }) => (close ? '0' : '35%')};
   height: 100%;
   position: relative;
+  padding-top: 20px;
   border-left: ${({ theme, close }) => (close ? 'none' : theme.border.thin)};
 `
 
-const SidebarCollapseExpandIcon = styled.button`
+const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   width: 28px;
   height: 28px;
   display: flex;
@@ -35,13 +36,14 @@ const SidebarCollapseExpandIcon = styled.button`
   position: absolute;
   border: ${({ theme }) => theme.border.thin};
   top: 23.5px;
-  left: -14px;
+  left: ${({ close }) => (close ? '-60px' : '-14px')};
   z-index: 99;
   background-color: ${({ theme }) => theme.colors.ghost};
 `
 
-const Title = styled.div`
-  height: 50px;
+const Title = styled.button`
+  height: 40px;
+  border: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -50,19 +52,16 @@ const TitleUnderline = styled.div`
   width: 100%;
   ${({ theme }) => `border-bottom: ${theme.border.thin}`}
 `
-
 const Item = styled.div<{ close: boolean }>`
   width: 100%;
   display: ${({ close }) => (close ? 'none' : 'flex')};
   flex-direction: column;
   padding: 0 1.75rem;
 `
-
 const Contents = styled.div<{ close: boolean }>`
   width: 100%;
   display: ${({ close }) => (close ? 'none' : 'block')};
 `
-
 const Content = styled.div`
   width: 100%;
   display: flex;
@@ -80,14 +79,11 @@ const SidebarItem: React.FunctionComponent<{
 
   return (
     <Item close={sidebarClose}>
-      <Title>
-        <EuiTitle size="xs">
-          <h3>{title}</h3>
+      <Title onClick={onCloseSideBar}>
+        <EuiTitle size="xxxs">
+          <h5>{title}</h5>
         </EuiTitle>
-        <EuiButtonIcon
-          iconType={close ? 'arrowUp' : 'arrowDown'}
-          onClick={onCloseSideBar}
-        ></EuiButtonIcon>
+        <EuiIcon type={close ? 'arrowUp' : 'arrowDown'}></EuiIcon>
       </Title>
       <TitleUnderline />
       <EuiSpacer size="m" />
@@ -104,7 +100,7 @@ const CreateResourceSidebar: React.FunctionComponent<{
 
   return (
     <Sidebar close={close}>
-      <SidebarCollapseExpandIcon onClick={onCloseSideBar}>
+      <SidebarCollapseExpandIcon close={close} onClick={onCloseSideBar}>
         {close ? (
           <EuiIcon size="s" type="arrowLeft" onClick={onCloseSideBar} />
         ) : (
@@ -157,8 +153,10 @@ const TitleAndBackButtonContainer = styled.div`
   align-items: center;
 `
 
-const ContentContainer = styled.div`
+const PageWrapper = styled.div`
   width: 100%;
+  padding: 40px;
+  margin-bottom: 40px;
 `
 
 export const CreateResource: React.FunctionComponent = () => {
@@ -209,7 +207,7 @@ export const CreateResource: React.FunctionComponent = () => {
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <ContentContainer />
+          <PageWrapper />
           <CreateResourceSidebar resource={resource} />
         </DashboardLayout.Content>
       </DashboardLayout.Body>
