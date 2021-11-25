@@ -170,6 +170,5 @@ export const DashboardLayout: React.FunctionComponent & {
 
 DashboardLayout.Content = Content
 DashboardLayout.Body = Body
-DashboardLayout.Body = Body
 DashboardLayout.Topbar = TopbarMenu
 DashboardLayout.Sidebar = Sidebar
