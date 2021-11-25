@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { FieldContract } from '@tensei/components'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams, useHistory, Link } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
@@ -317,6 +317,11 @@ export const Resource: React.FunctionComponent = () => {
           <EuiTitle size="xs">
             <h3>{resource?.name}</h3>
           </EuiTitle>
+          <Link to={`/cms/resources/${resource?.slug}/create`}>
+            <EuiButton iconType="plus" fill>
+              Create {resource?.name}
+            </EuiButton>
+          </Link>
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>

@@ -1,0 +1,218 @@
+import React, { useState } from 'react'
+import { useParams, useHistory } from 'react-router-dom'
+import {
+  EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon
+} from '@tensei/eui/lib/components/button'
+import { DashboardLayout } from '../../components/dashboard/layout'
+import { useEffect } from 'react'
+import { useResourceStore } from '../../../store/resource'
+import { EuiTitle } from '@tensei/eui/lib/components/title'
+import { EuiText } from '@tensei/eui/lib/components/text'
+import styled from 'styled-components'
+import { EuiIcon } from '@tensei/eui/lib/components/icon'
+import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
+import { ResourceContract } from '@tensei/components'
+
+const Sidebar = styled.div<{ close: boolean }>`
+  background-color: #fcfcfc;
+  display: flex;
+  flex-direction: column;
+  width: ${({ close }) => (close ? '0' : '35%')};
+  height: 100%;
+  position: relative;
+  border-left: ${({ theme, close }) => (close ? 'none' : theme.border.thin)};
+`
+
+const SidebarCollapseExpandIcon = styled.button`
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  position: absolute;
+  border: ${({ theme }) => theme.border.thin};
+  top: 23.5px;
+  left: -14px;
+  z-index: 99;
+  background-color: ${({ theme }) => theme.colors.ghost};
+`
+
+const Title = styled.div`
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`
+const TitleUnderline = styled.div`
+  width: 100%;
+  ${({ theme }) => `border-bottom: ${theme.border.thin}`}
+`
+
+const Item = styled.div<{ close: boolean }>`
+  width: 100%;
+  display: ${({ close }) => (close ? 'none' : 'flex')};
+  flex-direction: column;
+  padding: 0 1.75rem;
+`
+
+const Contents = styled.div<{ close: boolean }>`
+  width: 100%;
+  display: ${({ close }) => (close ? 'none' : 'block')};
+`
+
+const Content = styled.div`
+  width: 100%;
+  display: flex;
+  margin-bottom: 10px;
+  justify-content: space-between;
+`
+
+const SidebarItem: React.FunctionComponent<{
+  children?: React.ReactNode
+  title: string
+  sidebarClose: boolean
+}> = ({ children, title, sidebarClose }) => {
+  const [close, setClose] = useState(false)
+  const onCloseSideBar = () => setClose(!close)
+
+  return (
+    <Item close={sidebarClose}>
+      <Title>
+        <EuiTitle size="xs">
+          <h3>{title}</h3>
+        </EuiTitle>
+        <EuiButtonIcon
+          iconType={close ? 'arrowUp' : 'arrowDown'}
+          onClick={onCloseSideBar}
+        ></EuiButtonIcon>
+      </Title>
+      <TitleUnderline />
+      <EuiSpacer size="m" />
+      <Contents close={close}>{children}</Contents>
+    </Item>
+  )
+}
+
+const CreateResourceSidebar: React.FunctionComponent<{
+  resource: ResourceContract | undefined
+}> = ({ resource }) => {
+  const [close, setClose] = useState(false)
+  const onCloseSideBar = () => setClose(!close)
+
+  return (
+    <Sidebar close={close}>
+      <SidebarCollapseExpandIcon onClick={onCloseSideBar}>
+        {close ? (
+          <EuiIcon size="s" type="arrowLeft" onClick={onCloseSideBar} />
+        ) : (
+          <EuiIcon size="s" type="arrowRight" onClick={onCloseSideBar} />
+        )}
+      </SidebarCollapseExpandIcon>
+
+      <SidebarItem title="INFORMATION" sidebarClose={close}>
+        <Content>
+          <EuiText>Created by</EuiText>
+          <EuiText>-</EuiText>
+        </Content>
+        <Content>
+          <EuiText>Last updated</EuiText>
+          <EuiText>2 hours ago</EuiText>
+        </Content>
+      </SidebarItem>
+
+      <EuiSpacer size="l" />
+
+      <SidebarItem title="LOCALE" sidebarClose={close}>
+        <Content>
+          <EuiText>en-US</EuiText>
+        </Content>
+      </SidebarItem>
+
+      <EuiSpacer size="l" />
+
+      <SidebarItem title="VERSIONS" sidebarClose={close}>
+        <Content>
+          <EuiText>
+            All your previous versions will show up here. You currently do not
+            have any previous record
+          </EuiText>
+        </Content>
+      </SidebarItem>
+    </Sidebar>
+  )
+}
+
+const PublishAndSaveToDraftContainer = styled.div`
+  gap: 0.75rem;
+  display: flex;
+  align-items: center;
+`
+
+const TitleAndBackButtonContainer = styled.div`
+  gap: 0.75rem;
+  display: flex;
+  align-items: center;
+`
+
+const ContentContainer = styled.div`
+  width: 100%;
+`
+
+export const CreateResource: React.FunctionComponent = () => {
+  const { push } = useHistory()
+  const { findResource, resource } = useResourceStore()
+  const { resource: resourceSlug } = useParams<{
+    resource: string
+  }>()
+  const history = useHistory()
+
+  useEffect(() => {
+    const found = findResource(resourceSlug)
+
+    if (!found) {
+      push(window.Tensei.getPath(''))
+    }
+  }, [resourceSlug])
+
+  if (!resource) {
+    return <p>Loading ...</p> // show full page loader here.
+  }
+
+  return (
+    <DashboardLayout>
+      <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
+
+      <DashboardLayout.Body>
+        <DashboardLayout.Topbar>
+          <TitleAndBackButtonContainer>
+            <EuiButtonEmpty
+              iconType="arrowLeft"
+              onClick={() => {
+                history.goBack()
+              }}
+            >
+              Back
+            </EuiButtonEmpty>
+            <EuiTitle size="xs">
+              <h3>Create {resource?.name}</h3>
+            </EuiTitle>
+          </TitleAndBackButtonContainer>
+          <PublishAndSaveToDraftContainer>
+            <EuiButton>Save as draft</EuiButton>
+            <EuiButton iconType="plus" fill>
+              Publish
+            </EuiButton>
+          </PublishAndSaveToDraftContainer>
+        </DashboardLayout.Topbar>
+
+        <DashboardLayout.Content>
+          <ContentContainer />
+          <CreateResourceSidebar resource={resource} />
+        </DashboardLayout.Content>
+      </DashboardLayout.Body>
+    </DashboardLayout>
+  )
+}
