@@ -229,6 +229,8 @@ export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
       sortField,
       search: searchValue
     }
+    setLoading(true)
+
     const [data, error] = await fetchTableData(params)
     if (!error) {
       setItems(data?.data.data)
@@ -239,22 +241,8 @@ export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
   }
 
   useEffect(() => {
-    setLoading(true)
-
     getData()
-  }, [resource, pageIndex, pageSize, sortField, sortDirection])
-
-  useEffect(() => {
-    if (searchValue === '') return
-    getData()
-    // const timeOut = setTimeout(() => {
-    //   setLoading(true)
-    //   getData()
-    // }, 500)
-    // return () => {
-    //   clearTimeout(timeOut)
-    // }
-  }, [searchValue])
+  }, [resource, pageIndex, pageSize, sortField, sortDirection, searchValue])
 
   const { toast } = useToastStore()
 
