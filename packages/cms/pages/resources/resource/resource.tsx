@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { FieldContract } from '@tensei/components'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams, useHistory, Link } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
@@ -59,6 +59,12 @@ const FilterActions = styled.div`
 const TableWrapper = styled.div`
   display: flex;
   flex-direction: column;
+`
+
+const PageWrapper = styled.div`
+  width: 100%;
+  padding: 40px;
+  margin-bottom: 40px;
 `
 
 type FieldWithPanelId = FieldContract & {
@@ -428,24 +434,31 @@ export const Resource: React.FunctionComponent = () => {
           <EuiTitle size="xs">
             <h3>{resource?.name}</h3>
           </EuiTitle>
+          <Link to={`/cms/resources/${resource?.slug}/create`}>
+            <EuiButton iconType="plus" fill>
+              Create {resource?.name}
+            </EuiButton>
+          </Link>
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <TableWrapper>
-            <HeaderContainer>
-              <SearchAndFilterContainer>
-                <EuiFieldSearch
-                  placeholder={`Search ${resource.label.toLowerCase()}`}
-                />
+          <PageWrapper>
+            <TableWrapper>
+              <HeaderContainer>
+                <SearchAndFilterContainer>
+                  <EuiFieldSearch
+                    placeholder={`Search ${resource.label.toLowerCase()}`}
+                  />
 
-                <FilterList />
-              </SearchAndFilterContainer>
-            </HeaderContainer>
+                  <FilterList />
+                </SearchAndFilterContainer>
+              </HeaderContainer>
 
-            <EuiSpacer size="xl" />
+              <EuiSpacer size="xl" />
 
-            <Table />
-          </TableWrapper>
+              <Table />
+            </TableWrapper>
+          </PageWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>

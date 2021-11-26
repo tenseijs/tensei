@@ -13,11 +13,13 @@ import { icon as EuiSortDown } from '@tensei/eui/lib/components/icon/assets/sort
 import { icon as EuiListAddIcon } from '@tensei/eui/lib/components/icon/assets/list_add'
 import { icon as EuiAppLensIcon } from '@tensei/eui/lib/components/icon/assets/app_lens'
 import { icon as EuiArrowLeftIcon } from '@tensei/eui/lib/components/icon/assets/arrow_left'
+import { icon as EuiArrowUpIcon } from '@tensei/eui/lib/components/icon/assets/arrow_up'
 import { icon as EuiArrowDownIcon } from '@tensei/eui/lib/components/icon/assets/arrow_down'
 import { icon as EuiEyeClosedIcon } from '@tensei/eui/lib/components/icon/assets/eye_closed'
 import { icon as EuiArrowRightIcon } from '@tensei/eui/lib/components/icon/assets/arrow_right'
 import { icon as EuiExitIcon } from '@tensei/eui/lib/components/icon/assets/exit'
 import { icon as EuiUserIcon } from '@tensei/eui/lib/components/icon/assets/user'
+import { icon as EuiPlusIcon } from '@tensei/eui/lib/components/icon/assets/plus'
 
 appendIconComponentCache({
   gear: EuiGear,
@@ -35,8 +37,10 @@ appendIconComponentCache({
   listAdd: EuiListAddIcon,
   arrowLeft: EuiArrowLeftIcon,
   eyeClosed: EuiEyeClosedIcon,
+  arrowUp: EuiArrowUpIcon,
   arrowDown: EuiArrowDownIcon,
   arrowRight: EuiArrowRightIcon,
   exit: EuiExitIcon,
-  user: EuiUserIcon
+  user: EuiUserIcon,
+  plus: EuiPlusIcon
 })

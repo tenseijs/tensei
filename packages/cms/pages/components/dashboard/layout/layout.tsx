@@ -101,8 +101,6 @@ const Body = styled.div`
 
 const Content = styled.div`
   width: 100%;
-  padding: 40px;
-  margin-bottom: 40px;
   flex-grow: 1;
   display: flex;
   overflow-y: auto;
@@ -169,7 +167,6 @@ export const DashboardLayout: React.FunctionComponent & {
 }
 
 DashboardLayout.Content = Content
-DashboardLayout.Body = Body
 DashboardLayout.Body = Body
 DashboardLayout.Topbar = TopbarMenu
 DashboardLayout.Sidebar = Sidebar
