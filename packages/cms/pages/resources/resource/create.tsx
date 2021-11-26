@@ -14,6 +14,7 @@ import styled from 'styled-components'
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { ResourceContract } from '@tensei/components'
+import { useEuiTheme } from '@tensei/eui/lib/services'
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
@@ -69,6 +70,10 @@ const Content = styled.div`
   justify-content: space-between;
 `
 
+const ValueText = styled(EuiText)`
+  ${({ theme }) => `color: ${theme.colors.darkShade}`}
+`
+
 const SidebarItem: React.FunctionComponent<{
   children?: React.ReactNode
   title: string
@@ -81,7 +86,7 @@ const SidebarItem: React.FunctionComponent<{
     <Item close={sidebarClose}>
       <Title onClick={onCloseSideBar}>
         <EuiTitle size="xxxs">
-          <h5>{title}</h5>
+          <h6>{title}</h6>
         </EuiTitle>
         <EuiIcon type={close ? 'arrowUp' : 'arrowDown'}></EuiIcon>
       </Title>
@@ -108,14 +113,17 @@ const CreateResourceSidebar: React.FunctionComponent<{
         )}
       </SidebarCollapseExpandIcon>
 
-      <SidebarItem title="INFORMATION" sidebarClose={close}>
+      <SidebarItem
+        title={`${resource?.name?.toUpperCase()} INFORMATION`}
+        sidebarClose={close}
+      >
         <Content>
-          <EuiText>Created by</EuiText>
-          <EuiText>-</EuiText>
+          <EuiText size="s">Created by</EuiText>
+          <ValueText size="s">-</ValueText>
         </Content>
         <Content>
-          <EuiText>Last updated</EuiText>
-          <EuiText>2 hours ago</EuiText>
+          <EuiText size="s">Last updated</EuiText>
+          <ValueText size="s">2 hours ago</ValueText>
         </Content>
       </SidebarItem>
 
@@ -123,18 +131,7 @@ const CreateResourceSidebar: React.FunctionComponent<{
 
       <SidebarItem title="LOCALE" sidebarClose={close}>
         <Content>
-          <EuiText>en-US</EuiText>
-        </Content>
-      </SidebarItem>
-
-      <EuiSpacer size="l" />
-
-      <SidebarItem title="VERSIONS" sidebarClose={close}>
-        <Content>
-          <EuiText>
-            All your previous versions will show up here. You currently do not
-            have any previous record
-          </EuiText>
+          <ValueText size="s">en-US</ValueText>
         </Content>
       </SidebarItem>
     </Sidebar>
@@ -161,6 +158,8 @@ const PageWrapper = styled.div`
 
 export const CreateResource: React.FunctionComponent = () => {
   const { push } = useHistory()
+  const theme = useEuiTheme()
+  console.log(theme)
   const { findResource, resource } = useResourceStore()
   const { resource: resourceSlug } = useParams<{
     resource: string
@@ -195,12 +194,12 @@ export const CreateResource: React.FunctionComponent = () => {
               Back
             </EuiButtonEmpty>
             <EuiTitle size="xs">
-              <h3>Create {resource?.name}</h3>
+              <h3>Create {resource?.name?.toLowerCase()}</h3>
             </EuiTitle>
           </TitleAndBackButtonContainer>
           <PublishAndSaveToDraftContainer>
-            <EuiButton>Save as draft</EuiButton>
-            <EuiButton iconType="plus" fill>
+            <EuiButton fill>Save as draft</EuiButton>
+            <EuiButton iconType="check" fill color="secondary">
               Publish
             </EuiButton>
           </PublishAndSaveToDraftContainer>
