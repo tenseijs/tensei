@@ -423,9 +423,13 @@ export const Resource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
-  const debounceFunc = debounce(500, false, e => {
-    setSearchValue(e.target.value)
-  })
+  const debounceFunc = debounce(
+    500,
+    false,
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchValue(e.target.value)
+    }
+  )
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
