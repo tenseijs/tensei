@@ -125,7 +125,7 @@ export default tensei()
     dbName: 'db.sqlite'
   })
   .boot(async ({ repositories }) => {
-    await seed(repositories)
+    // await seed(repositories)
     console.log('App running on http://localhost:8810')
   })
   .start()

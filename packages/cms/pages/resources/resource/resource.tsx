@@ -32,6 +32,12 @@ import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useToastStore } from '../../../store/toast'
 import { debounce } from 'throttle-debounce'
 
+const PageWrapper = styled.div`
+  width: 100%;
+  padding: 40px;
+  margin-bottom: 40px;
+`
+
 const HeaderContainer = styled.div`
   width: 100%;
   display: flex;
@@ -201,12 +207,16 @@ interface MetaData {
   total: number
 }
 interface TableProps {
-  searchValue: string
+  search: string
 }
 
-export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
-  const { resource, applyFilter, fetchTableData, deleteTableData } =
-    useResourceStore()
+export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
+  const {
+    resource,
+    applyFilter,
+    fetchTableData,
+    deleteTableData
+  } = useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -227,7 +237,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
       perPage: pageSize,
       sort: `${sortField}:${sortDirection}`,
       sortField,
-      search: searchValue
+      search: search
     }
     setLoading(true)
 
@@ -242,7 +252,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
 
   useEffect(() => {
     getData()
-  }, [resource, pageIndex, pageSize, sortField, sortDirection, searchValue])
+  }, [resource, pageIndex, pageSize, sortField, sortDirection, search])
 
   const { toast } = useToastStore()
 
@@ -410,7 +420,7 @@ export const Resource: React.FunctionComponent = () => {
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
-  const [searchValue, setSearchValue] = useState('')
+  const [search, setsearch] = useState('')
 
   useEffect(() => {
     const found = findResource(resourceSlug)
@@ -424,13 +434,9 @@ export const Resource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
-  const debounceFunc = debounce(
-    500,
-    false,
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchValue(e.target.value)
-    }
-  )
+  const onSearchChange = debounce(500, false, (value: string) => {
+    setsearch(value)
+  })
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
@@ -443,24 +449,26 @@ export const Resource: React.FunctionComponent = () => {
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <TableWrapper>
-            <HeaderContainer>
-              <SearchAndFilterContainer>
-                <EuiFieldSearch
-                  placeholder={`Search ${resource.label.toLowerCase()}`}
-                  onChange={e => {
-                    debounceFunc(e)
-                  }}
-                />
+          <PageWrapper>
+            <TableWrapper>
+              <HeaderContainer>
+                <SearchAndFilterContainer>
+                  <EuiFieldSearch
+                    placeholder={`Search ${resource.label.toLowerCase()}`}
+                    onChange={event => {
+                      onSearchChange(event.target.value)
+                    }}
+                  />
 
-                <FilterList />
-              </SearchAndFilterContainer>
-            </HeaderContainer>
+                  <FilterList />
+                </SearchAndFilterContainer>
+              </HeaderContainer>
 
-            <EuiSpacer size="xl" />
+              <EuiSpacer size="xl" />
 
-            <Table searchValue={searchValue} />
-          </TableWrapper>
+              <Table search={search} />
+            </TableWrapper>
+          </PageWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>
