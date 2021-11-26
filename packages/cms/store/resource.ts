@@ -1,8 +1,7 @@
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { ResourceContract, FieldContract } from '@tensei/components'
-import { AxiosError, AxiosResponse } from 'axios'
-import { useState } from 'react'
+import { AxiosResponse } from 'axios'
 
 export interface ActiveFilter {
   field: FieldContract
@@ -68,6 +67,7 @@ interface TableDataParams {
   page?: number
   sort?: string
   sortField: string
+  search?: string
 }
 interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
@@ -117,10 +117,15 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
 
     async fetchTableData(params: TableDataParams) {
       const { resource } = get()
-      const { page, perPage, sort, sortField } = params
+      const { page, perPage, sort, sortField, search } = params
 
       return window.Tensei.api.get(`/${resource?.slug}`, {
-        params: { page, perPage, ...(sortField && { sort }) }
+        params: {
+          page,
+          perPage,
+          ...(sortField && { sort }),
+          ...(search && { search })
+        }
       })
     },
 
