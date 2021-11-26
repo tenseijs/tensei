@@ -16,6 +16,7 @@ import {
   EuiContextMenu,
   EuiContextMenuPanelDescriptor
 } from '@tensei/eui/lib/components/context_menu'
+import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 
@@ -27,6 +28,7 @@ import {
   FilterClause
 } from '../../../store/resource'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
+import { useToastStore } from '../../../store/toast'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -200,7 +202,8 @@ interface MetaData {
 }
 
 export const Table: React.FunctionComponent = () => {
-  const { resource, applyFilter, fetchTableData } = useResourceStore()
+  const { resource, applyFilter, fetchTableData, deleteTableData } =
+    useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -209,25 +212,59 @@ export const Table: React.FunctionComponent = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [items, setItems] = useState([])
   const [metaData, setMetaData] = useState<MetaData>()
+  const [itemsSelectedForDelete, setItemsSelectedForDelete] = useState<
+    string[]
+  >([])
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
+  const getData = async () => {
+    const params = {
+      page: pageIndex + 1,
+      perPage: pageSize,
+      sort: `${sortField}:${sortDirection}`,
+      sortField
+    }
+
+    const [data, error] = await fetchTableData(params)
+
+    if (!error) {
+      setItems(data?.data.data)
+      setMetaData(data?.data.meta)
+      setLoading(false)
+    }
+    setLoading(false) // if there is an error so it doesn't load forever
+  }
+
   useEffect(() => {
     setLoading(true)
-    const getData = async () => {
-      const params = {
-        page: pageIndex + 1,
-        perPage: pageSize,
-        sort: `${sortField}:${sortDirection}`,
-        sortField
-      }
-      const [data, error] = await fetchTableData(params)
-      if (!error) {
-        setItems(data?.data.data)
-        setMetaData(data?.data.meta)
-        setLoading(false)
-      }
-      setLoading(false) // if there is an error so it doesn't load forever
-    }
+
     getData()
   }, [resource, pageIndex, pageSize, sortField, sortDirection])
+
+  const { toast } = useToastStore()
+
+  const deleteItem = async () => {
+    if (itemsSelectedForDelete.length === 0) return
+
+    const [response, error] = await deleteTableData(itemsSelectedForDelete)
+    if (!error) {
+      if (selectedItems.length > 1) {
+        toast(
+          'Deleted',
+          <p>Selected {resource?.slugPlural} have been deleted successfully</p>
+        )
+        getData()
+        return
+      }
+      toast(
+        'Deleted',
+        <p>{resource?.name.toLowerCase()} has been deleted successfully</p>
+      )
+      getData()
+    } else {
+      toast('Failed to delete', <p>An error occured, please try again.</p>)
+    }
+  }
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -248,12 +285,59 @@ export const Table: React.FunctionComponent = () => {
             icon: 'trash',
             type: 'icon',
             color: 'danger',
-            onClick: console.log
+
+            onClick: item => {
+              setIsModalVisible(true)
+              setItemsSelectedForDelete([item.id])
+            }
           }
         ]
       }
     ]
   }, [resource])
+
+  const ConfirmDeleteModal = () => {
+    const closeModal = () => setIsModalVisible(false)
+
+    if (isModalVisible) {
+      return (
+        <EuiConfirmModal
+          title={`Do you want to delete ${
+            selectedItems.length > 1
+              ? `these ${resource?.slugPlural}?`
+              : `this ${resource?.name.toLowerCase()}?`
+          }
+          `}
+          onCancel={closeModal}
+          onConfirm={async () => {
+            setDeleteButtonLoading(true)
+            await deleteItem()
+            setDeleteButtonLoading(false)
+            closeModal()
+          }}
+          cancelButtonText="Cancel"
+          confirmButtonText={`Delete ${
+            selectedItems.length > 1
+              ? resource?.slugPlural
+              : resource?.name.toLowerCase()
+          }`}
+          isLoading={deleteButtonLoading}
+          buttonColor="danger"
+          defaultFocusedButton="confirm"
+        >
+          <p>
+            You&rsquo;re about to permanently delete
+            {selectedItems.length > 1
+              ? ` these ${resource?.slugPlural}`
+              : ` this ${resource?.name.toLowerCase()}`}
+          </p>
+          <p>Are you sure you want to do this?</p>
+        </EuiConfirmModal>
+      )
+    } else {
+      return null
+    }
+  }
 
   const pagination: EuiBasicTableProps<any>['pagination'] = {
     pageIndex,
@@ -269,29 +353,56 @@ export const Table: React.FunctionComponent = () => {
     setSortField(sort?.field as string)
   }
 
+  const DeleteButtonContainer = styled.div`
+    display: flex;
+    align-self: flex-end;
+  `
+
   return (
-    <EuiBasicTable
-      items={items}
-      itemId={'id'}
-      columns={columns}
-      hasActions={true}
-      loading={loading}
-      selection={{
-        selectable: () => true,
-        onSelectionChange: setSelectedItems,
-        selectableMessage: selectable =>
-          selectable ? '' : 'Cannot select this product.'
-      }}
-      isSelectable={true}
-      sorting={{
-        sort: {
-          field: sortField,
-          direction: sortDirection
-        }
-      }}
-      pagination={pagination}
-      onChange={onTableChange}
-    />
+    <>
+      {selectedItems.length ? (
+        <>
+          <DeleteButtonContainer>
+            <EuiButton
+              onClick={() => {
+                const items: string[] = selectedItems.map(item => item.id)
+                setItemsSelectedForDelete([...items])
+                setIsModalVisible(true)
+              }}
+              color="danger"
+              size="s"
+            >
+              Delete {selectedItems.length} item
+              {selectedItems.length > 1 ? 's' : ''}
+            </EuiButton>
+          </DeleteButtonContainer>
+        </>
+      ) : null}
+
+      <EuiBasicTable
+        items={items}
+        itemId={'id'}
+        columns={columns}
+        hasActions={true}
+        loading={loading}
+        selection={{
+          selectable: () => true,
+          onSelectionChange: setSelectedItems,
+          selectableMessage: selectable =>
+            selectable ? '' : 'Cannot select this product.'
+        }}
+        isSelectable={true}
+        sorting={{
+          sort: {
+            field: sortField,
+            direction: sortDirection
+          }
+        }}
+        pagination={pagination}
+        onChange={onTableChange}
+      />
+      <ConfirmDeleteModal />
+    </>
   )
 }
 

@@ -2,6 +2,7 @@ import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { ResourceContract, FieldContract } from '@tensei/components'
 import { AxiosError, AxiosResponse } from 'axios'
+import { useState } from 'react'
 
 export interface ActiveFilter {
   field: FieldContract
@@ -70,9 +71,15 @@ interface TableDataParams {
 }
 interface ResourceMethods extends State {
   findResource: (slug: string) => ResourceContract
+
   fetchTableData: (
     params: TableDataParams
   ) => Promise<[AxiosResponse | null, Error | null]>
+
+  deleteTableData: (
+    id: string[]
+  ) => Promise<[AxiosResponse | null, Error | null]>
+
   applyFilter: (filter: ActiveFilter) => void
   clearFilter: (filter: ActiveFilter) => void
 }
@@ -80,6 +87,7 @@ interface ResourceMethods extends State {
 export const useResourceStore = create<ResourceState & ResourceMethods>(
   devtools((set, get) => ({
     filters: [],
+
     findResource(slug: string) {
       const resource = window.Tensei.state.resources?.find(
         resource => resource.slug === slug
@@ -93,16 +101,6 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
 
       return resource
     },
-
-    async fetchTableData(params: TableDataParams) {
-      const { resource } = get()
-      const { page, perPage, sort, sortField } = params
-
-      return await window.Tensei.api.get(`/${resource?.slug}`, {
-        params: { page, perPage, ...(sortField && { sort }) }
-      })
-    },
-
     applyFilter(filter: ActiveFilter) {
       set({
         filters: [...get().filters, filter]
@@ -114,6 +112,23 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
           activeFilter =>
             activeFilter.field.databaseField === filter.field.databaseField
         )
+      })
+    },
+
+    async fetchTableData(params: TableDataParams) {
+      const { resource } = get()
+      const { page, perPage, sort, sortField } = params
+
+      return window.Tensei.api.get(`/${resource?.slug}`, {
+        params: { page, perPage, ...(sortField && { sort }) }
+      })
+    },
+
+    async deleteTableData(ids: string[]) {
+      const { resource } = get()
+
+      return window.Tensei.api.delete(`/${resource?.slug}`, {
+        params: { where: { id: { _in: [...ids] } } }
       })
     }
   }))
