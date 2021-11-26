@@ -43,6 +43,12 @@ const SpacerBottom = styled(EuiSpacer)`
   ${({ theme }) => `border-bottom: ${theme.border.thin}`}
 `
 
+const PageWrapper = styled.div`
+  width: 100%;
+  padding: 40px;
+  margin-bottom: 40px;
+`
+
 interface ProfileProps {}
 
 export const Profile: FunctionComponent<ProfileProps> = () => {
@@ -106,160 +112,172 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <Wrapper>
-            <PageTitle>
-              <EuiAvatar
-                size="xl"
-                imageUrl="https://avatars0.githubusercontent.com/u/19477966"
-                name={`${user.firstName} ${user.lastName}`}
-              ></EuiAvatar>
+          <PageWrapper>
+            <Wrapper>
+              <PageTitle>
+                <EuiAvatar
+                  size="xl"
+                  imageUrl="https://avatars0.githubusercontent.com/u/19477966"
+                  name={`${user.firstName} ${user.lastName}`}
+                ></EuiAvatar>
 
-              <EuiText>
-                <h1>
-                  {user.firstName} {user.lastName}
-                </h1>
-              </EuiText>
-            </PageTitle>
+                <EuiText>
+                  <h1>
+                    {user.firstName} {user.lastName}
+                  </h1>
+                </EuiText>
+              </PageTitle>
 
-            <FormWrapper>
-              <EuiForm component="form" onSubmit={onProfileUpdateSubmit}>
-                <EuiDescribedFormGroup
-                  fullWidth
-                  title={<h3>Profile</h3>}
-                  description={
-                    <Fragment>
-                      Update your profile information. If you update your email,
-                      you'll have to use your new email when logging in next
-                      time.
-                    </Fragment>
-                  }
-                >
-                  <EuiFlexGroup>
-                    <EuiFlexItem>
-                      <EuiFormRow
-                        label="First name"
-                        error={updateProfileErrors?.firstName}
-                        isInvalid={!!updateProfileErrors?.firstName}
-                      >
-                        <EuiFieldText
-                          value={updateProfileForm?.firstName}
-                          onChange={event =>
-                            setProfileFormValue(
-                              'firstName',
-                              event?.target.value
-                            )
-                          }
-                          isInvalid={!!updateProfileErrors?.firstName}
-                        />
-                      </EuiFormRow>
-                    </EuiFlexItem>
-                    <EuiFlexItem>
-                      <EuiFormRow
-                        label="Last name"
-                        error={updateProfileErrors?.lastName}
-                        isInvalid={!!updateProfileErrors?.lastName}
-                      >
-                        <EuiFieldText
-                          value={updateProfileForm?.lastName}
-                          onChange={event => {
-                            setProfileFormValue('lastName', event.target.value)
-                          }}
-                          isInvalid={!!updateProfileErrors?.lastName}
-                        />
-                      </EuiFormRow>
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-
-                  <EuiSpacer size="l" />
-
-                  <EuiFormRow
+              <FormWrapper>
+                <EuiForm component="form" onSubmit={onProfileUpdateSubmit}>
+                  <EuiDescribedFormGroup
                     fullWidth
-                    label="Email"
-                    error={updateProfileErrors?.email}
-                    isInvalid={!!updateProfileErrors?.email}
+                    title={<h3>Profile</h3>}
+                    description={
+                      <Fragment>
+                        Update your profile information. If you update your
+                        email, you'll have to use your new email when logging in
+                        next time.
+                      </Fragment>
+                    }
                   >
-                    <EuiFieldText
+                    <EuiFlexGroup>
+                      <EuiFlexItem>
+                        <EuiFormRow
+                          label="First name"
+                          error={updateProfileErrors?.firstName}
+                          isInvalid={!!updateProfileErrors?.firstName}
+                        >
+                          <EuiFieldText
+                            value={updateProfileForm?.firstName}
+                            onChange={event =>
+                              setProfileFormValue(
+                                'firstName',
+                                event?.target.value
+                              )
+                            }
+                            isInvalid={!!updateProfileErrors?.firstName}
+                          />
+                        </EuiFormRow>
+                      </EuiFlexItem>
+                      <EuiFlexItem>
+                        <EuiFormRow
+                          label="Last name"
+                          error={updateProfileErrors?.lastName}
+                          isInvalid={!!updateProfileErrors?.lastName}
+                        >
+                          <EuiFieldText
+                            value={updateProfileForm?.lastName}
+                            onChange={event => {
+                              setProfileFormValue(
+                                'lastName',
+                                event.target.value
+                              )
+                            }}
+                            isInvalid={!!updateProfileErrors?.lastName}
+                          />
+                        </EuiFormRow>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+
+                    <EuiSpacer size="l" />
+
+                    <EuiFormRow
                       fullWidth
-                      value={updateProfileForm?.email}
-                      onChange={event => {
-                        setProfileFormValue('email', event.target.value)
-                      }}
+                      label="Email"
+                      error={updateProfileErrors?.email}
                       isInvalid={!!updateProfileErrors?.email}
-                    />
-                  </EuiFormRow>
-
-                  <EuiSpacer size="l" />
-
-                  <div>
-                    <EuiButton fill type="submit" isLoading={isUpdatingProfile}>
-                      Update profile
-                    </EuiButton>
-                  </div>
-                </EuiDescribedFormGroup>
-
-                <SpacerBottom />
-              </EuiForm>
-
-              <EuiSpacer size="xl" />
-
-              <EuiForm component="form" onSubmit={onUpdatePasswordSubmit}>
-                <EuiDescribedFormGroup
-                  fullWidth
-                  title={<h3>Update password</h3>}
-                  description={
-                    <Fragment>
-                      You may change your password here. The next time you log
-                      in, you would have to use your new password.
-                    </Fragment>
-                  }
-                >
-                  <EuiFormRow
-                    label="Current password"
-                    isInvalid={!!updatePasswordErrors?.currentPassword}
-                    error={updatePasswordErrors?.currentPassword}
-                  >
-                    <EuiFieldPassword
-                      type="dual"
-                      value={updatePasswordForm?.currentPassword}
-                      isInvalid={!!updatePasswordErrors?.currentPassword}
-                      onChange={event =>
-                        setPasswordFormValue(
-                          'currentPassword',
-                          event.target.value
-                        )
-                      }
-                    />
-                  </EuiFormRow>
-                  <EuiFormRow
-                    label="New password"
-                    error={updatePasswordErrors?.newPassword}
-                    isInvalid={!!updatePasswordErrors?.newPassword}
-                  >
-                    <EuiFieldPassword
-                      type="dual"
-                      value={updatePasswordForm?.newPassword}
-                      onChange={event =>
-                        setPasswordFormValue('newPassword', event.target.value)
-                      }
-                      isInvalid={!!updatePasswordErrors?.newPassword}
-                    />
-                  </EuiFormRow>
-
-                  <EuiSpacer size="l" />
-
-                  <div>
-                    <EuiButton
-                      fill
-                      type="submit"
-                      isLoading={isUpdatingPassword}
                     >
-                      Update password
-                    </EuiButton>
-                  </div>
-                </EuiDescribedFormGroup>
-              </EuiForm>
-            </FormWrapper>
-          </Wrapper>
+                      <EuiFieldText
+                        fullWidth
+                        value={updateProfileForm?.email}
+                        onChange={event => {
+                          setProfileFormValue('email', event.target.value)
+                        }}
+                        isInvalid={!!updateProfileErrors?.email}
+                      />
+                    </EuiFormRow>
+
+                    <EuiSpacer size="l" />
+
+                    <div>
+                      <EuiButton
+                        fill
+                        type="submit"
+                        isLoading={isUpdatingProfile}
+                      >
+                        Update profile
+                      </EuiButton>
+                    </div>
+                  </EuiDescribedFormGroup>
+
+                  <SpacerBottom />
+                </EuiForm>
+
+                <EuiSpacer size="xl" />
+
+                <EuiForm component="form" onSubmit={onUpdatePasswordSubmit}>
+                  <EuiDescribedFormGroup
+                    fullWidth
+                    title={<h3>Update password</h3>}
+                    description={
+                      <Fragment>
+                        You may change your password here. The next time you log
+                        in, you would have to use your new password.
+                      </Fragment>
+                    }
+                  >
+                    <EuiFormRow
+                      label="Current password"
+                      isInvalid={!!updatePasswordErrors?.currentPassword}
+                      error={updatePasswordErrors?.currentPassword}
+                    >
+                      <EuiFieldPassword
+                        type="dual"
+                        value={updatePasswordForm?.currentPassword}
+                        isInvalid={!!updatePasswordErrors?.currentPassword}
+                        onChange={event =>
+                          setPasswordFormValue(
+                            'currentPassword',
+                            event.target.value
+                          )
+                        }
+                      />
+                    </EuiFormRow>
+                    <EuiFormRow
+                      label="New password"
+                      error={updatePasswordErrors?.newPassword}
+                      isInvalid={!!updatePasswordErrors?.newPassword}
+                    >
+                      <EuiFieldPassword
+                        type="dual"
+                        value={updatePasswordForm?.newPassword}
+                        onChange={event =>
+                          setPasswordFormValue(
+                            'newPassword',
+                            event.target.value
+                          )
+                        }
+                        isInvalid={!!updatePasswordErrors?.newPassword}
+                      />
+                    </EuiFormRow>
+
+                    <EuiSpacer size="l" />
+
+                    <div>
+                      <EuiButton
+                        fill
+                        type="submit"
+                        isLoading={isUpdatingPassword}
+                      >
+                        Update password
+                      </EuiButton>
+                    </div>
+                  </EuiDescribedFormGroup>
+                </EuiForm>
+              </FormWrapper>
+            </Wrapper>
+          </PageWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>

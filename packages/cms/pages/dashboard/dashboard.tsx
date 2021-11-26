@@ -3,10 +3,6 @@ import styled from 'styled-components'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { DashboardLayout } from '../components/dashboard/layout'
 
-const HeaderContainer = styled.div`
-  display: flex;
-`
-
 export const Dashboard: React.FunctionComponent = () => {
   return (
     <DashboardLayout>

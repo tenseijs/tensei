@@ -51,7 +51,7 @@ export function customer() {
   }
 }
 
-export function generate(fn: () => any, length = 5) {
+export function generate(fn: () => any, length = 20) {
   return Array.from({ length }, () => fn())
 }
 
@@ -65,7 +65,9 @@ export async function seed(db: any) {
       return o
     })
 
-  const categories = generate(category).map((c: any) => db.categories().create(c))
+  const categories = generate(category).map((c: any) =>
+    db.categories().create(c)
+  )
 
   const products = generate(product)
     .map((p: any) => db.products().create(p))
