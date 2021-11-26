@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { FieldContract } from '@tensei/components'
-import { useParams, useHistory, Link } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
@@ -17,6 +17,7 @@ import {
   EuiContextMenuPanelDescriptor
 } from '@tensei/eui/lib/components/context_menu'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
+
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 
@@ -29,6 +30,7 @@ import {
 } from '../../../store/resource'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useToastStore } from '../../../store/toast'
+import { debounce } from 'throttle-debounce'
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -60,11 +62,9 @@ const TableWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `
-
-const PageWrapper = styled.div`
-  width: 100%;
-  padding: 40px;
-  margin-bottom: 40px;
+const DeleteButtonContainer = styled.div`
+  display: flex;
+  align-self: flex-end;
 `
 
 type FieldWithPanelId = FieldContract & {
@@ -200,8 +200,11 @@ interface MetaData {
   perPage: number
   total: number
 }
+interface TableProps {
+  searchValue: string
+}
 
-export const Table: React.FunctionComponent = () => {
+export const Table: React.FunctionComponent<TableProps> = ({ searchValue }) => {
   const { resource, applyFilter, fetchTableData, deleteTableData } =
     useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
@@ -217,16 +220,18 @@ export const Table: React.FunctionComponent = () => {
   >([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
+
   const getData = async () => {
     const params = {
       page: pageIndex + 1,
       perPage: pageSize,
       sort: `${sortField}:${sortDirection}`,
-      sortField
+      sortField,
+      search: searchValue
     }
+    setLoading(true)
 
     const [data, error] = await fetchTableData(params)
-
     if (!error) {
       setItems(data?.data.data)
       setMetaData(data?.data.meta)
@@ -236,10 +241,8 @@ export const Table: React.FunctionComponent = () => {
   }
 
   useEffect(() => {
-    setLoading(true)
-
     getData()
-  }, [resource, pageIndex, pageSize, sortField, sortDirection])
+  }, [resource, pageIndex, pageSize, sortField, sortDirection, searchValue])
 
   const { toast } = useToastStore()
 
@@ -247,6 +250,7 @@ export const Table: React.FunctionComponent = () => {
     if (itemsSelectedForDelete.length === 0) return
 
     const [response, error] = await deleteTableData(itemsSelectedForDelete)
+
     if (!error) {
       if (selectedItems.length > 1) {
         toast(
@@ -285,7 +289,6 @@ export const Table: React.FunctionComponent = () => {
             icon: 'trash',
             type: 'icon',
             color: 'danger',
-
             onClick: item => {
               setIsModalVisible(true)
               setItemsSelectedForDelete([item.id])
@@ -353,11 +356,6 @@ export const Table: React.FunctionComponent = () => {
     setSortField(sort?.field as string)
   }
 
-  const DeleteButtonContainer = styled.div`
-    display: flex;
-    align-self: flex-end;
-  `
-
   return (
     <>
       {selectedItems.length ? (
@@ -412,6 +410,7 @@ export const Resource: React.FunctionComponent = () => {
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
+  const [searchValue, setSearchValue] = useState('')
 
   useEffect(() => {
     const found = findResource(resourceSlug)
@@ -425,6 +424,13 @@ export const Resource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
+  const debounceFunc = debounce(
+    500,
+    false,
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchValue(e.target.value)
+    }
+  )
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
@@ -434,31 +440,27 @@ export const Resource: React.FunctionComponent = () => {
           <EuiTitle size="xs">
             <h3>{resource?.name}</h3>
           </EuiTitle>
-          <Link to={`/cms/resources/${resource?.slug}/create`}>
-            <EuiButton iconType="plus" fill>
-              Create {resource?.name}
-            </EuiButton>
-          </Link>
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <PageWrapper>
-            <TableWrapper>
-              <HeaderContainer>
-                <SearchAndFilterContainer>
-                  <EuiFieldSearch
-                    placeholder={`Search ${resource.label.toLowerCase()}`}
-                  />
+          <TableWrapper>
+            <HeaderContainer>
+              <SearchAndFilterContainer>
+                <EuiFieldSearch
+                  placeholder={`Search ${resource.label.toLowerCase()}`}
+                  onChange={e => {
+                    debounceFunc(e)
+                  }}
+                />
 
-                  <FilterList />
-                </SearchAndFilterContainer>
-              </HeaderContainer>
+                <FilterList />
+              </SearchAndFilterContainer>
+            </HeaderContainer>
 
-              <EuiSpacer size="xl" />
+            <EuiSpacer size="xl" />
 
-              <Table />
-            </TableWrapper>
-          </PageWrapper>
+            <Table searchValue={searchValue} />
+          </TableWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>
