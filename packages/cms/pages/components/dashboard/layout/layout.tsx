@@ -7,7 +7,6 @@ import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { AvatarContextMenu } from './avatar-context-menu'
 import { TopbarMenu } from '../layout/topbar'
 import { SidebarMenu } from '../layout/sidebar'
-import { CommunityPanel } from './community-panel'
 
 const StyledSidebar = styled.div<{
   bg?: string
@@ -110,11 +109,13 @@ const Content = styled.div`
 
 interface SidebarProps {
   title: string
+  hideNestedSidebar?: boolean
 }
 
 const Sidebar: React.FunctionComponent<SidebarProps> = ({
   title,
-  children
+  children,
+  hideNestedSidebar
 }) => {
   return (
     <SidebarWrapper>
@@ -151,11 +152,13 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({
           <AvatarContextMenu />
         </Footer>
       </StyledSidebar>
-      <SidebarMenu title={title} groups={[]}>
-        {children}
-      </SidebarMenu>
+
+      {hideNestedSidebar ? null : (
+        <SidebarMenu title={title} groups={[]}>
+          {children}
+        </SidebarMenu>
+      )}
     </SidebarWrapper>
-    
   )
 }
 
@@ -164,18 +167,11 @@ export const DashboardLayout: React.FunctionComponent & {
   Body: typeof Body
   Sidebar: typeof Sidebar
   Topbar: typeof TopbarMenu
-  CommunityPanel: typeof CommunityPanel
 } = ({ children }) => {
-  return (
-    <Wrapper>
-      {children}
-      <CommunityPanel />
-    </Wrapper>
-  )
+  return <Wrapper>{children}</Wrapper>
 }
 
 DashboardLayout.Content = Content
 DashboardLayout.Body = Body
 DashboardLayout.Topbar = TopbarMenu
 DashboardLayout.Sidebar = Sidebar
-DashboardLayout.CommunityPanel = CommunityPanel
