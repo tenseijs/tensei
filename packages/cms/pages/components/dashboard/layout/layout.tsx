@@ -109,11 +109,13 @@ const Content = styled.div`
 
 interface SidebarProps {
   title: string
+  hideNestedSidebar?: boolean
 }
 
 const Sidebar: React.FunctionComponent<SidebarProps> = ({
   title,
-  children
+  children,
+  hideNestedSidebar
 }) => {
   return (
     <SidebarWrapper>
@@ -150,9 +152,12 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({
           <AvatarContextMenu />
         </Footer>
       </StyledSidebar>
-      <SidebarMenu title={title} groups={[]}>
-        {children}
-      </SidebarMenu>
+
+      {hideNestedSidebar ? null : (
+        <SidebarMenu title={title} groups={[]}>
+          {children}
+        </SidebarMenu>
+      )}
     </SidebarWrapper>
   )
 }
