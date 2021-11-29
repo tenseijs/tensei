@@ -13,8 +13,9 @@ import { EuiText } from '@tensei/eui/lib/components/text'
 import styled from 'styled-components'
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
-import { ResourceContract } from '@tensei/components'
+import { AbstractData, ResourceContract } from '@tensei/components'
 import { useEuiTheme } from '@tensei/eui/lib/services'
+// import
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
@@ -26,7 +27,6 @@ const Sidebar = styled.div<{ close: boolean }>`
   padding-top: 20px;
   border-left: ${({ theme, close }) => (close ? 'none' : theme.border.thin)};
 `
-
 const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   width: 28px;
   height: 28px;
@@ -41,7 +41,6 @@ const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   z-index: 99;
   background-color: ${({ theme }) => theme.colors.ghost};
 `
-
 const Title = styled.button`
   height: 40px;
   border: none;
@@ -69,7 +68,6 @@ const Content = styled.div`
   margin-bottom: 10px;
   justify-content: space-between;
 `
-
 const ValueText = styled(EuiText)`
   ${({ theme }) => `color: ${theme.colors.darkShade}`}
 `
@@ -178,6 +176,21 @@ export const CreateResource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
+  // const [errors, setErrors] = useState<AbstractData>({})
+  // const [saving, setSaving] = useState(false)
+  // const [isEditing, setIsEditing] = useState(false)
+  // const [form, setForm] = useState<AbstractData>({})
+  // const [booted, setBooted] = useState(false)
+
+  console.log('Components', JSON.stringify(window.Tensei.components))
+
+  const TextComponent = window.Tensei.components.form.Text
+
+  // const Component =
+  // window.Tensei.components.form[field.component.form] ||
+  // window.Tensei.components.form.Text
+  // return <Component />
+
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
@@ -206,7 +219,12 @@ export const CreateResource: React.FunctionComponent = () => {
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <PageWrapper />
+          <PageWrapper>
+            {/* <TextComponent /> */}
+            {resource?.fields.map(field => {
+              return <p>{JSON.stringify(field.component)}</p>
+            })}
+          </PageWrapper>
           <CreateResourceSidebar resource={resource} />
         </DashboardLayout.Content>
       </DashboardLayout.Body>
