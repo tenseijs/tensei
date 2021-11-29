@@ -4,6 +4,7 @@ import * as Lib from '@tensei/components'
 
 // Form
 import FormText from './form/Text'
+import FormTextarea from './form/Textarea'
 
 // Index
 
@@ -66,7 +67,8 @@ class Core {
 
   components: Lib.Tensei['components'] = {
     form: {
-      Text: FormText
+      Text: FormText,
+      Textarea: FormTextarea
     },
     index: {}
   }
