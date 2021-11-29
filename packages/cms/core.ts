@@ -3,6 +3,7 @@ import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import * as Lib from '@tensei/components'
 
 // Form
+import FormText from './form/Text'
 
 // Index
 
@@ -35,7 +36,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) {}
+    } catch (errors) { }
 
     return {
       admin,
@@ -64,7 +65,9 @@ class Core {
   }
 
   components: Lib.Tensei['components'] = {
-    form: {},
+    form: {
+      Text: FormText
+    },
     index: {}
   }
 
