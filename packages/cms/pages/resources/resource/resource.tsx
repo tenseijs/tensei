@@ -5,6 +5,7 @@ import { useParams, useHistory } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
+import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiButtonEmpty, EuiButton } from '@tensei/eui/lib/components/button'
 import {
   EuiBasicTable,
@@ -211,12 +212,8 @@ interface TableProps {
 }
 
 export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
-  const {
-    resource,
-    applyFilter,
-    fetchTableData,
-    deleteTableData
-  } = useResourceStore()
+  const { resource, applyFilter, fetchTableData, deleteTableData, filters } =
+    useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -252,7 +249,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
 
   useEffect(() => {
     getData()
-  }, [resource, pageIndex, pageSize, sortField, sortDirection, search])
+  }, [resource, pageIndex, pageSize, sortField, sortDirection, search, filters])
 
   const { toast } = useToastStore()
 
@@ -416,7 +413,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
 
 export const Resource: React.FunctionComponent = () => {
   const { push } = useHistory()
-  const { findResource, resource } = useResourceStore()
+  const { findResource, resource, filters, clearFilter } = useResourceStore()
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
@@ -463,9 +460,22 @@ export const Resource: React.FunctionComponent = () => {
                   <FilterList />
                 </SearchAndFilterContainer>
               </HeaderContainer>
-
-              <EuiSpacer size="xl" />
-
+              <EuiSpacer size="m" />
+              <EuiFlexGroup gutterSize="s" alignItems="center">
+                {filters.map((filter, idx) => (
+                  <EuiFlexItem grow={false} key={idx}>
+                    <EuiButton
+                      color="primary"
+                      onClick={() => {
+                        clearFilter(filter)
+                      }}
+                    >
+                      {filter.clause.name}
+                    </EuiButton>
+                  </EuiFlexItem>
+                ))}
+              </EuiFlexGroup>
+              <EuiSpacer size="m" />
               <Table search={search} />
             </TableWrapper>
           </PageWrapper>
