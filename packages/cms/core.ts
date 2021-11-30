@@ -5,7 +5,10 @@ import * as Lib from '@tensei/components'
 // Form
 import FormText from './form/Text'
 import FormTextarea from './form/Textarea'
-import FormNumber from './form/number'
+import FormNumber from './form/Number'
+import FormSlug from './form/Slug'
+import FormBoolean from './form/Boolean'
+import FormSelect from './form/Select'
 
 // Index
 
@@ -68,9 +71,12 @@ class Core {
 
   components: Lib.Tensei['components'] = {
     form: {
+      Integer: FormNumber,
+      Boolean: FormBoolean,
+      Select: FormSelect,
+      Slug: FormSlug,
       Text: FormText,
-      Textarea: FormTextarea,
-      Number: FormNumber
+      Textarea: FormTextarea
     },
     index: {}
   }
