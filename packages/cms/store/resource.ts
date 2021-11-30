@@ -110,13 +110,13 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       set({
         filters: get().filters.filter(
           activeFilter =>
-            activeFilter.field.databaseField === filter.field.databaseField
+            activeFilter.field.databaseField !== filter.field.databaseField
         )
       })
     },
 
     async fetchTableData(params: TableDataParams) {
-      const { resource } = get()
+      const { resource, filters } = get()
       const { page, perPage, sort, sortField, search } = params
 
       return window.Tensei.api.get(`/${resource?.slug}`, {
@@ -124,7 +124,18 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
           page,
           perPage,
           ...(sortField && { sort }),
-          ...(search && { search })
+          ...(search && { search }),
+          ...(filters.length && {
+            where: {
+              _and: [
+                ...filters.map(item => ({
+                  [item.field.databaseField]: {
+                    [item.clause.shortName]: item.value
+                  }
+                }))
+              ]
+            }
+          })
         }
       })
     },
