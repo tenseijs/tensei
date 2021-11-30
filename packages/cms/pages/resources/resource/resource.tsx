@@ -108,7 +108,7 @@ const FilterValue: React.FunctionComponent<{
 export const FilterList: React.FunctionComponent = () => {
   const [open, setOpen] = useState(false)
   const { resource, applyFilter } = useResourceStore()
-
+  const [filterDropdown, setFilterDropdown] = useState<Boolean>()
   const contextMenuPopoverId = useGeneratedHtmlId({
     prefix: 'contextMenuPopover'
   })
@@ -126,7 +126,8 @@ export const FilterList: React.FunctionComponent = () => {
     // For now, we won't support filtering by relationship fields.
     const fields =
       resource?.fields.filter(
-        field => !field.isRelationshipField && !field.isVirtual
+        field =>
+          !field.isRelationshipField && !field.isVirtual && field.isSearchable
       ) || []
 
     const getClausesForField = (field: FieldContract) => {
@@ -135,7 +136,7 @@ export const FilterList: React.FunctionComponent = () => {
       // be shown clauses with type of "number".
       return filterClauses
     }
-
+    fields.length ? setFilterDropdown(true) : setFilterDropdown(false)
     return [
       {
         id: 0,
@@ -180,7 +181,7 @@ export const FilterList: React.FunctionComponent = () => {
     ]
   }, [resource])
 
-  return (
+  return filterDropdown ? (
     <EuiPopover
       isOpen={open}
       id={contextMenuPopoverId}
@@ -199,7 +200,7 @@ export const FilterList: React.FunctionComponent = () => {
     >
       <EuiContextMenu initialPanelId={0} panels={panels}></EuiContextMenu>
     </EuiPopover>
-  )
+  ) : null
 }
 interface MetaData {
   page: number
