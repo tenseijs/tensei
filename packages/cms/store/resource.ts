@@ -129,7 +129,7 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
             where: {
               _and: [
                 ...filters.map(item => ({
-                  [item.field.name.toLowerCase()]: {
+                  [item.field.databaseField]: {
                     [item.clause.shortName]: item.value
                   }
                 }))

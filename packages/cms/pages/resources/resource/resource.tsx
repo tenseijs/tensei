@@ -470,7 +470,8 @@ export const Resource: React.FunctionComponent = () => {
                         clearFilter(filter)
                       }}
                     >
-                      {filter.clause.name}
+                      {filter.field.name} {''}
+                      {filter.clause.name} {filter.value}
                     </EuiButton>
                   </EuiFlexItem>
                 ))}
