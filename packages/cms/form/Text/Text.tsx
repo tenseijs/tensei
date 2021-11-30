@@ -1,28 +1,26 @@
 import React from 'react'
 import { FormComponentProps } from '@tensei/components'
-import { EuiFieldText, EuiFormRow } from '@tensei/eui/lib/components/form'
+import { EuiFieldText } from '@tensei/eui/lib/components/form'
 
 const FormText: React.FC<FormComponentProps> = ({
   field,
   name,
   id,
-  value,
+  form,
   onChange,
   error
 }) => {
   return (
-    <EuiFormRow label={field.name} error={error} isInvalid={!!error}>
-      <EuiFieldText
-        id={id}
-        name={name}
-        fullWidth
-        value={value}
-        isInvalid={!!error}
-        onChange={event => onChange(event.target.value)}
-        placeholder={field.name}
-        {...field.attributes}
-      />
-    </EuiFormRow>
+    <EuiFieldText
+      id={id}
+      name={name}
+      fullWidth
+      value={form[field.inputName]}
+      isInvalid={!!error}
+      onChange={event => onChange(event.target.value)}
+      placeholder={field.name}
+      {...field.attributes}
+    />
   )
 }
 
