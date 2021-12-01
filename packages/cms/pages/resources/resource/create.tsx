@@ -195,6 +195,21 @@ export const CreateResource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
+  // const [errors, setErrors] = useState<AbstractData>({})
+  // const [saving, setSaving] = useState(false)
+  // const [isEditing, setIsEditing] = useState(false)
+  // const [form, setForm] = useState<AbstractData>({})
+  // const [booted, setBooted] = useState(false)
+
+  console.log('Components', JSON.stringify(window.Tensei.components))
+
+  const TextComponent = window.Tensei.components.form.Text
+
+  // const Component =
+  // window.Tensei.components.form[field.component.form] ||
+  // window.Tensei.components.form.Text
+  // return <Component />
+
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
