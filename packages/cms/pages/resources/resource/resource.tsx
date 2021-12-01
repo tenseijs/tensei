@@ -5,6 +5,7 @@ import { useParams, useHistory, Link } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
+import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiButtonEmpty, EuiButton } from '@tensei/eui/lib/components/button'
 import {
   EuiBasicTable,
@@ -107,7 +108,7 @@ const FilterValue: React.FunctionComponent<{
 export const FilterList: React.FunctionComponent = () => {
   const [open, setOpen] = useState(false)
   const { resource, applyFilter } = useResourceStore()
-
+  const [filterDropdown, setFilterDropdown] = useState<Boolean>()
   const contextMenuPopoverId = useGeneratedHtmlId({
     prefix: 'contextMenuPopover'
   })
@@ -125,7 +126,8 @@ export const FilterList: React.FunctionComponent = () => {
     // For now, we won't support filtering by relationship fields.
     const fields =
       resource?.fields.filter(
-        field => !field.isRelationshipField && !field.isVirtual
+        field =>
+          !field.isRelationshipField && !field.isVirtual && field.isSearchable
       ) || []
 
     const getClausesForField = (field: FieldContract) => {
@@ -134,7 +136,7 @@ export const FilterList: React.FunctionComponent = () => {
       // be shown clauses with type of "number".
       return filterClauses
     }
-
+    fields.length ? setFilterDropdown(true) : setFilterDropdown(false)
     return [
       {
         id: 0,
@@ -179,7 +181,7 @@ export const FilterList: React.FunctionComponent = () => {
     ]
   }, [resource])
 
-  return (
+  return filterDropdown ? (
     <EuiPopover
       isOpen={open}
       id={contextMenuPopoverId}
@@ -198,7 +200,7 @@ export const FilterList: React.FunctionComponent = () => {
     >
       <EuiContextMenu initialPanelId={0} panels={panels}></EuiContextMenu>
     </EuiPopover>
-  )
+  ) : null
 }
 interface MetaData {
   page: number
@@ -211,12 +213,8 @@ interface TableProps {
 }
 
 export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
-  const {
-    resource,
-    applyFilter,
-    fetchTableData,
-    deleteTableData
-  } = useResourceStore()
+  const { resource, applyFilter, fetchTableData, deleteTableData, filters } =
+    useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -252,7 +250,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
 
   useEffect(() => {
     getData()
-  }, [resource, pageIndex, pageSize, sortField, sortDirection, search])
+  }, [resource, pageIndex, pageSize, sortField, sortDirection, search, filters])
 
   const { toast } = useToastStore()
 
@@ -416,7 +414,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
 
 export const Resource: React.FunctionComponent = () => {
   const { push } = useHistory()
-  const { findResource, resource } = useResourceStore()
+  const { findResource, resource, filters, clearFilter } = useResourceStore()
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
@@ -468,9 +466,23 @@ export const Resource: React.FunctionComponent = () => {
                   <FilterList />
                 </SearchAndFilterContainer>
               </HeaderContainer>
-
-              <EuiSpacer size="xl" />
-
+              <EuiSpacer size="m" />
+              <EuiFlexGroup gutterSize="s" alignItems="center">
+                {filters.map((filter, idx) => (
+                  <EuiFlexItem grow={false} key={idx}>
+                    <EuiButton
+                      color="primary"
+                      onClick={() => {
+                        clearFilter(filter)
+                      }}
+                    >
+                      {filter.field.name} {''}
+                      {filter.clause.name} {filter.value}
+                    </EuiButton>
+                  </EuiFlexItem>
+                ))}
+              </EuiFlexGroup>
+              <EuiSpacer size="m" />
               <Table search={search} />
             </TableWrapper>
           </PageWrapper>
