@@ -1,7 +1,7 @@
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { ResourceContract, FieldContract } from '@tensei/components'
-import { AxiosResponse } from 'axios'
+import { ResourceContract, FieldContract, AbstractData } from '@tensei/components'
+import { AxiosError, AxiosResponse } from 'axios'
 
 export interface ActiveFilter {
   field: FieldContract
@@ -70,6 +70,12 @@ interface TableDataParams {
   search?: string
 }
 interface ResourceMethods extends State {
+
+  createResource: (
+    resource: ResourceContract,
+    resourceInput: AbstractData
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
+
   findResource: (slug: string) => ResourceContract
 
   fetchTableData: (
@@ -81,12 +87,17 @@ interface ResourceMethods extends State {
   ) => Promise<[AxiosResponse | null, Error | null]>
 
   applyFilter: (filter: ActiveFilter) => void
+
   clearFilter: (filter: ActiveFilter) => void
 }
 
 export const useResourceStore = create<ResourceState & ResourceMethods>(
   devtools((set, get) => ({
     filters: [],
+
+    async createResource(resource: ResourceContract, resourceInput: AbstractData) {
+      return await window.Tensei.api.post(resource.slugPlural, resourceInput)
+    },
 
     findResource(slug: string) {
       const resource = window.Tensei.state.resources?.find(
@@ -101,11 +112,13 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
 
       return resource
     },
+
     applyFilter(filter: ActiveFilter) {
       set({
         filters: [...get().filters, filter]
       })
     },
+
     clearFilter(filter: ActiveFilter) {
       set({
         filters: get().filters.filter(
