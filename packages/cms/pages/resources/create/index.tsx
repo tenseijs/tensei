@@ -1,0 +1,1 @@
+export { CreateResource } from './create'
