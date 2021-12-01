@@ -13,8 +13,15 @@ import { EuiText } from '@tensei/eui/lib/components/text'
 import styled from 'styled-components'
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
-import { ResourceContract } from '@tensei/components'
-import { useEuiTheme } from '@tensei/eui/lib/services'
+import {
+  AbstractData,
+  FormComponentProps,
+  ResourceContract
+} from '@tensei/components'
+import { EuiAccordion } from '@tensei/eui/lib/components/accordion'
+import { EuiHorizontalRule } from '@tensei/eui/lib/components/horizontal_rule'
+import { EuiFormRow } from '@tensei/eui/lib/components/form'
+// import
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
@@ -26,7 +33,6 @@ const Sidebar = styled.div<{ close: boolean }>`
   padding-top: 20px;
   border-left: ${({ theme, close }) => (close ? 'none' : theme.border.thin)};
 `
-
 const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   width: 28px;
   height: 28px;
@@ -41,7 +47,6 @@ const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   z-index: 99;
   background-color: ${({ theme }) => theme.colors.ghost};
 `
-
 const Title = styled.button`
   height: 40px;
   border: none;
@@ -69,7 +74,6 @@ const Content = styled.div`
   margin-bottom: 10px;
   justify-content: space-between;
 `
-
 const ValueText = styled(EuiText)`
   ${({ theme }) => `color: ${theme.colors.darkShade}`}
 `
@@ -143,28 +147,41 @@ const PublishAndSaveToDraftContainer = styled.div`
   display: flex;
   align-items: center;
 `
-
 const TitleAndBackButtonContainer = styled.div`
   gap: 0.75rem;
   display: flex;
   align-items: center;
 `
-
 const PageWrapper = styled.div`
   width: 100%;
+  height: 100%;
+  overflow-y: auto;
   padding: 40px;
-  margin-bottom: 40px;
+`
+const PageContent = styled.div`
+  // width: 50%;
+  width: 650px;
+  margin: 0px auto;
+`
+const ResourceField = styled.div`
+  margin-bottom: 25px;
+`
+const ResourceFieldComponent = styled.div`
+  padding-bottom: 20px;
 `
 
 export const CreateResource: React.FunctionComponent = () => {
-  const { push } = useHistory()
-  const theme = useEuiTheme()
-  console.log(theme)
+  // const theme = useEuiTheme()
+  const { push, goBack } = useHistory()
   const { findResource, resource } = useResourceStore()
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
-  const history = useHistory()
+  const [form, setForm] = useState<AbstractData>({})
+  const [errors, setErrors] = useState<AbstractData>({})
+  const [saving, setSaving] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [booted, setBooted] = useState(false)
 
   useEffect(() => {
     const found = findResource(resourceSlug)
@@ -178,6 +195,21 @@ export const CreateResource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
+  // const [errors, setErrors] = useState<AbstractData>({})
+  // const [saving, setSaving] = useState(false)
+  // const [isEditing, setIsEditing] = useState(false)
+  // const [form, setForm] = useState<AbstractData>({})
+  // const [booted, setBooted] = useState(false)
+
+  console.log('Components', JSON.stringify(window.Tensei.components))
+
+  const TextComponent = window.Tensei.components.form.Text
+
+  // const Component =
+  // window.Tensei.components.form[field.component.form] ||
+  // window.Tensei.components.form.Text
+  // return <Component />
+
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
@@ -188,7 +220,7 @@ export const CreateResource: React.FunctionComponent = () => {
             <EuiButtonEmpty
               iconType="arrowLeft"
               onClick={() => {
-                history.goBack()
+                goBack()
               }}
             >
               Back
@@ -206,7 +238,62 @@ export const CreateResource: React.FunctionComponent = () => {
         </DashboardLayout.Topbar>
 
         <DashboardLayout.Content>
-          <PageWrapper />
+          <PageWrapper>
+            <PageContent>
+              {resource?.fields.map(field => {
+                if (field.showOnCreation == false) return
+
+                const Component: React.FunctionComponent<FormComponentProps> =
+                  window.Tensei.components.form[field.component.form] ||
+                  window.Tensei.components.form.Text
+
+                return (
+                  <ResourceField key={field.inputName}>
+                    <EuiAccordion
+                      id={`__rightArrowAccordionId_${field.name}`}
+                      arrowDisplay="right"
+                      buttonContent={field.name}
+                      initialIsOpen
+                    >
+                      <EuiHorizontalRule margin="s" />
+
+                      <ResourceFieldComponent>
+                        <EuiFormRow
+                          fullWidth
+                          error={errors[field.inputName]}
+                          isInvalid={!!errors[field.inputName]}
+                        >
+                          <Component
+                            form={form}
+                            field={field}
+                            resource={resource}
+                            id={field.inputName}
+                            name={field.inputName}
+                            value={form[field.inputName]}
+                            error={errors[field.inputName]}
+                            editing={isEditing}
+                            values={form[field.inputName]}
+                            errors={errors}
+                            onChange={(value: any) => {
+                              setForm({
+                                ...form,
+                                [field.inputName]: value
+                              })
+
+                              setErrors({
+                                ...errors,
+                                [field.inputName]: undefined
+                              })
+                            }}
+                          />
+                        </EuiFormRow>
+                      </ResourceFieldComponent>
+                    </EuiAccordion>
+                  </ResourceField>
+                )
+              })}
+            </PageContent>
+          </PageWrapper>
           <CreateResourceSidebar resource={resource} />
         </DashboardLayout.Content>
       </DashboardLayout.Body>
