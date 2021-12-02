@@ -217,9 +217,7 @@ export const CreateResource: React.FunctionComponent = () => {
     )
 
     setTimeout(() => {
-      window.location.href = window.Tensei.getPath(
-        `resources/${resource.slugPlural}`
-      )
+      push(`resources/${resource.slugPlural}`)
     }, 2000)
   }
 
@@ -262,8 +260,6 @@ export const CreateResource: React.FunctionComponent = () => {
               {resource?.fields.map(field => {
                 if (field.showOnCreation == false) return
 
-                console.log(field)
-
                 const Component: React.FunctionComponent<FormComponentProps> =
                   window.Tensei.components.form[field.component.form] ||
                   window.Tensei.components.form.Text
@@ -274,7 +270,7 @@ export const CreateResource: React.FunctionComponent = () => {
                       id={`__rightArrowAccordionId_${field.name}`}
                       arrowDisplay="right"
                       buttonContent={`${field.name}${
-                        field.creationRules.includes('required') == true
+                        field.creationRules.includes('required')
                           ? ' (required)'
                           : ''
                       }`}
