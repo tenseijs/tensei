@@ -1,10 +1,6 @@
 import React, { useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
-import {
-  EuiButton,
-  EuiButtonEmpty,
-  EuiButtonIcon
-} from '@tensei/eui/lib/components/button'
+import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { DashboardLayout } from '../../components/dashboard/layout'
 import { useEffect } from 'react'
 import { useResourceStore } from '../../../store/resource'
@@ -21,7 +17,8 @@ import {
 import { EuiAccordion } from '@tensei/eui/lib/components/accordion'
 import { EuiHorizontalRule } from '@tensei/eui/lib/components/horizontal_rule'
 import { EuiFormRow } from '@tensei/eui/lib/components/form'
-// import
+import { useToastStore } from '../../../store/toast'
+import { useForm } from '../../hooks/forms'
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
@@ -173,15 +170,12 @@ const ResourceFieldComponent = styled.div`
 export const CreateResource: React.FunctionComponent = () => {
   // const theme = useEuiTheme()
   const { push, goBack } = useHistory()
-  const { findResource, resource } = useResourceStore()
+  const { findResource, createResource, resource } = useResourceStore()
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
-  const [form, setForm] = useState<AbstractData>({})
-  const [errors, setErrors] = useState<AbstractData>({})
-  const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [booted, setBooted] = useState(false)
+  const { toast } = useToastStore()
 
   useEffect(() => {
     const found = findResource(resourceSlug)
@@ -195,20 +189,20 @@ export const CreateResource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
-  // const [errors, setErrors] = useState<AbstractData>({})
-  // const [saving, setSaving] = useState(false)
-  // const [isEditing, setIsEditing] = useState(false)
-  // const [form, setForm] = useState<AbstractData>({})
-  // const [booted, setBooted] = useState(false)
+  const { form, errors, submit, loading, setValue } = useForm<AbstractData>({
+    defaultValues: {},
+    onSubmit: createResource,
+    onSuccess: () => {
+      toast(
+        'Created',
+        <p>{resource?.name.toLowerCase()} have been created successfully</p>
+      )
 
-  console.log('Components', JSON.stringify(window.Tensei.components))
-
-  const TextComponent = window.Tensei.components.form.Text
-
-  // const Component =
-  // window.Tensei.components.form[field.component.form] ||
-  // window.Tensei.components.form.Text
-  // return <Component />
+      setTimeout(() => {
+        push(window.Tensei.getPath(`resources/${resource.slugPlural}`))
+      }, 2000)
+    }
+  })
 
   return (
     <DashboardLayout>
@@ -231,7 +225,13 @@ export const CreateResource: React.FunctionComponent = () => {
           </TitleAndBackButtonContainer>
           <PublishAndSaveToDraftContainer>
             <EuiButton fill>Save as draft</EuiButton>
-            <EuiButton iconType="check" fill color="secondary">
+            <EuiButton
+              iconType="check"
+              fill
+              color="secondary"
+              onClick={() => submit(undefined)}
+              isLoading={loading}
+            >
               Publish
             </EuiButton>
           </PublishAndSaveToDraftContainer>
@@ -252,7 +252,11 @@ export const CreateResource: React.FunctionComponent = () => {
                     <EuiAccordion
                       id={`__rightArrowAccordionId_${field.name}`}
                       arrowDisplay="right"
-                      buttonContent={field.name}
+                      buttonContent={`${field.name}${
+                        field.creationRules.includes('required')
+                          ? ' (required)'
+                          : ''
+                      }`}
                       initialIsOpen
                     >
                       <EuiHorizontalRule margin="s" />
@@ -260,8 +264,8 @@ export const CreateResource: React.FunctionComponent = () => {
                       <ResourceFieldComponent>
                         <EuiFormRow
                           fullWidth
-                          error={errors[field.inputName]}
-                          isInvalid={!!errors[field.inputName]}
+                          isInvalid={errors && !!errors[field.inputName]}
+                          error={errors && errors[field.inputName]}
                         >
                           <Component
                             form={form}
@@ -270,20 +274,18 @@ export const CreateResource: React.FunctionComponent = () => {
                             id={field.inputName}
                             name={field.inputName}
                             value={form[field.inputName]}
-                            error={errors[field.inputName]}
                             editing={isEditing}
                             values={form[field.inputName]}
-                            errors={errors}
+                            errors={
+                              (errors &&
+                                (errors[field.inputName] as AbstractData)) ??
+                              {}
+                            }
+                            error={
+                              errors && (errors[field.inputName] as string)
+                            }
                             onChange={(value: any) => {
-                              setForm({
-                                ...form,
-                                [field.inputName]: value
-                              })
-
-                              setErrors({
-                                ...errors,
-                                [field.inputName]: undefined
-                              })
+                              setValue(field.inputName, value)
                             }}
                           />
                         </EuiFormRow>

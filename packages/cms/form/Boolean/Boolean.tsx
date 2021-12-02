@@ -14,7 +14,6 @@ const FormBoolean: React.FC<FormComponentProps> = ({
   id,
   value,
   onChange
-  // error
 }) => {
   const booleanOptionTrue = useGeneratedHtmlId({
     prefix: 'booleanOption',
