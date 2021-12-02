@@ -18,6 +18,8 @@ import { EuiAccordion } from '@tensei/eui/lib/components/accordion'
 import { EuiHorizontalRule } from '@tensei/eui/lib/components/horizontal_rule'
 import { EuiFormRow } from '@tensei/eui/lib/components/form'
 import { useToastStore } from '../../../store/toast'
+import { useForm } from '../../hooks/forms'
+import { Resource } from '@tensei/core'
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
@@ -173,9 +175,6 @@ export const CreateResource: React.FunctionComponent = () => {
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
-  const [form, setForm] = useState<AbstractData>({})
-  const [errors, setErrors] = useState<AbstractData>({})
-  const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const { toast } = useToastStore()
 
@@ -191,35 +190,20 @@ export const CreateResource: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
-  const publishResource = async () => {
-    setSaving(true)
-
-    const [response, error] = await createResource(form)
-
-    if (error) {
-      let formErrors: any = {}
-      error?.response?.data?.errors?.forEach(
-        (error: { message: string; field: string }) => {
-          formErrors[error.field] = [error?.message]
-        }
+  const { form, errors, submit, loading, setValue } = useForm<AbstractData>({
+    defaultValues: {},
+    onSubmit: createResource,
+    onSuccess: () => {
+      toast(
+        'Created',
+        <p>{resource?.name.toLowerCase()} have been created successfully</p>
       )
 
-      setErrors(formErrors)
-      setSaving(false)
-      return
+      setTimeout(() => {
+        push(window.Tensei.getPath(`resources/${resource.slugPlural}`))
+      }, 2000)
     }
-
-    setSaving(false)
-
-    toast(
-      'Created',
-      <p>{resource?.name.toLowerCase()} have been created successfully</p>
-    )
-
-    setTimeout(() => {
-      push(`resources/${resource.slugPlural}`)
-    }, 2000)
-  }
+  })
 
   return (
     <DashboardLayout>
@@ -246,8 +230,8 @@ export const CreateResource: React.FunctionComponent = () => {
               iconType="check"
               fill
               color="secondary"
-              onClick={publishResource}
-              isLoading={saving}
+              onClick={() => submit(undefined)}
+              isLoading={loading}
             >
               Publish
             </EuiButton>
@@ -281,8 +265,8 @@ export const CreateResource: React.FunctionComponent = () => {
                       <ResourceFieldComponent>
                         <EuiFormRow
                           fullWidth
-                          error={errors[field.inputName]}
-                          isInvalid={!!errors[field.inputName]}
+                          isInvalid={errors && !!errors[field.inputName]}
+                          error={errors && errors[field.inputName]}
                         >
                           <Component
                             form={form}
@@ -291,20 +275,18 @@ export const CreateResource: React.FunctionComponent = () => {
                             id={field.inputName}
                             name={field.inputName}
                             value={form[field.inputName]}
-                            error={errors[field.inputName]}
                             editing={isEditing}
                             values={form[field.inputName]}
-                            errors={errors}
+                            errors={
+                              (errors &&
+                                (errors[field.inputName] as AbstractData)) ??
+                              {}
+                            }
+                            error={
+                              errors && (errors[field.inputName] as string)
+                            }
                             onChange={(value: any) => {
-                              setForm({
-                                ...form,
-                                [field.inputName]: value
-                              })
-
-                              setErrors({
-                                ...errors,
-                                [field.inputName]: undefined
-                              })
+                              setValue(field.inputName, value)
                             }}
                           />
                         </EuiFormRow>
