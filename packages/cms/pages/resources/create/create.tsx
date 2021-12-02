@@ -19,7 +19,6 @@ import { EuiHorizontalRule } from '@tensei/eui/lib/components/horizontal_rule'
 import { EuiFormRow } from '@tensei/eui/lib/components/form'
 import { useToastStore } from '../../../store/toast'
 import { useForm } from '../../hooks/forms'
-import { Resource } from '@tensei/core'
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
