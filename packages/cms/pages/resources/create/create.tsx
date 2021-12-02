@@ -194,7 +194,7 @@ export const CreateResource: React.FunctionComponent = () => {
   const publishResource = async () => {
     setSaving(true)
 
-    const [response, error] = await createResource(resource, form)
+    const [response, error] = await createResource(form)
 
     if (error) {
       let formErrors: any = {}

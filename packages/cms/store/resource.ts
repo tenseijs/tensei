@@ -72,7 +72,6 @@ interface TableDataParams {
 interface ResourceMethods extends State {
 
   createResource: (
-    resource: ResourceContract,
     resourceInput: AbstractData
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
@@ -95,8 +94,9 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
   devtools((set, get) => ({
     filters: [],
 
-    async createResource(resource: ResourceContract, resourceInput: AbstractData) {
-      return await window.Tensei.api.post(resource.slugPlural, resourceInput)
+    async createResource(resourceInput: AbstractData) {
+      const { resource } = get()
+      return await window.Tensei.api.post(resource?.slugPlural!, resourceInput)
     },
 
     findResource(slug: string) {
