@@ -1,2 +1,2 @@
-import FormNumber from './number'
+import FormNumber from './Number'
 export default FormNumber

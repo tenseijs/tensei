@@ -3,12 +3,12 @@ import Axios, { AxiosRequestConfig } from 'axios'
 import * as Lib from '@tensei/components'
 
 // Form
-import FormText from './form/text'
-import FormTextarea from './form/textarea'
-import FormNumber from './form/number'
-import FormSlug from './form/slug'
-import FormBoolean from './form/boolean'
-import FormSelect from './form/select'
+import FormText from './form/Text'
+import FormTextarea from './form/Textarea'
+import FormNumber from './form/Number'
+import FormSlug from './form/Slug'
+import FormBoolean from './form/Boolean'
+import FormSelect from './form/Select'
 
 // Index
 
@@ -41,7 +41,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) {}
+    } catch (errors) { }
 
     return {
       admin,

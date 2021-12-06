@@ -1,2 +1,2 @@
-import FormSelect from './select'
+import FormSelect from './Select'
 export default FormSelect

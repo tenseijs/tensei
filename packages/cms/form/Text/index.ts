@@ -1,2 +1,2 @@
-import FormText from './text'
+import FormText from './Text'
 export default FormText

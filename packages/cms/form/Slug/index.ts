@@ -1,2 +1,2 @@
-import FormSlug from './slug'
+import FormSlug from './Slug'
 export default FormSlug
