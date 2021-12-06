@@ -8,6 +8,7 @@ const FormSelect: React.FC<FormComponentProps> = ({
   id,
   value,
   onChange,
+  onFocus,
   error
 }) => {
   const options = field?.selectOptions?.map(option => {
@@ -21,6 +22,7 @@ const FormSelect: React.FC<FormComponentProps> = ({
       name={name}
       fullWidth
       value={value}
+      onFocus={onFocus}
       isInvalid={!!error}
       placeholder={field.name}
       onChange={event => onChange(event.target.value)}

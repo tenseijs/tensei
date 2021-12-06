@@ -118,6 +118,9 @@ export interface FormComponentProps {
   value: AbstractData['']
   values: AbstractData
   errors: AbstractData
+  activeField?: FieldContract
+  onFocus?: () => void
+  onBlur?: () => void
   error: string | undefined
   resource: ResourceContract
   onChange: (value: any) => void

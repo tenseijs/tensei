@@ -15,10 +15,10 @@ import {
   slug,
   belongsTo,
   belongsToMany,
-  hasMany,
-  boolean
+  select,
+  boolean,
+  dateTime
 } from '@tensei/core'
-import { seed } from './seed'
 
 export default tensei()
   .resources([
@@ -28,8 +28,15 @@ export default tensei()
         slug('Slug')
           .creationRules('required', 'unique:slug')
           .unique()
+          .description(
+            'A short name representing the product name. Used for uniquely displaying the product in the browser.'
+          )
           .from('Name')
           .searchable(),
+        select('Shipping Scope')
+          .options(['Worldwide', 'Nationwide', 'Lagos Only'])
+          .default('Lagos Only'),
+        dateTime('Date Issued').nullable(),
         textarea('Description').creationRules('required', 'max:255'),
         integer('Price').rules('required').sortable(),
         belongsToMany('Category'),

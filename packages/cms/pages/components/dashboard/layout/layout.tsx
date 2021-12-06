@@ -22,6 +22,7 @@ const StyledSidebar = styled.div<{
 const SidebarWrapper = styled.div`
   display: flex;
   height: 100%;
+  background-color: #fcfcfc;
 `
 
 const Wrapper = styled.div`
@@ -119,7 +120,7 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({
 }) => {
   return (
     <SidebarWrapper>
-      <StyledSidebar>
+      {/* <StyledSidebar>
         <SidebarContainer>
           <Workspace>
             <Logo
@@ -151,7 +152,7 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({
 
           <AvatarContextMenu />
         </Footer>
-      </StyledSidebar>
+      </StyledSidebar> */}
 
       {hideNestedSidebar ? null : (
         <SidebarMenu title={title} groups={[]}>

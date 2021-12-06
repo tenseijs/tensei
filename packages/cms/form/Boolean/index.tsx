@@ -1,2 +1,2 @@
-import FormBoolean from './Boolean'
+import FormBoolean from './boolean'
 export default FormBoolean

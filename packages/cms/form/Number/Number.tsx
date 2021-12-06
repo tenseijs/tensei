@@ -8,6 +8,7 @@ const FormNumber: React.FC<FormComponentProps> = ({
   id,
   form,
   onChange,
+  onFocus,
   error
 }) => {
   return (
@@ -15,6 +16,7 @@ const FormNumber: React.FC<FormComponentProps> = ({
       id={id}
       name={name}
       fullWidth
+      onFocus={onFocus}
       value={form[field.inputName]}
       isInvalid={!!error}
       onChange={event => onChange(event.target.value)}

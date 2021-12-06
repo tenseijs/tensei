@@ -11,14 +11,18 @@ import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import {
   AbstractData,
+  FieldContract,
   FormComponentProps,
   ResourceContract
 } from '@tensei/components'
 import { EuiAccordion } from '@tensei/eui/lib/components/accordion'
 import { EuiHorizontalRule } from '@tensei/eui/lib/components/horizontal_rule'
 import { EuiFormRow } from '@tensei/eui/lib/components/form'
+import { EuiBadge } from '@tensei/eui/lib/components/badge'
 import { useToastStore } from '../../../store/toast'
 import { useForm } from '../../hooks/forms'
+
+import { FieldGroup } from './field-group'
 
 const Sidebar = styled.div<{ close: boolean }>`
   background-color: #fcfcfc;
@@ -45,34 +49,49 @@ const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   background-color: ${({ theme }) => theme.colors.ghost};
 `
 const Title = styled.button`
-  height: 40px;
+  height: 32px;
   border: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
 `
+
+const Heading = styled(EuiText)`
+  font-weight: 500;
+`
+
 const TitleUnderline = styled.div`
   width: 100%;
   ${({ theme }) => `border-bottom: ${theme.border.thin}`}
 `
+
 const Item = styled.div<{ close: boolean }>`
   width: 100%;
   display: ${({ close }) => (close ? 'none' : 'flex')};
   flex-direction: column;
   padding: 0 1.75rem;
 `
+
 const Contents = styled.div<{ close: boolean }>`
   width: 100%;
   display: ${({ close }) => (close ? 'none' : 'block')};
 `
+
 const Content = styled.div`
   width: 100%;
   display: flex;
   margin-bottom: 10px;
   justify-content: space-between;
 `
+
 const ValueText = styled(EuiText)`
   ${({ theme }) => `color: ${theme.colors.darkShade}`}
+`
+
+const LabelAppendWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
 `
 
 const SidebarItem: React.FunctionComponent<{
@@ -86,9 +105,7 @@ const SidebarItem: React.FunctionComponent<{
   return (
     <Item close={sidebarClose}>
       <Title onClick={onCloseSideBar}>
-        <EuiTitle size="xxxs">
-          <h6>{title}</h6>
-        </EuiTitle>
+        <Heading size="xs">{title}</Heading>
         <EuiIcon type={close ? 'arrowUp' : 'arrowDown'}></EuiIcon>
       </Title>
       <TitleUnderline />
@@ -170,6 +187,7 @@ const ResourceFieldComponent = styled.div`
 export const CreateResource: React.FunctionComponent = () => {
   // const theme = useEuiTheme()
   const { push, goBack } = useHistory()
+  const [activeField, setActiveField] = useState<FieldContract>()
   const { findResource, createResource, resource } = useResourceStore()
   const { resource: resourceSlug } = useParams<{
     resource: string
@@ -185,10 +203,6 @@ export const CreateResource: React.FunctionComponent = () => {
     }
   }, [resourceSlug])
 
-  if (!resource) {
-    return <p>Loading ...</p> // show full page loader here.
-  }
-
   const { form, errors, submit, loading, setValue } = useForm<AbstractData>({
     defaultValues: {},
     onSubmit: createResource,
@@ -198,11 +212,13 @@ export const CreateResource: React.FunctionComponent = () => {
         <p>{resource?.name.toLowerCase()} have been created successfully</p>
       )
 
-      setTimeout(() => {
-        push(window.Tensei.getPath(`resources/${resource.slugPlural}`))
-      }, 2000)
+      push(window.Tensei.getPath(`resources/${resource?.slugPlural}`))
     }
   })
+
+  if (!resource) {
+    return <p>Loading ...</p> // show full page loader here.
+  }
 
   return (
     <DashboardLayout>
@@ -243,55 +259,60 @@ export const CreateResource: React.FunctionComponent = () => {
               {resource?.fields.map(field => {
                 if (field.showOnCreation == false) return
 
-                const Component: React.FunctionComponent<FormComponentProps> =
+                const Component: React.FunctionComponent<
+                  FormComponentProps & AbstractData
+                > =
                   window.Tensei.components.form[field.component.form] ||
                   window.Tensei.components.form.Text
 
-                return (
-                  <ResourceField key={field.inputName}>
-                    <EuiAccordion
-                      id={`__rightArrowAccordionId_${field.name}`}
-                      arrowDisplay="right"
-                      buttonContent={`${field.name}${
-                        field.creationRules.includes('required')
-                          ? ' (required)'
-                          : ''
-                      }`}
-                      initialIsOpen
-                    >
-                      <EuiHorizontalRule margin="s" />
+                let labelAppend = null
 
-                      <ResourceFieldComponent>
-                        <EuiFormRow
-                          fullWidth
-                          isInvalid={errors && !!errors[field.inputName]}
-                          error={errors && errors[field.inputName]}
-                        >
-                          <Component
-                            form={form}
-                            field={field}
-                            resource={resource}
-                            id={field.inputName}
-                            name={field.inputName}
-                            value={form[field.inputName]}
-                            editing={isEditing}
-                            values={form[field.inputName]}
-                            errors={
-                              (errors &&
-                                (errors[field.inputName] as AbstractData)) ??
-                              {}
-                            }
-                            error={
-                              errors && (errors[field.inputName] as string)
-                            }
-                            onChange={(value: any) => {
-                              setValue(field.inputName, value)
-                            }}
-                          />
-                        </EuiFormRow>
-                      </ResourceFieldComponent>
-                    </EuiAccordion>
-                  </ResourceField>
+                if (
+                  field.rules.includes('required') ||
+                  field.creationRules.includes('required')
+                ) {
+                  labelAppend = (
+                    <LabelAppendWrapper>
+                      <EuiBadge color="default">Required</EuiBadge>
+                      <EuiBadge color="default">Localized</EuiBadge>
+                    </LabelAppendWrapper>
+                  )
+                }
+
+                return (
+                  <FieldGroup
+                    key={field.inputName}
+                    focused={activeField?.inputName === field.inputName}
+                  >
+                    <EuiFormRow
+                      fullWidth
+                      label={field.name}
+                      helpText={field.description}
+                      error={errors?.[field.inputName]}
+                      isInvalid={!!errors?.[field.inputName]}
+                      labelAppend={labelAppend}
+                    >
+                      <Component
+                        form={form}
+                        field={field}
+                        resource={resource}
+                        id={field.inputName}
+                        name={field.inputName}
+                        value={form[field.inputName]}
+                        editing={isEditing}
+                        values={form[field.inputName]}
+                        errors={errors || {}}
+                        onFocus={() => {
+                          setActiveField(field)
+                        }}
+                        activeField={activeField}
+                        error={errors?.[field.inputName] as string}
+                        onChange={(value: any) => {
+                          setValue(field.inputName, value)
+                        }}
+                      />
+                    </EuiFormRow>
+                  </FieldGroup>
                 )
               })}
             </PageContent>

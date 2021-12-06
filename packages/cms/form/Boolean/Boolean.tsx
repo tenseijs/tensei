@@ -13,7 +13,8 @@ const FormBoolean: React.FC<FormComponentProps> = ({
   name,
   id,
   value,
-  onChange
+  onChange,
+  onFocus
 }) => {
   const booleanOptionTrue = useGeneratedHtmlId({
     prefix: 'booleanOption',
@@ -51,6 +52,7 @@ const FormBoolean: React.FC<FormComponentProps> = ({
       <EuiRadioGroup
         id={id}
         name={name}
+        onFocus={onFocus}
         options={booleanOptions}
         idSelected={booleanOption}
         onChange={id => onChange(onOptionChange(id))}

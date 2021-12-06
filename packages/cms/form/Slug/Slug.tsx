@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { FormComponentProps } from '@tensei/components'
 import { EuiFieldText } from '@tensei/eui/lib/components/form'
 import Dayjs from 'dayjs'
@@ -25,6 +25,7 @@ const FormSlug: React.FC<FormComponentProps> = ({
   name,
   id,
   onChange,
+  onFocus,
   form,
   error
 }) => {
@@ -43,15 +44,22 @@ const FormSlug: React.FC<FormComponentProps> = ({
     }
   }
 
+  useEffect(() => {
+    onChange(getSlug(form[field.slugFromInputName]))
+  }, [form.name])
+
   return (
     <EuiFieldText
       id={id}
       name={name}
       fullWidth
-      value={form[field.inputName] || field.slugFromInputName}
+      onFocus={onFocus}
+      value={form[field.inputName]}
       isInvalid={!!error}
-      onBlur={event => onChange(getSlug(event.target.value))}
-      onChange={event => onChange(event.target.value)}
+      readOnly={!field.slugEditable}
+      onChange={event => {
+        onChange(event.target.value)
+      }}
       placeholder={field.name}
       {...field.attributes}
     />

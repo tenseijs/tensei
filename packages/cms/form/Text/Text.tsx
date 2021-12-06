@@ -6,8 +6,9 @@ const FormText: React.FC<FormComponentProps> = ({
   field,
   name,
   id,
-  form,
+  value,
   onChange,
+  onFocus,
   error
 }) => {
   return (
@@ -15,7 +16,8 @@ const FormText: React.FC<FormComponentProps> = ({
       id={id}
       name={name}
       fullWidth
-      value={form[field.inputName]}
+      value={value}
+      onFocus={onFocus}
       isInvalid={!!error}
       onChange={event => onChange(event.target.value)}
       placeholder={field.name}
