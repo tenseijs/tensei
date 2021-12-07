@@ -462,7 +462,7 @@ export const Resource: React.FunctionComponent = () => {
       <DashboardLayout.Body>
         <DashboardLayout.Topbar>
           <EuiTitle size="xs">
-            <h3>{resource?.name}</h3>
+            <h3>{resource?.namePlural}</h3>
           </EuiTitle>
           <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
             <EuiButton fill iconType={'plus'}>

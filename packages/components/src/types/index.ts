@@ -185,6 +185,7 @@ export interface FieldContract {
 
 export interface ResourceContract {
   camelCaseName: string
+  namePlural: string
   camelCaseNamePlural: string
   description: string
   displayField: string
