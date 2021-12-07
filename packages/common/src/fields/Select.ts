@@ -1,5 +1,6 @@
 import Field from './Field'
 import { camelCase } from 'change-case'
+import { FieldContract } from '@tensei/common'
 
 export interface Option {
   label: string
@@ -23,6 +24,21 @@ export class Select extends Field {
     this.property.items = []
 
     this.rules('string')
+  }
+
+  public default<T extends FieldContract>(
+    this: T & { selectOptions: Option[] },
+    value: string
+  ): T {
+    const option = this.selectOptions?.find(item =>
+      [item.label, item.value].includes(value)
+    )
+
+    if (option) {
+      this.property.default = option?.value
+    }
+
+    return this
   }
 
   /**

@@ -27,11 +27,11 @@ const extensions = {
   colors: {
     LIGHT: {
       bgShade: '#f9f9f9',
-      primaryTransparent: 'rgba(35, 70, 248, 0.2)'
+      primaryTransparent: 'rgba(44, 69, 239, 0.06)'
     },
     DARK: {
       bgShade: '#f9f9f9',
-      primaryTransparent: 'rgba(35, 70, 248, 0.2)'
+      primaryTransparent: 'rgba(44, 69, 239, 0.06)'
     }
   }
 }

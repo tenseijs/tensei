@@ -60,6 +60,7 @@ declare module '@tensei/common/resources' {
     pascalCaseNamePlural: string
     slugSingular: string
     slugPlural: string
+    namePlural: string
     perPageOptions: number[]
     permissions: Permission[]
     filters: FilterContract[]
