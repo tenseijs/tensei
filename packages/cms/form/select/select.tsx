@@ -6,18 +6,15 @@ const FormSelect: React.FC<FormComponentProps> = ({
   field,
   name,
   id,
+  value,
+  onChange,
   onFocus,
   error
 }) => {
   const options =
     field?.selectOptions?.map(option => {
-      return { value: option.label, inputDisplay: option.value }
+      return { value: option.value, inputDisplay: option.label }
     }) || []
-  const [value, setValue] = useState(options[1].value)
-
-  const onChange = (value: string) => {
-    setValue(value)
-  }
 
   return (
     <EuiSuperSelect
@@ -25,11 +22,13 @@ const FormSelect: React.FC<FormComponentProps> = ({
       options={options}
       name={name}
       fullWidth
-      valueOfSelected={value}
+      valueOfSelected={value || options[2].value}
       onFocus={onFocus}
       isInvalid={!!error}
       placeholder={field.name}
-      onChange={value => onChange(value)}
+      onChange={value => {
+        onChange(value)
+      }}
       {...field.attributes}
       aria-label={field.name}
     />
