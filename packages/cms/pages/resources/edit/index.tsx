@@ -1,1 +1,0 @@
-export { EditResource } from './edit'

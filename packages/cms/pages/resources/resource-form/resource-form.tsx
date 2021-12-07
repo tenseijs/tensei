@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams, useHistory, useRouteMatch } from 'react-router-dom'
 import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { DashboardLayout } from '../../components/dashboard/layout'
 import { useEffect } from 'react'
@@ -15,15 +15,12 @@ import {
   FormComponentProps,
   ResourceContract
 } from '@tensei/components'
-import { EuiAccordion } from '@tensei/eui/lib/components/accordion'
-import { EuiHorizontalRule } from '@tensei/eui/lib/components/horizontal_rule'
 import { EuiFormRow } from '@tensei/eui/lib/components/form'
 import { EuiBadge } from '@tensei/eui/lib/components/badge'
 import { useToastStore } from '../../../store/toast'
 import { useForm } from '../../hooks/forms'
 
 import { FieldGroup } from './field-group'
-import axios from 'axios'
 import moment from 'moment'
 
 const Sidebar = styled.div<{ close: boolean }>`
@@ -183,7 +180,7 @@ const PageContent = styled.div`
   margin: 0px auto;
 `
 
-export const EditResource: React.FunctionComponent = () => {
+export const ResourceForm: React.FunctionComponent = () => {
   // const theme = useEuiTheme()
   const { push, goBack } = useHistory()
   const [activeField, setActiveField] = useState<FieldContract>()
@@ -191,14 +188,18 @@ export const EditResource: React.FunctionComponent = () => {
     findResource,
     fetchResourceData,
     updateResource,
+    createResource,
     resource
   } = useResourceStore()
   const { resource: resourceSlug, id: resourceId = '' } = useParams<{
     resource: string
     id: string
   }>()
+  const match = useRouteMatch()
   const { toast } = useToastStore()
-  const [booted, setBooted] = useState(false)
+  const [isEditing] = useState(
+    match.path === window.Tensei.getPath('resources/:resource/:id/edit')
+  )
 
   const {
     form,
@@ -210,33 +211,38 @@ export const EditResource: React.FunctionComponent = () => {
   } = useForm<AbstractData>({
     defaultValues: {},
     onSubmit: (form: AbstractData) =>
-      updateResource(parseInt(resourceId), form),
+      isEditing ? updateResource(resourceId, form) : createResource(form),
     onSuccess: () => {
-      toast(
-        'Updated',
-        <p>{resource?.name.toLowerCase()} have been updated successfully</p>
-      )
+      isEditing
+        ? toast(
+            'Updated',
+            <p>{resource?.name.toLowerCase()} have been updated successfully</p>
+          )
+        : toast(
+            'Created',
+            <p>{resource?.name.toLowerCase()} have been created successfully</p>
+          )
 
       push(window.Tensei.getPath(`resources/${resource?.slugPlural}`))
     }
   })
 
   const getData = async () => {
-    const [data, error] = await fetchResourceData(parseInt(resourceId))
+    console.log('getting resource data')
+    const [data, error] = await fetchResourceData(resourceId)
     if (!error) {
       setForm(data?.data.data)
     }
   }
 
   useEffect(() => {
-    if (!booted) {
-      setBooted(true)
-      const found = findResource(resourceSlug)
+    const found = findResource(resourceSlug)
 
-      if (!found) {
-        push(window.Tensei.getPath(''))
-      }
+    if (!found) {
+      push(window.Tensei.getPath(''))
+    }
 
+    if (isEditing) {
       if (resourceId === '') {
         push(window.Tensei.getPath(''))
       }
@@ -265,7 +271,9 @@ export const EditResource: React.FunctionComponent = () => {
               Back
             </EuiButtonEmpty>
             <EuiTitle size="xs">
-              <h3>Edit {resource?.name?.toLowerCase()}</h3>
+              <h3>
+                {isEditing ? 'Edit' : 'Create'} {resource?.name?.toLowerCase()}
+              </h3>
             </EuiTitle>
           </TitleAndBackButtonContainer>
           <PublishAndSaveToDraftContainer>
@@ -286,7 +294,11 @@ export const EditResource: React.FunctionComponent = () => {
           <PageWrapper>
             <PageContent>
               {resource?.fields.map(field => {
-                if (field.showOnUpdate == false) return
+                if (isEditing) {
+                  if (field.showOnUpdate == false) return
+                } else {
+                  if (field.showOnCreation == false) return
+                }
 
                 const Component: React.FunctionComponent<
                   FormComponentProps & AbstractData
