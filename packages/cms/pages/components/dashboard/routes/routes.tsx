@@ -2,7 +2,7 @@ import React from 'react'
 import { Route } from 'react-router-dom'
 
 import { Dashboard } from '../../../dashboard'
-import { Resource, CreateResource, UpdateResource } from '../../../resources'
+import { Resource, CreateResource, EditResource } from '../../../resources'
 import { MustBeAuthComponent } from '../../auth/guards/must-be-authenticated'
 
 export const DashboardRoutes: React.FunctionComponent = () => {
@@ -20,7 +20,7 @@ export const DashboardRoutes: React.FunctionComponent = () => {
       />
       <Route
         exact
-        component={MustBeAuthComponent(UpdateResource)}
+        component={MustBeAuthComponent(EditResource)}
         path={window.Tensei.getPath('resources/:resource/:id/edit')}
       />
       <Route
