@@ -9,6 +9,7 @@ import FormNumber from './form/number'
 import FormSlug from './form/slug'
 import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
+import FormJson from './form/json'
 
 // Index
 
@@ -41,7 +42,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) { }
+    } catch (errors) {}
 
     return {
       admin,
@@ -73,6 +74,7 @@ class Core {
     form: {
       Slug: FormSlug,
       Text: FormText,
+      Json: FormJson,
       Select: FormSelect,
       Integer: FormNumber,
       Boolean: FormBoolean,
