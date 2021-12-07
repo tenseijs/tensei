@@ -228,7 +228,6 @@ export const ResourceForm: React.FunctionComponent = () => {
   })
 
   const getData = async () => {
-    console.log('getting resource data')
     const [data, error] = await fetchResourceData(resourceId)
     if (!error) {
       setForm(data?.data.data)
