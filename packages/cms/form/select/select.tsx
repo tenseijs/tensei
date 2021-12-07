@@ -22,7 +22,7 @@ const FormSelect: React.FC<FormComponentProps> = ({
       options={options}
       name={name}
       fullWidth
-      valueOfSelected={value || options[2].value}
+      valueOfSelected={value}
       onFocus={onFocus}
       isInvalid={!!error}
       placeholder={field.name}
