@@ -76,12 +76,12 @@ interface ResourceMethods extends State {
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
   updateResource: (
-    resourceId: number,
+    resourceId: string,
     resourceInput: AbstractData
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
   fetchResourceData: (
-    resourceId: number
+    resourceId: string
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
   findResource: (slug: string) => ResourceContract
@@ -108,9 +108,9 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       return await window.Tensei.api.post(resource?.slugPlural!, resourceInput)
     },
 
-    async updateResource(resourceId: number, resourceInput: AbstractData) {
+    async updateResource(resourceId: string, resourceInput: AbstractData) {
       const { resource } = get()
-      return await window.Tensei.api.patch(`${resource?.slugPlural!}/${resourceId}`, resourceInput)
+      return window.Tensei.api.patch(`${resource?.slugPlural!}/${resourceId}`, resourceInput)
     },
 
     findResource(slug: string) {
@@ -127,7 +127,7 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       return resource
     },
 
-    fetchResourceData(resourceId: number) {
+    fetchResourceData(resourceId: string) {
       const { resource } = get()
       return window.Tensei.api.get(`/${resource?.slug}/${resourceId}`);
     },
