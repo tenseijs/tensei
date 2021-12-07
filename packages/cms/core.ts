@@ -41,7 +41,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) {}
+    } catch (errors) { }
 
     return {
       admin,
