@@ -1,2 +1,2 @@
-export { CreateResource } from './create'
+export { ResourceForm } from './resource-form'
 export { Resource } from './resource'
