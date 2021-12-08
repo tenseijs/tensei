@@ -10,12 +10,12 @@ import { MustBeAuthComponent } from '../../auth/guards/must-be-authenticated'
 export const DashboardRoutes: React.FunctionComponent = () => {
   return (
     <>
-      <Route 
+      <Route
         exact
         component={MustBeAuthComponent(AssetManager)}
         path={window.Tensei.getPath('assets/:asset-manager')}
       />
-      <Route 
+      <Route
         exact
         component={MustBeAuthComponent(NoAsset)}
         path={window.Tensei.getPath('assets/:no-asset')}
@@ -40,7 +40,6 @@ export const DashboardRoutes: React.FunctionComponent = () => {
         component={MustBeAuthComponent(Dashboard)}
         path={window.Tensei.getPath('')}
       />
-  
     </>
   )
 }

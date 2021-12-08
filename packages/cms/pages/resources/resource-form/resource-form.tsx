@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useHistory, useRouteMatch } from 'react-router-dom'
 import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { DashboardLayout } from '../../components/dashboard/layout'
-import { useEffect } from 'react'
 import { useResourceStore } from '../../../store/resource'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
+import { EuiCopy } from '@tensei/eui/lib/components/copy'
 import { EuiText } from '@tensei/eui/lib/components/text'
 import styled from 'styled-components'
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
@@ -33,6 +33,7 @@ const Sidebar = styled.div<{ close: boolean }>`
   padding-top: 20px;
   border-left: ${({ theme, close }) => (close ? 'none' : theme.border.thin)};
 `
+
 const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   width: 28px;
   height: 28px;
@@ -47,6 +48,7 @@ const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   z-index: 99;
   background-color: ${({ theme }) => theme.colors.ghost};
 `
+
 const Title = styled.button`
   height: 32px;
   border: none;
@@ -80,7 +82,17 @@ const Content = styled.div`
   width: 100%;
   display: flex;
   margin-bottom: 10px;
+  align-items: center;
   justify-content: space-between;
+`
+
+const BadgeInButton = styled(EuiBadge)`
+  cursor: pointer;
+
+  .euiBadge__content,
+  .euiBadge__text {
+    cursor: pointer;
+  }
 `
 
 const ValueText = styled(EuiText)`
@@ -116,8 +128,9 @@ const SidebarItem: React.FunctionComponent<{
 
 const UpdateResourceSidebar: React.FunctionComponent<{
   resourceData: any
+  isEditing?: boolean
   resource: ResourceContract | undefined
-}> = ({ resource, resourceData }) => {
+}> = ({ resource, resourceData, isEditing }) => {
   const [close, setClose] = useState(false)
   const onCloseSideBar = () => setClose(!close)
 
@@ -136,13 +149,29 @@ const UpdateResourceSidebar: React.FunctionComponent<{
         sidebarClose={close}
       >
         <Content>
+          <EuiText size="s">ID</EuiText>
+          {isEditing ? (
+            <EuiCopy textToCopy={resourceData?.id}>
+              {copy => (
+                <button onClick={copy}>
+                  <BadgeInButton color="hollow">
+                    {resourceData?.id}
+                  </BadgeInButton>
+                </button>
+              )}
+            </EuiCopy>
+          ) : (
+            <ValueText size="s">-</ValueText>
+          )}
+        </Content>
+        <Content>
           <EuiText size="s">Created by</EuiText>
           <ValueText size="s">-</ValueText>
         </Content>
         <Content>
           <EuiText size="s">Last updated</EuiText>
           <ValueText size="s">
-            {moment(resourceData?.updatedAt).fromNow()}
+            {isEditing ? moment(resourceData?.updatedAt).fromNow() : '-'}
           </ValueText>
         </Content>
       </SidebarItem>
@@ -180,57 +209,55 @@ const PageContent = styled.div`
   margin: 0px auto;
 `
 
-export const ResourceForm: React.FunctionComponent = () => {
-  // const theme = useEuiTheme()
-  const { push, goBack } = useHistory()
-  const [activeField, setActiveField] = useState<FieldContract>()
-  const {
-    findResource,
-    fetchResourceData,
-    updateResource,
-    createResource,
-    resource
-  } = useResourceStore()
+export function resolveDefaultFormValues(
+  resource: ResourceContract,
+  data: AbstractData,
+  isEditing = false
+) {
+  const form: AbstractData = {}
+
+  resource.fields
+    .filter(field => {
+      if (isEditing) {
+        return field.showOnUpdate
+      }
+
+      return field.showOnCreation
+    })
+    .forEach(field => {
+      form[field.inputName] = data[field.inputName] || field.defaultValue || ''
+    })
+
+  return form
+}
+
+export const ResourceFormWrapper: React.FunctionComponent = ({ children }) => {
+  const { findResource, fetchResourceData, resource } = useResourceStore()
+  const { push } = useHistory()
+  const { toast } = useToastStore()
+  const [resourceData, setResourceData] = useState()
   const { resource: resourceSlug, id: resourceId = '' } = useParams<{
     resource: string
     id: string
   }>()
   const match = useRouteMatch()
-  const { toast } = useToastStore()
-  const [isEditing] = useState(
+  const isEditing =
     match.path === window.Tensei.getPath('resources/:resource/:id/edit')
-  )
-
-  const {
-    form,
-    setForm,
-    errors,
-    submit,
-    loading,
-    setValue
-  } = useForm<AbstractData>({
-    defaultValues: {},
-    onSubmit: (form: AbstractData) =>
-      isEditing ? updateResource(resourceId, form) : createResource(form),
-    onSuccess: () => {
-      isEditing
-        ? toast(
-            'Updated',
-            <p>{resource?.name.toLowerCase()} have been updated successfully</p>
-          )
-        : toast(
-            'Created',
-            <p>{resource?.name.toLowerCase()} have been created successfully</p>
-          )
-
-      push(window.Tensei.getPath(`resources/${resource?.slugPlural}`))
-    }
-  })
 
   const getData = async () => {
-    const [data, error] = await fetchResourceData(resourceId)
-    if (!error) {
-      setForm(data?.data.data)
+    const [response, error] = await fetchResourceData(resourceId)
+
+    if (response?.data?.data) {
+      setResourceData(response?.data.data)
+    }
+
+    if (error) {
+      toast(
+        'Failed to load resource',
+        'We could not find the resource to edit.'
+      )
+
+      window.Tensei.getPath(`/resources/${resource?.slugPlural}`)
     }
   }
 
@@ -242,17 +269,55 @@ export const ResourceForm: React.FunctionComponent = () => {
     }
 
     if (isEditing) {
-      if (resourceId === '') {
-        push(window.Tensei.getPath(''))
+      if (!resourceId) {
+        push(window.Tensei.getPath(`resources/${found?.slugPlural}`))
       }
 
       getData()
     }
   }, [resourceSlug])
 
-  if (!resource) {
+  if (!resource || (isEditing && !resourceData)) {
     return <p>Loading ...</p> // show full page loader here.
   }
+
+  return <ResourceForm isEditing={isEditing} resourceData={resourceData} />
+}
+
+export const ResourceForm: React.FunctionComponent<{
+  isEditing?: boolean
+  resourceData?: AbstractData
+}> = ({ isEditing, resourceData = {} }) => {
+  const { push, goBack } = useHistory()
+  const [activeField, setActiveField] = useState<FieldContract>()
+  const { updateResource, createResource, resource } = useResourceStore()
+  const { id: resourceId = '' } = useParams<{
+    resource: string
+    id: string
+  }>()
+
+  const { toast } = useToastStore()
+
+  const { form, errors, submit, loading, setValue } = useForm<AbstractData>({
+    defaultValues: resolveDefaultFormValues(resource!, resourceData, isEditing),
+    onSubmit: (form: AbstractData) =>
+      isEditing ? updateResource(resourceId, form) : createResource(form),
+    onSuccess: () => {
+      if (isEditing) {
+        toast(
+          'Updated',
+          <p>{resource?.name.toLowerCase()} have been updated successfully</p>
+        )
+      } else {
+        toast(
+          'Created',
+          <p>{resource?.name.toLowerCase()} have been created successfully</p>
+        )
+      }
+
+      push(window.Tensei.getPath(`resources/${resource?.slugPlural}`))
+    }
+  })
 
   return (
     <DashboardLayout>
@@ -309,7 +374,9 @@ export const ResourceForm: React.FunctionComponent = () => {
 
                 if (
                   field.rules.includes('required') ||
-                  field.creationRules.includes('required')
+                  (isEditing
+                    ? field.updateRules.includes('required')
+                    : field.creationRules.includes('required'))
                 ) {
                   labelAppend = (
                     <LabelAppendWrapper>
@@ -338,8 +405,8 @@ export const ResourceForm: React.FunctionComponent = () => {
                         resource={resource}
                         id={field.inputName}
                         name={field.inputName}
-                        value={form[field.inputName] ?? ''}
-                        values={form[field.inputName] ?? []}
+                        value={form[field.inputName]}
+                        values={form}
                         errors={errors || {}}
                         onFocus={() => {
                           setActiveField(field)
@@ -356,7 +423,11 @@ export const ResourceForm: React.FunctionComponent = () => {
               })}
             </PageContent>
           </PageWrapper>
-          <UpdateResourceSidebar resource={resource} resourceData={form} />
+          <UpdateResourceSidebar
+            resource={resource}
+            isEditing={isEditing}
+            resourceData={resourceData}
+          />
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>
