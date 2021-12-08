@@ -27,6 +27,7 @@ const FormSlug: React.FC<FormComponentProps> = ({
   onChange,
   onFocus,
   form,
+  value,
   error
 }) => {
   const getSlug = (slug: string) => {
@@ -54,7 +55,7 @@ const FormSlug: React.FC<FormComponentProps> = ({
       name={name}
       fullWidth
       onFocus={onFocus}
-      value={form[field.inputName]}
+      value={value}
       isInvalid={!!error}
       readOnly={!field.slugEditable}
       onChange={event => {

@@ -7,6 +7,7 @@ const FormTextarea: React.FC<FormComponentProps> = ({
   name,
   id,
   form,
+  value,
   onChange,
   onFocus,
   error
@@ -17,7 +18,7 @@ const FormTextarea: React.FC<FormComponentProps> = ({
       name={name}
       fullWidth
       onFocus={onFocus}
-      value={form[field.inputName]}
+      value={value}
       isInvalid={!!error}
       onChange={event => onChange(event.target.value)}
       placeholder={field.name}

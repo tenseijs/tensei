@@ -36,6 +36,7 @@ export class Select extends Field {
 
     if (option) {
       this.property.default = option?.value
+      this.defaultFormValue(option?.value)
     }
 
     return this

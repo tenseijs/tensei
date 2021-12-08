@@ -233,6 +233,7 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
   >([])
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
+  const { push } = useHistory()
 
   const getData = async () => {
     const params = {
@@ -296,6 +297,20 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
       {
         name: 'Actions',
         actions: [
+          {
+            name: 'Edit',
+            description: 'Edit this item',
+            icon: 'pencil',
+            type: 'icon',
+            // color: 'danger',
+            onClick: item => {
+              push(
+                window.Tensei.getPath(
+                  `resources/${resource?.slugPlural}/${item.id}/edit`
+                )
+              )
+            }
+          },
           {
             name: 'Delete',
             description: 'Delete this item',
