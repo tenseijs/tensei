@@ -22,7 +22,6 @@ import Pluralize from 'pluralize'
 // import { FilterContract } from '@tensei/filters'
 import { snakeCase, paramCase, camelCase, pascalCase } from 'change-case'
 import { ApiType, MiddlewareFn, ResourceMethod } from '@tensei/common/resources'
-import { ExpressMiddleware, GraphQlMiddleware } from '@tensei/common/config'
 
 interface ResourceDataWithFields<T extends ApiType = 'rest'>
   extends ResourceData<T> {
@@ -92,6 +91,7 @@ export class Resource<T extends ApiType = 'rest'>
 
   constructor(name: string, tableName?: string) {
     this.data.name = name
+    this.data.namePlural = Pluralize(name)
     this.data.icon = 'category'
     this.data.label = Pluralize(name)
     this.data.snakeCaseName = snakeCase(name)
@@ -168,6 +168,7 @@ export class Resource<T extends ApiType = 'rest'>
     name: '',
     slug: '',
     label: '',
+    namePlural: '',
     filters: [],
     extend: {},
     icon: 'category',

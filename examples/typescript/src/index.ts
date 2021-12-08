@@ -17,7 +17,8 @@ import {
   belongsToMany,
   select,
   boolean,
-  dateTime
+  dateTime,
+  json
 } from '@tensei/core'
 
 export default tensei()
@@ -39,6 +40,7 @@ export default tensei()
         dateTime('Date Issued').nullable(),
         textarea('Description').creationRules('required', 'max:255'),
         integer('Price').rules('required').sortable(),
+        json('Metadata').nullable(),
         belongsToMany('Category'),
         belongsToMany('Product Option'),
         belongsToMany('Order Item'),
@@ -82,36 +84,44 @@ export default tensei()
     resource('Order').fields([
       integer('Total').rules('required'),
       belongsTo('Customer'),
-      text('Stripe Checkout ID'),
+      text('Stripe Checkout ID').hideOnIndex(),
       belongsToMany('Product')
     ]),
-    resource('Order Item').fields([
-      integer('Quantity').min(0).rules('min:0', 'required'),
-      integer('Total').rules('required', 'min:0'),
-      belongsTo('Order').rules('required'),
-      belongsTo('Product').rules('required')
-    ]),
-    resource('Option').fields([
-      text('Name').rules('Required'),
-      slug('Short name')
-        .creationRules('required', 'unique:slug')
-        .unique()
-        .from('Name')
-    ]),
-    resource('Option Value').fields([
-      text('Name').rules('Required'),
-      slug('Short name')
-        .creationRules('required', 'unique:slug')
-        .unique()
-        .from('Name'),
-      belongsToMany('Option')
-    ]),
-    resource('Product Option').fields([
-      belongsToMany('Option'),
-      belongsToMany('Option Value'),
-      belongsToMany('Product'),
-      files('Image')
-    ])
+    resource('Order Item')
+      .fields([
+        integer('Quantity').min(0).rules('min:0', 'required'),
+        integer('Total').rules('required', 'min:0'),
+        belongsTo('Order').rules('required'),
+        belongsTo('Product').rules('required')
+      ])
+      .hideFromNavigation(),
+    resource('Option')
+      .fields([
+        text('Name').rules('Required'),
+        slug('Short name')
+          .creationRules('required', 'unique:slug')
+          .unique()
+          .from('Name')
+      ])
+      .hideFromNavigation(),
+    resource('Option Value')
+      .fields([
+        text('Name').rules('Required'),
+        slug('Short name')
+          .creationRules('required', 'unique:slug')
+          .unique()
+          .from('Name'),
+        belongsToMany('Option')
+      ])
+      .hideFromNavigation(),
+    resource('Product Option')
+      .fields([
+        belongsToMany('Option'),
+        belongsToMany('Option Value'),
+        belongsToMany('Product'),
+        files('Image')
+      ])
+      .hideFromNavigation()
   ])
   .plugins([
     welcome(),

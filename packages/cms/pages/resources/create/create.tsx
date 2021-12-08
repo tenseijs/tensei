@@ -244,7 +244,7 @@ export const CreateResource: React.FunctionComponent = () => {
             <EuiButton
               iconType="check"
               fill
-              color="secondary"
+              color="success"
               onClick={() => submit(undefined)}
               isLoading={loading}
             >
