@@ -25,7 +25,7 @@ export class RelationshipField extends Field {
     this.dockToSidebarOnForms()
     this.notFilterable()
 
-    this.relationshipLabel = name
+    this.relationshipLabel = Pluralize(name)
   }
 
   public cascades(cascades: Cascade[]) {

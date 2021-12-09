@@ -10,6 +10,7 @@ import FormSlug from './form/slug'
 import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
 import FormJson from './form/json'
+import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
 
 // Index
 
@@ -34,7 +35,7 @@ class Core {
       registered = ___tensei___.shouldShowRegistrationScreen === 'false'
 
       resources.forEach((resource: any) => {
-        resourcesMap[resource.slug] = resource
+        resourcesMap[resource.name] = resource
       })
 
       admin = JSON.parse(___tensei___.admin || '')
@@ -42,7 +43,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) { }
+    } catch (errors) {}
 
     return {
       admin,
@@ -78,7 +79,8 @@ class Core {
       Integer: FormNumber,
       Boolean: FormBoolean,
       Textarea: FormTextarea,
-      Json: FormJson
+      Json: FormJson,
+      ManyToMany: FormBelongsToMany
     },
     index: {}
   }

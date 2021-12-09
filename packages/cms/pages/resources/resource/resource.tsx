@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import styled from 'styled-components'
-import { FieldContract } from '@tensei/components'
+import { FieldContract, ResourceContract } from '@tensei/components'
 import { useParams, useHistory, Link } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
@@ -27,11 +27,13 @@ import { useEffect } from 'react'
 import {
   useResourceStore,
   filterClauses,
-  FilterClause
+  FilterClause,
+  ActiveFilter
 } from '../../../store/resource'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useToastStore } from '../../../store/toast'
 import { debounce } from 'throttle-debounce'
+import { Filter } from '@tensei/common/config'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -105,9 +107,16 @@ const FilterValue: React.FunctionComponent<{
   )
 }
 
-export const FilterList: React.FunctionComponent = () => {
+interface FilterListProps {
+  resource: ResourceContract
+  applyFilter: (filter: ActiveFilter) => void
+}
+
+export const FilterList: React.FunctionComponent<FilterListProps> = ({
+  applyFilter,
+  resource
+}) => {
   const [open, setOpen] = useState(false)
-  const { resource, applyFilter } = useResourceStore()
   const [filterDropdown, setFilterDropdown] = useState<Boolean>()
   const contextMenuPopoverId = useGeneratedHtmlId({
     prefix: 'contextMenuPopover'
@@ -210,16 +219,19 @@ interface MetaData {
 }
 interface TableProps {
   search: string
+  resource: ResourceContract
+  filters: ActiveFilter[]
+  applyFilter: (filter: ActiveFilter) => void
+  onSelect?: (rows: any[]) => void
 }
 
-export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
-  const {
-    resource,
-    applyFilter,
-    fetchTableData,
-    deleteTableData,
-    filters
-  } = useResourceStore()
+export const Table: React.FunctionComponent<TableProps> = ({
+  search,
+  filters,
+  resource,
+  onSelect
+}) => {
+  const { fetchTableData, deleteTableData } = useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
   const [pageIndex, setPageIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -235,17 +247,22 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
   const { push } = useHistory()
 
+  useEffect(() => {
+    onSelect?.(selectedItems)
+  }, [selectedItems])
+
   const getData = async () => {
     const params = {
       page: pageIndex + 1,
       perPage: pageSize,
       sort: `${sortField}:${sortDirection}`,
       sortField,
-      search: search
+      search: search,
+      filters
     }
     setLoading(true)
 
-    const [data, error] = await fetchTableData(params)
+    const [data, error] = await fetchTableData(resource, params)
     if (!error) {
       setItems(data?.data.data)
       setMetaData(data?.data.meta)
@@ -263,7 +280,10 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
   const deleteItem = async () => {
     if (itemsSelectedForDelete.length === 0) return
 
-    const [response, error] = await deleteTableData(itemsSelectedForDelete)
+    const [response, error] = await deleteTableData(
+      resource,
+      itemsSelectedForDelete
+    )
 
     if (!error) {
       if (selectedItems.length > 1) {
@@ -432,13 +452,13 @@ export const Table: React.FunctionComponent<TableProps> = ({ search }) => {
   )
 }
 
-export const Resource: React.FunctionComponent = () => {
+export const ResourceView: React.FunctionComponent = () => {
   const { push } = useHistory()
-  const { findResource, resource, filters, clearFilter } = useResourceStore()
+  const { resource, findResource } = useResourceStore()
+
   const { resource: resourceSlug } = useParams<{
     resource: string
   }>()
-  const [search, setsearch] = useState('')
 
   useEffect(() => {
     const found = findResource(resourceSlug)
@@ -448,13 +468,6 @@ export const Resource: React.FunctionComponent = () => {
     }
   }, [resourceSlug])
 
-  if (!resource) {
-    return <p>Loading ...</p> // show full page loader here.
-  }
-
-  const onSearchChange = debounce(500, false, (value: string) => {
-    setsearch(value)
-  })
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
@@ -473,41 +486,81 @@ export const Resource: React.FunctionComponent = () => {
 
         <DashboardLayout.Content>
           <PageWrapper>
-            <TableWrapper>
-              <HeaderContainer>
-                <SearchAndFilterContainer>
-                  <EuiFieldSearch
-                    placeholder={`Search ${resource.label.toLowerCase()}`}
-                    onChange={event => {
-                      onSearchChange(event.target.value)
-                    }}
-                  />
-
-                  <FilterList />
-                </SearchAndFilterContainer>
-              </HeaderContainer>
-              <EuiSpacer size="m" />
-              <EuiFlexGroup gutterSize="s" alignItems="center">
-                {filters.map((filter, idx) => (
-                  <EuiFlexItem grow={false} key={idx}>
-                    <EuiButton
-                      color="primary"
-                      onClick={() => {
-                        clearFilter(filter)
-                      }}
-                    >
-                      {filter.field.name} {''}
-                      {filter.clause.name} {filter.value}
-                    </EuiButton>
-                  </EuiFlexItem>
-                ))}
-              </EuiFlexGroup>
-              <EuiSpacer size="m" />
-              <Table search={search} />
-            </TableWrapper>
+            {resource ? <Resource resource={resource} /> : <p>Loading ...</p>}
           </PageWrapper>
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>
+  )
+}
+
+interface ResourceProps {
+  resource: ResourceContract
+  tableProps?: Partial<TableProps>
+}
+
+export const Resource: React.FunctionComponent<ResourceProps> = ({
+  resource,
+  tableProps
+}) => {
+  const [filters, setFilters] = useState<ActiveFilter[]>([])
+
+  function clearFilter(filter: ActiveFilter) {
+    setFilters(
+      filters.filter(
+        activeFilter =>
+          activeFilter.field.databaseField !== filter.field.databaseField
+      )
+    )
+  }
+
+  function applyFilter(filter: ActiveFilter) {
+    setFilters([...filters, filter])
+  }
+
+  const [search, setsearch] = useState('')
+
+  const onSearchChange = debounce(500, false, (value: string) => {
+    setsearch(value)
+  })
+  return (
+    <TableWrapper>
+      <HeaderContainer>
+        <SearchAndFilterContainer>
+          <EuiFieldSearch
+            placeholder={`Search ${resource.label.toLowerCase()}`}
+            onChange={event => {
+              onSearchChange(event.target.value)
+            }}
+          />
+
+          <FilterList applyFilter={applyFilter} resource={resource} />
+        </SearchAndFilterContainer>
+      </HeaderContainer>
+      <EuiSpacer size="m" />
+      <EuiFlexGroup gutterSize="s" alignItems="center">
+        {filters.map((filter, idx) => (
+          <EuiFlexItem grow={false} key={idx}>
+            <EuiButton
+              color="primary"
+              onClick={() => {
+                clearFilter(filter)
+              }}
+            >
+              {filter.field.name} {''}
+              {filter.clause.name} {filter.value}
+            </EuiButton>
+          </EuiFlexItem>
+        ))}
+      </EuiFlexGroup>
+      <EuiSpacer size="m" />
+      <Table
+        search={search}
+        filters={filters}
+        applyFilter={applyFilter}
+        resource={resource}
+        {...tableProps}
+      />
+    </TableWrapper>
   )
 }

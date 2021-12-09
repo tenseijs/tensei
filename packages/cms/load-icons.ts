@@ -20,6 +20,7 @@ import { icon as EuiArrowRightIcon } from '@tensei/eui/lib/components/icon/asset
 import { icon as EuiExitIcon } from '@tensei/eui/lib/components/icon/assets/exit'
 import { icon as EuiUserIcon } from '@tensei/eui/lib/components/icon/assets/user'
 import { icon as EuiPlusIcon } from '@tensei/eui/lib/components/icon/assets/plus'
+import { icon as EuiLinkIcon } from '@tensei/eui/lib/components/icon/assets/link'
 import { icon as EuiPlusInCircleIcon } from '@tensei/eui/lib/components/icon/assets/plus_in_circle'
 import { icon as EuiPencilIcon } from '@tensei/eui/lib/components/icon/assets/pencil'
 
@@ -45,6 +46,7 @@ appendIconComponentCache({
   exit: EuiExitIcon,
   user: EuiUserIcon,
   plus: EuiPlusIcon,
+  link: EuiLinkIcon,
   plusInCircle: EuiPlusInCircleIcon,
   pencil: EuiPencilIcon
 })

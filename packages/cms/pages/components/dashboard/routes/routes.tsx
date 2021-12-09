@@ -4,7 +4,7 @@ import { Route } from 'react-router-dom'
 import { NoAsset } from '../../../assests/asset-manager'
 import { AssetManager } from '../../../assests/asset-manager'
 import { Dashboard } from '../../../dashboard'
-import { Resource, ResourceForm } from '../../../resources'
+import { Resource, ResourceForm, ResourceView } from '../../../resources'
 import { MustBeAuthComponent } from '../../auth/guards/must-be-authenticated'
 
 export const DashboardRoutes: React.FunctionComponent = () => {
@@ -22,7 +22,7 @@ export const DashboardRoutes: React.FunctionComponent = () => {
       />
       <Route
         exact
-        component={MustBeAuthComponent(Resource)}
+        component={MustBeAuthComponent(ResourceView)}
         path={window.Tensei.getPath('resources/:resource')}
       />
       <Route
