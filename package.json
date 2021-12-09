@@ -45,10 +45,12 @@
   "dependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "codemirror": "^5.64.0",
     "commitizen": "^4.2.2",
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
     "prettier": "^2.0.5",
+    "react-codemirror2": "^7.2.1",
     "rimraf": "^3.0.2"
   },
   "devDependencies": {

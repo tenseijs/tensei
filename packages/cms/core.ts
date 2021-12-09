@@ -9,6 +9,7 @@ import FormNumber from './form/number'
 import FormSlug from './form/slug'
 import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
+import FormJson from './form/json'
 
 // Index
 
@@ -76,7 +77,8 @@ class Core {
       Select: FormSelect,
       Integer: FormNumber,
       Boolean: FormBoolean,
-      Textarea: FormTextarea
+      Textarea: FormTextarea,
+      Json: FormJson
     },
     index: {}
   }
