@@ -231,7 +231,7 @@ export function resolveDefaultFormValues(
   return form
 }
 
-export const ResourceFormWrapper: React.FunctionComponent = ({ children }) => {
+export const ResourceFormWrapper: React.FunctionComponent = () => {
   const { findResource, fetchResourceData, resource } = useResourceStore()
   const { push } = useHistory()
   const { toast } = useToastStore()
@@ -244,8 +244,11 @@ export const ResourceFormWrapper: React.FunctionComponent = ({ children }) => {
   const isEditing =
     match.path === window.Tensei.getPath('resources/:resource/:id/edit')
 
-  const getData = async () => {
-    const [response, error] = await fetchResourceData(resourceId)
+  const getData = async (foundResource: ResourceContract) => {
+    const [response, error] = await fetchResourceData(
+      foundResource!,
+      resourceId
+    )
 
     if (response?.data?.data) {
       setResourceData(response?.data.data)
@@ -257,7 +260,7 @@ export const ResourceFormWrapper: React.FunctionComponent = ({ children }) => {
         'We could not find the resource to edit.'
       )
 
-      window.Tensei.getPath(`/resources/${resource?.slugPlural}`)
+      window.Tensei.getPath(`/resources/${foundResource?.slugPlural}`)
     }
   }
 
@@ -266,14 +269,18 @@ export const ResourceFormWrapper: React.FunctionComponent = ({ children }) => {
 
     if (!found) {
       push(window.Tensei.getPath(''))
+
+      return
     }
 
     if (isEditing) {
       if (!resourceId) {
         push(window.Tensei.getPath(`resources/${found?.slugPlural}`))
+
+        return
       }
 
-      getData()
+      getData(found)
     }
   }, [resourceSlug])
 
@@ -301,7 +308,9 @@ export const ResourceForm: React.FunctionComponent<{
   const { form, errors, submit, loading, setValue } = useForm<AbstractData>({
     defaultValues: resolveDefaultFormValues(resource!, resourceData, isEditing),
     onSubmit: (form: AbstractData) =>
-      isEditing ? updateResource(resourceId, form) : createResource(form),
+      isEditing
+        ? updateResource(resource!, resourceId, form)
+        : createResource(resource!, form),
     onSuccess: () => {
       if (isEditing) {
         toast(
@@ -393,7 +402,7 @@ export const ResourceForm: React.FunctionComponent<{
                   >
                     <EuiFormRow
                       fullWidth
-                      label={field.name}
+                      label={field.label || field.name}
                       helpText={field.description}
                       error={errors?.[field.inputName]}
                       isInvalid={!!errors?.[field.inputName]}
@@ -411,6 +420,8 @@ export const ResourceForm: React.FunctionComponent<{
                         onFocus={() => {
                           setActiveField(field)
                         }}
+                        editing={isEditing}
+                        editingId={resourceId}
                         activeField={activeField}
                         error={errors?.[field.inputName] as string}
                         onChange={(value: any) => {

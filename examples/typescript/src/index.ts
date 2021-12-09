@@ -18,7 +18,8 @@ import {
   select,
   boolean,
   dateTime,
-  json
+  json,
+  hasMany
 } from '@tensei/core'
 
 export default tensei()
@@ -45,7 +46,7 @@ export default tensei()
         belongsToMany('Product Option'),
         belongsToMany('Order Item'),
         belongsToMany('Collection'),
-        belongsToMany('Review'),
+        hasMany('Review'),
         files('Image')
       ])
       .displayField('Name'),

@@ -1,6 +1,10 @@
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { ResourceContract, FieldContract, AbstractData } from '@tensei/components'
+import {
+  ResourceContract,
+  FieldContract,
+  AbstractData
+} from '@tensei/components'
 import { AxiosError, AxiosResponse } from 'axios'
 
 export interface ActiveFilter {
@@ -60,7 +64,6 @@ export const filterClauses: FilterClause[] = [
 
 interface ResourceState extends State {
   resource?: ResourceContract
-  filters: ActiveFilter[]
 }
 interface TableDataParams {
   perPage?: number
@@ -68,49 +71,56 @@ interface TableDataParams {
   sort?: string
   sortField: string
   search?: string
+  filters?: ActiveFilter[]
 }
 interface ResourceMethods extends State {
-
   createResource: (
+    resource: ResourceContract,
     resourceInput: AbstractData
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
   updateResource: (
+    resource: ResourceContract,
     resourceId: string,
     resourceInput: AbstractData
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
   fetchResourceData: (
+    resource: ResourceContract,
     resourceId: string
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
 
   findResource: (slug: string) => ResourceContract
 
   fetchTableData: (
+    resource: ResourceContract,
     params: TableDataParams
   ) => Promise<[AxiosResponse | null, Error | null]>
 
   deleteTableData: (
+    resource: ResourceContract,
     id: string[]
   ) => Promise<[AxiosResponse | null, Error | null]>
-
-  applyFilter: (filter: ActiveFilter) => void
-
-  clearFilter: (filter: ActiveFilter) => void
 }
 
 export const useResourceStore = create<ResourceState & ResourceMethods>(
   devtools((set, get) => ({
-    filters: [],
-
-    async createResource(resourceInput: AbstractData) {
-      const { resource } = get()
+    async createResource(
+      resource: ResourceContract,
+      resourceInput: AbstractData
+    ) {
       return await window.Tensei.api.post(resource?.slugPlural!, resourceInput)
     },
 
-    async updateResource(resourceId: string, resourceInput: AbstractData) {
-      const { resource } = get()
-      return window.Tensei.api.patch(`${resource?.slugPlural!}/${resourceId}`, resourceInput)
+    async updateResource(
+      resource: ResourceContract,
+      resourceId: string,
+      resourceInput: AbstractData
+    ) {
+      return window.Tensei.api.patch(
+        `${resource?.slugPlural!}/${resourceId}`,
+        resourceInput
+      )
     },
 
     findResource(slug: string) {
@@ -127,29 +137,12 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       return resource
     },
 
-    fetchResourceData(resourceId: string) {
-      const { resource } = get()
-      return window.Tensei.api.get(`/${resource?.slug}/${resourceId}`);
+    fetchResourceData(resource: ResourceContract, resourceId: string) {
+      return window.Tensei.api.get(`/${resource?.slug}/${resourceId}`)
     },
 
-    applyFilter(filter: ActiveFilter) {
-      set({
-        filters: [...get().filters, filter]
-      })
-    },
-
-    clearFilter(filter: ActiveFilter) {
-      set({
-        filters: get().filters.filter(
-          activeFilter =>
-            activeFilter.field.databaseField !== filter.field.databaseField
-        )
-      })
-    },
-
-    async fetchTableData(params: TableDataParams) {
-      const { resource, filters } = get()
-      const { page, perPage, sort, sortField, search } = params
+    async fetchTableData(resource: ResourceContract, params: TableDataParams) {
+      const { page, perPage, sort, sortField, search, filters } = params
 
       return window.Tensei.api.get(`/${resource?.slug}`, {
         params: {
@@ -157,7 +150,7 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
           perPage,
           ...(sortField && { sort }),
           ...(search && { search }),
-          ...(filters.length && {
+          ...(filters?.length && {
             where: {
               _and: [
                 ...filters.map(item => ({
@@ -172,9 +165,7 @@ export const useResourceStore = create<ResourceState & ResourceMethods>(
       })
     },
 
-    async deleteTableData(ids: string[]) {
-      const { resource } = get()
-
+    async deleteTableData(resource: ResourceContract, ids: string[]) {
       return window.Tensei.api.delete(`/${resource?.slug}`, {
         params: { where: { id: { _in: [...ids] } } }
       })
