@@ -1,12 +1,11 @@
 import React from 'react'
 import { Controlled as CodeMirror } from 'react-codemirror2'
 
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/mode/javascript/javascript'
+
+
 import { FormComponentProps } from '@tensei/components'
-import styled from 'styled-components'
-
-import { EuiFieldText } from '@tensei/eui/lib/components/form'
-
-const JsonComponent = styled.div``
 
 const FormJson: React.FC<FormComponentProps> = ({
   field,
@@ -17,14 +16,22 @@ const FormJson: React.FC<FormComponentProps> = ({
   onFocus,
   error
 }) => {
-  
     return (
       <CodeMirror
           value={value}
           options={{
-            mode: 'json'
+            mode: {name: "javascript", json: true},
+            lineWrapping: true,
+            lint: true,
+            lineNumbers: true,
           }}
-          onBeforeChange={(editor, data, value) => {}}
+          onBeforeChange={(editor, data, value) => {
+            onChange(value)
+          }}
+          onChange={(editor, value) => {
+            console.log('controlled', {value});
+          }}
+          onFocus={onFocus}
           {...field.attributes}
         />
     )
