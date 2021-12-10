@@ -12,6 +12,11 @@ import FormSelect from './form/select'
 import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
 
 // Index
+import IndexBoolean from './index/boolean'
+import IndexText from './index/text'
+import IndexId from './index/id'
+import IndexSlug from './index/slug'
+import IndexNumber from './index/number'
 
 class Core {
   state = (() => {
@@ -42,7 +47,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) {}
+    } catch (errors) { }
 
     return {
       admin,
@@ -80,7 +85,14 @@ class Core {
       Textarea: FormTextarea,
       ManyToMany: FormBelongsToMany
     },
-    index: {}
+    index: {
+      Boolean: IndexBoolean,
+      Text: IndexText,
+      ID: IndexId,
+      Slug: IndexSlug,
+      Integer: IndexNumber,
+      Textarea: IndexText
+    }
   }
 
   routes: Lib.CmsRoute[] = []
