@@ -19,6 +19,11 @@ import {
 } from '@tensei/eui/lib/components/flyout'
 import { useState } from 'react'
 import { Resource } from '../../pages/resources/resource'
+import {
+  useCreateResourceForm,
+  ResourceForm,
+  UpdateResourceSidebar
+} from '../../pages/resources/resource-form'
 
 const Wrapper = styled.div`
   display: flex;
@@ -51,6 +56,42 @@ const DocumentActions = styled.div`
   align-items: center;
 `
 
+const AddButtonsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`
+
+const CreateActionButtonsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`
+
+const CreateResourceWrapper = styled.div`
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+`
+
+const CreateResourceContent = styled.div`
+  width: 650px;
+  margin: 0px auto;
+  padding: 32px;
+  height: 100%;
+`
+
+const StyledFlyoutBody = styled(EuiFlyoutBody)`
+  .euiFlyoutBody__overflowContent {
+    padding: 0px;
+  }
+
+  .euiFlyoutBody__overflowContent {
+    height: 100%;
+  }
+`
+
 export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
   field,
   onChange,
@@ -58,14 +99,31 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
   editing,
   resource
 }) => {
+  const [createFlyOutOpen, setCreateFlyOutOpen] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [flyOutOpen, setFlyoutOpen] = useState(false)
   const flyOutId = useGeneratedHtmlId()
   const relatedResource = window.Tensei.state.resourcesMap[field.name]
 
+  const createResourceForm = useCreateResourceForm({
+    resource: relatedResource,
+    resourceData: {},
+    redirectOnSuccess: false,
+    isEditing: false,
+    onSuccess(response) {
+      setCreateFlyOutOpen(false)
+
+      setDocuments([response.data.data])
+    }
+  })
+
   function closeFlyout() {
     setFlyoutOpen(false)
+  }
+
+  function closeCreateResourceFlyout() {
+    setCreateFlyOutOpen(false)
   }
 
   async function fetchDocuments() {
@@ -138,6 +196,66 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
           </EuiFlyoutFooter>
         </EuiFlyout>
       ) : null}
+      {createFlyOutOpen ? (
+        <EuiFlyout
+          ownFocus
+          size={'l'}
+          aria-labelledby={flyOutId}
+          onClose={closeCreateResourceFlyout}
+        >
+          <EuiFlyoutHeader hasBorder>
+            <EuiTitle size="m">
+              <h2 id={flyOutId}>
+                Create new {relatedResource?.name?.toLowerCase()}
+              </h2>
+            </EuiTitle>
+          </EuiFlyoutHeader>
+          <StyledFlyoutBody>
+            <CreateResourceWrapper>
+              <CreateResourceContent>
+                <ResourceForm createResourceForm={createResourceForm} />
+              </CreateResourceContent>
+              <UpdateResourceSidebar
+                isEditing={false}
+                resourceData={{}}
+                inFlyout={true}
+                resource={relatedResource}
+                initialClose={true}
+              />
+            </CreateResourceWrapper>
+          </StyledFlyoutBody>
+
+          <EuiFlyoutFooter>
+            <EuiFlexGroup justifyContent="spaceBetween">
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty
+                  iconType="cross"
+                  onClick={closeCreateResourceFlyout}
+                  flush="left"
+                >
+                  Close
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <CreateActionButtonsWrapper>
+                  <EuiButton fill>Save as draft</EuiButton>
+                  <EuiButton
+                    iconType="check"
+                    fill
+                    color="success"
+                    isLoading={createResourceForm?.formData?.loading}
+                    onClick={async () => {
+                      await createResourceForm?.formData?.submit(undefined)
+                    }}
+                  >
+                    Publish
+                  </EuiButton>
+                </CreateActionButtonsWrapper>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiFlyoutFooter>
+        </EuiFlyout>
+      ) : null}
       <Wrapper>
         {documents.map(item => (
           <SelectedDocument key={item.id}>
@@ -166,7 +284,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
           </SelectedDocument>
         ))}
 
-        <div>
+        <AddButtonsWrapper>
           <EuiButtonEmpty
             onClick={() => setFlyoutOpen(true)}
             size="xs"
@@ -174,7 +292,15 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
           >
             Add existing {relatedResource?.label}
           </EuiButtonEmpty>
-        </div>
+
+          <EuiButtonEmpty
+            onClick={() => setCreateFlyOutOpen(true)}
+            size="xs"
+            iconType="link"
+          >
+            Create & add new {relatedResource?.name?.toLowerCase()}
+          </EuiButtonEmpty>
+        </AddButtonsWrapper>
       </Wrapper>
     </>
   )
