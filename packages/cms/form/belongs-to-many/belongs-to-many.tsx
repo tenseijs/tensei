@@ -99,6 +99,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
   editing,
   resource
 }) => {
+  const isManyToOne = field.component.form === 'ManyToOne'
   const [createFlyOutOpen, setCreateFlyOutOpen] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [selectedItems, setSelectedItems] = useState<any[]>([])
@@ -165,7 +166,25 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
           <EuiFlyoutBody>
             <Resource
               resource={relatedResource}
-              tableProps={{ onSelect: setSelectedItems }}
+              tableProps={{
+                onSelect: setSelectedItems,
+                inFlyout: true,
+                hideSelection: isManyToOne,
+                actions: isManyToOne
+                  ? [
+                      {
+                        name: 'Link',
+                        description: 'Link this item',
+                        icon: 'link',
+                        type: 'icon',
+                        onClick: item => {
+                          setDocuments([item])
+                          setFlyoutOpen(false)
+                        }
+                      }
+                    ]
+                  : []
+              }}
             />
           </EuiFlyoutBody>
 
@@ -180,18 +199,20 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
                   Close
                 </EuiButtonEmpty>
               </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButton
-                  disabled={selectedItems.length === 0}
-                  onClick={() => {
-                    setDocuments(selectedItems)
-                    closeFlyout()
-                  }}
-                  fill
-                >
-                  Add selected {relatedResource?.label}
-                </EuiButton>
-              </EuiFlexItem>
+              {isManyToOne ? null : (
+                <EuiFlexItem grow={false}>
+                  <EuiButton
+                    disabled={selectedItems.length === 0}
+                    onClick={() => {
+                      setDocuments(selectedItems)
+                      closeFlyout()
+                    }}
+                    fill
+                  >
+                    Add selected {relatedResource?.label}
+                  </EuiButton>
+                </EuiFlexItem>
+              )}
             </EuiFlexGroup>
           </EuiFlyoutFooter>
         </EuiFlyout>

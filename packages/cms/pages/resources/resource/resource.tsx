@@ -11,6 +11,7 @@ import {
   EuiBasicTable,
   EuiBasicTableProps,
   EuiBasicTableColumn,
+  EuiTableActionsColumnType,
   CriteriaWithPagination
 } from '@tensei/eui/lib/components/basic_table'
 import {
@@ -219,6 +220,9 @@ interface MetaData {
 }
 interface TableProps {
   search: string
+  hideSelection?: boolean
+  inFlyout?: boolean
+  actions?: EuiTableActionsColumnType<any>['actions']
   resource: ResourceContract
   filters: ActiveFilter[]
   applyFilter: (filter: ActiveFilter) => void
@@ -229,7 +233,10 @@ export const Table: React.FunctionComponent<TableProps> = ({
   search,
   filters,
   resource,
-  onSelect
+  onSelect,
+  hideSelection,
+  inFlyout,
+  actions
 }) => {
   const { fetchTableData, deleteTableData } = useResourceStore()
   const [pageSize, setPageSize] = useState(resource?.perPageOptions[0])
@@ -316,33 +323,35 @@ export const Table: React.FunctionComponent<TableProps> = ({
         })) || []),
       {
         name: 'Actions',
-        actions: [
-          {
-            name: 'Edit',
-            description: 'Edit this item',
-            icon: 'pencil',
-            type: 'icon',
-            // color: 'danger',
-            onClick: item => {
-              push(
-                window.Tensei.getPath(
-                  `resources/${resource?.slugPlural}/${item.id}/edit`
-                )
-              )
-            }
-          },
-          {
-            name: 'Delete',
-            description: 'Delete this item',
-            icon: 'trash',
-            type: 'icon',
-            color: 'danger',
-            onClick: item => {
-              setIsModalVisible(true)
-              setItemsSelectedForDelete([item.id])
-            }
-          }
-        ]
+        actions: inFlyout
+          ? actions || []
+          : [
+              {
+                name: 'Edit',
+                description: 'Edit this item',
+                icon: 'pencil',
+                type: 'icon',
+                // color: 'danger',
+                onClick: item => {
+                  push(
+                    window.Tensei.getPath(
+                      `resources/${resource?.slugPlural}/${item.id}/edit`
+                    )
+                  )
+                }
+              },
+              {
+                name: 'Delete',
+                description: 'Delete this item',
+                icon: 'trash',
+                type: 'icon',
+                color: 'danger',
+                onClick: item => {
+                  setIsModalVisible(true)
+                  setItemsSelectedForDelete([item.id])
+                }
+              }
+            ]
       }
     ]
   }, [resource])
@@ -431,12 +440,16 @@ export const Table: React.FunctionComponent<TableProps> = ({
         columns={columns}
         hasActions={true}
         loading={loading}
-        selection={{
-          selectable: () => true,
-          onSelectionChange: setSelectedItems,
-          selectableMessage: selectable =>
-            selectable ? '' : 'Cannot select this product.'
-        }}
+        selection={
+          hideSelection
+            ? undefined
+            : {
+                selectable: () => true,
+                onSelectionChange: setSelectedItems,
+                selectableMessage: selectable =>
+                  selectable ? '' : 'Cannot select this product.'
+              }
+        }
         isSelectable={true}
         sorting={{
           sort: {

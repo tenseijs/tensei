@@ -78,6 +78,7 @@ class Core {
       Integer: FormNumber,
       Boolean: FormBoolean,
       Textarea: FormTextarea,
+      ManyToOne: FormBelongsToMany,
       ManyToMany: FormBelongsToMany
     },
     index: {}
