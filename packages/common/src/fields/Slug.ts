@@ -12,8 +12,8 @@ export class Slug extends Text implements SlugContract {
 
   public component = {
     form: 'Slug',
-    index: 'Text',
-    detail: 'Text'
+    index: 'Slug',
+    detail: 'Slug'
   }
 
   public from(field: string, inputName?: string) {
