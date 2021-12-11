@@ -100,6 +100,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
   resource
 }) => {
   const isManyToOne = field.component.form === 'ManyToOne'
+
   const [createFlyOutOpen, setCreateFlyOutOpen] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [selectedItems, setSelectedItems] = useState<any[]>([])
@@ -142,7 +143,9 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
   }
 
   useEffect(() => {
-    onChange(documents.map(document => document.id))
+    onChange(
+      isManyToOne ? documents?.[0]?.id : documents.map(document => document.id)
+    )
   }, [documents])
 
   useEffect(() => {
@@ -160,7 +163,12 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
         >
           <EuiFlyoutHeader hasBorder>
             <EuiTitle size="m">
-              <h2 id={flyOutId}>Add existing {relatedResource?.label}</h2>
+              <h2 id={flyOutId}>
+                Add existing{' '}
+                {isManyToOne
+                  ? relatedResource?.name?.toLowerCase()
+                  : relatedResource?.label}
+              </h2>
             </EuiTitle>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
@@ -311,7 +319,10 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
             size="xs"
             iconType="link"
           >
-            Add existing {relatedResource?.label}
+            Add existing{' '}
+            {isManyToOne
+              ? relatedResource?.name?.toLowerCase()
+              : relatedResource?.label}
           </EuiButtonEmpty>
 
           <EuiButtonEmpty

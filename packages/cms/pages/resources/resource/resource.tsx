@@ -331,7 +331,6 @@ export const Table: React.FunctionComponent<TableProps> = ({
                 description: 'Edit this item',
                 icon: 'pencil',
                 type: 'icon',
-                // color: 'danger',
                 onClick: item => {
                   push(
                     window.Tensei.getPath(
