@@ -27,11 +27,21 @@ const extensions = {
   colors: {
     LIGHT: {
       bgShade: '#f9f9f9',
-      primaryTransparent: 'rgba(44, 69, 239, 0.06)'
+      primaryTransparent: 'rgba(44, 69, 239, 0.06)',
+      formControlBackground: '#fbfcfd',
+      formControlBoxShadow:
+        '0 0 transparent, inset 0 0 0 1px rgb(69 45 164 / 10%)',
+      formControlBgImage:
+        'linear-gradient(to top, #2346F8, #2346F8 2px, transparent 2px, transparent 100%)'
     },
     DARK: {
       bgShade: '#f9f9f9',
-      primaryTransparent: 'rgba(44, 69, 239, 0.06)'
+      primaryTransparent: 'rgba(44, 69, 239, 0.06)',
+      formControlBackground: '#fbfcfd',
+      formControlBoxShadow:
+        '0 0 transparent, inset 0 0 0 1px rgb(69 45 164 / 10%)',
+      formControlBgImage:
+        'linear-gradient(to top, #2346F8, #2346F8 2px, transparent 2px, transparent 100%)'
     }
   }
 }
