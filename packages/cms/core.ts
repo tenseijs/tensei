@@ -9,6 +9,7 @@ import FormNumber from './form/number'
 import FormSlug from './form/slug'
 import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
+import FormJson from './form/json'
 import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
 
 // Index
@@ -83,6 +84,7 @@ class Core {
       Integer: FormNumber,
       Boolean: FormBoolean,
       Textarea: FormTextarea,
+      Json: FormJson,
       ManyToOne: FormBelongsToMany,
       ManyToMany: FormBelongsToMany
     },

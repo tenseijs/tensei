@@ -13,6 +13,8 @@ export class Json extends Field {
     super(name, databaseField)
 
     this.rules('json')
+
+    this.hideOnIndex()
   }
 }
 
