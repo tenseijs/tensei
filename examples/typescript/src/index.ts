@@ -41,7 +41,7 @@ export default tensei()
         dateTime('Date Issued').nullable(),
         textarea('Description').creationRules('required', 'max:255'),
         integer('Price').rules('required').sortable(),
-        json('Metadata').nullable(),
+        json('Metadata').nullable().rules('required'),
         belongsToMany('Category'),
         belongsToMany('Product Option'),
         belongsToMany('Order Item'),

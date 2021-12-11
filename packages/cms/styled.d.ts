@@ -5,6 +5,9 @@ interface ThemeExtensions {
   colors: {
     bgShade: string
     primaryTransparent: string
+    formControlBackground?: string
+    formControlBoxShadow?: string
+    formControlBgImage?: string
   }
 }
 
