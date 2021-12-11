@@ -1,6 +1,10 @@
 import React, { useState, useMemo } from 'react'
 import styled from 'styled-components'
-import { FieldContract, ResourceContract } from '@tensei/components'
+import {
+  FieldContract,
+  IndexComponentProps,
+  ResourceContract
+} from '@tensei/components'
 import { useParams, useHistory, Link } from 'react-router-dom'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
@@ -315,12 +319,26 @@ export const Table: React.FunctionComponent<TableProps> = ({
     return [
       ...(resource?.fields
         .filter(field => field.showOnIndex)
-        .map(field => ({
-          name: field.name,
-          field: field.databaseField,
-          sortable: field.isSortable,
-          truncateText: true
-        })) || []),
+        .map(field => {
+          const Component: React.FC<IndexComponentProps> =
+            window.Tensei.components.index[field.component.index] ||
+            window.Tensei.components.index['Text']
+
+          return {
+            field: field.databaseField,
+            name: field.name,
+            sortable: field.isSortable,
+            truncateText: true,
+            render: (value: any, record: any) => (
+              <Component
+                value={value}
+                field={field}
+                values={record}
+                resource={resource}
+              />
+            )
+          }
+        }) || []),
       {
         name: 'Actions',
         actions: inFlyout

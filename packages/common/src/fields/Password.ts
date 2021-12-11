@@ -2,17 +2,10 @@ import Text from './Text'
 import { DataPayload } from '@tensei/core'
 
 export class Password extends Text {
-  /**
-   * When a new password is made, we'll set type
-   * password as an html attribute
-   *
-   */
-  public constructor(name: string, databaseField?: string) {
-    super(name, databaseField)
-
-    this.htmlAttributes({
-      type: 'password'
-    })
+  public component = {
+    form: 'Password',
+    index: 'Password',
+    detail: 'Password'
   }
 
   /**
