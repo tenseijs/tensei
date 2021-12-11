@@ -8,7 +8,7 @@ const IndexText: React.FC<IndexComponentProps> = ({
   values,
   resource
 }) => {
-  return <EuiText>{value}</EuiText>
+  return <EuiText size="s">{value || '-'}</EuiText>
 }
 
 export default IndexText

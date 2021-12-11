@@ -233,10 +233,6 @@ interface TableProps {
   onSelect?: (rows: any[]) => void
 }
 
-const DefaultResourceField: React.FC<IndexComponentProps> = ({ value }) => {
-  return <div>{value}</div>
-}
-
 export const Table: React.FunctionComponent<TableProps> = ({
   search,
   filters,
@@ -326,7 +322,7 @@ export const Table: React.FunctionComponent<TableProps> = ({
         .map(field => {
           const Component: React.FC<IndexComponentProps> =
             window.Tensei.components.index[field.component.index] ||
-            DefaultResourceField
+            window.Tensei.components.index['Text']
 
           return {
             field: field.databaseField,

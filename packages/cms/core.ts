@@ -10,6 +10,7 @@ import FormSlug from './form/slug'
 import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
 import FormJson from './form/json'
+import FormPassword from './form/password'
 import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
 
 // Index
@@ -18,6 +19,7 @@ import IndexText from './index/text'
 import IndexId from './index/id'
 import IndexSlug from './index/slug'
 import IndexNumber from './index/number'
+import { IndexSelect } from './index/select'
 
 class Core {
   state = (() => {
@@ -48,7 +50,7 @@ class Core {
       admin.adminPermissions.forEach((permission: string) => {
         permissions[permission] = true
       })
-    } catch (errors) { }
+    } catch (errors) {}
 
     return {
       admin,
@@ -80,6 +82,7 @@ class Core {
     form: {
       Slug: FormSlug,
       Text: FormText,
+      Password: FormPassword,
       Select: FormSelect,
       Integer: FormNumber,
       Boolean: FormBoolean,
@@ -94,7 +97,8 @@ class Core {
       ID: IndexId,
       Slug: IndexSlug,
       Integer: IndexNumber,
-      Textarea: IndexText
+      Textarea: IndexText,
+      Select: IndexSelect
     }
   }
 
