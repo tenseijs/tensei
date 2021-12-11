@@ -80,6 +80,7 @@ class Core {
       Boolean: FormBoolean,
       Textarea: FormTextarea,
       Json: FormJson,
+      ManyToOne: FormBelongsToMany,
       ManyToMany: FormBelongsToMany
     },
     index: {}

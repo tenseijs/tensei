@@ -88,14 +88,12 @@ export default tensei()
       text('Stripe Checkout ID').hideOnIndex(),
       belongsToMany('Product')
     ]),
-    resource('Order Item')
-      .fields([
-        integer('Quantity').min(0).rules('min:0', 'required'),
-        integer('Total').rules('required', 'min:0'),
-        belongsTo('Order').rules('required'),
-        belongsTo('Product').rules('required')
-      ])
-      .hideFromNavigation(),
+    resource('Order Item').fields([
+      integer('Quantity').min(0).rules('min:0', 'required'),
+      integer('Total').rules('required', 'min:0'),
+      belongsTo('Order').rules('required'),
+      belongsTo('Product').rules('required')
+    ]),
     resource('Option')
       .fields([
         text('Name').rules('Required'),

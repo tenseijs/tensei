@@ -1,1 +1,7 @@
-export { ResourceFormWrapper as ResourceForm } from './resource-form'
+export {
+  ResourceFormWrapper,
+  ResourceForm,
+  ResourceFormView,
+  useCreateResourceForm,
+  UpdateResourceSidebar
+} from './resource-form'

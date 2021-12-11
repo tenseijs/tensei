@@ -16,6 +16,7 @@ export class ManyToOne extends RelationshipField {
     this.defaultFormValue(null)
     this.relatedProperty.type = pascalCase(name)
     this.relatedProperty.reference = ReferenceType.MANY_TO_ONE
+    this.relationshipLabel = name
   }
 }
 

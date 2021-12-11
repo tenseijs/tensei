@@ -22,12 +22,13 @@ import { useForm } from '../../hooks/forms'
 
 import { FieldGroup } from './field-group'
 import moment from 'moment'
+import { AxiosResponse } from 'axios'
 
-const Sidebar = styled.div<{ close: boolean }>`
+const Sidebar = styled.div<{ close: boolean; inFlyout?: boolean }>`
   background-color: #fcfcfc;
   display: flex;
   flex-direction: column;
-  width: ${({ close }) => (close ? '0' : '35%')};
+  width: ${({ close, inFlyout }) => (close ? '0' : inFlyout ? '25%' : '35%')};
   height: 100%;
   position: relative;
   padding-top: 20px;
@@ -126,16 +127,24 @@ const SidebarItem: React.FunctionComponent<{
   )
 }
 
-const UpdateResourceSidebar: React.FunctionComponent<{
+export const UpdateResourceSidebar: React.FunctionComponent<{
   resourceData: any
   isEditing?: boolean
+  inFlyout?: boolean
+  initialClose?: boolean
   resource: ResourceContract | undefined
-}> = ({ resource, resourceData, isEditing }) => {
-  const [close, setClose] = useState(false)
+}> = ({
+  resource,
+  resourceData,
+  isEditing,
+  inFlyout,
+  initialClose = false
+}) => {
+  const [close, setClose] = useState(initialClose)
   const onCloseSideBar = () => setClose(!close)
 
   return (
-    <Sidebar close={close}>
+    <Sidebar close={close} inFlyout={inFlyout}>
       <SidebarCollapseExpandIcon close={close} onClick={onCloseSideBar}>
         {close ? (
           <EuiIcon size="s" type="arrowLeft" onClick={onCloseSideBar} />
@@ -288,44 +297,27 @@ export const ResourceFormWrapper: React.FunctionComponent = () => {
     return <p>Loading ...</p> // show full page loader here.
   }
 
-  return <ResourceForm isEditing={isEditing} resourceData={resourceData} />
+  return (
+    <ResourceFormView
+      resource={resource}
+      isEditing={isEditing}
+      resourceData={resourceData}
+    />
+  )
 }
 
-export const ResourceForm: React.FunctionComponent<{
+export const ResourceFormView: React.FunctionComponent<{
   isEditing?: boolean
+  resource: ResourceContract
   resourceData?: AbstractData
-}> = ({ isEditing, resourceData = {} }) => {
-  const { push, goBack } = useHistory()
-  const [activeField, setActiveField] = useState<FieldContract>()
-  const { updateResource, createResource, resource } = useResourceStore()
-  const { id: resourceId = '' } = useParams<{
-    resource: string
-    id: string
-  }>()
+}> = ({ isEditing, resourceData = {}, resource }) => {
+  const { goBack } = useHistory()
 
-  const { toast } = useToastStore()
-
-  const { form, errors, submit, loading, setValue } = useForm<AbstractData>({
-    defaultValues: resolveDefaultFormValues(resource!, resourceData, isEditing),
-    onSubmit: (form: AbstractData) =>
-      isEditing
-        ? updateResource(resource!, resourceId, form)
-        : createResource(resource!, form),
-    onSuccess: () => {
-      if (isEditing) {
-        toast(
-          'Updated',
-          <p>{resource?.name.toLowerCase()} have been updated successfully</p>
-        )
-      } else {
-        toast(
-          'Created',
-          <p>{resource?.name.toLowerCase()} have been created successfully</p>
-        )
-      }
-
-      push(window.Tensei.getPath(`resources/${resource?.slugPlural}`))
-    }
+  const createResourceForm = useCreateResourceForm({
+    isEditing,
+    resource,
+    resourceData,
+    redirectOnSuccess: true
   })
 
   return (
@@ -355,8 +347,8 @@ export const ResourceForm: React.FunctionComponent<{
               iconType="check"
               fill
               color="success"
-              onClick={() => submit(undefined)}
-              isLoading={loading}
+              isLoading={createResourceForm?.formData?.loading}
+              onClick={() => createResourceForm?.formData?.submit(undefined)}
             >
               Publish
             </EuiButton>
@@ -366,72 +358,9 @@ export const ResourceForm: React.FunctionComponent<{
         <DashboardLayout.Content>
           <PageWrapper>
             <PageContent>
-              {resource?.fields.map(field => {
-                if (isEditing) {
-                  if (field.showOnUpdate == false) return
-                } else {
-                  if (field.showOnCreation == false) return
-                }
-
-                const Component: React.FunctionComponent<
-                  FormComponentProps & AbstractData
-                > =
-                  window.Tensei.components.form[field.component.form] ||
-                  window.Tensei.components.form.Text
-
-                let labelAppend = null
-
-                if (
-                  field.rules.includes('required') ||
-                  (isEditing
-                    ? field.updateRules.includes('required')
-                    : field.creationRules.includes('required'))
-                ) {
-                  labelAppend = (
-                    <LabelAppendWrapper>
-                      <EuiBadge color="default">Required</EuiBadge>
-                      <EuiBadge color="default">Localized</EuiBadge>
-                    </LabelAppendWrapper>
-                  )
-                }
-
-                return (
-                  <FieldGroup
-                    key={field.inputName}
-                    focused={activeField?.inputName === field.inputName}
-                  >
-                    <EuiFormRow
-                      fullWidth
-                      label={field.label || field.name}
-                      helpText={field.description}
-                      error={errors?.[field.inputName]}
-                      isInvalid={!!errors?.[field.inputName]}
-                      labelAppend={labelAppend}
-                    >
-                      <Component
-                        form={form}
-                        field={field}
-                        resource={resource}
-                        id={field.inputName}
-                        name={field.inputName}
-                        value={form[field.inputName]}
-                        values={form}
-                        errors={errors || {}}
-                        onFocus={() => {
-                          setActiveField(field)
-                        }}
-                        editing={isEditing}
-                        editingId={resourceId}
-                        activeField={activeField}
-                        error={errors?.[field.inputName] as string}
-                        onChange={(value: any) => {
-                          setValue(field.inputName, value)
-                        }}
-                      />
-                    </EuiFormRow>
-                  </FieldGroup>
-                )
-              })}
+              {resource ? (
+                <ResourceForm createResourceForm={createResourceForm} />
+              ) : null}
             </PageContent>
           </PageWrapper>
           <UpdateResourceSidebar
@@ -442,5 +371,146 @@ export const ResourceForm: React.FunctionComponent<{
         </DashboardLayout.Content>
       </DashboardLayout.Body>
     </DashboardLayout>
+  )
+}
+
+export function useCreateResourceForm({
+  resource,
+  resourceData,
+  isEditing,
+  redirectOnSuccess,
+  onSuccess
+}: {
+  resource: ResourceContract
+  resourceData: AbstractData
+  isEditing?: boolean
+  redirectOnSuccess?: boolean
+  onSuccess?: (response: AxiosResponse) => void
+}) {
+  const { push } = useHistory()
+  const [activeField, setActiveField] = useState<FieldContract>()
+  const { updateResource, createResource } = useResourceStore()
+  const { id: resourceId = '' } = useParams<{
+    resource: string
+    id: string
+  }>()
+
+  const { toast } = useToastStore()
+
+  const formData = useForm<AbstractData>({
+    defaultValues: resolveDefaultFormValues(resource!, resourceData, isEditing),
+    onSubmit: (form: AbstractData) =>
+      isEditing
+        ? updateResource(resource!, resourceId, form)
+        : createResource(resource!, form),
+    onSuccess: ({ response }) => {
+      if (isEditing) {
+        toast(
+          'Updated',
+          <p>{resource?.name.toLowerCase()} have been updated successfully</p>
+        )
+      } else {
+        toast(
+          'Created',
+          <p>{resource?.name.toLowerCase()} have been created successfully</p>
+        )
+      }
+
+      onSuccess?.(response)
+
+      if (redirectOnSuccess) {
+        push(window.Tensei.getPath(`resources/${resource?.slugPlural}`))
+      }
+    }
+  })
+
+  return {
+    formData,
+    activeField,
+    setActiveField,
+    resourceId,
+    resource
+  }
+}
+
+export const ResourceForm: React.FunctionComponent<{
+  isEditing?: boolean
+  createResourceForm: ReturnType<typeof useCreateResourceForm>
+}> = ({ isEditing, createResourceForm }) => {
+  const {
+    formData: { form, errors, setValue },
+    activeField,
+    setActiveField,
+    resource,
+    resourceId
+  } = createResourceForm
+
+  return (
+    <>
+      {resource?.fields
+        .filter(field =>
+          isEditing ? field.showOnUpdate : field.showOnCreation
+        )
+        .map(field => {
+          const Component: React.FunctionComponent<
+            FormComponentProps & AbstractData
+          > =
+            window.Tensei.components.form[field.component.form] ||
+            window.Tensei.components.form.Text
+
+          let labelAppend = null
+
+          if (
+            field.rules.includes('required') ||
+            (isEditing
+              ? field.updateRules.includes('required')
+              : field.creationRules.includes('required'))
+          ) {
+            labelAppend = (
+              <LabelAppendWrapper>
+                <EuiBadge color="default">Required</EuiBadge>
+                <EuiBadge color="default">Localized</EuiBadge>
+              </LabelAppendWrapper>
+            )
+          }
+
+          return (
+            <FieldGroup
+              key={field.inputName}
+              focused={activeField?.inputName === field.inputName}
+            >
+              <EuiFormRow
+                fullWidth
+                label={field.label || field.name}
+                helpText={field.description}
+                error={errors?.[field.inputName]}
+                isInvalid={!!errors?.[field.inputName]}
+                labelAppend={labelAppend}
+              >
+                <Component
+                  form={form}
+                  field={field}
+                  resource={resource}
+                  id={field.inputName}
+                  name={field.inputName}
+                  value={form[field.inputName]}
+                  values={form}
+                  errors={errors || {}}
+                  onFocus={() => {
+                    setActiveField(field)
+                  }}
+                  editing={isEditing}
+                  editingId={resourceId}
+                  activeField={activeField}
+                  error={errors?.[field.inputName] as string}
+                  onChange={(value: any) => {
+                    setValue(field.inputName, value)
+                  }}
+                />
+              </EuiFormRow>
+            </FieldGroup>
+          )
+        })}
+    </>
   )
 }
