@@ -40,8 +40,8 @@ export default tensei()
           .default('Lagos Only'),
         dateTime('Date Issued').nullable(),
         textarea('Description').creationRules('required', 'max:255'),
-        integer('Price').rules('required').sortable(),
-        json('Metadata').nullable().rules('required'),
+        integer('Price').required().sortable(),
+        json('Metadata').nullable().required(),
         belongsToMany('Category'),
         belongsToMany('Product Option'),
         belongsToMany('Order Item'),
@@ -52,7 +52,7 @@ export default tensei()
       .displayField('Name'),
     resource('Category')
       .fields([
-        text('Name').notNullable().rules('required'),
+        text('Name').notNullable().required(),
         slug('Slug')
           .creationRules('required', 'unique:slug')
           .unique()
@@ -63,7 +63,7 @@ export default tensei()
       .displayField('Name'),
     resource('Collection')
       .fields([
-        text('Name').notNullable().rules('required'),
+        text('Name').notNullable().required(),
         slug('Slug')
           .creationRules('required', 'unique:slug')
           .unique()
@@ -73,30 +73,30 @@ export default tensei()
       ])
       .displayField('Name'),
     resource('Review').fields([
-      text('Headline').rules('required'),
+      text('Headline').required(),
       belongsTo('Customer').nullable(),
       text('Name').nullable(),
       text('Email').nullable(),
-      textarea('Content').rules('required'),
-      integer('Rating').rules('required', 'min:0', 'max:5'),
+      textarea('Content').required(),
+      integer('Rating').required().min(0).max(5),
       boolean('Approved').default(false).hideOnCreate().hideOnCreateApi(),
       belongsTo('Product')
     ]),
     resource('Order').fields([
-      integer('Total').rules('required'),
+      integer('Total').required(),
       belongsTo('Customer'),
       text('Stripe Checkout ID').hideOnIndex(),
       belongsToMany('Product')
     ]),
     resource('Order Item').fields([
-      integer('Quantity').min(0).rules('min:0', 'required'),
-      integer('Total').rules('required', 'min:0'),
-      belongsTo('Order').rules('required'),
-      belongsTo('Product').rules('required')
+      integer('Quantity').required(),
+      integer('Total').required(),
+      belongsTo('Order').required(),
+      belongsTo('Product').required()
     ]),
     resource('Option')
       .fields([
-        text('Name').rules('Required'),
+        text('Name').required(),
         slug('Short name')
           .creationRules('required', 'unique:slug')
           .unique()
@@ -105,7 +105,7 @@ export default tensei()
       .hideFromNavigation(),
     resource('Option Value')
       .fields([
-        text('Name').rules('Required'),
+        text('Name').required(),
         slug('Short name')
           .creationRules('required', 'unique:slug')
           .unique()

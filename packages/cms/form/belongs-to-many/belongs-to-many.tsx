@@ -6,6 +6,7 @@ import {
   EuiButton,
   EuiButtonIcon
 } from '@tensei/eui/lib/components/button'
+import { EuiLoadingSpinner } from '@tensei/eui/lib/components/loading'
 import { EuiBadge } from '@tensei/eui/lib/components/badge'
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
@@ -99,6 +100,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
   editing,
   resource
 }) => {
+  const [loading, setLoading] = useState(editing)
   const isManyToOne = field.component.form === 'ManyToOne'
 
   const [createFlyOutOpen, setCreateFlyOutOpen] = useState(false)
@@ -133,13 +135,23 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
       return
     }
 
+    const relatedField = resource.fields.find(
+      field => field.name === relatedResource.name
+    )
+
     const [response, error] = await window.Tensei.api.get(
-      `${resource?.slugPlural}/${editingId}/${relatedResource?.slugPlural}`
+      `${resource?.slugPlural}/${editingId}/${relatedField?.databaseField}`
     )
 
     if (!error) {
-      setDocuments(response?.data.data)
+      setDocuments(
+        Array.isArray(response?.data.data)
+          ? response?.data.data
+          : [response?.data.data]
+      )
     }
+
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -164,7 +176,9 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
           <EuiFlyoutHeader hasBorder>
             <EuiTitle size="m">
               <h2 id={flyOutId}>
-                Add existing{' '}
+                {isManyToOne && documents.length === 1
+                  ? 'Replace'
+                  : 'Add existing'}
                 {isManyToOne
                   ? relatedResource?.name?.toLowerCase()
                   : relatedResource?.label}
@@ -212,7 +226,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
                   <EuiButton
                     disabled={selectedItems.length === 0}
                     onClick={() => {
-                      setDocuments(selectedItems)
+                      setDocuments([...documents, ...selectedItems])
                       closeFlyout()
                     }}
                     fill
@@ -313,13 +327,15 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
           </SelectedDocument>
         ))}
 
+        {loading ? <EuiLoadingSpinner /> : null}
+
         <AddButtonsWrapper>
           <EuiButtonEmpty
             onClick={() => setFlyoutOpen(true)}
             size="xs"
             iconType="link"
           >
-            Add existing{' '}
+            {isManyToOne && documents.length === 1 ? 'Replace' : 'Add'} existing{' '}
             {isManyToOne
               ? relatedResource?.name?.toLowerCase()
               : relatedResource?.label}

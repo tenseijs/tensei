@@ -10,20 +10,9 @@ const Content = styled.div`
 
 export const Dashboard: React.FunctionComponent = () => {
   return (
-    <DashboardLayout>
-      <DashboardLayout.Sidebar title="Dashboard" hideNestedSidebar />
-      <DashboardLayout.Body>
-        <DashboardLayout.Topbar>
-          <EuiTitle size="xs">
-            <h3>Dashboard</h3>
-          </EuiTitle>
-        </DashboardLayout.Topbar>
-
-        <DashboardLayout.Content>
-          <Content />
-          <CommunityPanel />
-        </DashboardLayout.Content>
-      </DashboardLayout.Body>
-    </DashboardLayout>
+    <>
+      <Content />
+      <CommunityPanel />
+    </>
   )
 }

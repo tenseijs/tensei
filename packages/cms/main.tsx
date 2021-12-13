@@ -11,7 +11,6 @@ import { useToastStore } from './store/toast'
 
 import '@tensei/eui/dist/eui_theme_tensei_light.css'
 import { AuthRoutes } from './pages/components/auth/routes'
-import { SettingsRoutes } from './pages/components/settings/routes'
 import { DashboardRoutes } from './pages/components/dashboard/routes'
 import { useEuiTheme, EuiThemeProvider } from '@tensei/eui/lib/services/theme'
 import { EuiGlobalToastList } from '@tensei/eui/lib/components/toast/global_toast_list'
@@ -88,7 +87,7 @@ ReactDOM.render(
     <EuiThemeProvider modify={extensions}>
       <App>
         <AuthRoutes />
-        <SettingsRoutes />
+
         <DashboardRoutes />
       </App>
     </EuiThemeProvider>

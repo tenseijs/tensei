@@ -89,7 +89,8 @@ class Core {
       Textarea: FormTextarea,
       Json: FormJson,
       ManyToOne: FormBelongsToMany,
-      ManyToMany: FormBelongsToMany
+      ManyToMany: FormBelongsToMany,
+      OneToMany: FormBelongsToMany
     },
     index: {
       Boolean: IndexBoolean,

@@ -166,10 +166,7 @@ export default (config: Config, cmsConfig: any) => {
         })
         .path(getApiPath(`${plural}/:id/:relatedResource`))
         .handle(
-          async (
-            { manager, params, query, userInputError, config },
-            response
-          ) => {
+          async ({ manager, params, query, userInputError }, response) => {
             const whereOptions = Utils.rest.parseQueryToWhereOptions(query)
             const findOptions = Utils.rest.parseQueryToFindOptions(
               query,

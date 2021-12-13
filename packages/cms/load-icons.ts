@@ -24,6 +24,7 @@ import { icon as EuiLinkIcon } from '@tensei/eui/lib/components/icon/assets/link
 import { icon as EuiPlusInCircleIcon } from '@tensei/eui/lib/components/icon/assets/plus_in_circle'
 import { icon as EuiPencilIcon } from '@tensei/eui/lib/components/icon/assets/pencil'
 import { icon as EuiDotIcon } from '@tensei/eui/lib/components/icon/assets/dot'
+import { icon as EuiImportIcon } from '@tensei/eui/lib/components/icon/assets/import'
 
 appendIconComponentCache({
   gear: EuiGear,
@@ -50,5 +51,6 @@ appendIconComponentCache({
   link: EuiLinkIcon,
   plusInCircle: EuiPlusInCircleIcon,
   pencil: EuiPencilIcon,
-  dot: EuiDotIcon
+  dot: EuiDotIcon,
+  import: EuiImportIcon
 })

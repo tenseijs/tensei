@@ -5,15 +5,22 @@ import { DashboardLayout } from '../../components/dashboard/layout'
 
 import { EuiFieldNumber } from '@tensei/eui/lib/components/form'
 import { EuiIcon } from '@tensei/eui/lib/components/icon'
-import { EuiCard } from '@tensei/eui/lib/components/card'
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
-import { EuiButtonEmpty, EuiButton, EuiButtonIcon } from '@tensei/eui/lib/components/button'
+import {
+  EuiButtonEmpty,
+  EuiButton,
+  EuiButtonIcon
+} from '@tensei/eui/lib/components/button'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiContextMenu } from '@tensei/eui/lib/components/context_menu'
 import { EuiFilePicker } from '@tensei/eui/lib/components/form'
-import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
+import {
+  EuiFlexItem,
+  EuiFlexGroup,
+  EuiFlexGrid
+} from '@tensei/eui/lib/components/flex'
 import { EuiPagination } from '@tensei/eui/lib/components/pagination'
 import {
   EuiFlyout,
@@ -22,6 +29,7 @@ import {
 } from '@tensei/eui/lib/components/flyout'
 import { EuiModal } from '@tensei/eui/lib/components/modal/modal'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
+import { EuiCard } from '@tensei/eui/lib/components/card'
 
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 
@@ -83,7 +91,7 @@ const NumberFieldWrapper = styled.div`
 `
 
 const FieldNumber = styled(EuiFieldNumber)`
- width: 65px;
+  width: 65px;
 `
 
 const AssetFlyout = styled(EuiFlyout)`
@@ -127,12 +135,12 @@ const ConfirmModal = styled(EuiConfirmModal)`
 `
 
 export const AssetManager: FunctionComponent = () => {
-  const [isDestroyModalVisible, setIsDestroyModalVisible] = useState(false);
+  const [isDestroyModalVisible, setIsDestroyModalVisible] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
-  const closeDestroyModal = () => setIsDestroyModalVisible(false);
-  const showDestroyModal = () => setIsDestroyModalVisible(true);
+  const closeDestroyModal = () => setIsDestroyModalVisible(false)
+  const showDestroyModal = () => setIsDestroyModalVisible(true)
 
   const closeModal = () => setIsModalVisible(false)
   const showModal = () => setIsModalVisible(true)
@@ -141,8 +149,7 @@ export const AssetManager: FunctionComponent = () => {
     prefix: 'simpleFlyoutTitle'
   })
 
-
-  let destroyModal;
+  let destroyModal
 
   if (isDestroyModalVisible) {
     destroyModal = (
@@ -157,8 +164,8 @@ export const AssetManager: FunctionComponent = () => {
       >
         <p>Are you sure you want to delete this media?</p>
       </ConfirmModal>
-    );
-  } 
+    )
+  }
 
   let modal
 
@@ -171,7 +178,11 @@ export const AssetManager: FunctionComponent = () => {
         />
         <ModalContentWrapper>
           <EuiText>Uploaded file</EuiText>
-          <EuiButtonIcon iconType="trash" color='danger' onClick={showDestroyModal} /> 
+          <EuiButtonIcon
+            iconType="trash"
+            color="danger"
+            onClick={showDestroyModal}
+          />
         </ModalContentWrapper>
         {destroyModal}
       </ModalWrapper>
@@ -257,217 +268,129 @@ export const AssetManager: FunctionComponent = () => {
   }
 
   return (
-    <DashboardLayout>
-      <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
+    <>
+      <DashboardLayout.Topbar>
+        <EuiTitle size="xs">
+          <h3>Asset Manager</h3>
+        </EuiTitle>
+        <EuiButton iconType="sortUp" fill onClick={showModal}>
+          Upload media
+        </EuiButton>
+        {modal}
+      </DashboardLayout.Topbar>
 
-      <DashboardLayout.Body>
-        <DashboardLayout.Topbar>
-          <EuiTitle size="xs">
-            <h3>Asset Manager</h3>
-          </EuiTitle>
-          <EuiButton iconType="sortUp" fill onClick={showModal}>
-            Upload media
-          </EuiButton>
-          {modal}
-        </DashboardLayout.Topbar>
+      <DashboardLayout.Content>
+        <PageWrapper>
+          <SearchAndFilterContainer>
+            <EuiFieldSearch placeholder="Search Library" />
 
-        <DashboardLayout.Content>
-          <PageWrapper>
-            <SearchAndFilterContainer>
-              <EuiFieldSearch placeholder="Search Library" />
+            <AssetPopover
+              button={
+                <EuiButtonEmpty iconSide="right" iconType="arrowDown">
+                  Filters
+                </EuiButtonEmpty>
+              }
+            >
+              <EuiContextMenu initialPanelId={0}></EuiContextMenu>
+            </AssetPopover>
+          </SearchAndFilterContainer>
 
-              <AssetPopover
-                button={
-                  <EuiButtonEmpty iconSide="right" iconType="arrowDown">
-                    Filters
-                  </EuiButtonEmpty>
-                }
-              >
-                <EuiContextMenu initialPanelId={0}></EuiContextMenu>
-              </AssetPopover>
-
-            </SearchAndFilterContainer>
-
-            <AssetContainer>
-              <AssetWrapper>
-                <EuiFlexItem  onClick={() => setIsFlyoutVisible(true)}>
-                  <AssetCard
-                    image={
-                      <AssetCardImage
-                        height={120}
-                        src="https://images.unsplash.com/photo-1617043593449-c881f876a4b4?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNtYXJ0JTIwd2F0Y2h8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60"
-                      ></AssetCardImage>
-                    }
-                    title="Smart_watch"
-                    titleSize="xs"
-                    description="PNG 2.3MB"
-                    textAlign="left"
-                    footer={
-                      <EuiFlexGroup justifyContent="flexEnd">
-                        <EuiFlexItem grow={false}>
-                          <EuiButtonIcon
-                            iconType="eye"
-                            onClick={() => setIsFlyoutVisible(true)}
-                          />
-                          {flyout}
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
-                    }
-                    paddingSize="s"
-                  />
-                </EuiFlexItem>
-                <EuiFlexItem  onClick={() => setIsFlyoutVisible(true)}>
-                  <AssetCard
-                    image={
-                      <AssetCardImage
-                        height={120}
-                        src="https://res.cloudinary.com/annysah/image/upload/v1638485798/file-unknow-line_1_zbfkfy.png"
-                      ></AssetCardImage>
-                    }
-                    title="Jack_Robinson"
-                    titleSize="xs"
-                    description="TXT 2.3KB"
-                    textAlign="left"
-                    footer={
-                      <EuiFlexGroup justifyContent="flexEnd">
-                        <EuiFlexItem grow={false}>
-                          <EuiButtonIcon
-                            iconType="eye"
-                            onClick={() => setIsFlyoutVisible(true)}
-                          />
-                          {flyout}
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
-                    }
-                    paddingSize="s"
-                  />
-                </EuiFlexItem>
-
-                <EuiFlexItem  onClick={() => setIsFlyoutVisible(true)}>
-                  <AssetCard
-                    image={
-                      <AssetCardImage
-                        height={120}
-                        src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTAzfHxsYXB0b3B8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60"
-                      ></AssetCardImage>
-                    }
-                    title="Smart_watch"
-                    titleSize="xs"
-                    description="PNG 2.3MB"
-                    textAlign="left"
-                    footer={
-                      <EuiFlexGroup justifyContent="flexEnd">
-                        <EuiFlexItem grow={false}>
-                          <EuiButtonIcon
-                            iconType="eye"
-                            onClick={() => setIsFlyoutVisible(true)}
-                          />
-                          {flyout}
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
-                    }
-                    paddingSize="s"
-                  />
-                </EuiFlexItem>
-                <EuiFlexItem  onClick={() => setIsFlyoutVisible(true)}>
-                  <AssetCard
-                    image={
-                      <AssetCardImage
-                        height={120}
-                        src="https://images.unsplash.com/photo-1617043593449-c881f876a4b4?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNtYXJ0JTIwd2F0Y2h8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60"
-                      ></AssetCardImage>
-                    }
-                    title="Smart_watch"
-                    titleSize="xs"
-                    description="PNG 2.3MB"
-                    textAlign="left"
-                    footer={
-                      <EuiFlexGroup justifyContent="flexEnd">
-                        <EuiFlexItem grow={false}>
-                          <EuiButtonIcon
-                            iconType="eye"
-                            onClick={() => setIsFlyoutVisible(true)}
-                          />
-                          {flyout}
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
-                    }
-                    paddingSize="s"
-                  />
-                </EuiFlexItem>
-
-                <EuiFlexItem  onClick={() => setIsFlyoutVisible(true)}>
-                  <AssetCard
-                    image={
-                      <AssetCardImage
-                        height={120}
-                        src="https://res.cloudinary.com/annysah/image/upload/v1638485798/file-unknow-line_1_zbfkfy.png"
-                      ></AssetCardImage>
-                    }
-                    title="Jack_Robinson"
-                    titleSize="xs"
-                    description="TXT 2.3KB"
-                    textAlign="left"
-                    footer={
-                      <EuiFlexGroup justifyContent="flexEnd">
-                        <EuiFlexItem grow={false}>
-                          <EuiButtonIcon
-                            iconType="eye"
-                            onClick={() => setIsFlyoutVisible(true)}
-                          />
-                          {flyout}
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
-                    }
-                    paddingSize="s"
-                  />
-                </EuiFlexItem>
-
-                <EuiFlexItem  onClick={() => setIsFlyoutVisible(true)}>
-                  <AssetCard
-                    image={
-                      <AssetCardImage
-                        height={120}
-                        src="https://images.unsplash.com/photo-1603302576837-37561b2e2302?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTF8fGxhcHRvcHxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                      ></AssetCardImage>
-                    }
-                    title="Macbook_Pro"
-                    titleSize="xs"
-                    description="PNG 2.6MB"
-                    textAlign="left"
-                    footer={
-                      <EuiFlexGroup justifyContent="flexEnd">
-                        <EuiFlexItem grow={false}>
-                          <EuiButtonIcon
-                            iconType="eye"
-                            onClick={() => setIsFlyoutVisible(true)}
-                          />
-                          {flyout}
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
-                    }
-                    paddingSize="s"
-                  />
-                </EuiFlexItem>
-              </AssetWrapper>
-            </AssetContainer>
-
-            <NumberFieldAndPagination>
-              <NumberFieldWrapper>
-                <FieldNumber
-                  placeholder="10"
+          <AssetContainer>
+            <EuiFlexGrid columns={4} gutterSize="m">
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
                 />
-              </NumberFieldWrapper>
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiCard
+                  textAlign="left"
+                  hasBorder
+                  image="https://source.unsplash.com/400x200/?Water"
+                  title="Elastic in Water"
+                  description="Example of a card's description. Stick to one or two sentences."
+                  // footer={cardFooterContent}
+                />
+              </EuiFlexItem>
+            </EuiFlexGrid>
+          </AssetContainer>
 
-              <PaginationWrapper>
-                <EuiPagination aria-label="Many pages example" />
-              </PaginationWrapper>
-            </NumberFieldAndPagination>
+          <NumberFieldAndPagination>
+            <NumberFieldWrapper>
+              <FieldNumber placeholder="10" />
+            </NumberFieldWrapper>
 
-          </PageWrapper>
-
-        </DashboardLayout.Content>
-      </DashboardLayout.Body>
-    </DashboardLayout>
+            <PaginationWrapper>
+              <EuiPagination aria-label="Many pages example" />
+            </PaginationWrapper>
+          </NumberFieldAndPagination>
+        </PageWrapper>
+      </DashboardLayout.Content>
+    </>
   )
 }

@@ -207,6 +207,9 @@ declare module '@tensei/common/fields' {
     virtual(compute: (value: any) => any): this
     removeFromSidebarOnForms(): this
     dockToSidebarOnForms(): this
+    required(): this
+    requiredOnCreate(): this
+    requiredOnUpdate(): this
     serializer(serializeFn: (value: any) => any): this
     formComponent(component: string): this
     indexComponent(component: string): this

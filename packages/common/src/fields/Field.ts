@@ -146,6 +146,24 @@ export class Field implements FieldContract {
     return this
   }
 
+  public required<T extends FieldContract>(this: T): T {
+    this.validationRules = [...this.validationRules, 'required']
+
+    return this
+  }
+
+  public requiredOnCreate<T extends FieldContract>(this: T): T {
+    this.creationValidationRules = [...this.creationValidationRules, 'required']
+
+    return this
+  }
+
+  public requiredOnUpdate<T extends FieldContract>(this: T): T {
+    this.updateValidationRules = [...this.updateValidationRules, 'required']
+
+    return this
+  }
+
   /**
    *
    * The name of the field. Will be used to display table columns,

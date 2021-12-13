@@ -32,6 +32,8 @@ export class NumberField extends Text {
       min
     }
 
+    this.validationRules = [...this.validationRules, `above:${min}`]
+
     return this
   }
 
@@ -46,6 +48,8 @@ export class NumberField extends Text {
       ...this.attributes,
       max
     }
+
+    this.validationRules = [...this.validationRules, `below:${max}`]
 
     return this
   }

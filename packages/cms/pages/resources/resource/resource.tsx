@@ -499,28 +499,23 @@ export const ResourceView: React.FunctionComponent = () => {
   }, [resourceSlug])
 
   return (
-    <DashboardLayout>
-      <DashboardLayout.Sidebar title="Content"></DashboardLayout.Sidebar>
-
-      <DashboardLayout.Body>
-        <DashboardLayout.Topbar>
-          <EuiTitle size="xs">
-            <h3>{resource?.namePlural}</h3>
-          </EuiTitle>
-          <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
-            <EuiButton fill iconType={'plus'}>
-              Create {resource?.name?.toLowerCase()}
-            </EuiButton>
-          </Link>
-        </DashboardLayout.Topbar>
-
-        <DashboardLayout.Content>
-          <PageWrapper>
-            {resource ? <Resource resource={resource} /> : <p>Loading ...</p>}
-          </PageWrapper>
-        </DashboardLayout.Content>
-      </DashboardLayout.Body>
-    </DashboardLayout>
+    <>
+      <DashboardLayout.Topbar>
+        <EuiTitle size="xs">
+          <h3>{resource?.namePlural}</h3>
+        </EuiTitle>
+        <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
+          <EuiButton fill iconType={'plus'}>
+            Create {resource?.name?.toLowerCase()}
+          </EuiButton>
+        </Link>
+      </DashboardLayout.Topbar>
+      <DashboardLayout.Content>
+        <PageWrapper>
+          {resource ? <Resource resource={resource} /> : <p>Loading ...</p>}
+        </PageWrapper>
+      </DashboardLayout.Content>
+    </>
   )
 }
 
