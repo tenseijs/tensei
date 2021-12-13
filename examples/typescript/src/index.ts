@@ -72,28 +72,31 @@ export default tensei()
         belongsToMany('Product')
       ])
       .displayField('Name'),
-    resource('Review').fields([
-      text('Headline').required(),
-      belongsTo('Customer').nullable(),
-      text('Name').nullable(),
-      text('Email').nullable(),
-      textarea('Content').required(),
-      integer('Rating').required().min(0).max(5),
-      boolean('Approved').default(false).hideOnCreate().hideOnCreateApi(),
-      belongsTo('Product')
-    ]),
-    resource('Order').fields([
-      integer('Total').required(),
-      belongsTo('Customer'),
-      text('Stripe Checkout ID').hideOnIndex(),
-      belongsToMany('Product')
-    ]),
-    resource('Order Item').fields([
-      integer('Quantity').required(),
-      integer('Total').required(),
-      belongsTo('Order').required(),
-      belongsTo('Product').required()
-    ]),
+    resource('Review')
+      .fields([
+        text('Headline').required(),
+        belongsTo('Customer').nullable(),
+        text('Name').nullable(),
+        text('Email').nullable(),
+        textarea('Content').required(),
+        integer('Rating').required().min(0).max(5),
+        boolean('Approved').default(false).hideOnCreate().hideOnCreateApi(),
+        belongsTo('Product')
+      ]),
+    resource('Order')
+      .fields([
+        integer('Total').required(),
+        belongsTo('Customer'),
+        text('Stripe Checkout ID').hideOnIndex(),
+        belongsToMany('Product')
+      ]),
+    resource('Order Item')
+      .fields([
+        integer('Quantity').required(),
+        integer('Total').required(),
+        belongsTo('Order').required(),
+        belongsTo('Product').required()
+      ]),
     resource('Option')
       .fields([
         text('Name').required(),
