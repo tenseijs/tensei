@@ -10,6 +10,7 @@ import {
   EuiBasicTableColumn
 } from '@tensei/eui/lib/components/basic_table'
 import moment from 'moment'
+import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 
 const Wrapper = styled.div`
   display: flex;
@@ -37,16 +38,9 @@ const OwnerBadge = styled.div`
   color: ${({ theme }) => theme.colors.primary};
   background-color: ${({ theme }) => theme.colors.primaryTransparent};
 `
-const InitialsAvatar = styled.div`
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 15px;
-  color: #ffffff;
-  background-color: ${({ theme }) => theme.colors.accent};
+const AvatarWrapper = styled.div`
   margin-right: 10px;
+  cursor: pointer;
 `
 const UserWrapper = styled.div`
   width: 100%;
@@ -87,10 +81,9 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         render: (item: any) => {
           return (
             <UserWrapper>
-              <InitialsAvatar>
-                {item.firstName.charAt(0)}
-                {item.lastName.charAt(0)}
-              </InitialsAvatar>
+              <AvatarWrapper>
+                <EuiAvatar name={`${item.firstName} ${item.lastName}`} />
+              </AvatarWrapper>
               <div>
                 {item.firstName} {item.lastName}
               </div>
@@ -151,7 +144,6 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         </TableMetaWrapper>
 
         <EuiBasicTable
-          tableCaption="Demo of EuiBasicTable"
           items={teamMembers}
           itemId={'id'}
           hasActions={true}
