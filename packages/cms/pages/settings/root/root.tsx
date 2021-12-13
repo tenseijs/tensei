@@ -46,6 +46,7 @@ export const Root: React.FunctionComponent = ({ children }) => {
         <EuiTabs>
           {tabs.map(tab => (
             <EuiTab
+              key={tab.path}
               isSelected={isActive(tab.path)}
               onClick={() =>
                 push(window.Tensei.getPath(`settings/${tab.path}`))
@@ -58,6 +59,7 @@ export const Root: React.FunctionComponent = ({ children }) => {
       </TabsWrapper>
       {tabs.map(tab => (
         <Route
+          key={tab.path}
           component={tab.component}
           path={window.Tensei.getPath(`settings/${tab.path}`)}
         />
