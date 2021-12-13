@@ -9,7 +9,6 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn
 } from '@tensei/eui/lib/components/basic_table'
-import { EuiBadge } from '@tensei/eui/lib/components/badge'
 import moment from 'moment'
 
 const Wrapper = styled.div`
