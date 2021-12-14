@@ -5,7 +5,7 @@ import { EuiTabs, EuiTab } from '@tensei/eui/lib/components/tabs'
 
 import { Profile } from '../profile'
 import { TeamMembers } from '../team-members'
-
+import RolesAndPermissions from '../roles-and-permissions'
 const StyledLayout = styled.div`
   display: flex;
   flex-direction: column;
@@ -29,7 +29,7 @@ const tabs = [
   },
   {
     path: 'roles-and-permissions',
-    component: () => <h1>Replace with the roles and permissions page</h1>,
+    component: RolesAndPermissions,
     title: 'Roles & Permissions'
   }
 ]
