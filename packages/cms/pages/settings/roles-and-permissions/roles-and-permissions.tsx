@@ -94,7 +94,7 @@ const FlyoutAccordion: React.FC = () => {
 }
 const RolesTable: React.FC = () => {
   const [items, setItems] = useState<any>([])
-  const [memberNo, setMemberNo] = useState(0)
+  const [memberNo, setMemberNo] = useState<any>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
 
@@ -115,18 +115,23 @@ const RolesTable: React.FC = () => {
       const [result] = await window.Tensei.api.get(
         'admin-roles?populate=adminUsers'
       )
+      console.log(result)
       setItems(data?.data.data)
+      setMemberNo(result?.data.data)
       setLoading(false)
     }
     fetchAdminRoles()
   }, [])
 
   const renderedItems = items.map((item: any) => {
-    const memberNo = `3 Members`
+    const numberOfMembers = memberNo?.filter(
+      (memberItem: any) => item.name === memberItem.name
+    )
+    const member = numberOfMembers.length > 1 ? 'members' : 'member'
     return {
       ...item,
       Role: item.name,
-      Members: memberNo
+      Members: `${numberOfMembers.length} ${member}`
     }
   })
 
