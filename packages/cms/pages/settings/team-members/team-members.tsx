@@ -81,6 +81,10 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     }
   }
 
+  const isOwner = (item: TeamMemberProps) => {
+    return item.adminRoles.some((role: any) => role.slug === 'super-admin')
+  }
+
   useEffect(() => {
     getTeamMembers()
   }, [])
@@ -105,13 +109,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               <div>
                 {item.firstName} {item.lastName}
               </div>
-              {item.adminRoles.some(
-                (role: any) => role.slug === 'super-admin'
-              ) === true ? (
-                <OwnerBadge>Owner</OwnerBadge>
-              ) : (
-                ''
-              )}
+              {isOwner(item) ? <OwnerBadge>Owner</OwnerBadge> : ''}
             </UserWrapper>
           )
         }
@@ -146,13 +144,8 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             icon: 'trash',
             type: 'icon',
             color: 'danger',
-            disabled: true,
             onClick: item => {
-              if (
-                item.adminRoles.some(
-                  (role: any) => role.slug === 'super-admin'
-                ) === true
-              ) {
+              if (isOwner(item)) {
                 toast(undefined, "Can't remove Owner", 'danger')
                 return
               }
