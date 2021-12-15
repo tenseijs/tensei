@@ -9,11 +9,15 @@ import {
 } from '@tensei/eui/lib/components/flyout'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import { EuiButton } from '@tensei/eui/lib/components/button'
+import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { EuiFieldText, EuiTextArea } from '@tensei/eui/lib/components/form'
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
-import { EuiSwitch } from '@tensei/eui/lib/components/form/'
+import {
+  EuiSwitch,
+  EuiForm,
+  EuiFormRow
+} from '@tensei/eui/lib/components/form/'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer/'
 import styled from 'styled-components'
 
@@ -34,7 +38,7 @@ const AccordionHeader = styled.div`
   padding: 16px 14px;
   border: 1px solid #c9d3db;
   background-color: #f5f7f9;
-  border-radius: 3px;
+  border-radius: 6px;
 `
 const Accordionbody = styled.div``
 const AccordionItem = styled.div`
@@ -44,48 +48,63 @@ const AccordionItem = styled.div`
   border-bottom: 0.4px solid #c9d3db;
   height: 46px;
 `
-const Switch = () => {
-  const [checked, setChecked] = useState(true)
 
-  return (
-    <EuiSwitch
-      label=""
-      checked={checked}
-      onChange={() => setChecked(!checked)}
-    />
-  )
+interface PermissionProps {
+  permission: string
+  resource: any
 }
 
 const FlyoutAccordion: React.FC = () => {
-  const [adminRoles, setAdminRoles] = useState<any[]>([])
-  useEffect(() => {
-    const fetchAdminRoles = async () => {
-      const [result] = await window.Tensei.api.get('admin-roles')
-      setAdminRoles(result?.data.data[0].adminPermissions)
-    }
-
-    fetchAdminRoles()
-  }, [])
-
   const resources = window.Tensei.state.resources
+  const [selectedPermission, setSelectedPermission] = useState<any>([])
+
+  const AccordionPermissions: React.FC<PermissionProps> = ({
+    permission,
+    resource
+  }) => {
+    return (
+      <AccordionItem>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiText size="s">Can {permission}</EuiText>
+          <Switch />
+        </EuiFlexGroup>
+      </AccordionItem>
+    )
+  }
+
+  const Switch: React.FC = () => {
+    const [checked, setChecked] = useState(false)
+
+    return (
+      <EuiSwitch
+        label="enable"
+        showLabel={false}
+        checked={checked}
+        onChange={() => {
+          setChecked(!checked)
+        }}
+      />
+    )
+  }
   return (
     <>
       {resources.map(resource => (
         <AccordionWrapper>
           <AccordionHeader>{resource.name}</AccordionHeader>
           <Accordionbody>
-            {adminRoles.map(
-              role =>
-                role.slug.split(':')[1] ===
-                  resource.namePlural.toLowerCase() && (
-                  <AccordionItem>
-                    <EuiFlexGroup justifyContent="spaceBetween">
-                      <EuiText size="s">Can {role.name}</EuiText>
-                      <Switch />
-                    </EuiFlexGroup>
-                  </AccordionItem>
-                )
-            )}
+            <AccordionPermissions
+              permission=" Create"
+              resource={resource.name}
+            />
+            <AccordionPermissions permission="Index" resource={resource.name} />
+            <AccordionPermissions
+              permission="Update"
+              resource={resource.name}
+            />
+            <AccordionPermissions
+              permission="Delete"
+              resource={resource.name}
+            />
           </Accordionbody>
         </AccordionWrapper>
       ))}
@@ -93,45 +112,41 @@ const FlyoutAccordion: React.FC = () => {
   )
 }
 const RolesTable: React.FC = () => {
-  const [items, setItems] = useState<any>([])
-  const [memberNo, setMemberNo] = useState<any>([])
+  const [adminRoles, setAdminRoles] = useState<any>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
 
   const columns = [
     {
-      field: 'Role',
-      name: 'Role '
+      field: 'role',
+      name: 'role '
     },
     {
-      field: 'Members',
-      name: 'Members'
+      field: 'members',
+      name: 'members'
     }
   ]
 
   useEffect(() => {
     const fetchAdminRoles = async () => {
       const [data] = await window.Tensei.api.get('admin-roles')
-      const [result] = await window.Tensei.api.get(
-        'admin-roles?populate=adminUsers'
-      )
-      console.log(result)
-      setItems(data?.data.data)
-      setMemberNo(result?.data.data)
+
+      setAdminRoles(data?.data.data)
+
       setLoading(false)
     }
     fetchAdminRoles()
   }, [])
 
-  const renderedItems = items.map((item: any) => {
-    const numberOfMembers = memberNo?.filter(
+  const renderedItems = adminRoles.map((item: any) => {
+    const numberOfMembers = adminRoles.filter(
       (memberItem: any) => item.name === memberItem.name
     )
     const member = numberOfMembers.length > 1 ? 'members' : 'member'
     return {
       ...item,
-      Role: item.name,
-      Members: `${numberOfMembers.length} ${member}`
+      role: item.name,
+      members: `${numberOfMembers.length} ${member}`
     }
   })
 
@@ -141,7 +156,7 @@ const RolesTable: React.FC = () => {
       <EuiSwitch
         label="Enable"
         checked={checked}
-        onChange={e => setChecked(!checked)}
+        onChange={() => setChecked(!checked)}
       />
     )
   }
@@ -161,19 +176,28 @@ const RolesTable: React.FC = () => {
           </EuiTitle>
         </EuiFlyoutHeader>
         <EuiFlyoutBody>
-          <EuiText size="s">Role Name</EuiText>
-          <EuiFieldText />
-          <EuiText>Description</EuiText>
-          <EuiTextArea />
-          <EuiSpacer size="xl" />
-          <FlyoutAccordion />
+          <EuiForm component="form">
+            <EuiFormRow label="Role Name" fullWidth>
+              <EuiFieldText name="rolename" fullWidth />
+            </EuiFormRow>
+
+            <EuiFormRow label="Description" fullWidth>
+              <EuiTextArea fullWidth />
+            </EuiFormRow>
+            <EuiSpacer size="xl" />
+            <FlyoutAccordion />
+          </EuiForm>
         </EuiFlyoutBody>
         <EuiFlyoutFooter>
-          <EuiFlexGroup justifyContent="flexEnd">
+          <EuiFlexGroup justifyContent="spaceBetween">
             <EuiFlexItem grow={false}>
-              <EuiButton iconType="cross" onClick={closeFlyout}>
+              <EuiButtonEmpty
+                iconType="cross"
+                flush="left"
+                onClick={closeFlyout}
+              >
                 Cancel
-              </EuiButton>
+              </EuiButtonEmpty>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
               <EuiButton onClick={closeFlyout} fill>
@@ -190,9 +214,9 @@ const RolesTable: React.FC = () => {
     <>
       <TableHeading>
         <div>
-          {items.length > 1
-            ? `${items.length} existing roles`
-            : items.length === 1
+          {adminRoles.length > 1
+            ? `${adminRoles.length} existing roles`
+            : adminRoles.length === 1
             ? `1 existing role`
             : `No roles`}
         </div>
