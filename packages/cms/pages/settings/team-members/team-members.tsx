@@ -4,7 +4,7 @@ import React, { FunctionComponent, useCallback, useMemo, useState } from 'react'
 import { useToastStore } from '../../../store/toast'
 import { TeamMemberProps, useAdminUsersStore } from '../../../store/admin-users'
 import { useEffect } from 'react'
-import { EuiButtonEmpty } from '@tensei/eui/lib/components/button'
+import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { EuiCallOut } from '@tensei/eui/lib/components/call_out/call_out'
 import {
   EuiBasicTable,
@@ -13,6 +13,20 @@ import {
 import moment from 'moment'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
+import {
+  EuiModal,
+  EuiModalBody,
+  EuiModalFooter,
+  EuiModalHeader,
+  EuiModalHeaderTitle
+} from '@tensei/eui/lib/components/modal'
+import { useGeneratedHtmlId } from '@tensei/eui/lib/services'
+import {
+  EuiCheckboxGroup,
+  EuiForm,
+  EuiFormRow,
+  EuiSwitch
+} from '@tensei/eui/lib/components/form'
 
 const Wrapper = styled.div`
   display: flex;
@@ -57,19 +71,30 @@ interface ProfileProps {}
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const { getAdminUsers, removeUser } = useAdminUsersStore()
+  const {
+    getAdminUsers,
+    removeUser,
+    getAdminRoles,
+    updateUserRoles
+  } = useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
+  const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   const getTeamMembers = useCallback(async () => {
     const [data, error] = await getAdminUsers()
 
     if (!error) {
-      console.log(data?.data.data)
       setTeamMembers(data?.data.data)
     }
+  }, [])
 
-    setLoading(false)
+  const getRoles = useCallback(async () => {
+    const [data, error] = await getAdminRoles()
+
+    if (!error) {
+      setRoles(data?.data.data)
+    }
   }, [])
 
   const removeTeamMember = async () => {
@@ -78,23 +103,53 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
       closeRemoveMemberModal()
       toast('Removed.', <p>Member removed successfully.</p>)
       getTeamMembers()
+    } else {
+      toast('Error.', <p>{error.message}.</p>, 'danger')
     }
   }
+
+  const updateTeamMemberRole = async (roles: string[]) => {
+    const [data, error] = await updateUserRoles(
+      selectedMember?.id as string,
+      roles
+    )
+    if (!error) {
+      closeChangeMemberRoleModal()
+      toast('Changed.', <p>Member role changed successfully.</p>)
+      getTeamMembers()
+    } else {
+      toast('Error.', <p>{error.message}.</p>, 'danger')
+    }
+  }
+
+  useEffect(() => {
+    getTeamMembers()
+    getRoles()
+    setLoading(false)
+  }, [])
 
   const isOwner = (item: TeamMemberProps) => {
     return item.adminRoles.some((role: any) => role.slug === 'super-admin')
   }
 
-  useEffect(() => {
-    getTeamMembers()
-  }, [])
-
+  const [selectedMember, setSelectedMember] = useState<TeamMemberProps>()
   const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
     false
   )
-  const [selectedMember, setSelectedMember] = useState<TeamMemberProps>()
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
   const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
+  const [
+    isChangeMemberRoleModalVisible,
+    setChangeMemberRoleModalVisible
+  ] = useState(false)
+  const closeChangeMemberRoleModal = () =>
+    setChangeMemberRoleModalVisible(false)
+  const showChangeMemberRoleModal = () => setChangeMemberRoleModalVisible(true)
+  const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
+  const [
+    rolesCheckboxSelectionMap,
+    setRolesCheckboxSelectionMap
+  ] = useState<any>({})
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -136,7 +191,26 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             description: 'Change user role',
             icon: 'pencil',
             type: 'icon',
-            onClick: item => {}
+            onClick: (item: TeamMemberProps) => {
+              if (isOwner(item)) {
+                toast(undefined, "Owner role can't be changed", 'danger')
+                return
+              }
+              setSelectedMember(item)
+              // set rolesCheckboxSelectionMap
+              setRolesCheckboxSelectionMap({})
+              const rolesId = roles.map(role => role.id)
+              const adminRolesId = item.adminRoles.map(role => role.id)
+              const newCheckboxIdToSelectedMap: any = {}
+              rolesId.forEach(
+                roleId =>
+                  (newCheckboxIdToSelectedMap[roleId] = adminRolesId.includes(
+                    roleId
+                  ))
+              )
+              setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
+              showChangeMemberRoleModal()
+            }
           },
           {
             name: 'Delete',
@@ -156,7 +230,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         ]
       }
     ]
-  }, [])
+  }, [roles])
 
   let removeMemberModal
 
@@ -182,6 +256,72 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     )
   }
 
+  let changeMemberRoleModal
+
+  let checkboxes = roles
+    .filter(role => role.slug !== 'super-admin')
+    .map(role => ({
+      id: role.id.toString(),
+      label: role.name
+    }))
+
+  if (isChangeMemberRoleModalVisible) {
+    changeMemberRoleModal = (
+      <EuiModal onClose={closeChangeMemberRoleModal}>
+        <EuiModalHeader>
+          <EuiModalHeaderTitle>
+            <h1>Change role</h1>
+          </EuiModalHeaderTitle>
+        </EuiModalHeader>
+
+        <EuiModalBody>
+          <EuiForm id={modalFormId} component="form">
+            <EuiFormRow>
+              <EuiCheckboxGroup
+                options={checkboxes}
+                idToSelectedMap={rolesCheckboxSelectionMap}
+                onChange={id => {
+                  const newCheckboxIdToSelectedMap = {
+                    ...rolesCheckboxSelectionMap,
+                    ...{
+                      [id]: !rolesCheckboxSelectionMap[id]
+                    }
+                  }
+                  setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
+                }}
+              />
+            </EuiFormRow>
+          </EuiForm>
+        </EuiModalBody>
+
+        <EuiModalFooter>
+          <EuiButtonEmpty onClick={closeChangeMemberRoleModal}>
+            Cancel
+          </EuiButtonEmpty>
+
+          <EuiButton
+            type="submit"
+            form={modalFormId}
+            onClick={submitEvent => {
+              submitEvent.preventDefault()
+              let newAdminRoles: any[] = []
+              Object.entries(rolesCheckboxSelectionMap).forEach(
+                ([id, value]) => {
+                  if (!value) return
+                  newAdminRoles.push(id)
+                }
+              )
+              updateTeamMemberRole(newAdminRoles)
+            }}
+            fill
+          >
+            Assign role
+          </EuiButton>
+        </EuiModalFooter>
+      </EuiModal>
+    )
+  }
+
   return (
     <PageWrapper>
       <Wrapper>
@@ -199,6 +339,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         />
 
         {removeMemberModal}
+        {changeMemberRoleModal}
       </Wrapper>
     </PageWrapper>
   )
