@@ -2,15 +2,17 @@ import styled from 'styled-components'
 import React, { FunctionComponent, useCallback, useMemo, useState } from 'react'
 
 import { useToastStore } from '../../../store/toast'
-import { useAdminUsersStore } from '../../../store/admin-users'
+import { TeamMemberProps, useAdminUsersStore } from '../../../store/admin-users'
 import { useEffect } from 'react'
 import { EuiButtonEmpty } from '@tensei/eui/lib/components/button'
+import { EuiCallOut } from '@tensei/eui/lib/components/call_out/call_out'
 import {
   EuiBasicTable,
   EuiBasicTableColumn
 } from '@tensei/eui/lib/components/basic_table'
 import moment from 'moment'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
+import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 
 const Wrapper = styled.div`
   display: flex;
@@ -55,8 +57,8 @@ interface ProfileProps {}
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const { getAdminUsers } = useAdminUsersStore()
-  const [teamMembers, setTeamMembers] = useState([])
+  const { getAdminUsers, removeUser } = useAdminUsersStore()
+  const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [loading, setLoading] = useState(true)
 
   const getTeamMembers = useCallback(async () => {
@@ -70,9 +72,29 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     setLoading(false)
   }, [])
 
+  const removeTeamMember = async () => {
+    const [data, error] = await removeUser(selectedMember?.id as string)
+    if (!error) {
+      closeRemoveMemberModal()
+      toast('Removed.', <p>Member removed successfully.</p>)
+      getTeamMembers()
+    }
+  }
+
+  const isOwner = (item: TeamMemberProps) => {
+    return item.adminRoles.some((role: any) => role.slug === 'super-admin')
+  }
+
   useEffect(() => {
     getTeamMembers()
   }, [])
+
+  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
+    false
+  )
+  const [selectedMember, setSelectedMember] = useState<TeamMemberProps>()
+  const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
+  const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -87,13 +109,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               <div>
                 {item.firstName} {item.lastName}
               </div>
-              {item.adminRoles.some(
-                (role: any) => role.slug === 'super-admin'
-              ) === true ? (
-                <OwnerBadge>Owner</OwnerBadge>
-              ) : (
-                ''
-              )}
+              {isOwner(item) ? <OwnerBadge>Owner</OwnerBadge> : ''}
             </UserWrapper>
           )
         }
@@ -117,23 +133,54 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         actions: [
           {
             name: 'Edit',
-            description: 'Edit this item',
+            description: 'Change user role',
             icon: 'pencil',
             type: 'icon',
             onClick: item => {}
           },
           {
             name: 'Delete',
-            description: 'Delete this item',
+            description: 'Remove this user',
             icon: 'trash',
             type: 'icon',
             color: 'danger',
-            onClick: item => {}
+            onClick: item => {
+              if (isOwner(item)) {
+                toast(undefined, "Can't remove Owner", 'danger')
+                return
+              }
+              setSelectedMember(item)
+              showRemoveMemberModal()
+            }
           }
         ]
       }
     ]
   }, [])
+
+  let removeMemberModal
+
+  if (isRemoveMemberModalVisible) {
+    removeMemberModal = (
+      <EuiConfirmModal
+        title="Remove member"
+        onCancel={closeRemoveMemberModal}
+        onConfirm={removeTeamMember}
+        cancelButtonText="Cancel"
+        confirmButtonText="Remove"
+        defaultFocusedButton="confirm"
+        buttonColor="danger"
+      >
+        <p>Are you sure you want to remove this member?</p>
+        <EuiCallOut
+          size="s"
+          title="Once done, this action cannot be undone"
+          color="warning"
+          iconType="alert"
+        />
+      </EuiConfirmModal>
+    )
+  }
 
   return (
     <PageWrapper>
@@ -150,6 +197,8 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
           loading={loading}
           columns={columns}
         />
+
+        {removeMemberModal}
       </Wrapper>
     </PageWrapper>
   )
