@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react'
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react'
 
 import { EuiBasicTable } from '@tensei/eui/lib/components/basic_table'
 import {
@@ -20,6 +20,24 @@ import {
 } from '@tensei/eui/lib/components/form/'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer/'
 import styled from 'styled-components'
+import { ResourceContract } from '@tensei/components'
+
+interface CreateRoleForm {
+  name: string
+  description: string
+  adminPermissions: number[]
+}
+
+interface AdminPermission {
+  id: number
+  name: string
+  slug: string
+}
+
+interface CreateRoleFormProps {
+  createRoleForm: CreateRoleForm
+  setCreateRoleForm: (form: CreateRoleForm) => void
+}
 
 const RolesAndPermissionWrapper = styled.div`
   padding: 20px 40px 0 40px;
@@ -51,67 +69,186 @@ const AccordionItem = styled.div`
 
 interface PermissionProps {
   permission: string
-  resource: any
+  resource: ResourceContract
+  allPermissions: AdminPermission[]
+  createRoleForm: CreateRoleFormProps
 }
 
-const FlyoutAccordion: React.FC = () => {
+const Switch: React.FC<{
+  onChange?: (value: boolean) => void
+}> = ({ onChange }) => {
+  const [checked, setChecked] = useState(false)
+
+  return (
+    <EuiSwitch
+      label="enable"
+      showLabel={false}
+      checked={checked}
+      onChange={() => {
+        setChecked(!checked)
+        onChange?.(!checked)
+      }}
+    />
+  )
+}
+
+const AccordionPermissions: React.FC<PermissionProps> = ({
+  permission: action,
+  resource,
+  allPermissions,
+  createRoleForm: { createRoleForm, setCreateRoleForm }
+}) => {
+  function onSwitchChange(checked: boolean) {
+    const selectedPermission = allPermissions.find(
+      permission =>
+        permission.slug === `${action.toLowerCase()}:${resource.slug}`
+    )
+
+    if (!selectedPermission) {
+      return
+    }
+
+    if (createRoleForm.adminPermissions.includes(selectedPermission.id)) {
+      setCreateRoleForm({
+        ...createRoleForm,
+        adminPermissions: createRoleForm.adminPermissions.filter(
+          permission => permission !== selectedPermission?.id
+        )
+      })
+    } else {
+      setCreateRoleForm({
+        ...createRoleForm,
+        adminPermissions: [
+          ...createRoleForm.adminPermissions,
+          selectedPermission.id
+        ]
+      })
+    }
+  }
+
+  return (
+    <AccordionItem>
+      <EuiFlexGroup justifyContent="spaceBetween">
+        <EuiText size="s">Can {action}</EuiText>
+        <Switch onChange={onSwitchChange} />
+      </EuiFlexGroup>
+    </AccordionItem>
+  )
+}
+
+const FlyoutAccordion: React.FC<{
+  createRoleForm: CreateRoleFormProps
+  allPermissions: AdminPermission[]
+}> = ({ createRoleForm, allPermissions }) => {
   const resources = window.Tensei.state.resources
   const [selectedPermission, setSelectedPermission] = useState<any>([])
 
-  const AccordionPermissions: React.FC<PermissionProps> = ({
-    permission,
-    resource
-  }) => {
-    return (
-      <AccordionItem>
-        <EuiFlexGroup justifyContent="spaceBetween">
-          <EuiText size="s">Can {permission}</EuiText>
-          <Switch />
-        </EuiFlexGroup>
-      </AccordionItem>
-    )
-  }
-
-  const Switch: React.FC = () => {
-    const [checked, setChecked] = useState(false)
-
-    return (
-      <EuiSwitch
-        label="enable"
-        showLabel={false}
-        checked={checked}
-        onChange={() => {
-          setChecked(!checked)
-        }}
-      />
-    )
-  }
   return (
     <>
       {resources.map(resource => (
         <AccordionWrapper>
           <AccordionHeader>{resource.name}</AccordionHeader>
           <Accordionbody>
-            <AccordionPermissions
-              permission=" Create"
-              resource={resource.name}
-            />
-            <AccordionPermissions permission="Index" resource={resource.name} />
-            <AccordionPermissions
-              permission="Update"
-              resource={resource.name}
-            />
-            <AccordionPermissions
-              permission="Delete"
-              resource={resource.name}
-            />
+            {['Create', 'Index', 'Update', 'Delete'].map(permission => (
+              <>
+                <AccordionPermissions
+                  resource={resource}
+                  permission={permission}
+                  allPermissions={allPermissions}
+                  createRoleForm={createRoleForm}
+                />
+              </>
+            ))}
           </Accordionbody>
         </AccordionWrapper>
       ))}
     </>
   )
 }
+
+const RolesFlyout: React.FC<{
+  setIsFlyoutOpen: (open: boolean) => void
+  createRoleForm: CreateRoleFormProps
+  allPermissions: AdminPermission[]
+}> = ({
+  setIsFlyoutOpen,
+  createRoleForm: { createRoleForm, setCreateRoleForm },
+  allPermissions
+}) => {
+  const flyoutHeadingId = useGeneratedHtmlId()
+
+  const closeFlyout = () => {
+    setIsFlyoutOpen(false)
+  }
+
+  return (
+    <EuiFlyout onClose={closeFlyout}>
+      <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
+        <EuiTitle>
+          <h2 id={flyoutHeadingId}> Create custom role </h2>
+        </EuiTitle>
+      </EuiFlyoutHeader>
+      <EuiFlyoutBody>
+        <EuiForm component="form">
+          <EuiFormRow label="Role Name" fullWidth>
+            <EuiFieldText
+              onChange={event =>
+                setCreateRoleForm({
+                  ...createRoleForm,
+                  name: event.target.value
+                })
+              }
+              name="rolename"
+              fullWidth
+            />
+          </EuiFormRow>
+
+          <EuiFormRow label="Description" fullWidth>
+            <EuiTextArea
+              onChange={event =>
+                setCreateRoleForm({
+                  ...createRoleForm,
+                  description: event.target.value
+                })
+              }
+              fullWidth
+            />
+          </EuiFormRow>
+          <EuiSpacer size="xl" />
+          <FlyoutAccordion
+            createRoleForm={{
+              createRoleForm,
+              setCreateRoleForm
+            }}
+            allPermissions={allPermissions}
+          />
+        </EuiForm>
+      </EuiFlyoutBody>
+      <EuiFlyoutFooter>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty iconType="cross" flush="left" onClick={closeFlyout}>
+              Cancel
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton onClick={closeFlyout} fill>
+              Create Role
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiFlyoutFooter>
+    </EuiFlyout>
+  )
+}
+
 const RolesTable: React.FC = () => {
+  const [createRoleForm, setCreateRoleForm] = useState<CreateRoleForm>({
+    name: '',
+    description: '',
+    adminPermissions: []
+  })
+  const [allPermissions, setAllPermissions] = useState<AdminPermission[]>([])
   const [adminRoles, setAdminRoles] = useState<any>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
@@ -129,13 +266,26 @@ const RolesTable: React.FC = () => {
 
   useEffect(() => {
     const fetchAdminRoles = async () => {
-      const [data] = await window.Tensei.api.get('admin-roles')
+      const [response] = await window.Tensei.api.get('admin-roles')
 
-      setAdminRoles(data?.data.data)
+      setAdminRoles(response?.data.data)
 
       setLoading(false)
     }
     fetchAdminRoles()
+  }, [])
+
+  async function fetchPermissions() {
+    const [response] = await window.Tensei.api.get<{
+      data: AdminPermission[]
+    }>('admin-permissions')
+    if (response !== null) {
+      setAllPermissions(response.data.data)
+    }
+  }
+
+  useEffect(() => {
+    fetchPermissions()
   }, [])
 
   const renderedItems = adminRoles.map((item: any) => {
@@ -149,66 +299,6 @@ const RolesTable: React.FC = () => {
       members: `${numberOfMembers.length} ${member}`
     }
   })
-
-  const Switch = () => {
-    const [checked, setChecked] = useState(true)
-    return (
-      <EuiSwitch
-        label="Enable"
-        checked={checked}
-        onChange={() => setChecked(!checked)}
-      />
-    )
-  }
-
-  const RolesFlyout: React.FC = () => {
-    const flyoutHeadingId = useGeneratedHtmlId()
-
-    const closeFlyout = () => {
-      setIsFlyoutOpen(false)
-    }
-
-    return (
-      <EuiFlyout onClose={closeFlyout}>
-        <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
-          <EuiTitle>
-            <h2 id={flyoutHeadingId}> Create custom role </h2>
-          </EuiTitle>
-        </EuiFlyoutHeader>
-        <EuiFlyoutBody>
-          <EuiForm component="form">
-            <EuiFormRow label="Role Name" fullWidth>
-              <EuiFieldText name="rolename" fullWidth />
-            </EuiFormRow>
-
-            <EuiFormRow label="Description" fullWidth>
-              <EuiTextArea fullWidth />
-            </EuiFormRow>
-            <EuiSpacer size="xl" />
-            <FlyoutAccordion />
-          </EuiForm>
-        </EuiFlyoutBody>
-        <EuiFlyoutFooter>
-          <EuiFlexGroup justifyContent="spaceBetween">
-            <EuiFlexItem grow={false}>
-              <EuiButtonEmpty
-                iconType="cross"
-                flush="left"
-                onClick={closeFlyout}
-              >
-                Cancel
-              </EuiButtonEmpty>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiButton onClick={closeFlyout} fill>
-                Create Role
-              </EuiButton>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </EuiFlyoutFooter>
-      </EuiFlyout>
-    )
-  }
 
   return (
     <>
@@ -224,7 +314,16 @@ const RolesTable: React.FC = () => {
           create a new role
         </EuiButton>
       </TableHeading>
-      {isFlyoutOpen && <RolesFlyout />}
+      {isFlyoutOpen ? (
+        <RolesFlyout
+          setIsFlyoutOpen={setIsFlyoutOpen}
+          allPermissions={allPermissions}
+          createRoleForm={{
+            createRoleForm,
+            setCreateRoleForm
+          }}
+        />
+      ) : null}
       <EuiBasicTable
         items={renderedItems}
         columns={columns}
