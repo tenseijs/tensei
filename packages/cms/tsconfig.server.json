@@ -28,6 +28,7 @@
     "components",
     "main.tsx",
     "core.ts",
+    "ui.ts",
     "load-icons.ts"
   ]
 }

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
 import './core'
 import './load-icons'
-import { ThemeProvider as StyledThemeProvider } from 'styled-components'
+import { ThemeProvider } from 'styled-components'
 
 import { CmsRoute } from '@tensei/components'
 import { useAuthStore } from './store/auth'
@@ -75,9 +75,9 @@ const App: React.FunctionComponent = ({ children }) => {
         toastLifeTimeMs={6000}
         dismissToast={remove}
       ></EuiGlobalToastList>
-      <StyledThemeProvider theme={euiTheme}>
+      <ThemeProvider theme={euiTheme}>
         {booted ? children : 'Booting app...'}
-      </StyledThemeProvider>
+      </ThemeProvider>
     </>
   )
 }

@@ -360,7 +360,7 @@ export class Tensei implements TenseiContract {
         this.ctx.emitter.on(eventName as any, data => {
           try {
             listener(data as any)
-          } catch (error) {
+          } catch (error: any) {
             this.ctx.logger.error(error)
           }
         })

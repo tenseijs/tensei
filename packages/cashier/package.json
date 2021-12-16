@@ -16,7 +16,7 @@
     "jest": "^26.0.1",
     "prettier": "^2.0.5",
     "supertest": "^4.0.2",
-    "typescript": "^4.2.4"
+    "typescript": "^4.5.4"
   },
   "scripts": {
     "prettier": "prettier --write './**/*.{js,json,ts,css}'",

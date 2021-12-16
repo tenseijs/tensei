@@ -43,8 +43,6 @@ export class Field implements FieldContract {
     showOnCreation: true
   }
 
-  public fakerFn = undefined
-
   public graphqlType = ''
 
   public showHideFieldFromApi = {

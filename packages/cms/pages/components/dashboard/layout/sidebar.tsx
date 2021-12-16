@@ -54,7 +54,7 @@ const Footer = styled.div`
 `
 
 const NavItem = styled.div<{
-  active?: boolean
+  $active?: boolean
   to?: string
 }>`
   display: flex;
@@ -74,8 +74,8 @@ const NavItem = styled.div<{
   &:hover {
   }
 
-  ${({ active, theme }) =>
-    active
+  ${({ $active, theme }) =>
+    $active
       ? `
   color: ${theme.colors.primary};
   background-color: ${theme.colors.primaryTransparent};
@@ -126,7 +126,7 @@ const NestedSidebarTitleUnderline = styled.div`
 `
 
 const SubNavItem = styled(Link)<{
-  active?: boolean
+  $active?: boolean
 }>`
   width: 100%;
   height: 32px;
@@ -136,8 +136,8 @@ const SubNavItem = styled(Link)<{
   border-radius: 2px;
   transition: all 0.25s ease-in-out;
 
-  ${({ theme, active }) =>
-    active
+  ${({ theme, $active }) =>
+    $active
       ? `
     color: ${theme.colors.primary};
     background-color: ${theme.colors.primaryTransparent};
@@ -346,7 +346,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           {items.map(item => (
             <SubNavItem
               key={item.path}
-              active={isActive(item.path)}
+              $active={isActive(item.path)}
               to={window.Tensei.getPath(`resources/${item.path}`)}
             >
               {item.name}
@@ -357,7 +357,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           <NavItem
             as={Link as any}
             to="/cms/assets"
-            active={pathname.includes('assets')}
+            $active={pathname.includes('assets')}
           >
             <Landscape />
 
@@ -370,7 +370,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
         <NavItem
           as={Link as any}
           to="/cms/settings/profile"
-          active={pathname.includes('settings')}
+          $active={pathname.includes('settings')}
         >
           <SettingsCog />
           <EuiText>Settings</EuiText>

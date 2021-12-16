@@ -1,5 +1,5 @@
 {
-  "name": "@tensei/media",
+  "name": "@tensei/field-json",
   "version": "0.10.0",
   "main": "./build/index.js",
   "license": "MIT",
@@ -49,8 +49,10 @@
     "laravel-mix": "^6.0.5",
     "postcss": "^8.1",
     "postcss-loader": "^5.0.0",
-    "react": "17.0.2",
     "ts-loader": "^8.0.12",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "@types/codemirror": "^5.60.5",
+    "react-codemirror2": "^7.2.1",
+    "codemirror": "^5.64.0"
   }
 }
