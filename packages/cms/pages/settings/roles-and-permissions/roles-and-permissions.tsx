@@ -21,10 +21,11 @@ import {
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer/'
 import styled from 'styled-components'
 import { ResourceContract } from '@tensei/components'
-
+import slugify from 'speakingurl'
 interface CreateRoleForm {
   name: string
   description: string
+  slug: string
   adminPermissions: number[]
 }
 
@@ -37,6 +38,7 @@ interface AdminPermission {
 interface CreateRoleFormProps {
   createRoleForm: CreateRoleForm
   setCreateRoleForm: (form: CreateRoleForm) => void
+  fetchAdminRoles: () => void
 }
 
 const RolesAndPermissionWrapper = styled.div`
@@ -172,15 +174,30 @@ const RolesFlyout: React.FC<{
   allPermissions: AdminPermission[]
 }> = ({
   setIsFlyoutOpen,
-  createRoleForm: { createRoleForm, setCreateRoleForm },
+  createRoleForm: { createRoleForm, setCreateRoleForm, fetchAdminRoles },
   allPermissions
 }) => {
   const flyoutHeadingId = useGeneratedHtmlId()
+  const [errors, setErrors] = useState<any[]>([])
+  const [showErrors, setShowErrors] = useState(false)
 
   const closeFlyout = () => {
     setIsFlyoutOpen(false)
   }
 
+  const createARole = async () => {
+    const [response, error] = await window.Tensei.api.post(
+      'admin-roles',
+      createRoleForm
+    )
+    if (error) {
+      setErrors(error.response?.data.errors[0].message)
+      setShowErrors(true)
+      return
+    }
+    fetchAdminRoles()
+    closeFlyout()
+  }
   return (
     <EuiFlyout onClose={closeFlyout}>
       <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
@@ -189,15 +206,22 @@ const RolesFlyout: React.FC<{
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm component="form">
-          <EuiFormRow label="Role Name" fullWidth>
+        <EuiForm component="form" isInvalid={showErrors} error={errors}>
+          <EuiFormRow
+            label="Role Name"
+            error={errors}
+            isInvalid={showErrors}
+            fullWidth
+          >
             <EuiFieldText
               onChange={event =>
                 setCreateRoleForm({
                   ...createRoleForm,
-                  name: event.target.value
+                  name: event.target.value,
+                  slug: slugify(event.target.value)
                 })
               }
+              isInvalid={showErrors}
               name="rolename"
               fullWidth
             />
@@ -218,7 +242,8 @@ const RolesFlyout: React.FC<{
           <FlyoutAccordion
             createRoleForm={{
               createRoleForm,
-              setCreateRoleForm
+              setCreateRoleForm,
+              fetchAdminRoles
             }}
             allPermissions={allPermissions}
           />
@@ -232,7 +257,12 @@ const RolesFlyout: React.FC<{
             </EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton onClick={closeFlyout} fill>
+            <EuiButton
+              onClick={() => {
+                createARole()
+              }}
+              fill
+            >
               Create Role
             </EuiButton>
           </EuiFlexItem>
@@ -246,6 +276,7 @@ const RolesTable: React.FC = () => {
   const [createRoleForm, setCreateRoleForm] = useState<CreateRoleForm>({
     name: '',
     description: '',
+    slug: '',
     adminPermissions: []
   })
   const [allPermissions, setAllPermissions] = useState<AdminPermission[]>([])
@@ -264,14 +295,14 @@ const RolesTable: React.FC = () => {
     }
   ]
 
+  const fetchAdminRoles = async () => {
+    const [response] = await window.Tensei.api.get('admin-roles')
+
+    setAdminRoles(response?.data.data)
+
+    setLoading(false)
+  }
   useEffect(() => {
-    const fetchAdminRoles = async () => {
-      const [response] = await window.Tensei.api.get('admin-roles')
-
-      setAdminRoles(response?.data.data)
-
-      setLoading(false)
-    }
     fetchAdminRoles()
   }, [])
 
@@ -310,7 +341,11 @@ const RolesTable: React.FC = () => {
             ? `1 existing role`
             : `No roles`}
         </div>
-        <EuiButton onClick={() => setIsFlyoutOpen(true)}>
+        <EuiButton
+          onClick={() => {
+            setIsFlyoutOpen(true)
+          }}
+        >
           create a new role
         </EuiButton>
       </TableHeading>
@@ -320,7 +355,8 @@ const RolesTable: React.FC = () => {
           allPermissions={allPermissions}
           createRoleForm={{
             createRoleForm,
-            setCreateRoleForm
+            setCreateRoleForm,
+            fetchAdminRoles
           }}
         />
       ) : null}
