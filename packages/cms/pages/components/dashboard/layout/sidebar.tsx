@@ -7,6 +7,9 @@ import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { CmsRoute } from '@tensei/components'
+import { useAuthStore } from '../../../../store/auth'
+import { useEffect } from 'react'
+import { useCallback } from 'react'
 
 const CollapseExpandIcon = styled.button`
   width: 28px;
@@ -292,6 +295,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
   const { pathname } = useLocation()
   const [groups, setGroups] = useState(getGroups())
   const [close, setClose] = useState(false)
+  const { mergePermissions, hasPermission } = useAuthStore()
 
   const onCloseSideBar = () => setClose(!close)
 
@@ -301,8 +305,22 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
     .filter(resource => resource.displayInNavigation)
     .map(resource => ({
       name: resource.namePlural,
-      path: resource.slugPlural
+      path: resource.slugPlural,
+      permissions: [
+        `index:${resource.slugPlural}`,
+        `create:${resource.slugPlural}`,
+        `update:${resource.slugPlural}`,
+        `delete:${resource.slugPlural}`
+      ]
     }))
+
+  const [hasMergedPermissions, setHasMergedPermissions] = useState(false)
+  useEffect(() => {
+    if (!hasMergedPermissions) {
+      mergePermissions()
+      setHasMergedPermissions(true)
+    }
+  })
 
   return (
     <Sidebar>
@@ -343,15 +361,23 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
 
           <EuiSpacer size="s" />
 
-          {items.map(item => (
-            <SubNavItem
-              key={item.path}
-              $active={isActive(item.path)}
-              to={window.Tensei.getPath(`resources/${item.path}`)}
-            >
-              {item.name}
-            </SubNavItem>
-          ))}
+          {items.map(item => {
+            let hasAnyPermission = item.permissions.map(permission =>
+              hasPermission(permission)
+            )
+            if (hasAnyPermission.every(permission => permission === false))
+              return
+
+            return (
+              <SubNavItem
+                key={item.path}
+                $active={isActive(item.path)}
+                to={window.Tensei.getPath(`resources/${item.path}`)}
+              >
+                {item.name}
+              </SubNavItem>
+            )
+          })}
 
           <EuiSpacer size="s" />
           <NavItem
