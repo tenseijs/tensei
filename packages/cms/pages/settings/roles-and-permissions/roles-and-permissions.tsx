@@ -167,6 +167,10 @@ const FlyoutAccordion: React.FC<{
     </>
   )
 }
+interface ErrObj {
+  name: string
+  slug: string
+}
 
 const RolesFlyout: React.FC<{
   setIsFlyoutOpen: (open: boolean) => void
@@ -178,8 +182,7 @@ const RolesFlyout: React.FC<{
   allPermissions
 }) => {
   const flyoutHeadingId = useGeneratedHtmlId()
-  const [errors, setErrors] = useState<any[]>([])
-  const [showErrors, setShowErrors] = useState(false)
+  const [errors, setErrors] = useState<ErrObj>({ name: '', slug: '' })
 
   const closeFlyout = () => {
     setIsFlyoutOpen(false)
@@ -191,13 +194,20 @@ const RolesFlyout: React.FC<{
       createRoleForm
     )
     if (error) {
-      setErrors(error.response?.data.errors[0].message)
-      setShowErrors(true)
+      let errObj = { name: '', slug: '' }
+      const errArray = error.response?.data.errors
+
+      errArray.forEach((err: any) => {
+        errObj = { ...errObj, [err.field]: err.message }
+      })
+
+      setErrors(errObj)
       return
     }
     fetchAdminRoles()
     closeFlyout()
   }
+
   return (
     <EuiFlyout onClose={closeFlyout}>
       <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
@@ -206,11 +216,11 @@ const RolesFlyout: React.FC<{
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm component="form" isInvalid={showErrors} error={errors}>
+        <EuiForm component="form" isInvalid={!!errors?.name}>
           <EuiFormRow
-            label="Role Name"
-            error={errors}
-            isInvalid={showErrors}
+            label="Name"
+            error={errors?.name}
+            isInvalid={!!errors?.name}
             fullWidth
           >
             <EuiFieldText
@@ -221,14 +231,14 @@ const RolesFlyout: React.FC<{
                   slug: slugify(event.target.value)
                 })
               }
-              isInvalid={showErrors}
-              name="rolename"
+              name="name"
               fullWidth
             />
           </EuiFormRow>
 
           <EuiFormRow label="Description" fullWidth>
             <EuiTextArea
+              name="description"
               onChange={event =>
                 setCreateRoleForm({
                   ...createRoleForm,
@@ -287,11 +297,11 @@ const RolesTable: React.FC = () => {
   const columns = [
     {
       field: 'role',
-      name: 'role '
+      name: 'Role '
     },
     {
       field: 'members',
-      name: 'members'
+      name: 'Members'
     }
   ]
 
@@ -334,13 +344,15 @@ const RolesTable: React.FC = () => {
   return (
     <>
       <TableHeading>
-        <div>
-          {adminRoles.length > 1
-            ? `${adminRoles.length} existing roles`
-            : adminRoles.length === 1
-            ? `1 existing role`
-            : `No roles`}
-        </div>
+        <EuiTitle>
+          <h1>
+            {adminRoles.length > 1
+              ? `${adminRoles.length} existing roles`
+              : adminRoles.length === 1
+              ? `1 existing role`
+              : `No roles`}
+          </h1>
+        </EuiTitle>
         <EuiButton
           onClick={() => {
             setIsFlyoutOpen(true)
