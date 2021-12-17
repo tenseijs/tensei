@@ -2,11 +2,12 @@ import { AxiosResponse, AxiosError } from 'axios'
 import create, { State } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { User } from '@tensei/components'
+import { User, UserPermission, UserRole } from '@tensei/components'
 
 interface AuthState extends State {
   user: User
   setUser: (user: User) => void
+  permissions: string[]
 }
 
 export interface AuthMethods extends State {
@@ -23,6 +24,10 @@ export interface AuthMethods extends State {
   updatePassword: (
     input: UpdateUserPasswordInput
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
+  mergePermissions: () => void
+  hasPermission: (
+    permission: string
+  ) => boolean
 }
 
 export interface LoginInput {
@@ -50,7 +55,8 @@ export interface UpdateUserPasswordInput {
 
 export const useAuthStore = create<AuthState & AuthMethods>(
   devtools((set, get) => ({
-    user: window.Tensei.state.admin,
+    user: window.Tensei?.state?.admin,
+    permissions: [],
     setUser(user: User) {
       set({
         user
@@ -70,6 +76,25 @@ export const useAuthStore = create<AuthState & AuthMethods>(
     },
     async updatePassword(input: UpdateUserPasswordInput) {
       return window.Tensei.api.post('/auth/change-password', input)
+    },
+    mergePermissions() {
+      let permissionStrings: string[] = []
+      get().user?.adminRoles.forEach((role: UserRole) => {
+        permissionStrings.push(...role.adminPermissions.map((permission: UserPermission) => (
+          permission.slug
+        )))
+      })
+
+      console.log('merge permissions')
+
+      set({
+        permissions: [
+          ...permissionStrings
+        ]
+      })
+    },
+    hasPermission(permission: string) {
+      return get().permissions.includes(permission)
     }
   }))
 )
