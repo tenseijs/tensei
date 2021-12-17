@@ -72,16 +72,16 @@ class CmsPlugin {
     roleResource: string
     dashboards: DashboardContract[]
   } = {
-    path: 'cms',
-    apiPath: 'cms/api',
-    setup: () => {},
-    cookieOptions: {},
-    dashboards: [],
-    userResource: 'Admin User',
-    permissionResource: 'Admin Permission',
-    roleResource: 'Admin Role',
-    tokenResource: 'Admin Token'
-  }
+      path: 'cms',
+      apiPath: 'cms/api',
+      setup: () => { },
+      cookieOptions: {},
+      dashboards: [],
+      userResource: 'Admin User',
+      permissionResource: 'Admin Permission',
+      roleResource: 'Admin Role',
+      tokenResource: 'Admin Token'
+    }
 
   private router = Router()
 
@@ -322,7 +322,8 @@ class CmsPlugin {
           .sortable()
           .creationRules('required'),
         text('Password')
-          .rules('required', 'min:12')
+          .rules('min:12')
+          .requiredOnCreate()
           .nullable()
           .hideOnFetchApi(),
         text('Email')
@@ -584,26 +585,26 @@ class CmsPlugin {
         })
 
         this.router.use(Csurf())
-        ;[...getRoutes(config, this.config), ...this.routes()].forEach(
-          route => {
-            const path = route.config.path.startsWith('/')
-              ? route.config.path
-              : `/${route.config.path}`
-            ;(this.router as any)[route.config.type.toLowerCase()](
-              path,
+          ;[...getRoutes(config, this.config), ...this.routes()].forEach(
+            route => {
+              const path = route.config.path.startsWith('/')
+                ? route.config.path
+                : `/${route.config.path}`
+                ; (this.router as any)[route.config.type.toLowerCase()](
+                  path,
 
-              ...route.config.middleware.map(fn => AsyncHandler(fn)),
-              AsyncHandler(async (request, response, next) => {
-                await this.authorizeResolver(request as any, route)
+                  ...route.config.middleware.map(fn => AsyncHandler(fn)),
+                  AsyncHandler(async (request, response, next) => {
+                    await this.authorizeResolver(request as any, route)
 
-                return next()
-              }),
-              AsyncHandler(async (request, response) =>
-                route.config.handler(request, response)
-              )
-            )
-          }
-        )
+                    return next()
+                  }),
+                  AsyncHandler(async (request, response) =>
+                    route.config.handler(request, response)
+                  )
+                )
+            }
+          )
 
         app.use(`/${this.config.path}`, this.router)
 
@@ -619,9 +620,9 @@ class CmsPlugin {
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({
-                    // @ts-ignore
-                    ...request.user
-                  })
+                  // @ts-ignore
+                  ...request.user
+                })
                 : null,
               resources: JSON.stringify(
                 request.config.resources.map(r => r.serialize())
