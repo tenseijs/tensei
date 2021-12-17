@@ -195,25 +195,25 @@ declare module '@tensei/common/fields' {
       authorizedToUpdate: AuthorizeFunction
       authorizedToDelete: AuthorizeFunction
     }
-    fakerFn?: (fn: typeof Faker) => any
+
     property: FieldProperty
     graphqlType: string
     relatedProperty: FieldProperty
     afterConfigSet(): void
-    type(type: string): this
+    type(type: string): thishis
     isRelationshipField: boolean
-    onUpdate(hook: () => any): this
-    onCreate(hook: () => any): this
-    virtual(compute: (value: any) => any): this
-    removeFromSidebarOnForms(): this
-    dockToSidebarOnForms(): this
-    required(): this
-    requiredOnCreate(): this
-    requiredOnUpdate(): this
-    serializer(serializeFn: (value: any) => any): this
-    formComponent(component: string): this
-    indexComponent(component: string): this
-    detailComponent(component: string): this
+    onUpdate(hook: () => any): thishis
+    onCreate(hook: () => any): thishis
+    virtual(compute: (value: any) => any): thishis
+    removeFromSidebarOnForms(): thishis
+    dockToSidebarOnForms(): thishis
+    required(): thishis
+    requiredOnCreate(): thishis
+    requiredOnUpdate(): thishis
+    serializer(serializeFn: (value: any) => any): thishis
+    formComponent(component: string): thishis
+    indexComponent(component: string): thishis
+    detailComponent(component: string): thishis
     getValueFromPayload(payload: DataPayload, request: Express.Request): any
     /**
      *
@@ -313,105 +313,105 @@ declare module '@tensei/common/fields' {
      *
      * Show this field on the index page
      */
-    showOnIndex(): this
+    showOnIndex(): thishis
     /**
      *
      * Show this field on the detail page
      */
-    showOnDetail(): this
+    showOnDetail(): thishis
     /**
      *
      * Show this field on the creation page
      */
-    showOnCreate(): this
+    showOnCreate(): thishis
     /**
      *
      * Show this field on the update page
      */
-    showOnUpdate(): this
+    showOnUpdate(): thishis
     /**
      *
      * Hide this field on the index page
      */
-    hideOnIndex(): this
+    hideOnIndex(): thishis
     /**
      *
      * Hide this field from the detail page
      */
-    hideOnDetail(): this
+    hideOnDetail(): thishis
     /**
      *
      * Hide this field from the create form
      */
-    hideOnCreate(): this
+    hideOnCreate(): thishis
     /**
      *
      * Hide this field from the update form
      */
-    hideOnUpdate(): this
+    hideOnUpdate(): thishis
     /**
      *
      * Hide this field everywhere, except the index page
      */
-    onlyOnIndex(): this
+    onlyOnIndex(): thishis
     /**
      *
      * Hide this field everuwhere, except the
      * create and update forms
      */
-    onlyOnForms(): this
+    onlyOnForms(): thishis
     /**
      *
      * Show this field only on the detail and,
      * index pages. hidden on create and
      * update forms.
      */
-    exceptOnForms(): this
-    hideOnApi(): this
-    hideOnCreateApi(): this
-    hideOnUpdateApi(): this
-    hideOnDeleteApi(): this
-    hideOnFetchApi(): this
+    exceptOnForms(): thishis
+    hideOnApi(): thishis
+    hideOnCreateApi(): thishis
+    hideOnUpdateApi(): thishis
+    hideOnDeleteApi(): thishis
+    hideOnFetchApi(): thishis
     isHiddenOnApi(): boolean
     /**
      *
      * Make this field sortable
      *
      */
-    sortable<T extends FieldContract>(this: T): T
+    sortable(): thishis
     /**
      *
      * Make this field searchable. will also index
      * this field in the database.
      *
      */
-    searchable<T extends FieldContract>(this: T): T
+    searchable(): thishis
     /**
      *
      * Make this field sortable
      *
      */
-    unique<T extends FieldContract>(this: T): T
+    unique(): thishis
     /**
      *
      * Make this field not nullable
      *
      */
-    notNullable<T extends FieldContract>(this: T): T
+    notNullable(): thishis
 
     /**
      *
      * Make this field nullable
      *
      */
-    nullable<T extends FieldContract>(this: T): T
+    nullable(this: thishis): thishis
     /**
      *
      * Define the description. This would be a help text
      * that provides more information to the user
      * about this field on forms.
      */
-    description<T extends FieldContract>(this: T, description: string): T
+    description(description: string): this
     /**
      *
      * Set the default value for this field.
@@ -419,40 +419,40 @@ declare module '@tensei/common/fields' {
      * default
      *
      */
-    default<T extends FieldContract>(this: T, value: any): T
-    defaultFormValue<T extends FieldContract>(this: T, value: any): T
-    defaultRaw<T extends FieldContract>(this: T, value: any): T
+    default(value: any): this
+    defaultFormValue(value: any): this
+    defaultRaw(value: any): this
     /**
      *
      * Set html attributes for this component
      */
-    htmlAttributes<T extends FieldContract>(this: T, attributes: {}): T
+    htmlAttributes(attributes: {}): this
     /**
      *
      * @param this
      */
-    rules<T extends FieldContract>(this: T, ...rules: Array<string>): T
-    arrayRules<T extends FieldContract>(this: T, ...rules: Array<string>): T
-    sanitize<T extends FieldContract>(this: T, rule: SanitizationRules): T
+    rules(...rules: Array<string>): this
+    arrayRules(...rules: Array<string>): this
+    sanitize(rule: SanitizationRules): this
     /**
      * Set the validation rules to be used when
      * creating this field to the database
      */
-    creationRules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+    creationRules(...rules: Array<string>): this
     /**
      * Set the validation rules to be used when updating
      * this field
      */
-    updateRules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+    updateRules(...rules: Array<string>): this
     /**
      * Set this field to be a hidden field. It won't show up
      * in query results.
      */
-    hidden<T extends FieldContract>(this: T): T
-    canSee(authorizeFunction: AuthorizeFunction): this
-    canCreate(authorizeFunction: AuthorizeFunction): this
-    canUpdate(authorizeFunction: AuthorizeFunction): this
-    canDelete(authorizeFunction: AuthorizeFunction): this
+    hidden<T extends FieldContract>(this: this): this
+    canSee(authorizeFunction: AuthorizeFunction): thishis
+    canCreate(authorizeFunction: AuthorizeFunction): thishis
+    canUpdate(authorizeFunction: AuthorizeFunction): thishis
+    canDelete(authorizeFunction: AuthorizeFunction): thishis
     /**
      *
      * Serializes the field for data to be sent
@@ -462,15 +462,15 @@ declare module '@tensei/common/fields' {
     serialize(): SerializedField
   }
   interface TextContract extends FieldContract {
-    truncate(sub: number): this
+    truncate(sub: number): thishis
   }
 
   export type SlugTypes = 'default' | 'date' | 'random'
 
   interface SlugContract extends FieldContract {
-    from(field: string, inputName?: string): this
-    type(slugType: SlugTypes): this
-    editable(): this
+    from(field: string, inputName?: string): thishis
+    type(slugType: SlugTypes): thishis
+    editable(): thishis
   }
 
   const slug: (name: string, databaseField?: string) => SlugContract
@@ -486,14 +486,14 @@ declare module '@tensei/common/fields' {
      * forms
      *
      */
-    min(min: number): this
+    min(min: number): thishis
     /**
      * Set the max value for this number field.
      * Will be the max on the number in
      * forms
      *
      */
-    max(max: number): this
+    max(max: number): thishis
   }
   const number: (
     name: string,
@@ -506,21 +506,21 @@ declare module '@tensei/common/fields' {
      * forms
      *
      */
-    min(min: number): this
+    min(min: number): thishis
     /**
      * Set the max value for this number field.
      * Will be the max on the number in
      * forms
      *
      */
-    max(max: number): this
-    foreign(): this
+    max(max: number): thishis
+    foreign(): thishis
     /**
      *
      * Make this field sortable
      *
      */
-    unsigned(): this
+    unsigned(): thishis
   }
   interface FloatContract extends NumberFieldContract {}
   const float: (
@@ -544,7 +544,7 @@ declare module '@tensei/common/fields' {
   }
   interface SelectContract extends FieldContract {
     selectOptions: Option[]
-    options(options: (Option | string)[]): this
+    options(options: (Option | string)[]): thishis
   }
   const select: (
     name: string,
@@ -564,10 +564,10 @@ declare module '@tensei/common/fields' {
      *
      * https://date-fns.org/v2.14.0/docs/format
      */
-    defaultToNow(): this
-    timePicker24Hr(): this
-    format(format: string): this
-    pickerFormat(format: string): this
+    defaultToNow(): thishis
+    timePicker24Hr(): thishis
+    format(format: string): thishis
+    pickerFormat(format: string): thishis
   }
   const date: (
     name: string,
@@ -577,23 +577,23 @@ declare module '@tensei/common/fields' {
   interface JsonContract extends DateFieldContract {}
   interface LinkContract extends TextContract {}
   interface RelationshipField extends FieldContract {
-    cascades(cascades: Cascade[]): this
-    foreignKey(foreignKey: string): this
-    owner(): this
-    alwaysLoad(): this
-    label(label: string): this
+    cascades(cascades: Cascade[]): thishis
+    foreignKey(foreignKey: string): thishis
+    owner(): thishis
+    alwaysLoad(): thishis
+    label(label: string): thishis
   }
   const oneToOne: (name: string, databaseField?: string) => RelationshipField
   const oneToMany: (name: string, databaseField?: string) => RelationshipField
   const manyToOne: (name: string, databaseField?: string) => RelationshipField
   const manyToMany: (name: string, databaseField?: string) => RelationshipField
   interface ArrayContract extends FieldContract {
-    of(arrayOf: 'string' | 'number' | 'decimal' | 'date'): this
+    of(arrayOf: 'string' | 'number' | 'decimal' | 'date'): thishis
   }
   interface BooleanFieldContract extends FieldContract {
-    trueLabel(value: string): this
-    falseLabel(value: string): this
-    positiveValues(values: any[]): this
+    trueLabel(value: string): thishis
+    falseLabel(value: string): thishis
+    positiveValues(values: any[]): thishis
   }
   const boolean: (
     name: string,
@@ -636,6 +636,7 @@ declare module '@tensei/common/fields' {
   ) => ArrayContract
 
   export declare class Field implements FieldContract {
+    constructor(name: string, databaseField?: string): this
     showHideField: {
       /**
        *
@@ -663,6 +664,18 @@ declare module '@tensei/common/fields' {
        */
       showOnCreation: boolean
     }
+    component: {
+      form: string
+      index: string
+      detail: string
+    }
+    sanitizeRule?: SanitizationRules
+    showHideFieldFromApi: {
+      hideOnCreateApi: boolean
+      hideOnUpdateApi: boolean
+      hideOnDeleteApi: boolean
+      hideOnFetchApi: boolean
+    }
     tenseiConfig: Config | null
     authorizeCallbacks: {
       authorizedToSee: AuthorizeFunction
@@ -670,6 +683,26 @@ declare module '@tensei/common/fields' {
       authorizedToUpdate: AuthorizeFunction
       authorizedToDelete: AuthorizeFunction
     }
+
+    property: FieldProperty
+    graphqlType: string
+    relatedProperty: FieldProperty
+    afterConfigSet(): void
+    type(type: string): thishis
+    isRelationshipField: boolean
+    onUpdate(hook: () => any): thishis
+    onCreate(hook: () => any): thishis
+    virtual(compute: (value: any) => any): thishis
+    removeFromSidebarOnForms(): thishis
+    dockToSidebarOnForms(): thishis
+    required(): thishis
+    requiredOnCreate(): thishis
+    requiredOnUpdate(): thishis
+    serializer(serializeFn: (value: any) => any): thishis
+    formComponent(component: string): thishis
+    indexComponent(component: string): thishis
+    detailComponent(component: string): thishis
+    getValueFromPayload(payload: DataPayload, request: Express.Request): any
     /**
      *
      * The name of the field. Will be used to display table columns,
@@ -682,6 +715,8 @@ declare module '@tensei/common/fields' {
      * this field on forms
      */
     validationRules: Array<string>
+
+    arrayValidationRules: Array<string>
     /**
      *
      * Define validation rules to be used to validate
@@ -708,15 +743,11 @@ declare module '@tensei/common/fields' {
      */
     isHidden: boolean
     /**
-     *shi
+     *
      * This is a short name for the frontend component that
      * will be mounted for this field.
      */
-    component: {
-      form: string
-      detail: string
-      index: string
-    }
+    component: string
     /**
      *
      * The database field associated with this field.
@@ -748,6 +779,17 @@ declare module '@tensei/common/fields' {
      *
      */
     defaultValue: any
+
+    camelCaseName: string
+
+    pascalCaseName: string
+
+    camelCaseNamePlural: string
+
+    snakeCaseName: string
+    snakeCaseNamePlural: string
+
+    capsDatabasefieldName: string
     /**
      * Instantiate a new field. Requires the name,
      * and optionally the corresponding database
@@ -755,99 +797,109 @@ declare module '@tensei/common/fields' {
      * default to the camel case version of
      * the name.
      */
-    constructor(name: string, databaseField?: string)
     /**
      *
      * Show this field on the index page
      */
-    showOnIndex(): this
+    showOnIndex(): thishis
     /**
      *
      * Show this field on the detail page
      */
-    showOnDetail(): this
+    showOnDetail(): thishis
     /**
      *
      * Show this field on the creation page
      */
-    showOnCreate(): this
+    showOnCreate(): thishis
     /**
      *
      * Show this field on the update page
      */
-    showOnUpdate(): this
+    showOnUpdate(): thishis
     /**
      *
      * Hide this field on the index page
      */
-    hideOnIndex(): this
+    hideOnIndex(): thishis
     /**
      *
      * Hide this field from the detail page
      */
-    hideOnDetail(): this
+    hideOnDetail(): thishis
     /**
      *
      * Hide this field from the create form
      */
-    hideOnCreate(): this
+    hideOnCreate(): thishis
     /**
      *
      * Hide this field from the update form
      */
-    hideOnUpdate(): this
+    hideOnUpdate(): thishis
     /**
      *
      * Hide this field everywhere, except the index page
      */
-    onlyOnIndex(): this
+    onlyOnIndex(): thishis
     /**
      *
      * Hide this field everuwhere, except the
      * create and update forms
      */
-    onlyOnForms(): this
+    onlyOnForms(): thishis
     /**
      *
      * Show this field only on the detail and,
      * index pages. hidden on create and
      * update forms.
      */
-    exceptOnForms(): this
+    exceptOnForms(): thishis
+    hideOnApi(): thishis
+    hideOnCreateApi(): thishis
+    hideOnUpdateApi(): thishis
+    hideOnDeleteApi(): thishis
+    hideOnFetchApi(): thishis
+    isHiddenOnApi(): boolean
     /**
      *
      * Make this field sortable
      *
      */
-    sortable<T extends FieldContract>(this: T): T
-    filterable<T extends FieldContract>(this: T): T
-    notFilterable<T extends FieldContract>(this: T): T
+    sortable(): thishis
     /**
      *
      * Make this field searchable. will also index
      * this field in the database.
      *
      */
-    searchable<T extends FieldContract>(this: T): T
+    searchable(): thishis
     /**
      *
      * Make this field sortable
      *
      */
-    unique<T extends FieldContract>(this: T): T
+    unique(): thishis
+    /**
+     *
+     * Make this field not nullable
+     *
+     */
+    notNullable(): thishis
+
     /**
      *
      * Make this field nullable
      *
      */
-    notNullable<T extends FieldContract>(this: T): T
+    nullable(this: thishis): thishis
     /**
      *
      * Define the description. This would be a help text
      * that provides more information to the user
      * about this field on forms.
      */
-    description<T extends FieldContract>(this: T, description: string): T
+    description(description: string): this
     /**
      *
      * Set the default value for this field.
@@ -855,39 +907,40 @@ declare module '@tensei/common/fields' {
      * default
      *
      */
-    default<T extends FieldContract>(
-      this: T,
-      value: string | number | boolean
-    ): T
+    default(value: any): this
+    defaultFormValue(value: any): this
+    defaultRaw(value: any): this
     /**
      *
      * Set html attributes for this component
      */
-    htmlAttributes<T extends FieldContract>(this: T, attributes: {}): T
+    htmlAttributes(attributes: {}): this
     /**
      *
      * @param this
      */
-    rules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+    rules(...rules: Array<string>): this
+    arrayRules(...rules: Array<string>): this
+    sanitize(rule: SanitizationRules): this
     /**
      * Set the validation rules to be used when
      * creating this field to the database
      */
-    creationRules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+    creationRules(...rules: Array<string>): this
     /**
      * Set the validation rules to be used when updating
      * this field
      */
-    updateRules<T extends FieldContract>(this: T, ...rules: Array<string>): T
+    updateRules(...rules: Array<string>): this
     /**
      * Set this field to be a hidden field. It won't show up
      * in query results.
      */
-    hidden<T extends FieldContract>(this: T): T
-    canSee(authorizeFunction: AuthorizeFunction): this
-    canCreate(authorizeFunction: AuthorizeFunction): this
-    canUpdate(authorizeFunction: AuthorizeFunction): this
-    canDelete(authorizeFunction: AuthorizeFunction): this
+    hidden<T extends FieldContract>(this: this): this
+    canSee(authorizeFunction: AuthorizeFunction): thishis
+    canCreate(authorizeFunction: AuthorizeFunction): thishis
+    canUpdate(authorizeFunction: AuthorizeFunction): thishis
+    canDelete(authorizeFunction: AuthorizeFunction): thishis
     /**
      *
      * Serializes the field for data to be sent

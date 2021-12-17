@@ -1,4 +1,4 @@
-import Field from './Field'
+import { Field } from './Field'
 
 export class Json extends Field {
   public databaseFieldType: string = 'json'

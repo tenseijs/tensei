@@ -109,7 +109,7 @@ export class SparkPostTransport {
         response.body.results?.id || mail.message.messageId()
       ).replace(/^<|>$/g, '')
       callback(null, { messageId, envelope })
-    } catch (error) {
+    } catch (error: any) {
       callback(EmailTransportException.apiFailure(error))
     }
   }

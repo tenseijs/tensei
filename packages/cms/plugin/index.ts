@@ -43,6 +43,8 @@ const indexFileContent = Fs.readFileSync(
   Path.resolve(__dirname, 'template', 'index.mustache')
 ).toString()
 
+const baseScripts = ['main.js', 'vendor.js', 'manifest.js']
+
 class CmsPlugin {
   private scripts: Asset[] = [
     {
@@ -606,10 +608,14 @@ class CmsPlugin {
         app.use(`/${this.config.path}`, this.router)
 
         app.get(`/${this.config.path}(/*)?`, async (request, response) => {
+          const sortedScripts = request.scripts
+            .filter(script => !script.chunk) // Only non-chunk scripts will be mounted. The chunked scripts will be fetched by webpack during load time.
+            .sort(script => (baseScripts.includes(script.name) ? -1 : 0))
+
           response.send(
             Mustache.render(indexFileContent, {
               styles: request.styles,
-              scripts: request.scripts.filter(script => !script.chunk), // Only non-chunk scripts will be mounted. The chunked scripts will be fetched by webpack during load time.
+              scripts: sortedScripts,
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({

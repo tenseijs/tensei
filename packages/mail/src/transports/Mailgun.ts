@@ -145,7 +145,7 @@ export class MailgunTransport {
         ''
       )
       callback(null, { messageId, envelope })
-    } catch (error) {
+    } catch (error: any) {
       callback(EmailTransportException.apiFailure(error))
     }
   }

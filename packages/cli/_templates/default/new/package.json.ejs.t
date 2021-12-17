@@ -29,6 +29,6 @@ to: <%= h.changeCase.param(name) %>/package.json
         "postcss": "^8.2.4",
         "tailwindcss": "^2.0.2",
         "ts-loader": "^8.0.14",
-        "typescript": "^4.2.4"
+        "typescript": "^4.5.4"
     }
 }

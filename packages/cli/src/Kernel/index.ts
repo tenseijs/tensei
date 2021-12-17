@@ -299,7 +299,7 @@ export class Kernel implements KernelContract {
 
     try {
       await this.exitHandler(this)
-    } catch (exitHandlerError) {
+    } catch (exitHandlerError: any) {
       logger.warning(
         'Expected exit handler to exit the process. Instead it raised an exception'
       )

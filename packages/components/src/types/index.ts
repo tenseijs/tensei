@@ -4,6 +4,8 @@ import {
   AxiosResponse,
   AxiosError
 } from 'axios'
+import * as Lib from '@tensei/eui'
+import * as styled from 'styled-components'
 
 export interface UserPermission {
   id: number
@@ -219,7 +221,7 @@ export interface ResourceContract {
   table: string
 }
 
-interface TenseiRegisterParams {
+export interface TenseiRegisterParams {
   route: (route: Partial<CmsRoute>) => void
   formComponent: (name: string, Component: React.FC<any>) => void
   indexComponent: (name: string, Component: React.FC<any>) => void
@@ -229,6 +231,9 @@ export type TenseiRegisterFunction = (params: TenseiRegisterParams) => void
 
 export interface Tensei {
   boot: () => void
+  styled: typeof styled & {
+    styled: typeof styled.default
+  }
   state: TenseiState
   ctx: TenseiCtxInterface
   getPath: (path: string) => string
@@ -266,9 +271,7 @@ export interface Tensei {
       [key: string]: React.FunctionComponent<any>
     }
   }
-  lib: {
-    [key: string]: React.FunctionComponent<any>
-  }
+  eui: typeof Lib
   route: (route: Partial<CmsRoute>) => void
 
   formComponent: (name: string, Component: React.FC<any>) => void

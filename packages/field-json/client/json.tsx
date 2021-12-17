@@ -1,6 +1,5 @@
 import React from 'react'
-import styled from 'styled-components'
-import { EuiText } from '@tensei/eui/lib/components/text'
+import { FormComponentProps } from '@tensei/components'
 import { Controlled as CodeMirror } from 'react-codemirror2'
 
 import 'codemirror/lib/codemirror.css'
@@ -8,12 +7,14 @@ import 'codemirror/addon/edit/closebrackets'
 import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/display/autorefresh'
 
-import { FormComponentProps } from '@tensei/components'
+const { EuiText } = window.Tensei.eui
+// @ts-ignore
+const { styled } = window.Tensei.styled
 
 const Wrapper = styled.div<{
   focus?: boolean
 }>`
-  ${({ theme, focus }) => `
+  ${({ theme, focus }: any) => `
     .react-codemirror2 {
       cursor: text;
       background-repeat: no-repeat;
@@ -67,7 +68,7 @@ const JsonHeader = styled.div`
   `}
 `
 
-const FormJson: React.FC<FormComponentProps> = ({
+export const FormJson: React.FC<FormComponentProps> = ({
   field,
   value,
   onChange,

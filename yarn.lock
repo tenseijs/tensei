@@ -4608,10 +4608,10 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tensei/eui@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@tensei/eui/-/eui-1.0.3.tgz#8bf0f720eafd7d9cb6549d768cddcc8e1a77bedf"
-  integrity sha512-iYzRSVdM18M1H8eqMcHanIKTB/rkI4127hr3hbNCsYH9OeH9hERHTi3Clx6dHI+SughYXlGTaiEXdRr+txkiWA==
+"@tensei/eui@1.0.5", "@tensei/eui@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@tensei/eui/-/eui-1.0.5.tgz#895adae5d06a8c1b90a6f1cd79320a6d69c5e591"
+  integrity sha512-g2RQ7x/9NQ5jJQeloEGQlG81aHyRZINL9B8ZQRY5ydsOQX9RZsSirVsIu99Rm6cfTWbfEStzGzWFc/ZHNTQsJQ==
   dependencies:
     "@types/chroma-js" "^2.0.0"
     "@types/lodash" "^4.14.160"
@@ -24820,15 +24820,15 @@ typescript@^4.2.4:
   resolved "https://registry.npmjs.org/typescript/-/typescript-4.2.4.tgz"
   integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
 
-typescript@^4.3.4:
-  version "4.3.4"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-4.3.4.tgz"
-  integrity sha512-uauPG7XZn9F/mo+7MrsRjyvbxFpzemRjKEZXS4AK83oP2KKOJPvb+9cO/gmnv8arWZvhnjVOXz7B49m1l0e9Ew==
-
 typescript@^4.4.2:
   version "4.4.3"
   resolved "https://registry.npmjs.org/typescript/-/typescript-4.4.3.tgz"
   integrity sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==
+
+typescript@^4.5.4:
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.5.4.tgz#a17d3a0263bf5c8723b9c52f43c5084edf13c2e8"
+  integrity sha512-VgYs2A2QIRuGphtzFV7aQJduJ2gyfTljngLzjpfW9FoYZF6xuw1W0vW9ghCKLfcWrCFxK81CSGRAvS1pn4fIUg==
 
 ua-parser-js@^0.7.24:
   version "0.7.24"

@@ -24,7 +24,8 @@ const packages = [
   ['react-auth', 'dist'],
   'rest',
   'sdk',
-  'social-auth'
+  'social-auth',
+  'field-json'
 ]
 
 packages.forEach(package => {

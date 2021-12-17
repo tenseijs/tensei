@@ -1,6 +1,15 @@
 import Qs from 'qs'
 import Axios, { AxiosRequestConfig } from 'axios'
-import * as Lib from '@tensei/components'
+import * as Lib from '@tensei/eui'
+import {
+  ResourceContract,
+  TenseiState,
+  TenseiCtxInterface,
+  TenseiRegisterFunction,
+  Tensei,
+  CmsRoute
+} from '@tensei/components'
+import * as styled from 'styled-components'
 
 // Form
 import FormText from './form/text'
@@ -9,7 +18,6 @@ import FormNumber from './form/number'
 import FormSlug from './form/slug'
 import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
-import FormJson from './form/json'
 import FormPassword from './form/password'
 import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
 
@@ -22,6 +30,7 @@ import IndexNumber from './index/number'
 import { IndexSelect } from './index/select'
 
 class Core {
+  styled = {} as any
   state = (() => {
     let config = {}
     let admin = null
@@ -30,7 +39,7 @@ class Core {
       [key: string]: boolean
     } = {}
     let resourcesMap: {
-      [key: string]: Lib.ResourceContract
+      [key: string]: ResourceContract
     } = {}
     let registered = false
 
@@ -59,7 +68,7 @@ class Core {
       permissions,
       registered,
       resourcesMap
-    } as Lib.TenseiState
+    } as TenseiState
   })()
 
   constructor() {
@@ -72,13 +81,11 @@ class Core {
 
   getPath = (path: string) => `/${this.state.config.dashboardPath}/${path}`
 
-  private hooks: Lib.TenseiRegisterFunction[] = []
+  private hooks: TenseiRegisterFunction[] = []
 
-  lib: Lib.Tensei['lib'] = {
-    ...Lib
-  }
+  eui: Tensei['eui'] = Lib as any
 
-  components: Lib.Tensei['components'] = {
+  components: Tensei['components'] = {
     form: {
       Slug: FormSlug,
       Text: FormText,
@@ -87,7 +94,6 @@ class Core {
       Integer: FormNumber,
       Boolean: FormBoolean,
       Textarea: FormTextarea,
-      Json: FormJson,
       ManyToOne: FormBelongsToMany,
       ManyToMany: FormBelongsToMany,
       OneToMany: FormBelongsToMany
@@ -103,9 +109,9 @@ class Core {
     }
   }
 
-  routes: Lib.CmsRoute[] = []
+  routes: CmsRoute[] = []
 
-  route = (route: Partial<Lib.CmsRoute>) => {
+  route = (route: Partial<CmsRoute>) => {
     this.routes.push({
       ...(route as any),
       path: this.getPath(route.path!),
@@ -115,7 +121,7 @@ class Core {
     })
   }
 
-  ctx: Lib.TenseiCtxInterface = {} as any
+  ctx: TenseiCtxInterface = {} as any
 
   client = Axios.create({
     baseURL: this.state.config.apiPath,
@@ -170,7 +176,7 @@ class Core {
     }
   }
 
-  register = (fn: Lib.TenseiRegisterFunction) => {
+  register = (fn: TenseiRegisterFunction) => {
     this.hooks.push(fn)
   }
 
@@ -201,3 +207,7 @@ class Core {
 
 window.axios = Axios
 window.Tensei = new Core()
+window.Tensei.styled = {
+  ...styled,
+  styled: styled.default
+}

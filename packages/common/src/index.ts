@@ -1,7 +1,7 @@
 export { id, ID } from './fields/ID'
+export { json, Json } from './fields/Json'
 export { text, Text } from './fields/Text'
 export { link, Link } from './fields/Link'
-export { Json, json } from './fields/Json'
 export { slug, Slug } from './fields/Slug'
 export { date, DateField } from './fields/Date'
 export { select, Select } from './fields/Select'
