@@ -39,6 +39,7 @@ import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useToastStore } from '../../../store/toast'
 import { debounce } from 'throttle-debounce'
 import { Filter } from '@tensei/common/config'
+import { useAuthStore } from '../../../store/auth'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -257,6 +258,7 @@ export const Table: React.FunctionComponent<TableProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteButtonLoading, setDeleteButtonLoading] = useState(false)
   const { push } = useHistory()
+  const { hasPermission } = useAuthStore()
 
   useEffect(() => {
     onSelect?.(selectedItems)
@@ -350,6 +352,17 @@ export const Table: React.FunctionComponent<TableProps> = ({
                 icon: 'pencil',
                 type: 'icon',
                 onClick: item => {
+                  if (!hasPermission(`update:${resource?.slugPlural}`)) {
+                    toast(
+                      'Unauthorized',
+                      <p>
+                        You're not authorized to edit{' '}
+                        {resource?.name.toLowerCase()}
+                      </p>,
+                      'danger'
+                    )
+                    return
+                  }
                   push(
                     window.Tensei.getPath(
                       `resources/${resource?.slugPlural}/${item.id}/edit`
@@ -364,6 +377,17 @@ export const Table: React.FunctionComponent<TableProps> = ({
                 type: 'icon',
                 color: 'danger',
                 onClick: item => {
+                  if (!hasPermission(`update:${resource?.slugPlural}`)) {
+                    toast(
+                      'Unauthorized',
+                      <p>
+                        You're not authorized to delete{' '}
+                        {resource?.name.toLowerCase()}
+                      </p>,
+                      'danger'
+                    )
+                    return
+                  }
                   setIsModalVisible(true)
                   setItemsSelectedForDelete([item.id])
                 }
@@ -485,6 +509,8 @@ export const Table: React.FunctionComponent<TableProps> = ({
 export const ResourceView: React.FunctionComponent = () => {
   const { push } = useHistory()
   const { resource, findResource } = useResourceStore()
+  const { hasPermission } = useAuthStore()
+  const { toast } = useToastStore()
 
   const { resource: resourceSlug } = useParams<{
     resource: string
@@ -495,6 +521,18 @@ export const ResourceView: React.FunctionComponent = () => {
 
     if (!found) {
       push(window.Tensei.getPath(''))
+    } else {
+      if (!hasPermission(`create:${found?.slugPlural}`)) {
+        push(window.Tensei.getPath(``))
+
+        toast(
+          'Unauthorized',
+          <p>You're not authorized to access {found?.name.toLowerCase()}</p>,
+          'danger'
+        )
+
+        return
+      }
     }
   }, [resourceSlug])
 
@@ -504,15 +542,23 @@ export const ResourceView: React.FunctionComponent = () => {
         <EuiTitle size="xs">
           <h3>{resource?.namePlural}</h3>
         </EuiTitle>
-        <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
-          <EuiButton fill iconType={'plus'}>
-            Create {resource?.name?.toLowerCase()}
-          </EuiButton>
-        </Link>
+        {hasPermission(`create:${resource?.slugPlural}`) ? (
+          <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
+            <EuiButton fill iconType={'plus'}>
+              Create {resource?.name?.toLowerCase()}
+            </EuiButton>
+          </Link>
+        ) : null}
       </DashboardLayout.Topbar>
       <DashboardLayout.Content>
         <PageWrapper>
-          {resource ? <Resource resource={resource} /> : <p>Loading ...</p>}
+          {resource ? (
+            hasPermission(`create:${resource?.slugPlural}`) ? (
+              <Resource resource={resource} />
+            ) : null
+          ) : (
+            <p>Loading ...</p>
+          )}
         </PageWrapper>
       </DashboardLayout.Content>
     </>

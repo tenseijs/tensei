@@ -23,6 +23,7 @@ import { useForm } from '../../hooks/forms'
 import { FieldGroup } from './field-group'
 import moment from 'moment'
 import { AxiosResponse } from 'axios'
+import { useAuthStore } from '../../../store/auth'
 
 const Sidebar = styled.div<{ close: boolean; inFlyout?: boolean }>`
   background-color: #fcfcfc;
@@ -252,6 +253,7 @@ export const ResourceFormWrapper: React.FunctionComponent = () => {
   const match = useRouteMatch()
   const isEditing =
     match.path === window.Tensei.getPath('resources/:resource/:id/edit')
+  const { hasPermission } = useAuthStore()
 
   const getData = async (foundResource: ResourceContract) => {
     const [response, error] = await fetchResourceData(
@@ -283,6 +285,18 @@ export const ResourceFormWrapper: React.FunctionComponent = () => {
     }
 
     if (isEditing) {
+      if (!hasPermission(`create:${found?.slugPlural}`)) {
+        push(window.Tensei.getPath(`resources/${found?.slugPlural}`))
+
+        toast(
+          'Unauthorized',
+          <p>You're not authorized to edit {found?.name.toLowerCase()}</p>,
+          'danger'
+        )
+
+        return
+      }
+
       if (!resourceId) {
         push(window.Tensei.getPath(`resources/${found?.slugPlural}`))
 
@@ -290,6 +304,18 @@ export const ResourceFormWrapper: React.FunctionComponent = () => {
       }
 
       getData(found)
+    } else {
+      if (!hasPermission(`create:${found?.slugPlural}`)) {
+        push(window.Tensei.getPath(`resources/${found?.slugPlural}`))
+
+        toast(
+          'Unauthorized',
+          <p>You're not authorized to create {found?.name.toLowerCase()}</p>,
+          'danger'
+        )
+
+        return
+      }
     }
   }, [resourceSlug])
 
