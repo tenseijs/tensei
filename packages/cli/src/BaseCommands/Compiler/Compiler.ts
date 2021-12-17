@@ -61,7 +61,7 @@ export class Compiler {
   private async copyFiles(files: string[], outDir: string) {
     try {
       await copyfiles(files, outDir, { cwd: this.appRoot, parents: true })
-    } catch (error) {
+    } catch (error: any) {
       if (!error.message.includes("the file doesn't exist")) {
         throw error
       }

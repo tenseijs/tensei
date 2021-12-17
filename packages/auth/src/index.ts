@@ -12,7 +12,6 @@ import {
   array,
   textarea,
   belongsTo,
-  belongsToMany,
   dateTime,
   DataPayload,
   FieldContract,
@@ -1220,7 +1219,7 @@ export class Auth implements AuthContract {
               .handle(async (request, { formatter: { ok, unauthorized } }) => {
                 try {
                   return ok(await this.handleRefreshTokens(request as any))
-                } catch (error) {
+                } catch (error: any) {
                   return unauthorized({
                     message: error.message || 'Invalid refresh token.'
                   })
@@ -2281,14 +2280,16 @@ export class Auth implements AuthContract {
     return this.populateContextFromToken(token, ctx)
   }
 
-  private validateForgotPassword = async (payload: DataPayload) => {
+  private validateForgotPassword = async (
+    payload: DataPayload
+  ): Promise<[boolean, DataPayload]> => {
     try {
       const { email } = await validateAll(payload, {
         email: 'required|email'
       })
 
       return [true, { email }]
-    } catch (errors) {
+    } catch (errors: any) {
       return [false, errors]
     }
   }
@@ -2361,7 +2362,9 @@ export class Auth implements AuthContract {
     return true
   }
 
-  private validateResetPassword = async (payload: DataPayload) => {
+  private validateResetPassword = async (
+    payload: DataPayload
+  ): Promise<[boolean, DataPayload]> => {
     try {
       const { token, password } = await validateAll(payload, {
         token: 'required|string',
@@ -2369,7 +2372,7 @@ export class Auth implements AuthContract {
       })
 
       return [true, { token, password }]
-    } catch (errors) {
+    } catch (errors: any) {
       return [false, errors]
     }
   }

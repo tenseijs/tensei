@@ -177,7 +177,7 @@ export class MailManager
     try {
       const response = await this.use(mail.mailer).sendCompiled(mail)
       cb(null, { mail, response })
-    } catch (error) {
+    } catch (error: any) {
       error.mail = mail
       cb(error)
     }

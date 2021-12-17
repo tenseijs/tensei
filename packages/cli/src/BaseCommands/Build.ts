@@ -48,7 +48,7 @@ export const build = command('build')
       if (!compiled) {
         this.exitCode = 1
       }
-    } catch (error) {
+    } catch (error: any) {
       this.logger.fatal(error)
       this.exitCode = 1
     }
