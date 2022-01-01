@@ -30,6 +30,7 @@ export default tensei()
         text('Name').rules('required').sortable().searchable(),
         slug('Slug')
           .creationRules('required', 'unique:slug')
+          .type('date')
           .unique()
           .description(
             'A short name representing the product name. Used for uniquely displaying the product in the browser.'

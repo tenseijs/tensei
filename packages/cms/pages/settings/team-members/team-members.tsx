@@ -11,6 +11,7 @@ import {
   EuiBasicTableColumn
 } from '@tensei/eui/lib/components/basic_table'
 import moment from 'moment'
+import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { EuiAvatar } from '@tensei/eui/lib/components/avatar'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 import {
@@ -24,8 +25,7 @@ import { useGeneratedHtmlId } from '@tensei/eui/lib/services'
 import {
   EuiCheckboxGroup,
   EuiForm,
-  EuiFormRow,
-  EuiSwitch
+  EuiFormRow
 } from '@tensei/eui/lib/components/form'
 
 const Wrapper = styled.div`
@@ -326,7 +326,9 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     <PageWrapper>
       <Wrapper>
         <TableMetaWrapper>
-          <h1>All members ({teamMembers.length})</h1>
+          <EuiTitle>
+            <h1>All members ({teamMembers.length})</h1>
+          </EuiTitle>
           <EuiButtonEmpty iconType={'plus'}>Add team members</EuiButtonEmpty>
         </TableMetaWrapper>
 

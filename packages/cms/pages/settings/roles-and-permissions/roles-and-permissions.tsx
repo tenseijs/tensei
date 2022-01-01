@@ -12,6 +12,7 @@ import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { EuiFieldText, EuiTextArea } from '@tensei/eui/lib/components/form'
 import { EuiText } from '@tensei/eui/lib/components/text'
+import { EuiFormLabel } from '@tensei/eui/lib/components/form'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import {
   EuiSwitch,
@@ -22,6 +23,7 @@ import { EuiSpacer } from '@tensei/eui/lib/components/spacer/'
 import styled from 'styled-components'
 import { ResourceContract } from '@tensei/components'
 import slugify from 'speakingurl'
+import { useForm } from '../../hooks/forms'
 interface CreateRoleForm {
   name: string
   description: string
@@ -39,6 +41,9 @@ interface CreateRoleFormProps {
   createRoleForm: CreateRoleForm
   setCreateRoleForm: (form: CreateRoleForm) => void
   fetchAdminRoles: () => void
+  loading?: boolean
+  errors?: any
+  submit?: () => void
 }
 
 const RolesAndPermissionWrapper = styled.div`
@@ -55,22 +60,40 @@ const AccordionWrapper = styled.div`
 const AccordionHeader = styled.div`
   height: 46px;
   width: 100%;
-  padding: 16px 14px;
+  padding: 0px 16px;
   border: 1px solid #c9d3db;
   background-color: #f5f7f9;
-  border-radius: 6px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `
 const Accordionbody = styled.div``
-const AccordionItem = styled.div`
-  padding: 20px 20px;
+const AccordionItem = styled.div<{
+  isLast?: boolean
+}>`
   border-left: 0.4px solid #c9d3db;
   border-right: 0.4px solid #c9d3db;
   border-bottom: 0.4px solid #c9d3db;
   height: 46px;
+
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  ${({ isLast }) =>
+    isLast
+      ? `
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  `
+      : ``}
 `
 
 interface PermissionProps {
+  isLast?: boolean
   permission: string
+  checked?: boolean
   resource: ResourceContract
   allPermissions: AdminPermission[]
   createRoleForm: CreateRoleFormProps
@@ -78,16 +101,14 @@ interface PermissionProps {
 
 const Switch: React.FC<{
   onChange?: (value: boolean) => void
-}> = ({ onChange }) => {
-  const [checked, setChecked] = useState(false)
-
+  checked?: boolean
+}> = ({ onChange, checked }) => {
   return (
     <EuiSwitch
       label="enable"
       showLabel={false}
-      checked={checked}
+      checked={!!checked}
       onChange={() => {
-        setChecked(!checked)
         onChange?.(!checked)
       }}
     />
@@ -97,10 +118,12 @@ const Switch: React.FC<{
 const AccordionPermissions: React.FC<PermissionProps> = ({
   permission: action,
   resource,
+  isLast,
+  checked,
   allPermissions,
   createRoleForm: { createRoleForm, setCreateRoleForm }
 }) => {
-  function onSwitchChange(checked: boolean) {
+  function onSwitchChange() {
     const selectedPermission = allPermissions.find(
       permission =>
         permission.slug === `${action.toLowerCase()}:${resource.slug}`
@@ -129,10 +152,10 @@ const AccordionPermissions: React.FC<PermissionProps> = ({
   }
 
   return (
-    <AccordionItem>
+    <AccordionItem isLast={isLast}>
       <EuiFlexGroup justifyContent="spaceBetween">
         <EuiText size="s">Can {action}</EuiText>
-        <Switch onChange={onSwitchChange} />
+        <Switch onChange={onSwitchChange} checked={checked} />
       </EuiFlexGroup>
     </AccordionItem>
   )
@@ -143,34 +166,79 @@ const FlyoutAccordion: React.FC<{
   allPermissions: AdminPermission[]
 }> = ({ createRoleForm, allPermissions }) => {
   const resources = window.Tensei.state.resources
-  const [selectedPermission, setSelectedPermission] = useState<any>([])
 
   return (
     <>
-      {resources.map(resource => (
-        <AccordionWrapper>
-          <AccordionHeader>{resource.name}</AccordionHeader>
-          <Accordionbody>
-            {['Create', 'Index', 'Update', 'Delete'].map(permission => (
-              <>
-                <AccordionPermissions
-                  resource={resource}
-                  permission={permission}
-                  allPermissions={allPermissions}
-                  createRoleForm={createRoleForm}
-                />
-              </>
-            ))}
-          </Accordionbody>
-        </AccordionWrapper>
-      ))}
+      {resources.map(resource => {
+        const resourcePermissions = [
+          `create:${resource.slug}`,
+          `index:${resource.slug}`,
+          `update:${resource.slug}`,
+          `delete:${resource.slug}`
+        ]
+        const resourcePermissionsIds = resourcePermissions.map(
+          permissionSlug =>
+            allPermissions.find(p => p.slug === permissionSlug)!.id
+        )
+
+        const checked = resourcePermissionsIds.every(p =>
+          createRoleForm.createRoleForm.adminPermissions.includes(p)
+        )
+
+        return (
+          <AccordionWrapper key={resource.slug}>
+            <AccordionHeader>
+              {resource.name}
+
+              <Switch
+                onChange={function () {
+                  createRoleForm.setCreateRoleForm({
+                    ...createRoleForm.createRoleForm,
+                    adminPermissions: checked
+                      ? Array.from(
+                          new Set(
+                            createRoleForm.createRoleForm.adminPermissions.filter(
+                              permission =>
+                                !resourcePermissionsIds.includes(permission)
+                            )
+                          )
+                        )
+                      : Array.from(
+                          new Set([
+                            ...createRoleForm.createRoleForm.adminPermissions,
+                            ...resourcePermissionsIds
+                          ])
+                        )
+                  })
+                }}
+                checked={checked}
+              />
+            </AccordionHeader>
+            <Accordionbody>
+              {['Create', 'Index', 'Update', 'Delete'].map(
+                (permission, idx) => (
+                  <AccordionPermissions
+                    isLast={idx === 3}
+                    resource={resource}
+                    permission={permission}
+                    allPermissions={allPermissions}
+                    createRoleForm={createRoleForm}
+                    key={`${permission}-${resource.name}`}
+                    checked={createRoleForm.createRoleForm.adminPermissions.includes(
+                      resourcePermissionsIds[idx]
+                    )}
+                  />
+                )
+              )}
+            </Accordionbody>
+          </AccordionWrapper>
+        )
+      })}
     </>
   )
 }
-interface ErrObj {
-  name: string
-  slug: string
-}
+
+type FormErrors = {}
 
 const RolesFlyout: React.FC<{
   setIsFlyoutOpen: (open: boolean) => void
@@ -178,34 +246,20 @@ const RolesFlyout: React.FC<{
   allPermissions: AdminPermission[]
 }> = ({
   setIsFlyoutOpen,
-  createRoleForm: { createRoleForm, setCreateRoleForm, fetchAdminRoles },
+  createRoleForm: {
+    createRoleForm,
+    setCreateRoleForm,
+    fetchAdminRoles,
+    loading,
+    errors,
+    submit
+  },
   allPermissions
 }) => {
   const flyoutHeadingId = useGeneratedHtmlId()
-  const [errors, setErrors] = useState<ErrObj>({ name: '', slug: '' })
 
   const closeFlyout = () => {
     setIsFlyoutOpen(false)
-  }
-
-  const createARole = async () => {
-    const [response, error] = await window.Tensei.api.post(
-      'admin-roles',
-      createRoleForm
-    )
-    if (error) {
-      let errObj = { name: '', slug: '' }
-      const errArray = error.response?.data.errors
-
-      errArray.forEach((err: any) => {
-        errObj = { ...errObj, [err.field]: err.message }
-      })
-
-      setErrors(errObj)
-      return
-    }
-    fetchAdminRoles()
-    closeFlyout()
   }
 
   return (
@@ -216,7 +270,7 @@ const RolesFlyout: React.FC<{
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm component="form" isInvalid={!!errors?.name}>
+        <EuiForm component="form">
           <EuiFormRow
             label="Name"
             error={errors?.name}
@@ -224,29 +278,44 @@ const RolesFlyout: React.FC<{
             fullWidth
           >
             <EuiFieldText
-              onChange={event =>
+              onChange={event => {
                 setCreateRoleForm({
                   ...createRoleForm,
                   name: event.target.value,
                   slug: slugify(event.target.value)
                 })
-              }
+              }}
               name="name"
+              isInvalid={!!errors?.name}
               fullWidth
             />
           </EuiFormRow>
 
-          <EuiFormRow label="Description" fullWidth>
+          <EuiFormRow
+            label="Description"
+            fullWidth
+            error={errors?.description}
+            isInvalid={!!errors?.description}
+          >
             <EuiTextArea
               name="description"
-              onChange={event =>
+              onChange={event => {
                 setCreateRoleForm({
                   ...createRoleForm,
                   description: event.target.value
                 })
-              }
+              }}
+              rows={2}
+              isInvalid={!!errors?.description}
               fullWidth
             />
+          </EuiFormRow>
+          <EuiSpacer size="xl" />
+          <EuiFormRow
+            label="Role permissions"
+            helpText="Select the permissions users with this role will have."
+          >
+            <p></p>
           </EuiFormRow>
           <EuiSpacer size="xl" />
           <FlyoutAccordion
@@ -269,8 +338,9 @@ const RolesFlyout: React.FC<{
           <EuiFlexItem grow={false}>
             <EuiButton
               onClick={() => {
-                createARole()
+                submit?.()
               }}
+              isLoading={loading}
               fill
             >
               Create Role
@@ -283,12 +353,19 @@ const RolesFlyout: React.FC<{
 }
 
 const RolesTable: React.FC = () => {
-  const [createRoleForm, setCreateRoleForm] = useState<CreateRoleForm>({
-    name: '',
-    description: '',
-    slug: '',
-    adminPermissions: []
+  const form = useForm<CreateRoleForm>({
+    defaultValues: {
+      name: '',
+      description: '',
+      slug: '',
+      adminPermissions: []
+    },
+    onSuccess() {},
+    onSubmit(form) {
+      return window.Tensei.api.post('admin-roles', form)
+    }
   })
+
   const [allPermissions, setAllPermissions] = useState<AdminPermission[]>([])
   const [adminRoles, setAdminRoles] = useState<any>([])
   const [loading, setLoading] = useState(true)
@@ -322,6 +399,10 @@ const RolesTable: React.FC = () => {
     }>('admin-permissions')
     if (response !== null) {
       setAllPermissions(response.data.data)
+      form.setValue(
+        'adminPermissions',
+        response.data.data.map(permission => permission.id)
+      )
     }
   }
 
@@ -353,22 +434,25 @@ const RolesTable: React.FC = () => {
               : `No roles`}
           </h1>
         </EuiTitle>
-        <EuiButton
+        <EuiButtonEmpty
           onClick={() => {
             setIsFlyoutOpen(true)
           }}
         >
-          create a new role
-        </EuiButton>
+          Create a new role
+        </EuiButtonEmpty>
       </TableHeading>
       {isFlyoutOpen ? (
         <RolesFlyout
           setIsFlyoutOpen={setIsFlyoutOpen}
           allPermissions={allPermissions}
           createRoleForm={{
-            createRoleForm,
-            setCreateRoleForm,
-            fetchAdminRoles
+            createRoleForm: form.form,
+            setCreateRoleForm: form.setForm,
+            fetchAdminRoles,
+            loading: form.loading,
+            errors: form.errors,
+            submit: form.submit
           }}
         />
       ) : null}
