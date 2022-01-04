@@ -72,16 +72,16 @@ class CmsPlugin {
     roleResource: string
     dashboards: DashboardContract[]
   } = {
-      path: 'cms',
-      apiPath: 'cms/api',
-      setup: () => { },
-      cookieOptions: {},
-      dashboards: [],
-      userResource: 'Admin User',
-      permissionResource: 'Admin Permission',
-      roleResource: 'Admin Role',
-      tokenResource: 'Admin Token'
-    }
+    path: 'cms',
+    apiPath: 'cms/api',
+    setup: () => {},
+    cookieOptions: {},
+    dashboards: [],
+    userResource: 'Admin User',
+    permissionResource: 'Admin Permission',
+    roleResource: 'Admin Role',
+    tokenResource: 'Admin Token'
+  }
 
   private router = Router()
 
@@ -156,7 +156,8 @@ class CmsPlugin {
       let user: any = await manager.findOne(
         this.resources.user.data.pascalCaseName,
         {
-          email
+          email,
+          active: true
         }
       )
 
@@ -192,7 +193,35 @@ class CmsPlugin {
 
   private registerPassport = async (request: Request, done: any) => {
     const { config, manager, body, resources, repositories } = request
+
     const { emitter } = config
+
+    let invitedUser = null
+
+    if (body.inviteCode) {
+      invitedUser = await manager.findOne(
+        this.resources.user.data.pascalCaseName,
+        {
+          inviteCode: body.inviteCode
+        }
+      )
+    }
+
+    if (invitedUser) {
+      manager.assign(invitedUser, {
+        active: true,
+        inviteCode: null,
+        password: body.password,
+        firstName: body.firstName ?? invitedUser.firstName,
+        lastName: body.lastName ?? invitedUser.lastName
+      })
+
+      await manager.persistAndFlush(invitedUser)
+
+      emitter.emit('ADMIN_REGISTERED', invitedUser)
+
+      return done(null, invitedUser)
+    }
 
     const adminCount = await manager.count(
       this.resources.user.data.pascalCaseName,
@@ -339,6 +368,7 @@ class CmsPlugin {
           .defaultFormValue(true)
           .default(true)
           .rules('boolean'),
+        text('Invite code').nullable(),
         belongsToMany(this.config.roleResource).rules('array')
       ])
       .displayField('First name')
@@ -585,26 +615,26 @@ class CmsPlugin {
         })
 
         this.router.use(Csurf())
-          ;[...getRoutes(config, this.config), ...this.routes()].forEach(
-            route => {
-              const path = route.config.path.startsWith('/')
-                ? route.config.path
-                : `/${route.config.path}`
-                ; (this.router as any)[route.config.type.toLowerCase()](
-                  path,
+        ;[...getRoutes(config, this.config), ...this.routes()].forEach(
+          route => {
+            const path = route.config.path.startsWith('/')
+              ? route.config.path
+              : `/${route.config.path}`
+            ;(this.router as any)[route.config.type.toLowerCase()](
+              path,
 
-                  ...route.config.middleware.map(fn => AsyncHandler(fn)),
-                  AsyncHandler(async (request, response, next) => {
-                    await this.authorizeResolver(request as any, route)
+              ...route.config.middleware.map(fn => AsyncHandler(fn)),
+              AsyncHandler(async (request, response, next) => {
+                await this.authorizeResolver(request as any, route)
 
-                    return next()
-                  }),
-                  AsyncHandler(async (request, response) =>
-                    route.config.handler(request, response)
-                  )
-                )
-            }
-          )
+                return next()
+              }),
+              AsyncHandler(async (request, response) =>
+                route.config.handler(request, response)
+              )
+            )
+          }
+        )
 
         app.use(`/${this.config.path}`, this.router)
 
@@ -620,9 +650,9 @@ class CmsPlugin {
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({
-                  // @ts-ignore
-                  ...request.user
-                })
+                    // @ts-ignore
+                    ...request.user
+                  })
                 : null,
               resources: JSON.stringify(
                 request.config.resources.map(r => r.serialize())

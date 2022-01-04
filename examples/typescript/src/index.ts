@@ -5,6 +5,8 @@ import { graphql } from '@tensei/graphql'
 import { files, media } from '@tensei/media'
 import { jsonPlugin } from '@tensei/field-json'
 
+import { seed } from './seed'
+
 import {
   tensei,
   welcome,
@@ -145,7 +147,7 @@ export default tensei()
     dbName: 'db.sqlite'
   })
   .boot(async ({ repositories }) => {
-    // await seed(repositories)
+    await seed(repositories)
     console.log('App running on http://localhost:8810')
   })
   .start()

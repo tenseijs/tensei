@@ -44,6 +44,16 @@ export function order() {
   }
 }
 
+export function adminUser() {
+  return {
+    firstName: Faker.name.firstName(),
+    lastName: Faker.name.lastName(),
+    email: Faker.internet.exampleEmail(),
+    password: 'password',
+    active: true
+  }
+}
+
 export function customer() {
   return {
     email: Faker.internet.exampleEmail(),
@@ -56,6 +66,11 @@ export function generate(fn: () => any, length = 20) {
 }
 
 export async function seed(db: any) {
+  if (!process.env.TENSEI_SEED) {
+    return
+  }
+
+  const adminUsers = generate(adminUser).map(u => db.adminUsers().create(u))
   const customers = generate(customer).map((c: any) => db.customers().create(c))
   const orders = generate(order)
     .map((o: any) => db.orders().create(o))
@@ -83,6 +98,9 @@ export async function seed(db: any) {
     return order
   })
 
-  await db.orders().persistAndFlush(orders)
-  await db.products().persistAndFlush(products)
+  await Promise.all([
+    db.orders().persistAndFlush(orders),
+    db.products().persistAndFlush(products),
+    db.adminUsers().persistAndFlush(adminUsers)
+  ])
 }

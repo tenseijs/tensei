@@ -426,13 +426,7 @@ const RolesTable: React.FC = () => {
     <>
       <TableHeading>
         <EuiTitle>
-          <h1>
-            {adminRoles.length > 1
-              ? `${adminRoles.length} existing roles`
-              : adminRoles.length === 1
-              ? `1 existing role`
-              : `No roles`}
-          </h1>
+          <h1>All roles ({adminRoles.length})</h1>
         </EuiTitle>
         <EuiButtonEmpty
           onClick={() => {
