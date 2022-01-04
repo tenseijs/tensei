@@ -9,7 +9,7 @@
 
 import { CliState } from '../contracts'
 
-const TENSEI_PACKAGE_VERSION = process.env.TENSEI_PACKAGE_VERSION || 'latest'
+const TENSEI_PACKAGE_VERSION = 'latest'
 
 export const packages: {
   [K in CliState['boilerplate']]: {

@@ -16,7 +16,9 @@
   "scripts": {
     "example:dev": "nodemon --watch src/** --exec 'ts-node src/index.ts'",
     "example:dev:server": "nodemon --watch ../../node_modules/ --watch src/** --exec 'ts-node src/index.ts'",
-    "build": "tsc"
+    "build": "tsc",
+    "setup": "yarn && yarn build",
+    "start": "node build/src/index.js"
   },
   "devDependencies": {
     "@types/node": "^15.12.4",

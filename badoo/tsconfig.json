@@ -1,0 +1,22 @@
+{
+  "include": [
+    "**/*"
+  ],
+  "moduleResolution": "node",
+  "exclude": [
+    "node_modules",
+    "build"
+  ],
+  "compilerOptions": {
+    "outDir": "build",
+    "rootDir": "./",
+    "sourceMap": false,
+    "target": "ES2020",
+    "strict": true,
+    "baseUrl": "./",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

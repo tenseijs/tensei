@@ -1,0 +1,22 @@
+{
+  "name": "badoo",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server.ts",
+  "scripts": {
+    "dev": "npx tensei serve --watch",
+    "build": "npx tensei build --production",
+    "start": "node build/index.js",
+    "postinstall": "tensei orm:types"
+  },
+  "devDependencies": {
+    "@tensei/cli": "^0.11.0",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "@mikro-orm/sqlite": "^4.5.10",
+    "@tensei/auth": "^0.11.0",
+    "@tensei/core": "^0.11.0",
+    "@tensei/graphql": "^0.11.0"
+  }
+}
