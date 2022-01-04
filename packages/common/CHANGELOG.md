@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/tenseijs/tensei/compare/v0.10.0...v0.11.0) (2022-01-04)
+
+
+### Features
+
+* **cms:** create and add new resource on create resource form ([7108f22](https://github.com/tenseijs/tensei/commit/7108f22011b7e8c0db701688b7057d4e0582e7fa))
+* **cms:** restructure settings pages to use tabs ([44c4872](https://github.com/tenseijs/tensei/commit/44c487278114e116ae61f9fea6ab8e313cd6207e))
+* **cms:** setup custom fields ([53067e2](https://github.com/tenseijs/tensei/commit/53067e23f2a411609ba778c0ae5bb3951647adac))
+* Json editor ([#212](https://github.com/tenseijs/tensei/issues/212)) ([8ad1ee8](https://github.com/tenseijs/tensei/commit/8ad1ee80a1bedea8705f895883ae7d167c4bb4db))
+* **cms:** setup many to many relationship field on form ([1be2619](https://github.com/tenseijs/tensei/commit/1be2619235bce2713169c56c288737f1afd4c5d1))
+* add filter by resource to cms dashboard ([#178](https://github.com/tenseijs/tensei/issues/178)) ([ad93113](https://github.com/tenseijs/tensei/commit/ad93113225c1b454b4fa74b504277fe0bb4ea480))
+
+
+
+
+
 # [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
 
 

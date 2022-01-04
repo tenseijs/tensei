@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/tenseijs/tensei/compare/v0.10.0...v0.11.0) (2022-01-04)
+
+
+### Bug Fixes
+
+* fixed form components dependency bugs ([#204](https://github.com/tenseijs/tensei/issues/204)) ([2e5b870](https://github.com/tenseijs/tensei/commit/2e5b8709ad549926e1a44a6dec38c65f05447af2))
+
+
+### Features
+
+* **cms:** add support for invite code registration' ([52e7536](https://github.com/tenseijs/tensei/commit/52e7536638b7379fb7f8e0ef2716da7adb24c8fb))
+* add permission table and create role flyout ([#219](https://github.com/tenseijs/tensei/issues/219)) ([2c54b9b](https://github.com/tenseijs/tensei/commit/2c54b9bd1c1fc0d3bb01b398d8ad66814d2c3311))
+* **cms:** add change password and update profile endpoints to cms backend api ([e04f712](https://github.com/tenseijs/tensei/commit/e04f7123c2866b49d5cea593e1b0641b3b39f99c))
+* **cms:** add Many to One field on create resource form ([ce8439f](https://github.com/tenseijs/tensei/commit/ce8439f0d1b114ba44a77c5ecc2369949abec5df))
+* **cms:** add profile page and update password to settings page ([3ecea16](https://github.com/tenseijs/tensei/commit/3ecea16e3fdf2e13511465bf7ef57de34c9c68d1))
+* **cms:** create and add new resource on create resource form ([7108f22](https://github.com/tenseijs/tensei/commit/7108f22011b7e8c0db701688b7057d4e0582e7fa))
+* **cms:** fix belongs to many field to set single document on form change ([4099b4d](https://github.com/tenseijs/tensei/commit/4099b4d11d3405b0f77236b351251c2e8e85e57e))
+* **cms:** fix user registration endpoints & add generateOrmTypes command to create-tensei-app ([c35178f](https://github.com/tenseijs/tensei/commit/c35178f5eb93d6076675c3538d0b465006a861d3))
+* **cms:** restructure settings pages to use tabs ([44c4872](https://github.com/tenseijs/tensei/commit/44c487278114e116ae61f9fea6ab8e313cd6207e))
+* **cms:** setup custom fields ([53067e2](https://github.com/tenseijs/tensei/commit/53067e23f2a411609ba778c0ae5bb3951647adac))
+* add dynamic table columns on resource page ([#181](https://github.com/tenseijs/tensei/issues/181)) ([ffa42e0](https://github.com/tenseijs/tensei/commit/ffa42e02c0fd547dcf045819af3b03d0ce2e5f11))
+* add filter by resource to cms dashboard ([#178](https://github.com/tenseijs/tensei/issues/178)) ([ad93113](https://github.com/tenseijs/tensei/commit/ad93113225c1b454b4fa74b504277fe0bb4ea480))
+* add filter table data ([#200](https://github.com/tenseijs/tensei/issues/200)) ([6f80a8e](https://github.com/tenseijs/tensei/commit/6f80a8eb1aab46cb8000862ebefc401c351b04de))
+* Asset Manager ([#205](https://github.com/tenseijs/tensei/issues/205)) ([5a9098d](https://github.com/tenseijs/tensei/commit/5a9098d07ad119e56e47f39aba8df2946a1a2c39))
+* Collapsible navigation menu ([#189](https://github.com/tenseijs/tensei/issues/189)) ([66eb77a](https://github.com/tenseijs/tensei/commit/66eb77a1825f674e1739bc3aea67ed1ad3386cb0))
+* Json editor ([#212](https://github.com/tenseijs/tensei/issues/212)) ([8ad1ee8](https://github.com/tenseijs/tensei/commit/8ad1ee80a1bedea8705f895883ae7d167c4bb4db))
+* **cms:** setup many to many relationship field on form ([1be2619](https://github.com/tenseijs/tensei/commit/1be2619235bce2713169c56c288737f1afd4c5d1))
+* Community Panel ([#198](https://github.com/tenseijs/tensei/issues/198)) ([0f3bff6](https://github.com/tenseijs/tensei/commit/0f3bff6ea535e5480f7ab3445b4aa105f650f1d6))
+
+
+
+
+
 # [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
 
 

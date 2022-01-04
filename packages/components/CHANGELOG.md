@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/tenseijs/tensei/compare/v0.10.0...v0.11.0) (2022-01-04)
+
+
+### Features
+
+* **cms:** setup custom fields ([53067e2](https://github.com/tenseijs/tensei/commit/53067e23f2a411609ba778c0ae5bb3951647adac))
+* add filter by resource to cms dashboard ([#178](https://github.com/tenseijs/tensei/issues/178)) ([ad93113](https://github.com/tenseijs/tensei/commit/ad93113225c1b454b4fa74b504277fe0bb4ea480))
+
+
+
+
+
 # [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
 
 **Note:** Version bump only for package @tensei/components

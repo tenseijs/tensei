@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/tenseijs/tensei/compare/v0.10.0...v0.11.0) (2022-01-04)
+
+
+### Features
+
+* **cms:** add change password and update profile endpoints to cms backend api ([e04f712](https://github.com/tenseijs/tensei/commit/e04f7123c2866b49d5cea593e1b0641b3b39f99c))
+* **cms:** fix user registration endpoints & add generateOrmTypes command to create-tensei-app ([c35178f](https://github.com/tenseijs/tensei/commit/c35178f5eb93d6076675c3538d0b465006a861d3))
+* **cms:** setup custom fields ([53067e2](https://github.com/tenseijs/tensei/commit/53067e23f2a411609ba778c0ae5bb3951647adac))
+* add filter by resource to cms dashboard ([#178](https://github.com/tenseijs/tensei/issues/178)) ([ad93113](https://github.com/tenseijs/tensei/commit/ad93113225c1b454b4fa74b504277fe0bb4ea480))
+
+
+
+
+
 # [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
 
 **Note:** Version bump only for package @tensei/tests

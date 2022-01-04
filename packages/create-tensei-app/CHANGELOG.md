@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/tenseijs/tensei/compare/v0.10.0...v0.11.0) (2022-01-04)
+
+
+### Features
+
+* **cms:** fix user registration endpoints & add generateOrmTypes command to create-tensei-app ([c35178f](https://github.com/tenseijs/tensei/commit/c35178f5eb93d6076675c3538d0b465006a861d3))
+
+
+
+
+
 # [0.10.0](https://github.com/tenseijs/tensei/compare/v0.9.9...v0.10.0) (2021-11-10)
 
 
