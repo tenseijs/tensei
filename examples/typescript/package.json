@@ -1,17 +1,17 @@
 {
   "name": "@examples/typescript",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
     "@mikro-orm/sqlite": "^4.4.0",
-    "@tensei/cli": "^0.11.2",
-    "@tensei/cms": "^0.11.2",
-    "@tensei/core": "^0.11.2",
-    "@tensei/graphql": "^0.11.2",
+    "@tensei/cli": "^0.11.3",
+    "@tensei/cms": "^0.11.3",
+    "@tensei/core": "^0.11.3",
+    "@tensei/graphql": "^0.11.3",
     "@tensei/mde": "^0.9.7",
-    "@tensei/media": "^0.11.2",
-    "@tensei/social-auth": "^0.11.2"
+    "@tensei/media": "^0.11.3",
+    "@tensei/social-auth": "^0.11.3"
   },
   "scripts": {
     "example:dev": "nodemon --watch src/** --exec 'ts-node src/index.ts'",
