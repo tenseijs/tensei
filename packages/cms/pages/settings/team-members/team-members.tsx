@@ -25,9 +25,18 @@ import { useGeneratedHtmlId } from '@tensei/eui/lib/services'
 import {
   EuiCheckboxGroup,
   EuiForm,
-  EuiFormRow
+  EuiFormRow,
+  EuiFieldText,
+  EuiFieldPassword
 } from '@tensei/eui/lib/components/form'
 
+import {
+  EuiFlyout,
+  EuiFlyoutBody,
+  EuiFlyoutHeader,
+  EuiFlyoutFooter
+} from '@tensei/eui/lib/components/flyout'
+import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -68,18 +77,136 @@ const UserRole = styled.span`
 `
 
 interface ProfileProps {}
+interface FlyOutProps {
+  setIsFlyoutVisible: (b: boolean) => void
+  selectedMember: TeamMemberProps
+  showChangeMemberRoleModal: () => void
+}
+const FlyOut: React.FC<FlyOutProps> = ({
+  setIsFlyoutVisible,
+  selectedMember,
+  showChangeMemberRoleModal
+}) => {
+  const simpleFlyoutTitleId = useGeneratedHtmlId({
+    prefix: 'simpleFlyoutTitle'
+  })
+
+  const [memberDetails, setMemberDetails] = useState({
+    firstName: selectedMember.firstName,
+    lastName: selectedMember.lastName,
+    password: ''
+  })
+  const { toast } = useToastStore()
+
+  return (
+    <EuiFlyout
+      ownFocus
+      onClose={() => setIsFlyoutVisible(false)}
+      aria-labelledby={simpleFlyoutTitleId}
+    >
+      <EuiFlyoutHeader hasBorder>
+        <EuiTitle size="m">
+          <h2 id={simpleFlyoutTitleId}>Edit Member</h2>
+        </EuiTitle>
+      </EuiFlyoutHeader>
+      <EuiFlyoutBody>
+        <EuiForm component="form">
+          <EuiFormRow label="Firstname" fullWidth>
+            <EuiFieldText
+              name="first"
+              value={memberDetails.firstName}
+              fullWidth
+              onChange={e => {
+                setMemberDetails({
+                  ...memberDetails,
+                  firstName: e.target.value
+                })
+              }}
+            />
+          </EuiFormRow>
+
+          <EuiFormRow label="Lastname" fullWidth>
+            <EuiFieldText
+              name="last"
+              fullWidth
+              value={selectedMember.lastName}
+              onChange={e => {
+                setMemberDetails({
+                  ...memberDetails,
+                  lastName: e.target.value
+                })
+              }}
+            />
+          </EuiFormRow>
+          <EuiFormRow label="Email" isDisabled fullWidth>
+            <EuiFieldText name="email" value={selectedMember.email} fullWidth />
+          </EuiFormRow>
+          <EuiFormRow label="Password" fullWidth>
+            <EuiFieldPassword
+              name="password"
+              fullWidth
+              onChange={e => {
+                setMemberDetails({
+                  ...memberDetails,
+                  password: e.target.value
+                })
+              }}
+            />
+          </EuiFormRow>
+          <EuiFormRow label="Confirm Password" fullWidth>
+            <EuiFieldPassword name="confirmpassword" fullWidth />
+          </EuiFormRow>
+          <EuiButton
+            onClick={() => {
+              showChangeMemberRoleModal()
+            }}
+          >
+            Change role
+          </EuiButton>
+        </EuiForm>
+      </EuiFlyoutBody>
+      <EuiFlyoutFooter>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty
+              iconType="cross"
+              flush="left"
+              onClick={() => setIsFlyoutVisible(false)}
+            >
+              Cancel
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton
+              onClick={async () => {
+                const [data, error] = await window.Tensei.api.patch(
+                  `admin-users/${selectedMember.id}`,
+                  memberDetails
+                )
+                if (!error) {
+                  toast('Edited.', <p>Member data edited successfully.</p>)
+                  setIsFlyoutVisible(false)
+                }
+              }}
+              fill
+            >
+              Submit
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiFlyoutFooter>
+    </EuiFlyout>
+  )
+}
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const {
-    getAdminUsers,
-    removeUser,
-    getAdminRoles,
-    updateUserRoles
-  } = useAdminUsersStore()
+  const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
+    useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const getTeamMembers = useCallback(async () => {
     const [data, error] = await getAdminUsers()
@@ -133,23 +260,18 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   }
 
   const [selectedMember, setSelectedMember] = useState<TeamMemberProps>()
-  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
-    false
-  )
+  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] =
+    useState(false)
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
   const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
-  const [
-    isChangeMemberRoleModalVisible,
-    setChangeMemberRoleModalVisible
-  ] = useState(false)
+  const [isChangeMemberRoleModalVisible, setChangeMemberRoleModalVisible] =
+    useState(false)
   const closeChangeMemberRoleModal = () =>
     setChangeMemberRoleModalVisible(false)
   const showChangeMemberRoleModal = () => setChangeMemberRoleModalVisible(true)
   const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
-  const [
-    rolesCheckboxSelectionMap,
-    setRolesCheckboxSelectionMap
-  ] = useState<any>({})
+  const [rolesCheckboxSelectionMap, setRolesCheckboxSelectionMap] =
+    useState<any>({})
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -192,10 +314,12 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             icon: 'pencil',
             type: 'icon',
             onClick: (item: TeamMemberProps) => {
+              console.log(item)
               if (isOwner(item)) {
                 toast(undefined, "Owner role can't be changed", 'danger')
                 return
               }
+              setIsFlyoutVisible(true)
               setSelectedMember(item)
               // set rolesCheckboxSelectionMap
               setRolesCheckboxSelectionMap({})
@@ -204,12 +328,10 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               const newCheckboxIdToSelectedMap: any = {}
               rolesId.forEach(
                 roleId =>
-                  (newCheckboxIdToSelectedMap[roleId] = adminRolesId.includes(
-                    roleId
-                  ))
+                  (newCheckboxIdToSelectedMap[roleId] =
+                    adminRolesId.includes(roleId))
               )
               setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
-              showChangeMemberRoleModal()
             }
           },
           {
@@ -325,6 +447,13 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   return (
     <PageWrapper>
       <Wrapper>
+        {isFlyoutVisible && (
+          <FlyOut
+            setIsFlyoutVisible={setIsFlyoutVisible}
+            showChangeMemberRoleModal={showChangeMemberRoleModal}
+            selectedMember={selectedMember}
+          />
+        )}
         <TableMetaWrapper>
           <EuiTitle>
             <h1>All members ({teamMembers.length})</h1>
