@@ -140,7 +140,7 @@ export function getLatestTenseiVersion() {
     fs.readFileSync(path.resolve(process.cwd(), 'package.json')).toString()
   )
 
-  return packageJsonFile['dependencies']['@tensei/cli']
+  return packageJsonFile['devDependencies']['@tensei/cli']
 }
 
 export function getClient(client: string) {

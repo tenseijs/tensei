@@ -1,6 +1,6 @@
 {
   "name": "@tensei/cms",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./build/index.d.ts",
@@ -23,7 +23,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.12.1",
     "@babel/preset-react": "^7.12.7",
     "@babel/preset-typescript": "^7.12.7",
-    "@tensei/components": "^0.11.2",
+    "@tensei/components": "^0.11.3",
     "@tensei/eui": "1.0.5",
     "@types/axios": "^0.14.0",
     "@types/classnames": "^2.2.11",
@@ -69,13 +69,13 @@
     "access": "public"
   },
   "dependencies": {
-    "@tensei/core": "^0.11.2",
-    "@tensei/mail": "^0.11.2",
+    "@tensei/core": "^0.11.3",
+    "@tensei/mail": "^0.11.3",
     "@types/csurf": "^1.11.0",
     "@types/express-session": "^1.17.3",
     "csurf": "^1.11.0",
     "express-session": "^1.17.1",
-    "express-session-mikro-orm": "^0.11.2",
+    "express-session-mikro-orm": "^0.11.3",
     "moment": "^2.29.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
