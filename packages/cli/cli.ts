@@ -7,7 +7,8 @@ import {
   serve,
   app,
   getProjectDirectory,
-  build
+  build,
+  makePlugin
 } from './src'
 
 // Set cli env variable
@@ -24,7 +25,7 @@ process.env.TENSEI_MODE = 'cli'
 
   const kernel = new Kernel(tensei)
 
-  kernel.register([serve, build, ...commands])
+  kernel.register([serve, build, makePlugin, ...commands])
 
   kernel.flag(
     'help',

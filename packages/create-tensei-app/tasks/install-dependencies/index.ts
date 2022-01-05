@@ -36,14 +36,15 @@ const task: TaskFn = async (_, logger, { pkg, client, boilerplate, debug }) => {
   /**
    * Required dependencies for all projects
    */
-  pkg.install('@mikro-orm/sqlite', '^4.4.0', false)
+  pkg.install('@mikro-orm/sqlite', '^4.5.0', true)
+  pkg.install('@mikro-orm/postgresql', '^4.5.0', false)
   pkg.install('@tensei/core', TENSEI_PACKAGE_VERSION, false)
   pkg.install('@tensei/auth', TENSEI_PACKAGE_VERSION, false)
 
   /**
    * Required dev dependencies
    */
-  pkg.install('typescript', '~4.3')
+  pkg.install('typescript', '~4.5.0')
   pkg.install('@tensei/cli', TENSEI_PACKAGE_VERSION)
 
   /**
@@ -79,6 +80,9 @@ const task: TaskFn = async (_, logger, { pkg, client, boilerplate, debug }) => {
    */
   const response = debug ? pkg.commit() : await pkg.commitAsync()
   spinner && spinner.stop()
+
+  console.log('@response stderr', response?.stderr?.toString())
+  console.log('@response stdout', response?.stdout?.toString())
 
   if (response && response.status === 1) {
     const errorMessage =

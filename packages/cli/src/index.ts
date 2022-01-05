@@ -10,6 +10,7 @@
 export { Kernel } from './Kernel'
 export { serve } from './BaseCommands/Serve'
 export { build } from './BaseCommands/Build'
+export { makePlugin } from './BaseCommands/MakePlugin'
 export { handleError } from './utils/handleError'
 export { listDirectoryFiles } from './utils/listDirectoryFiles'
 export {

@@ -41,7 +41,7 @@ export default tensei()
           .searchable(),
         select('Shipping Scope')
           .options(['Worldwide', 'Nationwide', 'Lagos Only'])
-          .default('Lagos Only'),
+          .default('Nationwide'),
         dateTime('Date Issued').nullable(),
         textarea('Description').creationRules('required', 'max:255'),
         integer('Price').required().sortable(),
@@ -50,6 +50,7 @@ export default tensei()
         belongsToMany('Product Option'),
         belongsToMany('Order Item'),
         belongsToMany('Collection'),
+        belongsToMany('Order'),
         hasMany('Review'),
         files('Image')
       ])

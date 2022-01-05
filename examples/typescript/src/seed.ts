@@ -98,9 +98,7 @@ export async function seed(db: any) {
     return order
   })
 
-  await Promise.all([
-    db.orders().persistAndFlush(orders),
-    db.products().persistAndFlush(products),
-    db.adminUsers().persistAndFlush(adminUsers)
-  ])
+  await db.orders().persistAndFlush(orders),
+    await db.products().persistAndFlush(products),
+    await db.adminUsers().persistAndFlush(adminUsers)
 }
