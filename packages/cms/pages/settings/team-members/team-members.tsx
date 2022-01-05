@@ -81,11 +81,13 @@ interface FlyOutProps {
   setIsFlyoutVisible: (b: boolean) => void
   selectedMember: TeamMemberProps
   showChangeMemberRoleModal: () => void
+  getTeamMembers: () => void
 }
 const FlyOut: React.FC<FlyOutProps> = ({
   setIsFlyoutVisible,
   selectedMember,
-  showChangeMemberRoleModal
+  showChangeMemberRoleModal,
+  getTeamMembers
 }) => {
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
@@ -97,7 +99,8 @@ const FlyOut: React.FC<FlyOutProps> = ({
     password: ''
   })
   const { toast } = useToastStore()
-
+  const [errors, setErrors] = useState()
+  console.log(errors)
   return (
     <EuiFlyout
       ownFocus
@@ -110,7 +113,7 @@ const FlyOut: React.FC<FlyOutProps> = ({
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm component="form">
+        <EuiForm component="form" isInvalid={!!errors}>
           <EuiFormRow label="Firstname" fullWidth>
             <EuiFieldText
               name="first"
@@ -129,7 +132,7 @@ const FlyOut: React.FC<FlyOutProps> = ({
             <EuiFieldText
               name="last"
               fullWidth
-              value={selectedMember.lastName}
+              value={memberDetails.lastName}
               onChange={e => {
                 setMemberDetails({
                   ...memberDetails,
@@ -141,7 +144,12 @@ const FlyOut: React.FC<FlyOutProps> = ({
           <EuiFormRow label="Email" isDisabled fullWidth>
             <EuiFieldText name="email" value={selectedMember.email} fullWidth />
           </EuiFormRow>
-          <EuiFormRow label="Password" fullWidth>
+          <EuiFormRow
+            label="Password"
+            fullWidth
+            isInvalid={!!errors}
+            error={errors ? errors[0].message : ''}
+          >
             <EuiFieldPassword
               name="password"
               fullWidth
@@ -186,6 +194,9 @@ const FlyOut: React.FC<FlyOutProps> = ({
                 if (!error) {
                   toast('Edited.', <p>Member data edited successfully.</p>)
                   setIsFlyoutVisible(false)
+                  getTeamMembers()
+                } else {
+                  setErrors(error.response?.data.errors)
                 }
               }}
               fill
@@ -452,6 +463,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             setIsFlyoutVisible={setIsFlyoutVisible}
             showChangeMemberRoleModal={showChangeMemberRoleModal}
             selectedMember={selectedMember}
+            getTeamMembers={getTeamMembers}
           />
         )}
         <TableMetaWrapper>
