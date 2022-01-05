@@ -29,6 +29,7 @@ export function packageJson(options: MakePluginOptions): FileContent {
   },
   "devDependencies": {
     "@tensei/components": "${options.latestTenseiVersion}",
+    "@types/react": "^17.0.2",
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.3",
     "laravel-mix": "^6.0.5",
