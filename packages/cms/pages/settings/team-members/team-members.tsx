@@ -27,6 +27,7 @@ import {
   EuiForm,
   EuiFormRow
 } from '@tensei/eui/lib/components/form'
+import { EuiBadge } from '@tensei/eui/lib/components/badge'
 
 const Wrapper = styled.div`
   display: flex;
@@ -46,10 +47,10 @@ const TableMetaWrapper = styled.div`
   align-items: center;
 `
 const OwnerBadge = styled.div`
-  margin-left: 5px;
+  margin-left: 2px;
   border-radius: 3px;
   font-size: 12px;
-  padding: 4px 12px;
+  padding: 4px 4px;
   line-height: 1rem;
   color: ${({ theme }) => theme.colors.primary};
   background-color: ${({ theme }) => theme.colors.primaryTransparent};
@@ -177,6 +178,14 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
           ))
         }
       },
+      {
+        name: 'Email',
+        render: (item: any) => {
+          return (
+            <EuiBadge>{item.email}</EuiBadge>
+          )
+        }
+      }, 
       {
         name: 'Created At',
         render: (item: any) => {
@@ -342,6 +351,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
 
         {removeMemberModal}
         {changeMemberRoleModal}
+
       </Wrapper>
     </PageWrapper>
   )
