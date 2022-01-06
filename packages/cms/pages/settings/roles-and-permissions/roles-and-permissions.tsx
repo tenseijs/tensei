@@ -254,8 +254,6 @@ const RolesFlyout: React.FC<{
   setIsFlyoutOpen: (open: boolean) => void
   createRoleForm: CreateRoleFormProps
   allPermissions: AdminPermission[]
-  isEditing: boolean
-  setIsEditing: (isEditing: boolean) => void
 }> = ({
   setIsFlyoutOpen,
   createRoleForm: {
@@ -266,18 +264,16 @@ const RolesFlyout: React.FC<{
     errors,
     submit
   },
-  allPermissions,
-  isEditing,
-  setIsEditing
+  allPermissions
 }) => {
   const flyoutHeadingId = useGeneratedHtmlId()
   const { toast } = useToastStore()
 
   const closeFlyout = () => {
     setIsFlyoutOpen(false)
-    if (isEditing) setIsEditing(false)
     setCreateRoleForm({
       ...createRoleForm,
+      id: undefined,
       adminPermissions: getPermissionIDs(allPermissions)
     })
   }
@@ -287,7 +283,7 @@ const RolesFlyout: React.FC<{
       <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
         <EuiTitle>
           <h2 id={flyoutHeadingId}>
-            {isEditing
+            {createRoleForm.id
               ? `Editing ${createRoleForm.name} role`
               : 'Create custom role'}
           </h2>
@@ -310,7 +306,7 @@ const RolesFlyout: React.FC<{
                 })
               }}
               name="name"
-              defaultValue={isEditing ? createRoleForm.name : ''}
+              defaultValue={createRoleForm.name}
               isInvalid={!!errors?.name}
               fullWidth
             />
@@ -324,7 +320,7 @@ const RolesFlyout: React.FC<{
           >
             <EuiTextArea
               name="description"
-              defaultValue={isEditing ? createRoleForm.description : ''}
+              defaultValue={createRoleForm.description}
               onChange={event => {
                 setCreateRoleForm({
                   ...createRoleForm,
@@ -366,9 +362,11 @@ const RolesFlyout: React.FC<{
               onClick={async () => {
                 loading = true
                 submit?.()
-                if (isEditing)
-                  toast('Updated.', <p>Role updated successfully.</p>)
-                else toast('Created.', <p>Role created successfully.</p>)
+                {
+                  createRoleForm.id
+                    ? toast('Updated.', <p>Role updated successfully.</p>)
+                    : toast('Created.', <p>Role created successfully.</p>)
+                }
                 loading = false
                 closeFlyout()
                 fetchAdminRoles()
@@ -376,7 +374,7 @@ const RolesFlyout: React.FC<{
               isLoading={loading}
               fill
             >
-              {isEditing ? 'Update Role' : 'Create Role'}
+              {createRoleForm.id ? 'Update Role' : 'Create Role'}
             </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -395,9 +393,11 @@ const RolesTable: React.FC = () => {
     },
     onSuccess() {},
     onSubmit(form) {
-      if (isEditing)
-        return window.Tensei.api.patch(`admin-roles/${form.id}`, form)
-      else return window.Tensei.api.post('admin-roles', form)
+      {
+        return form.id
+          ? window.Tensei.api.patch(`admin-roles/${form.id}`, form)
+          : window.Tensei.api.post('admin-roles', form)
+      }
     }
   })
 
@@ -405,7 +405,6 @@ const RolesTable: React.FC = () => {
   const [adminRoles, setAdminRoles] = useState<any>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
 
   const columns = [
     {
@@ -433,7 +432,6 @@ const RolesTable: React.FC = () => {
               slug: role?.slug,
               adminPermissions: getPermissionIDs(role?.adminPermissions)
             })
-            setIsEditing(true)
             setIsFlyoutOpen(true)
           }
         }
@@ -489,6 +487,12 @@ const RolesTable: React.FC = () => {
         <EuiButtonEmpty
           onClick={() => {
             setIsFlyoutOpen(true)
+            form.setForm({
+              name: '',
+              description: '',
+              slug: '',
+              adminPermissions: getPermissionIDs(allPermissions)
+            })
           }}
         >
           Create a new role
@@ -506,8 +510,6 @@ const RolesTable: React.FC = () => {
             errors: form.errors,
             submit: form.submit
           }}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
         />
       ) : null}
       <EuiBasicTable
