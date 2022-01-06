@@ -9,7 +9,11 @@ import {
 } from '@tensei/eui/lib/components/flyout'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
+import {
+  EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon
+} from '@tensei/eui/lib/components/button'
 import { EuiFieldText, EuiTextArea } from '@tensei/eui/lib/components/form'
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiFormLabel } from '@tensei/eui/lib/components/form'
@@ -24,11 +28,13 @@ import styled from 'styled-components'
 import { ResourceContract } from '@tensei/components'
 import slugify from 'speakingurl'
 import { useForm } from '../../hooks/forms'
+import { useToastStore } from '../../../store/toast'
 interface CreateRoleForm {
   name: string
   description: string
   slug: string
   adminPermissions: number[]
+  id?: number
 }
 
 interface AdminPermission {
@@ -238,12 +244,18 @@ const FlyoutAccordion: React.FC<{
   )
 }
 
+const getPermissionIDs = (permissions: AdminPermission[]) => {
+  return permissions.map((permission: AdminPermission) => permission.id)
+}
+
 type FormErrors = {}
 
 const RolesFlyout: React.FC<{
   setIsFlyoutOpen: (open: boolean) => void
   createRoleForm: CreateRoleFormProps
   allPermissions: AdminPermission[]
+  isEditing: boolean
+  setIsEditing: (isEditing: boolean) => void
 }> = ({
   setIsFlyoutOpen,
   createRoleForm: {
@@ -254,19 +266,31 @@ const RolesFlyout: React.FC<{
     errors,
     submit
   },
-  allPermissions
+  allPermissions,
+  isEditing,
+  setIsEditing
 }) => {
   const flyoutHeadingId = useGeneratedHtmlId()
+  const { toast } = useToastStore()
 
   const closeFlyout = () => {
     setIsFlyoutOpen(false)
+    if (isEditing) setIsEditing(false)
+    setCreateRoleForm({
+      ...createRoleForm,
+      adminPermissions: getPermissionIDs(allPermissions)
+    })
   }
 
   return (
     <EuiFlyout onClose={closeFlyout}>
       <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
         <EuiTitle>
-          <h2 id={flyoutHeadingId}> Create custom role </h2>
+          <h2 id={flyoutHeadingId}>
+            {isEditing
+              ? `Editing ${createRoleForm.name} role`
+              : 'Create custom role'}
+          </h2>
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
@@ -286,6 +310,7 @@ const RolesFlyout: React.FC<{
                 })
               }}
               name="name"
+              defaultValue={isEditing ? createRoleForm.name : ''}
               isInvalid={!!errors?.name}
               fullWidth
             />
@@ -299,6 +324,7 @@ const RolesFlyout: React.FC<{
           >
             <EuiTextArea
               name="description"
+              defaultValue={isEditing ? createRoleForm.description : ''}
               onChange={event => {
                 setCreateRoleForm({
                   ...createRoleForm,
@@ -337,13 +363,20 @@ const RolesFlyout: React.FC<{
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiButton
-              onClick={() => {
+              onClick={async () => {
+                loading = true
                 submit?.()
+                if (isEditing)
+                  toast('Updated.', <p>Role updated successfully.</p>)
+                else toast('Created.', <p>Role created successfully.</p>)
+                loading = false
+                closeFlyout()
+                fetchAdminRoles()
               }}
               isLoading={loading}
               fill
             >
-              Create Role
+              {isEditing ? 'Update Role' : 'Create Role'}
             </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -362,7 +395,9 @@ const RolesTable: React.FC = () => {
     },
     onSuccess() {},
     onSubmit(form) {
-      return window.Tensei.api.post('admin-roles', form)
+      if (isEditing)
+        return window.Tensei.api.patch(`admin-roles/${form.id}`, form)
+      else return window.Tensei.api.post('admin-roles', form)
     }
   })
 
@@ -370,6 +405,7 @@ const RolesTable: React.FC = () => {
   const [adminRoles, setAdminRoles] = useState<any>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const columns = [
     {
@@ -379,11 +415,36 @@ const RolesTable: React.FC = () => {
     {
       field: 'members',
       name: 'Members'
+    },
+    {
+      field: 'actions',
+      name: 'Actions',
+      actions: [
+        {
+          name: 'Edit',
+          description: 'Edit role',
+          icon: 'pencil',
+          type: 'icon',
+          onClick: (role: any) => {
+            form.setForm({
+              id: role?.id,
+              name: role?.name,
+              description: role?.description,
+              slug: role?.slug,
+              adminPermissions: getPermissionIDs(role?.adminPermissions)
+            })
+            setIsEditing(true)
+            setIsFlyoutOpen(true)
+          }
+        }
+      ]
     }
   ]
 
   const fetchAdminRoles = async () => {
-    const [response] = await window.Tensei.api.get('admin-roles')
+    const [response] = await window.Tensei.api.get(
+      'admin-roles?populate=adminPermissions'
+    )
 
     setAdminRoles(response?.data.data)
 
@@ -399,10 +460,7 @@ const RolesTable: React.FC = () => {
     }>('admin-permissions')
     if (response !== null) {
       setAllPermissions(response.data.data)
-      form.setValue(
-        'adminPermissions',
-        response.data.data.map(permission => permission.id)
-      )
+      form.setValue('adminPermissions', getPermissionIDs(response.data.data))
     }
   }
 
@@ -448,12 +506,15 @@ const RolesTable: React.FC = () => {
             errors: form.errors,
             submit: form.submit
           }}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
         />
       ) : null}
       <EuiBasicTable
         items={renderedItems}
         columns={columns}
         loading={loading}
+        hasActions={true}
       />
     </>
   )
