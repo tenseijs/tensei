@@ -29,6 +29,7 @@ import {
   EuiFieldText,
   EuiFieldPassword
 } from '@tensei/eui/lib/components/form'
+import { AxiosResponse, AxiosError } from 'axios'
 
 import {
   EuiFlyout,
@@ -37,6 +38,7 @@ import {
   EuiFlyoutFooter
 } from '@tensei/eui/lib/components/flyout'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
+import { useForm } from '../../hooks/forms'
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -78,13 +80,18 @@ const UserRole = styled.span`
 
 interface ProfileProps {}
 interface FlyOutProps {
-  setIsFlyoutVisible: (b: boolean) => void
+  setisEditTeamMemberFlyoutVisible: (b: boolean) => void
   selectedMember: TeamMemberProps
   showChangeMemberRoleModal: () => void
   getTeamMembers: () => void
 }
+interface FormInput {
+  firstName: string
+  lastName: string
+  password: string
+}
 const FlyOut: React.FC<FlyOutProps> = ({
-  setIsFlyoutVisible,
+  setisEditTeamMemberFlyoutVisible,
   selectedMember,
   showChangeMemberRoleModal,
   getTeamMembers
@@ -92,21 +99,28 @@ const FlyOut: React.FC<FlyOutProps> = ({
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
   })
-
-  const [memberDetails, setMemberDetails] = useState({
-    firstName: selectedMember.firstName,
-    lastName: selectedMember.lastName,
-    password: ''
+  const { form, errors, submit, loading, setValue } = useForm<FormInput>({
+    defaultValues: {
+      firstName: selectedMember.firstName,
+      lastName: selectedMember.lastName,
+      password: ''
+    },
+    onSubmit: (): Promise<[AxiosResponse | null, AxiosError | null]> => {
+      return window.Tensei.api.patch(`admin-users/${selectedMember.id}`, form)
+    },
+    onSuccess: () => {
+      toast('Edited.', <p>Member data edited successfully.</p>)
+      setisEditTeamMemberFlyoutVisible(false)
+      getTeamMembers()
+    }
   })
-  const [confirmPassword, setConfirmPassword] = useState('')
+
   const { toast } = useToastStore()
-  const [errors, setErrors] = useState()
-  const [confirmPasswordError, setConfirmPasswordError] = useState('')
 
   return (
     <EuiFlyout
       ownFocus
-      onClose={() => setIsFlyoutVisible(false)}
+      onClose={() => setisEditTeamMemberFlyoutVisible(false)}
       aria-labelledby={simpleFlyoutTitleId}
     >
       <EuiFlyoutHeader hasBorder>
@@ -115,31 +129,23 @@ const FlyOut: React.FC<FlyOutProps> = ({
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm component="form" isInvalid={!!errors}>
+        <EuiForm component="form">
           <EuiFormRow label="Firstname" fullWidth>
             <EuiFieldText
-              name="first"
-              value={memberDetails.firstName}
+              value={form.firstName}
               fullWidth
-              onChange={e => {
-                setMemberDetails({
-                  ...memberDetails,
-                  firstName: e.target.value
-                })
+              onChange={event => {
+                setValue('firstName', event.target.value)
               }}
             />
           </EuiFormRow>
 
           <EuiFormRow label="Lastname" fullWidth>
             <EuiFieldText
-              name="last"
               fullWidth
-              value={memberDetails.lastName}
-              onChange={e => {
-                setMemberDetails({
-                  ...memberDetails,
-                  lastName: e.target.value
-                })
+              value={form.lastName}
+              onChange={event => {
+                setValue('lastName', event.target.value)
               }}
             />
           </EuiFormRow>
@@ -149,32 +155,20 @@ const FlyOut: React.FC<FlyOutProps> = ({
           <EuiFormRow
             label="Password"
             fullWidth
-            isInvalid={!!errors}
-            error={errors ? errors[0].message! : ''}
+            isInvalid={!!errors?.password}
+            error={errors?.password}
           >
             <EuiFieldPassword
               name="password"
+              value={form.password}
+              isInvalid={!!errors?.password}
               fullWidth
               onChange={e => {
-                setMemberDetails({
-                  ...memberDetails,
-                  password: e.target.value
-                })
+                setValue('password', e.target.value)
               }}
             />
           </EuiFormRow>
-          <EuiFormRow
-            label="Confirm Password"
-            fullWidth
-            isInvalid={!!confirmPasswordError}
-            error={confirmPasswordError}
-          >
-            <EuiFieldPassword
-              name="confirmpassword"
-              fullWidth
-              onChange={e => setConfirmPassword(e.target.value)}
-            />
-          </EuiFormRow>
+
           <EuiButton
             onClick={() => {
               showChangeMemberRoleModal()
@@ -190,30 +184,16 @@ const FlyOut: React.FC<FlyOutProps> = ({
             <EuiButtonEmpty
               iconType="cross"
               flush="left"
-              onClick={() => setIsFlyoutVisible(false)}
+              onClick={() => setisEditTeamMemberFlyoutVisible(false)}
             >
               Cancel
             </EuiButtonEmpty>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiButton
-              onClick={async () => {
-                if (memberDetails.password != confirmPassword) {
-                  setConfirmPasswordError('passwords do not match')
-                  return
-                }
-                const [data, error] = await window.Tensei.api.patch(
-                  `admin-users/${selectedMember.id}`,
-                  memberDetails
-                )
-                if (!error) {
-                  toast('Edited.', <p>Member data edited successfully.</p>)
-                  setIsFlyoutVisible(false)
-                  getTeamMembers()
-                } else {
-                  setErrors(error.response?.data.errors)
-                }
-              }}
+              type="submit"
+              isLoading={loading}
+              onClick={() => submit()}
               fill
             >
               Submit
@@ -232,7 +212,8 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
+  const [isEditTeamMemberFlyoutVisible, setisEditTeamMemberFlyoutVisible] =
+    useState(false)
 
   const getTeamMembers = useCallback(async () => {
     const [data, error] = await getAdminUsers()
@@ -344,7 +325,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
                 toast(undefined, "Owner role can't be changed", 'danger')
                 return
               }
-              setIsFlyoutVisible(true)
+              setisEditTeamMemberFlyoutVisible(true)
               setSelectedMember(item)
               // set rolesCheckboxSelectionMap
               setRolesCheckboxSelectionMap({})
@@ -472,9 +453,9 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   return (
     <PageWrapper>
       <Wrapper>
-        {isFlyoutVisible && (
+        {isEditTeamMemberFlyoutVisible && (
           <FlyOut
-            setIsFlyoutVisible={setIsFlyoutVisible}
+            setisEditTeamMemberFlyoutVisible={setisEditTeamMemberFlyoutVisible}
             showChangeMemberRoleModal={showChangeMemberRoleModal}
             selectedMember={selectedMember}
             getTeamMembers={getTeamMembers}
