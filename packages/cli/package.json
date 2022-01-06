@@ -18,6 +18,7 @@
     "test": "node japaFile.js"
   },
   "dependencies": {
+    "@tensei/common": "^0.11.3",
     "@adonisjs/require-ts": "^2.0.8",
     "@poppinss/chokidar-ts": "^3.3.2",
     "@poppinss/cliui": "^2.2.5",
