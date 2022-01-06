@@ -24,6 +24,7 @@
     "@poppinss/prompts": "^1.2.3",
     "@poppinss/utils": "^3.2.0",
     "@tensei/common": "^0.11.4",
+    "@tensei/core": "^0.11.4",
     "@types/change-case": "^2.3.1",
     "@types/commander": "^2.12.2",
     "@types/fs-extra": "^9.0.6",
