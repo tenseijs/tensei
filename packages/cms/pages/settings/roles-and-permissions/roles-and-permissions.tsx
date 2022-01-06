@@ -9,7 +9,11 @@ import {
 } from '@tensei/eui/lib/components/flyout'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
+import {
+  EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon
+} from '@tensei/eui/lib/components/button'
 import { EuiFieldText, EuiTextArea } from '@tensei/eui/lib/components/form'
 import { EuiText } from '@tensei/eui/lib/components/text'
 import { EuiFormLabel } from '@tensei/eui/lib/components/form'
@@ -24,11 +28,14 @@ import styled from 'styled-components'
 import { ResourceContract } from '@tensei/components'
 import slugify from 'speakingurl'
 import { useForm } from '../../hooks/forms'
+import { useToastStore } from '../../../store/toast'
+import { useAdminUsersStore } from '../../../store/admin-users'
 interface CreateRoleForm {
   name: string
   description: string
   slug: string
   adminPermissions: number[]
+  id?: number
 }
 
 interface AdminPermission {
@@ -238,6 +245,10 @@ const FlyoutAccordion: React.FC<{
   )
 }
 
+const getPermissionIDs = (permissions: AdminPermission[]) => {
+  return permissions.map((permission: AdminPermission) => permission.id)
+}
+
 type FormErrors = {}
 
 const RolesFlyout: React.FC<{
@@ -257,16 +268,26 @@ const RolesFlyout: React.FC<{
   allPermissions
 }) => {
   const flyoutHeadingId = useGeneratedHtmlId()
+  const { toast } = useToastStore()
 
   const closeFlyout = () => {
     setIsFlyoutOpen(false)
+    setCreateRoleForm({
+      ...createRoleForm,
+      id: undefined,
+      adminPermissions: getPermissionIDs(allPermissions)
+    })
   }
 
   return (
     <EuiFlyout onClose={closeFlyout}>
       <EuiFlyoutHeader hasBorder aria-labelledby={flyoutHeadingId}>
         <EuiTitle>
-          <h2 id={flyoutHeadingId}> Create custom role </h2>
+          <h2 id={flyoutHeadingId}>
+            {createRoleForm.id
+              ? `Editing ${createRoleForm.name} role`
+              : 'Create custom role'}
+          </h2>
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
@@ -286,6 +307,7 @@ const RolesFlyout: React.FC<{
                 })
               }}
               name="name"
+              defaultValue={createRoleForm.name}
               isInvalid={!!errors?.name}
               fullWidth
             />
@@ -299,6 +321,7 @@ const RolesFlyout: React.FC<{
           >
             <EuiTextArea
               name="description"
+              defaultValue={createRoleForm.description}
               onChange={event => {
                 setCreateRoleForm({
                   ...createRoleForm,
@@ -337,13 +360,22 @@ const RolesFlyout: React.FC<{
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiButton
-              onClick={() => {
+              onClick={async () => {
+                loading = true
                 submit?.()
+                {
+                  createRoleForm.id
+                    ? toast('Updated.', <p>Role updated successfully.</p>)
+                    : toast('Created.', <p>Role created successfully.</p>)
+                }
+                loading = false
+                closeFlyout()
+                fetchAdminRoles()
               }}
               isLoading={loading}
               fill
             >
-              Create Role
+              {createRoleForm.id ? 'Update Role' : 'Create Role'}
             </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -362,14 +394,20 @@ const RolesTable: React.FC = () => {
     },
     onSuccess() {},
     onSubmit(form) {
-      return window.Tensei.api.post('admin-roles', form)
+      {
+        return form.id
+          ? window.Tensei.api.patch(`admin-roles/${form.id}`, form)
+          : window.Tensei.api.post('admin-roles', form)
+      }
     }
   })
 
   const [allPermissions, setAllPermissions] = useState<AdminPermission[]>([])
   const [adminRoles, setAdminRoles] = useState<any>([])
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
+  const { getAdminUsers, getAdminRoles } = useAdminUsersStore()
 
   const columns = [
     {
@@ -379,17 +417,44 @@ const RolesTable: React.FC = () => {
     {
       field: 'members',
       name: 'Members'
+    },
+    {
+      field: 'actions',
+      name: 'Actions',
+      actions: [
+        {
+          name: 'Edit',
+          description: 'Edit role',
+          icon: 'pencil',
+          type: 'icon',
+          onClick: (role: any) => {
+            form.setForm({
+              id: role?.id,
+              name: role?.name,
+              description: role?.description,
+              slug: role?.slug,
+              adminPermissions: getPermissionIDs(role?.adminPermissions)
+            })
+            setIsFlyoutOpen(true)
+          }
+        }
+      ]
     }
   ]
 
+  const getTeamMembers = async () => {
+    const [response] = await getAdminUsers()
+    setTeamMembers(response?.data.data ?? [])
+  }
+
   const fetchAdminRoles = async () => {
-    const [response] = await window.Tensei.api.get('admin-roles')
-
+    const [response] = await getAdminRoles()
     setAdminRoles(response?.data.data)
-
     setLoading(false)
   }
+
   useEffect(() => {
+    getTeamMembers()
     fetchAdminRoles()
   }, [])
 
@@ -399,10 +464,7 @@ const RolesTable: React.FC = () => {
     }>('admin-permissions')
     if (response !== null) {
       setAllPermissions(response.data.data)
-      form.setValue(
-        'adminPermissions',
-        response.data.data.map(permission => permission.id)
-      )
+      form.setValue('adminPermissions', getPermissionIDs(response.data.data))
     }
   }
 
@@ -411,14 +473,23 @@ const RolesTable: React.FC = () => {
   }, [])
 
   const renderedItems = adminRoles.map((item: any) => {
-    const numberOfMembers = adminRoles.filter(
-      (memberItem: any) => item.name === memberItem.name
-    )
-    const member = numberOfMembers.length > 1 ? 'members' : 'member'
+    let numberOfMembers = 0
+    teamMembers.forEach(member => {
+      member?.adminRoles.forEach((role: any) => {
+        numberOfMembers =
+          role.slug === item.slug ? numberOfMembers + 1 : numberOfMembers
+      })
+    })
+    const member =
+      numberOfMembers > 0
+        ? numberOfMembers > 1
+          ? `${numberOfMembers} members`
+          : `${numberOfMembers} member`
+        : '-'
     return {
       ...item,
       role: item.name,
-      members: `${numberOfMembers.length} ${member}`
+      members: member
     }
   })
 
@@ -431,6 +502,12 @@ const RolesTable: React.FC = () => {
         <EuiButtonEmpty
           onClick={() => {
             setIsFlyoutOpen(true)
+            form.setForm({
+              name: '',
+              description: '',
+              slug: '',
+              adminPermissions: getPermissionIDs(allPermissions)
+            })
           }}
         >
           Create a new role
@@ -454,6 +531,7 @@ const RolesTable: React.FC = () => {
         items={renderedItems}
         columns={columns}
         loading={loading}
+        hasActions={true}
       />
     </>
   )
