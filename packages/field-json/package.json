@@ -1,6 +1,6 @@
 {
   "name": "@tensei/field-json",
-  "version": "0.11.4",
+  "version": "0.11.5",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./build/index.d.ts",
@@ -18,8 +18,8 @@
     "dev": "concurrently 'npm:dev-client' 'npm:dev-server'"
   },
   "dependencies": {
-    "@tensei/common": "^0.11.4",
-    "@tensei/core": "^0.11.4",
+    "@tensei/common": "^0.11.5",
+    "@tensei/core": "^0.11.5",
     "@types/busboy": "^0.2.3",
     "@types/fs-capacitor": "^2.0.0",
     "@types/http-errors": "^1.8.0",

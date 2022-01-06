@@ -1,6 +1,6 @@
 {
   "name": "@tensei/cli",
-  "version": "0.11.4",
+  "version": "0.11.5",
   "main": "./build/index.js",
   "license": "MIT",
   "types": "./build/index.d.ts",
@@ -23,8 +23,8 @@
     "@poppinss/cliui": "^2.2.5",
     "@poppinss/prompts": "^1.2.3",
     "@poppinss/utils": "^3.2.0",
-    "@tensei/common": "^0.11.4",
-    "@tensei/core": "^0.11.4",
+    "@tensei/common": "^0.11.5",
+    "@tensei/core": "^0.11.5",
     "@types/change-case": "^2.3.1",
     "@types/commander": "^2.12.2",
     "@types/fs-extra": "^9.0.6",
