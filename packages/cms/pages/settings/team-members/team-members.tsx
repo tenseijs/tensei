@@ -98,9 +98,11 @@ const FlyOut: React.FC<FlyOutProps> = ({
     lastName: selectedMember.lastName,
     password: ''
   })
+  const [confirmPassword, setConfirmPassword] = useState('')
   const { toast } = useToastStore()
   const [errors, setErrors] = useState()
-  console.log(errors)
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
+
   return (
     <EuiFlyout
       ownFocus
@@ -148,7 +150,7 @@ const FlyOut: React.FC<FlyOutProps> = ({
             label="Password"
             fullWidth
             isInvalid={!!errors}
-            error={errors ? errors[0].message : ''}
+            error={errors ? errors[0].message! : ''}
           >
             <EuiFieldPassword
               name="password"
@@ -161,8 +163,17 @@ const FlyOut: React.FC<FlyOutProps> = ({
               }}
             />
           </EuiFormRow>
-          <EuiFormRow label="Confirm Password" fullWidth>
-            <EuiFieldPassword name="confirmpassword" fullWidth />
+          <EuiFormRow
+            label="Confirm Password"
+            fullWidth
+            isInvalid={!!confirmPasswordError}
+            error={confirmPasswordError}
+          >
+            <EuiFieldPassword
+              name="confirmpassword"
+              fullWidth
+              onChange={e => setConfirmPassword(e.target.value)}
+            />
           </EuiFormRow>
           <EuiButton
             onClick={() => {
@@ -187,6 +198,10 @@ const FlyOut: React.FC<FlyOutProps> = ({
           <EuiFlexItem grow={false}>
             <EuiButton
               onClick={async () => {
+                if (memberDetails.password != confirmPassword) {
+                  setConfirmPasswordError('passwords do not match')
+                  return
+                }
                 const [data, error] = await window.Tensei.api.patch(
                   `admin-users/${selectedMember.id}`,
                   memberDetails
@@ -325,7 +340,6 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             icon: 'pencil',
             type: 'icon',
             onClick: (item: TeamMemberProps) => {
-              console.log(item)
               if (isOwner(item)) {
                 toast(undefined, "Owner role can't be changed", 'danger')
                 return
