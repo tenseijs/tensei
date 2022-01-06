@@ -85,8 +85,6 @@ export const useAuthStore = create<AuthState & AuthMethods>(
         )))
       })
 
-      console.log('merge permissions')
-
       set({
         permissions: [
           ...permissionStrings

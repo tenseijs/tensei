@@ -29,7 +29,11 @@ import {
   EuiFieldText,
   EuiFieldPassword
 } from '@tensei/eui/lib/components/form'
+<<<<<<< HEAD
 import { AxiosResponse, AxiosError } from 'axios'
+=======
+import { EuiBadge } from '@tensei/eui/lib/components/badge'
+>>>>>>> 667ac50c1503826829f7410ea78de8d50d1bf5ef
 
 import {
   EuiFlyout,
@@ -57,10 +61,10 @@ const TableMetaWrapper = styled.div`
   align-items: center;
 `
 const OwnerBadge = styled.div`
-  margin-left: 5px;
+  margin-left: 2px;
   border-radius: 3px;
   font-size: 12px;
-  padding: 4px 12px;
+  padding: 4px 4px;
   line-height: 1rem;
   color: ${({ theme }) => theme.colors.primary};
   background-color: ${({ theme }) => theme.colors.primaryTransparent};
@@ -307,6 +311,14 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         }
       },
       {
+        name: 'Email',
+        render: (item: any) => {
+          return (
+            <EuiBadge>{item.email}</EuiBadge>
+          )
+        }
+      }, 
+      {
         name: 'Created At',
         render: (item: any) => {
           return moment(item.createdAt).format('D MMM YYYY')
@@ -478,6 +490,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
 
         {removeMemberModal}
         {changeMemberRoleModal}
+
       </Wrapper>
     </PageWrapper>
   )

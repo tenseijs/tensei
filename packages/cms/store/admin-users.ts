@@ -30,7 +30,7 @@ export const useAdminUsersStore = create<AdminUserMethods>(
       return window.Tensei.api.delete(`admin-users/${id}`)
     },
     async getAdminRoles() {
-      return window.Tensei.api.get(`admin-roles`)
+      return window.Tensei.api.get(`admin-roles?populate=adminPermissions`)
     },
     async updateUserRoles(id: string, roles: any[]) {
       return window.Tensei.api.patch(`admin-users/${id}`, { adminRoles: roles })
