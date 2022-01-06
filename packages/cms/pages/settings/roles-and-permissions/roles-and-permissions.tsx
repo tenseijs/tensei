@@ -29,6 +29,7 @@ import { ResourceContract } from '@tensei/components'
 import slugify from 'speakingurl'
 import { useForm } from '../../hooks/forms'
 import { useToastStore } from '../../../store/toast'
+import { useAdminUsersStore } from '../../../store/admin-users'
 interface CreateRoleForm {
   name: string
   description: string
@@ -403,8 +404,10 @@ const RolesTable: React.FC = () => {
 
   const [allPermissions, setAllPermissions] = useState<AdminPermission[]>([])
   const [adminRoles, setAdminRoles] = useState<any>([])
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
+  const { getAdminUsers, getAdminRoles } = useAdminUsersStore()
 
   const columns = [
     {
@@ -439,16 +442,19 @@ const RolesTable: React.FC = () => {
     }
   ]
 
+  const getTeamMembers = async () => {
+    const [response] = await getAdminUsers()
+    setTeamMembers(response?.data.data ?? [])
+  }
+
   const fetchAdminRoles = async () => {
-    const [response] = await window.Tensei.api.get(
-      'admin-roles?populate=adminPermissions'
-    )
-
+    const [response] = await getAdminRoles()
     setAdminRoles(response?.data.data)
-
     setLoading(false)
   }
+
   useEffect(() => {
+    getTeamMembers()
     fetchAdminRoles()
   }, [])
 
@@ -467,14 +473,23 @@ const RolesTable: React.FC = () => {
   }, [])
 
   const renderedItems = adminRoles.map((item: any) => {
-    const numberOfMembers = adminRoles.filter(
-      (memberItem: any) => item.name === memberItem.name
-    )
-    const member = numberOfMembers.length > 1 ? 'members' : 'member'
+    let numberOfMembers = 0
+    teamMembers.forEach(member => {
+      member?.adminRoles.forEach((role: any) => {
+        numberOfMembers =
+          role.slug === item.slug ? numberOfMembers + 1 : numberOfMembers
+      })
+    })
+    const member =
+      numberOfMembers > 0
+        ? numberOfMembers > 1
+          ? `${numberOfMembers} members`
+          : `${numberOfMembers} member`
+        : '-'
     return {
       ...item,
       role: item.name,
-      members: `${numberOfMembers.length} ${member}`
+      members: member
     }
   })
 
