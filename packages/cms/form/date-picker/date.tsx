@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 
 import moment from 'moment'
 import { FormComponentProps } from '@tensei/components'
-import { useRef } from 'react'
 
 const FormDatePicker: React.FC<FormComponentProps> = ({
   field,
@@ -21,6 +20,7 @@ const FormDatePicker: React.FC<FormComponentProps> = ({
   return (
     <EuiFormRow fullWidth>
       <EuiDatePicker
+        inputRef={c => c} // requires inputRef so i just inserted a function that does nothing
         selected={startDate}
         onChange={handleChange}
         fullWidth
