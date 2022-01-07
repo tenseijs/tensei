@@ -267,7 +267,18 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     return item.adminRoles.some((role: any) => role.slug === 'super-admin')
   }
 
-  const [selectedMember, setSelectedMember] = useState<TeamMemberProps>()
+  const [selectedMember, setSelectedMember] = useState<TeamMemberProps>({
+    id: '',
+    firstName: '',
+    lastName: '',
+    password: '',
+    email: '',
+    active: true,
+    adminRoles: [],
+    createdAt: '',
+    updatedAt: ''
+  })
+
   const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] =
     useState(false)
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
