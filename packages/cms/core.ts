@@ -98,7 +98,8 @@ class Core {
       ManyToOne: FormBelongsToMany,
       ManyToMany: FormBelongsToMany,
       OneToMany: FormBelongsToMany,
-      Date: FormDatePicker
+      Date: FormDatePicker,
+      Timestamp: FormDatePicker
     },
     index: {
       Boolean: IndexBoolean,

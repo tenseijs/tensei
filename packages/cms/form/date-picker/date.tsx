@@ -1,6 +1,6 @@
 import { EuiDatePicker } from '@tensei/eui/lib/components/date_picker'
 import { EuiFormRow } from '@tensei/eui/lib/components/form'
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 
 import moment from 'moment'
 import { FormComponentProps } from '@tensei/components'
@@ -8,22 +8,24 @@ import { FormComponentProps } from '@tensei/components'
 const FormDatePicker: React.FC<FormComponentProps> = ({
   field,
   value,
+  error,
   onChange
 }) => {
-  const [startDate, setStartDate] = useState(moment.utc(value))
-
   const handleChange = (date: moment.Moment) => {
-    setStartDate(date)
-    onChange(date.format())
+    onChange(date)
   }
 
+  const isTimeStamp = field.fieldName === 'Timestamp' ? true : false
+
   return (
-    <EuiFormRow fullWidth>
+    <EuiFormRow fullWidth isInvalid>
       <EuiDatePicker
         inputRef={c => c} // requires inputRef so i just inserted a function that does nothing
-        selected={startDate}
+        showTimeSelectOnly={isTimeStamp}
+        selected={moment.utc(value)}
         onChange={handleChange}
         fullWidth
+        isInvalid={!!error}
         {...field.attributes}
       />
     </EuiFormRow>
