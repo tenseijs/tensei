@@ -12,7 +12,7 @@ const FormDatePicker: React.FC<FormComponentProps> = ({
   onChange
 }) => {
   const handleChange = (date: moment.Moment) => {
-    onChange(date)
+    onChange(date.format(field.format))
   }
 
   const isTimeStamp = field.fieldName === 'Timestamp' ? true : false
@@ -21,6 +21,7 @@ const FormDatePicker: React.FC<FormComponentProps> = ({
     <EuiFormRow fullWidth isInvalid>
       <EuiDatePicker
         inputRef={c => c} // requires inputRef so i just inserted a function that does nothing
+        dateFormat={isTimeStamp ? 'hh:mm a' : 'do MMM yyyy'}
         showTimeSelectOnly={isTimeStamp}
         selected={moment.utc(value)}
         onChange={handleChange}
