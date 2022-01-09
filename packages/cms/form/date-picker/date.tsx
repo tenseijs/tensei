@@ -28,6 +28,7 @@ const FormDatePicker: React.FC<FormComponentProps> = ({
         fullWidth
         isInvalid={!!error}
         {...field.attributes}
+        iconType={isTimeStamp ? 'clock' : 'calendar'}
       />
     </EuiFormRow>
   )
