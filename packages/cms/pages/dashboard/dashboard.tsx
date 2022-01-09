@@ -11,8 +11,21 @@ const Content = styled.div`
 export const Dashboard: React.FunctionComponent = () => {
   return (
     <>
-      <Content />
-      <CommunityPanel />
+      <DashboardLayout>
+        <DashboardLayout.Sidebar title="Dashboard" />
+        <DashboardLayout.Body>
+          <DashboardLayout.Topbar>
+            <EuiTitle size="xs">
+              <h3>Dashboard</h3>
+            </EuiTitle>
+          </DashboardLayout.Topbar>
+
+          <DashboardLayout.Content>
+            <Content />
+            <CommunityPanel />
+          </DashboardLayout.Content>
+        </DashboardLayout.Body>
+      </DashboardLayout>
     </>
   )
 }

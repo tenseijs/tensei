@@ -88,7 +88,7 @@ ReactDOM.render(
       <App>
         <AuthRoutes />
 
-        <DashboardRoutes />
+        <DashboardRoutes />        
       </App>
     </EuiThemeProvider>
   </BrowserRouter>,
