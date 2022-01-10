@@ -1,5 +1,9 @@
-import React from 'react'
-import { Route } from 'react-router-dom'
+import React, { Fragment } from 'react'
+import { Route, useLocation } from 'react-router-dom'
+
+import { DashboardLayout } from '../layout/layout'
+
+import { EuiTitle } from '@tensei/eui/lib/components/title'
 
 import { AssetManager } from '../../../assests/asset-manager'
 import { Dashboard } from '../../../dashboard'
@@ -44,19 +48,49 @@ const routesConfig = [
 
 
 export const DashboardRoutes: React.FunctionComponent = () => {
+  const location = useLocation()
+
+  if(
+    location.pathname.includes('auth/login') ||
+    location.pathname.includes('auth/register')
+  ) {
+    return null
+  }
+
   return (
-    <>
-      {routesConfig.map(config => {
-        let Component = MustBeAuthComponent(config.component)
+    <DashboardLayout>
+      <DashboardLayout.Sidebar title="Dashboard" />
+      <DashboardLayout.Body>
+        {routesConfig.map(config => {
+          let Component = MustBeAuthComponent(config.component)
+
+          if (!config.customTopbar) {
+            const RouteComponent = config.component
+
+            Component = MustBeAuthComponent((...props: any) => (
+              <Fragment key={config.path}>
+                <DashboardLayout.Topbar>
+                  <EuiTitle size="xs">
+                    <h3>{config?.title}</h3>
+                  </EuiTitle>
+                </DashboardLayout.Topbar>
+                <DashboardLayout.Content>
+                  <RouteComponent {...props} />
+                </DashboardLayout.Content>
+              </Fragment>
+            ))
+          }
+
           return (
-            <Route 
+            <Route
               key={config.path}
               component={Component}
               path={window.Tensei.getPath(config.path)}
               exact={config?.exact === undefined ? true : config?.exact}
             />
           )
-      })}
-    </>
+        })}
+      </DashboardLayout.Body>
+    </DashboardLayout>
   )
 }
