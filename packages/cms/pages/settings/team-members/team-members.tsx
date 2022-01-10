@@ -354,11 +354,6 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             icon: 'pencil',
             type: 'icon',
             onClick: (item: TeamMemberProps) => {
-              if (isOwner(item)) {
-                toast(undefined, "Owner role can't be changed", 'danger')
-                return
-              }
-
               if (!hasPermission(`update:admin-users`)) {
                 toast(
                   'Unauthorized',
@@ -366,6 +361,11 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
                   'danger'
                 )
 
+                return
+              }
+
+              if (isOwner(item)) {
+                toast(undefined, "Owner role can't be changed", 'danger')
                 return
               }
 
@@ -392,11 +392,6 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             type: 'icon',
             color: 'danger',
             onClick: item => {
-              if (isOwner(item)) {
-                toast(undefined, "Can't remove Owner", 'danger')
-                return
-              }
-
               if (!hasPermission(`delete:admin-users`)) {
                 toast(
                   'Unauthorized',
@@ -404,6 +399,11 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
                   'danger'
                 )
 
+                return
+              }
+
+              if (isOwner(item)) {
+                toast(undefined, "Can't remove Owner", 'danger')
                 return
               }
 
