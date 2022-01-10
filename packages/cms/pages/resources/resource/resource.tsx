@@ -377,7 +377,7 @@ export const Table: React.FunctionComponent<TableProps> = ({
                 type: 'icon',
                 color: 'danger',
                 onClick: item => {
-                  if (!hasPermission(`update:${resource?.slugPlural}`)) {
+                  if (!hasPermission(`delete:${resource?.slugPlural}`)) {
                     toast(
                       'Unauthorized',
                       <p>
@@ -521,18 +521,6 @@ export const ResourceView: React.FunctionComponent = () => {
 
     if (!found) {
       push(window.Tensei.getPath(''))
-    } else {
-      if (!hasPermission(`create:${found?.slugPlural}`)) {
-        push(window.Tensei.getPath(``))
-
-        toast(
-          'Unauthorized',
-          <p>You're not authorized to access {found?.name.toLowerCase()}</p>,
-          'danger'
-        )
-
-        return
-      }
     }
   }, [resourceSlug])
 
@@ -553,7 +541,7 @@ export const ResourceView: React.FunctionComponent = () => {
       <DashboardLayout.Content>
         <PageWrapper>
           {resource ? (
-            hasPermission(`create:${resource?.slugPlural}`) ? (
+            hasPermission(`index:${resource?.slugPlural}`) ? (
               <Resource resource={resource} />
             ) : null
           ) : (

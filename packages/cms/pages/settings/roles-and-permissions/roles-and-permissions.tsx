@@ -7,24 +7,12 @@ import {
   EuiFlyoutFooter
 } from '@tensei/eui/lib/components/flyout'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
-import {
-  EuiModal,
-  EuiModalBody,
-  EuiModalFooter,
-  EuiModalHeader,
-  EuiModalHeaderTitle
-} from '@tensei/eui/lib/components/modal'
 import { EuiCallOut } from '@tensei/eui/lib/components/call_out/call_out'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import {
-  EuiButton,
-  EuiButtonEmpty,
-  EuiButtonIcon
-} from '@tensei/eui/lib/components/button'
+import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { EuiFieldText, EuiTextArea } from '@tensei/eui/lib/components/form'
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { EuiFormLabel } from '@tensei/eui/lib/components/form'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import {
   EuiSwitch,

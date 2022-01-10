@@ -208,13 +208,19 @@ const FlyOut: React.FC<FlyOutProps> = ({
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
-    useAdminUsersStore()
+  const {
+    getAdminUsers,
+    removeUser,
+    getAdminRoles,
+    updateUserRoles
+  } = useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [isEditTeamMemberFlyoutVisible, setisEditTeamMemberFlyoutVisible] =
-    useState(false)
+  const [
+    isEditTeamMemberFlyoutVisible,
+    setisEditTeamMemberFlyoutVisible
+  ] = useState(false)
 
   const getTeamMembers = useCallback(async () => {
     const [data, error] = await getAdminUsers()
@@ -279,18 +285,24 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     updatedAt: ''
   })
 
-  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] =
-    useState(false)
+  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
+    false
+  )
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
   const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
-  const [isChangeMemberRoleModalVisible, setChangeMemberRoleModalVisible] =
-    useState(false)
+  const [
+    isChangeMemberRoleModalVisible,
+    setChangeMemberRoleModalVisible
+  ] = useState(false)
   const closeChangeMemberRoleModal = () =>
     setChangeMemberRoleModalVisible(false)
   const showChangeMemberRoleModal = () => setChangeMemberRoleModalVisible(true)
   const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
-  const [rolesCheckboxSelectionMap, setRolesCheckboxSelectionMap] =
-    useState<any>({})
+  const [
+    rolesCheckboxSelectionMap,
+    setRolesCheckboxSelectionMap
+  ] = useState<any>({})
+  // const modalFormId = useGeneratedHtmlId({ prefix: 'basicTableRow' })
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -352,8 +364,9 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               const newCheckboxIdToSelectedMap: any = {}
               rolesId.forEach(
                 roleId =>
-                  (newCheckboxIdToSelectedMap[roleId] =
-                    adminRolesId.includes(roleId))
+                  (newCheckboxIdToSelectedMap[roleId] = adminRolesId.includes(
+                    roleId
+                  ))
               )
               setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
             }
