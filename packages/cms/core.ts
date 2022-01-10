@@ -100,7 +100,6 @@ class Core {
       ManyToMany: FormBelongsToMany,
       OneToMany: FormBelongsToMany,
       Date: FormDatePicker,
-      DateTime: FormDatePicker,
       Timestamp: FormTimePicker
     },
     index: {
