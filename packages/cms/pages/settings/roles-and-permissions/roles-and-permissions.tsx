@@ -1,5 +1,4 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react'
-
+import React, { FunctionComponent, useEffect, useState } from 'react'
 import { EuiBasicTable } from '@tensei/eui/lib/components/basic_table'
 import {
   EuiFlyout,
@@ -7,6 +6,15 @@ import {
   EuiFlyoutBody,
   EuiFlyoutFooter
 } from '@tensei/eui/lib/components/flyout'
+import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
+import {
+  EuiModal,
+  EuiModalBody,
+  EuiModalFooter,
+  EuiModalHeader,
+  EuiModalHeaderTitle
+} from '@tensei/eui/lib/components/modal'
+import { EuiCallOut } from '@tensei/eui/lib/components/call_out/call_out'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import {
@@ -30,6 +38,7 @@ import slugify from 'speakingurl'
 import { useForm } from '../../hooks/forms'
 import { useToastStore } from '../../../store/toast'
 import { useAdminUsersStore } from '../../../store/admin-users'
+
 interface CreateRoleForm {
   name: string
   description: string
@@ -407,7 +416,11 @@ const RolesTable: React.FC = () => {
   const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
-  const { getAdminUsers, getAdminRoles } = useAdminUsersStore()
+  const { getAdminUsers, getAdminRoles, removeRole } = useAdminUsersStore()
+  const [isRemoveRoleModalVisible, setIsRemoveRoleModalVisible] = useState(
+    false
+  )
+  const { toast } = useToastStore()
 
   const columns = [
     {
@@ -436,6 +449,27 @@ const RolesTable: React.FC = () => {
               adminPermissions: getPermissionIDs(role?.adminPermissions)
             })
             setIsFlyoutOpen(true)
+          }
+        },
+        {
+          name: 'Delete',
+          description: 'Remove role',
+          icon: 'trash',
+          color: 'danger',
+          type: 'icon',
+          onClick: (role: any) => {
+            if (role?.slug === 'super-admin') {
+              toast(undefined, "Can't remove Super Admin", 'danger')
+              return
+            }
+            form.setForm({
+              id: role?.id,
+              name: role?.name,
+              description: role?.description,
+              slug: role?.slug,
+              adminPermissions: getPermissionIDs(role?.adminPermissions)
+            })
+            setIsRemoveRoleModalVisible(true)
           }
         }
       ]
@@ -493,6 +527,38 @@ const RolesTable: React.FC = () => {
     }
   })
 
+  let removeRoleModal
+  if (isRemoveRoleModalVisible) {
+    removeRoleModal = (
+      <EuiConfirmModal
+        title="Remove role"
+        onCancel={() => {
+          setIsRemoveRoleModalVisible(false)
+        }}
+        onConfirm={async () => {
+          setIsRemoveRoleModalVisible(false)
+          const [, error] = await removeRole(form.form.id!)
+          if (!error) {
+            toast('Removed.', <p>Role removed successfully.</p>)
+            fetchAdminRoles()
+          }
+        }}
+        cancelButtonText="Cancel"
+        confirmButtonText="Remove"
+        defaultFocusedButton="confirm"
+        buttonColor="danger"
+      >
+        <p>Are you sure you want to remove this role?</p>
+        <EuiCallOut
+          size="s"
+          title="Once done, this action cannot be undone"
+          color="warning"
+          iconType="alert"
+        />
+      </EuiConfirmModal>
+    )
+  }
+
   return (
     <>
       <TableHeading>
@@ -527,6 +593,7 @@ const RolesTable: React.FC = () => {
           }}
         />
       ) : null}
+      {removeRoleModal}
       <EuiBasicTable
         items={renderedItems}
         columns={columns}
