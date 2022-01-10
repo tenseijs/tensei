@@ -22,6 +22,7 @@ import {
   select,
   boolean,
   dateTime,
+  timestamp,
   hasMany
 } from '@tensei/core'
 
@@ -43,6 +44,7 @@ export default tensei()
           .options(['Worldwide', 'Nationwide', 'Lagos Only'])
           .default('Nationwide'),
         dateTime('Date Issued').nullable(),
+        timestamp('Time Created'),
         textarea('Description').creationRules('required', 'max:255'),
         integer('Price').required().sortable(),
         json('Metadata').nullable().required(),

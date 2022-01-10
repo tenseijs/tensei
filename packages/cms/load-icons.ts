@@ -26,6 +26,8 @@ import { icon as EuiPencilIcon } from '@tensei/eui/lib/components/icon/assets/pe
 import { icon as EuiDotIcon } from '@tensei/eui/lib/components/icon/assets/dot'
 import { icon as EuiImportIcon } from '@tensei/eui/lib/components/icon/assets/import'
 import { icon as EuiAlertIcon } from '@tensei/eui/lib/components/icon/assets/alert'
+import { icon as EuiCalendarIcon } from '@tensei/eui/lib/components/icon/assets/calendar'
+import { icon as EuiClockIcon } from '@tensei/eui/lib/components/icon/assets/clock'
 
 appendIconComponentCache({
   gear: EuiGear,
@@ -54,5 +56,7 @@ appendIconComponentCache({
   pencil: EuiPencilIcon,
   dot: EuiDotIcon,
   import: EuiImportIcon,
-  alert: EuiAlertIcon
+  alert: EuiAlertIcon,
+  calendar: EuiCalendarIcon,
+  clock: EuiClockIcon
 })

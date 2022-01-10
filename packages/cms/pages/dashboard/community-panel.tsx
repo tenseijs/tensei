@@ -8,7 +8,7 @@ import { EuiIcon } from '@tensei/eui/lib/components/icon'
 import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 
 const Panel = styled.div`
-  width: 30%;
+  width: 35%;
   background-color: ${({ theme }) => theme.colors.bgShade};
   border-left: ${({ theme }) => theme.border.thin};
 `
@@ -45,8 +45,8 @@ const PanelImageOne = styled.img`
 const PanelImageTwo = styled.img`
   border-radius: 50%;
   position: absolute;
-  top: 107px;
-  right: 46%;
+  top: 100px;
+  right: 48%;
 `
 
 const ImageThreeWrapper = styled.div`
