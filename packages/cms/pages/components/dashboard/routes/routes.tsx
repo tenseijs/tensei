@@ -1,6 +1,7 @@
-import { DashboardLayout } from '../layout/layout'
 import React, { Fragment } from 'react'
-import { Route } from 'react-router-dom'
+import { Route, useLocation } from 'react-router-dom'
+
+import { DashboardLayout } from '../layout/layout'
 
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 
@@ -45,7 +46,17 @@ const routesConfig = [
   }
 ]
 
+
 export const DashboardRoutes: React.FunctionComponent = () => {
+  const location = useLocation()
+
+  if(
+    location.pathname.includes('auth/login') ||
+    location.pathname.includes('auth/register')
+  ) {
+    return null
+  }
+
   return (
     <DashboardLayout>
       <DashboardLayout.Sidebar title="Dashboard" />
