@@ -12,7 +12,7 @@ export class Timestamp extends DateField {
   protected config = {
     ...super.config,
     pickerFormat: 'Y-m-d H:i',
-    dateFormat: 'YYYY-MM-DD HH:mm:ss',
+    dateFormat: 'YYYY-MM-DD HH:mm:ss ZZ',
     timePicker: true
   }
 

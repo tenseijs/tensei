@@ -20,6 +20,8 @@ import FormBoolean from './form/boolean'
 import FormSelect from './form/select'
 import FormPassword from './form/password'
 import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
+import FormDatePicker from './form/date-picker'
+import FormTimePicker from './form/time-picker'
 
 // Index
 import IndexBoolean from './index/boolean'
@@ -28,7 +30,6 @@ import IndexId from './index/id'
 import IndexSlug from './index/slug'
 import IndexNumber from './index/number'
 import { IndexSelect } from './index/select'
-import FormDatePicker from './form/date-picker'
 
 class Core {
   styled = {} as any
@@ -99,7 +100,8 @@ class Core {
       ManyToMany: FormBelongsToMany,
       OneToMany: FormBelongsToMany,
       Date: FormDatePicker,
-      Timestamp: FormDatePicker
+      DateTime: FormDatePicker,
+      Timestamp: FormTimePicker
     },
     index: {
       Boolean: IndexBoolean,
