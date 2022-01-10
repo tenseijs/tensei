@@ -40,6 +40,8 @@ import {
 } from '@tensei/eui/lib/components/flyout'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { useForm } from '../../hooks/forms'
+import { useAuthStore } from '../../../store/auth'
+import { useHistory } from 'react-router-dom'
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -208,13 +210,20 @@ const FlyOut: React.FC<FlyOutProps> = ({
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
-    useAdminUsersStore()
+  const {
+    getAdminUsers,
+    removeUser,
+    getAdminRoles,
+    updateUserRoles
+  } = useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [isEditTeamMemberFlyoutVisible, setisEditTeamMemberFlyoutVisible] =
-    useState(false)
+  const [
+    isEditTeamMemberFlyoutVisible,
+    setisEditTeamMemberFlyoutVisible
+  ] = useState(false)
+  const { hasPermission } = useAuthStore()
 
   const getTeamMembers = useCallback(async () => {
     const [data, error] = await getAdminUsers()
@@ -279,18 +288,24 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     updatedAt: ''
   })
 
-  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] =
-    useState(false)
+  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
+    false
+  )
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
   const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
-  const [isChangeMemberRoleModalVisible, setChangeMemberRoleModalVisible] =
-    useState(false)
+  const [
+    isChangeMemberRoleModalVisible,
+    setChangeMemberRoleModalVisible
+  ] = useState(false)
   const closeChangeMemberRoleModal = () =>
     setChangeMemberRoleModalVisible(false)
   const showChangeMemberRoleModal = () => setChangeMemberRoleModalVisible(true)
   const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
-  const [rolesCheckboxSelectionMap, setRolesCheckboxSelectionMap] =
-    useState<any>({})
+  const [
+    rolesCheckboxSelectionMap,
+    setRolesCheckboxSelectionMap
+  ] = useState<any>({})
+  const { push } = useHistory()
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -343,6 +358,17 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
                 toast(undefined, "Owner role can't be changed", 'danger')
                 return
               }
+
+              if (!hasPermission(`update:admin-users`)) {
+                toast(
+                  'Unauthorized',
+                  <p>You're not authorized to update Team members</p>,
+                  'danger'
+                )
+
+                return
+              }
+
               setisEditTeamMemberFlyoutVisible(true)
               setSelectedMember(item)
               // set rolesCheckboxSelectionMap
@@ -352,8 +378,9 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               const newCheckboxIdToSelectedMap: any = {}
               rolesId.forEach(
                 roleId =>
-                  (newCheckboxIdToSelectedMap[roleId] =
-                    adminRolesId.includes(roleId))
+                  (newCheckboxIdToSelectedMap[roleId] = adminRolesId.includes(
+                    roleId
+                  ))
               )
               setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
             }
@@ -369,6 +396,17 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
                 toast(undefined, "Can't remove Owner", 'danger')
                 return
               }
+
+              if (!hasPermission(`delete:admin-users`)) {
+                toast(
+                  'Unauthorized',
+                  <p>You're not authorized to delete Team members</p>,
+                  'danger'
+                )
+
+                return
+              }
+
               setSelectedMember(item)
               showRemoveMemberModal()
             }
@@ -481,18 +519,25 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         )}
         <TableMetaWrapper>
           <EuiTitle>
-            <h1>All members ({teamMembers.length})</h1>
+            <h1>
+              All members (
+              {hasPermission('index:admin-users') ? teamMembers.length : 0})
+            </h1>
           </EuiTitle>
-          <EuiButtonEmpty iconType={'plus'}>Add team members</EuiButtonEmpty>
+          {hasPermission('create:admin-users') && (
+            <EuiButtonEmpty iconType={'plus'}>Add team members</EuiButtonEmpty>
+          )}
         </TableMetaWrapper>
 
-        <EuiBasicTable
-          items={teamMembers}
-          itemId={'id'}
-          hasActions={true}
-          loading={loading}
-          columns={columns}
-        />
+        {!hasPermission('index:admin-users') ? null : (
+          <EuiBasicTable
+            items={teamMembers}
+            itemId={'id'}
+            hasActions={true}
+            loading={loading}
+            columns={columns}
+          />
+        )}
 
         {removeMemberModal}
         {changeMemberRoleModal}
