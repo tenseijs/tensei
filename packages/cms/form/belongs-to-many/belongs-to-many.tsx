@@ -177,11 +177,11 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
             <EuiTitle size="m">
               <h2 id={flyOutId}>
                 {isManyToOne && documents.length === 1
-                  ? 'Replace'
-                  : 'Add existing'}
+                  ? 'Replace '
+                  : 'Add existing '}
                 {isManyToOne
                   ? relatedResource?.name?.toLowerCase()
-                  : relatedResource?.label}
+                  : relatedResource?.label.toLowerCase()}
               </h2>
             </EuiTitle>
           </EuiFlyoutHeader>
