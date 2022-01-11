@@ -28,10 +28,11 @@ const CollapseExpandIcon = styled.button`
 
 const Sidebar = styled.div<{
   bg?: string
+  close: boolean
 }>`
   display: flex;
   flex-direction: column;
-  width: 248px;
+  width: ${props => (props.close ? '100px' : '248px')};
   height: 100%;
   position: relative;
   border-right: ${({ theme }) => theme.border.thin};
@@ -323,9 +324,13 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
   })
 
   return (
-    <Sidebar>
-      <CollapseExpandIcon>
-        <EuiIcon size="s" type="arrowLeft" />
+    <Sidebar close={close}>
+      <CollapseExpandIcon
+        onClick={() => {
+          onCloseSideBar()
+        }}
+      >
+        <EuiIcon size="s" type={close ? 'arrowRight' : 'arrowLeft'} />
       </CollapseExpandIcon>
 
       <SidebarContainer>
@@ -337,17 +342,19 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
               'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
             }
           ></Logo>
-          <WorkspaceName>
-            <EuiTitle size="xs">
-              <h1>Tensei</h1>
-            </EuiTitle>
-            <EuiText size="xs" color="slategray">
-              Workspace
-            </EuiText>
-          </WorkspaceName>
+          {!close && (
+            <WorkspaceName>
+              <EuiTitle size="xs">
+                <h1>Tensei</h1>
+              </EuiTitle>
+              <EuiText size="xs" color="slategray">
+                Workspace
+              </EuiText>
+            </WorkspaceName>
+          )}
         </Workspace>
 
-        <NestedSidebarTitleUnderline />
+        {!close && <NestedSidebarTitleUnderline />}
 
         <EuiSpacer size="l" />
 
@@ -355,29 +362,32 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           <NavItem>
             <QuillPen />
 
-            <EuiText>Content</EuiText>
-            <ResourcesCountBadge>{items.length}</ResourcesCountBadge>
+            {!close && <EuiText>Content</EuiText>}
+            {!close && (
+              <ResourcesCountBadge>{items.length}</ResourcesCountBadge>
+            )}
           </NavItem>
 
           <EuiSpacer size="s" />
 
-          {items.map(item => {
-            let hasAnyPermission = item.permissions.map(permission =>
-              hasPermission(permission)
-            )
-            if (hasAnyPermission.every(permission => permission === false))
-              return
+          {!close &&
+            items.map(item => {
+              let hasAnyPermission = item.permissions.map(permission =>
+                hasPermission(permission)
+              )
+              if (hasAnyPermission.every(permission => permission === false))
+                return
 
-            return (
-              <SubNavItem
-                key={item.path}
-                $active={isActive(item.path)}
-                to={window.Tensei.getPath(`resources/${item.path}`)}
-              >
-                {item.name}
-              </SubNavItem>
-            )
-          })}
+              return (
+                <SubNavItem
+                  key={item.path}
+                  $active={isActive(item.path)}
+                  to={window.Tensei.getPath(`resources/${item.path}`)}
+                >
+                  {item.name}
+                </SubNavItem>
+              )
+            })}
 
           <EuiSpacer size="s" />
           <NavItem
@@ -387,7 +397,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           >
             <Landscape />
 
-            <EuiText>Assets</EuiText>
+            {!close && <EuiText>Assets</EuiText>}
           </NavItem>
         </TopNavItemsWrapper>
       </SidebarContainer>
@@ -399,12 +409,12 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           $active={pathname.includes('settings')}
         >
           <SettingsCog />
-          <EuiText>Settings</EuiText>
+          {!close && <EuiText>Settings</EuiText>}
         </NavItem>
         <EuiSpacer size="s" />
         <NavItem>
-          <EuiIcon type="help" />
-          <EuiText>Help</EuiText>
+          <EuiIcon type="help" size="m" />
+          {!close && <EuiText>Help</EuiText>}
         </NavItem>
       </Footer>
     </Sidebar>
