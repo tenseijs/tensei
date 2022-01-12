@@ -49,4 +49,5 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
           .delete(`${file.path}${file.hash}.${file.extension}`)
       })
     })
+    .noPermissions()
     .perPageOptions([10, 20, 30, 50, 100])

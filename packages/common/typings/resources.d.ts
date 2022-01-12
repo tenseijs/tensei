@@ -144,6 +144,7 @@ declare module '@tensei/common/resources' {
     extend(extend: ResourceExtendContract): this
     filters(filters: FilterContract[]): this
     permissions(permissions: Permission[]): this
+    noPermissions(): this
     canFetchRelation(authorizeFunction: AuthorizeFunction): this
     canShow(authorizeFunction: AuthorizeFunction): this
 
@@ -223,6 +224,7 @@ declare module '@tensei/common/resources' {
     getFetchApiExposedFields(): FieldContract[]
     filters(filters: FilterContract[]): this
     permissions(permissions: Permission[]): this
+    noPermissions(): this
     canShow(authorizeFunction: AuthorizeFunction): this
     canFetch(authorizeFunction: AuthorizeFunction): this
     canCreate(authorizeFunction: AuthorizeFunction): this

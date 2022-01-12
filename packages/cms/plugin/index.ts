@@ -294,6 +294,7 @@ class CmsPlugin {
       .displayField('Name')
       .hideOnApi()
       .hideFromNavigation()
+      .permissions([])
   }
 
   private tokenResource() {
@@ -310,6 +311,7 @@ class CmsPlugin {
         belongsTo(this.config.userResource)
       ])
       .hideFromNavigation()
+      .noPermissions()
       .hideOnApi()
   }
 
@@ -371,6 +373,7 @@ class CmsPlugin {
         text('Invite code').nullable(),
         belongsToMany(this.config.roleResource).rules('array')
       ])
+      .permissions(['Invite', 'Index', 'Update', 'Delete'])
       .displayField('First name')
       .secondaryDisplayField('Email')
       .hideOnApi()
@@ -642,6 +645,8 @@ class CmsPlugin {
           const sortedScripts = request.scripts
             .filter(script => !script.chunk) // Only non-chunk scripts will be mounted. The chunked scripts will be fetched by webpack during load time.
             .sort(script => (baseScripts.includes(script.name) ? -1 : 0))
+
+          console.log(request.user)
 
           response.send(
             Mustache.render(indexFileContent, {

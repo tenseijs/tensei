@@ -60,14 +60,6 @@ const getPermissionsToInsert = async (
   const permissions: Permission[] = []
 
   resources.forEach(resource => {
-    ;['create', 'index', 'update', 'delete'].forEach(operation => {
-      permissions.push(`${operation}:${resource.data.slug}`)
-    })
-
-    resource.data.actions.forEach(action => {
-      permissions.push(`run:${resource.data.slug}:${action.data.slug}`)
-    })
-
     resource.data.permissions.forEach(permission => {
       permissions.push(permission)
     })
@@ -76,7 +68,7 @@ const getPermissionsToInsert = async (
   const existingPermissions: any[] = (
     await em.find(permissionResource.data.pascalCaseName, {
       slug: {
-        $in: permissions
+        $in: permissions.map(permission => permission.slug)
       }
     })
   ).map(permission => permission.slug)
@@ -88,11 +80,10 @@ const getPermissionsToInsert = async (
       )
   )
 
-  return Array.from(new Set(newPermissionsToCreate)).map(permission => ({
-    name:
-      typeof permission === 'string'
-        ? sentenceCase(permission.split(':').join(' '))
-        : permission.name,
-    slug: permission
-  }))
+  const newSlugs = newPermissionsToCreate.map(permission => permission.slug)
+
+  // Remove possible permission duplicates from the newPermissionsToCreate array.
+  return Array.from(new Set(newSlugs)).map(
+    slug => newPermissionsToCreate.find(permission => permission.slug === slug)!
+  )
 }

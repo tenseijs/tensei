@@ -397,12 +397,11 @@ declare module '@tensei/common/config' {
     manager: EntityManager
     body: DataPayload
   }
-  type Permission =
-    | {
-        name: string
-        slug: string
-      }
-    | string
+  type Permission = {
+    name: string
+    slug: string
+  }
+
   interface DataPayload {
     [key: string]: any
   }

@@ -104,6 +104,13 @@ export class Resource<T extends ApiType = 'rest'>
     this.data.table = tableName || Pluralize(snakeCase(name))
     this.data.camelCaseNamePlural = Pluralize(camelCase(name))
     this.data.snakeCaseNamePlural = Pluralize(snakeCase(name))
+
+    this.data.permissions = ['Create', 'Index', 'Update', 'Delete'].map(
+      name => ({
+        name: `${name} ${this.data.namePlural}`,
+        slug: `${name.toLowerCase()}:${this.data.slugPlural}`
+      })
+    )
   }
 
   public Model = (): any => {
@@ -210,8 +217,21 @@ export class Resource<T extends ApiType = 'rest'>
     perPageOptions: [10, 25, 50]
   }
 
-  public permissions(permissions: Permission[]) {
-    this.data.permissions = permissions
+  public permissions(permissions: string[] | Permission[]) {
+    this.data.permissions = permissions.map(permission =>
+      typeof permission === 'string'
+        ? {
+            name: `${permission} ${this.data.namePlural}`,
+            slug: `${permission.toLowerCase()}:${this.data.slugPlural}`
+          }
+        : permission
+    )
+
+    return this
+  }
+
+  public noPermissions() {
+    this.data.permissions = []
 
     return this
   }
