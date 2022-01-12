@@ -305,7 +305,6 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     rolesCheckboxSelectionMap,
     setRolesCheckboxSelectionMap
   ] = useState<any>({})
-  const { push } = useHistory()
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
