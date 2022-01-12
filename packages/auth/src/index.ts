@@ -48,8 +48,7 @@ import {
 
 export * from './config'
 
-import { setup } from './setup'
-import { request, Request } from 'express'
+import { Request } from 'express'
 import { Teams } from './teams/Teams'
 import {
   permission,
