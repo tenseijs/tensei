@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Route, useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { EuiTabs, EuiTab } from '@tensei/eui/lib/components/tabs'
@@ -6,6 +6,8 @@ import { EuiTabs, EuiTab } from '@tensei/eui/lib/components/tabs'
 import { Profile } from '../profile'
 import { TeamMembers } from '../team-members'
 import RolesAndPermissions from '../roles-and-permissions'
+import { useAuthStore } from '../../../store/auth'
+
 const StyledLayout = styled.div`
   display: flex;
   flex-direction: column;
@@ -20,41 +22,72 @@ const tabs = [
   {
     path: 'profile',
     component: Profile,
-    title: 'Profile'
+    title: 'Profile',
+    permissions: []
   },
   {
     path: 'team-members',
     component: TeamMembers,
-    title: 'Team members'
+    title: 'Team members',
+    permissions: [
+      'index:admin-users',
+      'invite:admin-users',
+      'update:admin-users',
+      'delete:admin-users'
+    ]
   },
   {
     path: 'roles-and-permissions',
     component: RolesAndPermissions,
-    title: 'Roles & Permissions'
+    title: 'Roles & Permissions',
+    permissions: [
+      'index:admin-roles',
+      'create:admin-roles',
+      'update:admin-roles',
+      'delete:admin-roles'
+    ]
   }
 ]
 
 export const Root: React.FunctionComponent = ({ children }) => {
-  const { push } = useHistory()
+  const { push, replace } = useHistory()
   const { pathname } = useLocation()
-
   const isActive = (path: string) => pathname.includes(path)
+  const { hasPermission } = useAuthStore()
+
+  const hasAnyPermission = (tab: any) => {
+    return tab?.permissions.length > 0
+      ? tab.permissions.some((permission: any) => hasPermission(permission))
+      : true
+  }
+
+  useEffect(() => {
+    const tab = tabs.find(tab => isActive(tab.path))
+    if (!hasAnyPermission(tab)) {
+      push(window.Tensei.getPath(`settings/profile`))
+      return
+    }
+  }, [])
 
   return (
     <StyledLayout>
       <TabsWrapper>
         <EuiTabs>
-          {tabs.map(tab => (
-            <EuiTab
-              key={tab.path}
-              isSelected={isActive(tab.path)}
-              onClick={() =>
-                push(window.Tensei.getPath(`settings/${tab.path}`))
-              }
-            >
-              {tab.title}
-            </EuiTab>
-          ))}
+          {tabs.map(tab => {
+            if (!hasAnyPermission(tab)) return null
+
+            return (
+              <EuiTab
+                key={tab.path}
+                isSelected={isActive(tab.path)}
+                onClick={() =>
+                  push(window.Tensei.getPath(`settings/${tab.path}`))
+                }
+              >
+                {tab.title}
+              </EuiTab>
+            )
+          })}
         </EuiTabs>
       </TabsWrapper>
       {tabs.map(tab => (
