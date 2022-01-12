@@ -26,6 +26,7 @@ import slugify from 'speakingurl'
 import { useForm } from '../../hooks/forms'
 import { useToastStore } from '../../../store/toast'
 import { useAdminUsersStore } from '../../../store/admin-users'
+import { useAuthStore } from '../../../store/auth'
 
 interface CreateRoleForm {
   name: string
@@ -405,6 +406,7 @@ const RolesTable: React.FC = () => {
     false
   )
   const { toast } = useToastStore()
+  const { hasPermission } = useAuthStore()
 
   const columns = [
     {
@@ -425,6 +427,16 @@ const RolesTable: React.FC = () => {
           icon: 'pencil',
           type: 'icon',
           onClick: (role: any) => {
+            if (!hasPermission(`update:admin-roles`)) {
+              toast(
+                'Unauthorized',
+                <p>You're not authorized to update Roles & Permissions</p>,
+                'danger'
+              )
+
+              return
+            }
+
             form.setForm({
               id: role?.id,
               name: role?.name,
@@ -442,6 +454,16 @@ const RolesTable: React.FC = () => {
           color: 'danger',
           type: 'icon',
           onClick: (role: any) => {
+            if (!hasPermission(`delete:admin-roles`)) {
+              toast(
+                'Unauthorized',
+                <p>You're not authorized to delete Roles & Permissions</p>,
+                'danger'
+              )
+
+              return
+            }
+
             if (role?.slug === 'super-admin') {
               toast(undefined, "Can't remove Super Admin", 'danger')
               return
@@ -547,7 +569,10 @@ const RolesTable: React.FC = () => {
     <>
       <TableHeading>
         <EuiTitle>
-          <h1>All roles ({adminRoles.length})</h1>
+          <h1>
+            All roles (
+            {hasPermission('index:admin-roles') ? adminRoles.length : 0})
+          </h1>
         </EuiTitle>
         <EuiButtonEmpty
           onClick={() => {
@@ -578,12 +603,14 @@ const RolesTable: React.FC = () => {
         />
       ) : null}
       {removeRoleModal}
-      <EuiBasicTable
-        items={renderedItems}
-        columns={columns}
-        loading={loading}
-        hasActions={true}
-      />
+      {!hasPermission('index:admin-roles') ? null : (
+        <EuiBasicTable
+          items={renderedItems}
+          columns={columns}
+          loading={loading}
+          hasActions={true}
+        />
+      )}
     </>
   )
 }
