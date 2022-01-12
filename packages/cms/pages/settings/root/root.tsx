@@ -7,6 +7,8 @@ import { Profile } from '../profile'
 import { TeamMembers } from '../team-members'
 import RolesAndPermissions from '../roles-and-permissions'
 import { useAuthStore } from '../../../store/auth'
+import { TOAST_FADE_OUT_MS } from '@tensei/eui/lib/components/toast/global_toast_list'
+import { useToastStore } from '../../../store/toast'
 
 const StyledLayout = styled.div`
   display: flex;
@@ -54,6 +56,7 @@ export const Root: React.FunctionComponent = ({ children }) => {
   const { pathname } = useLocation()
   const isActive = (path: string) => pathname.includes(path)
   const { hasPermission } = useAuthStore()
+  const { toast } = useToastStore()
 
   const hasAnyPermission = (tab: any) => {
     return tab?.permissions.length > 0
@@ -64,7 +67,13 @@ export const Root: React.FunctionComponent = ({ children }) => {
   useEffect(() => {
     const tab = tabs.find(tab => isActive(tab.path))
     if (!hasAnyPermission(tab)) {
-      push(window.Tensei.getPath(`settings/profile`))
+      replace(window.Tensei.getPath(`settings/profile`))
+      toast(
+        'Unauthorized',
+        <p>You're not authorized to access {tab?.title}</p>,
+        'danger'
+      )
+
       return
     }
   }, [])
