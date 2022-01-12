@@ -81,9 +81,6 @@ const task: TaskFn = async (_, logger, { pkg, client, boilerplate, debug }) => {
   const response = debug ? pkg.commit() : await pkg.commitAsync()
   spinner && spinner.stop()
 
-  console.log('@response stderr', response?.stderr?.toString())
-  console.log('@response stdout', response?.stdout?.toString())
-
   if (response && response.status === 1) {
     const errorMessage =
       client === 'yarn' ? 'yarn install failed' : 'npm install failed'

@@ -646,8 +646,6 @@ class CmsPlugin {
             .filter(script => !script.chunk) // Only non-chunk scripts will be mounted. The chunked scripts will be fetched by webpack during load time.
             .sort(script => (baseScripts.includes(script.name) ? -1 : 0))
 
-          console.log(request.user)
-
           response.send(
             Mustache.render(indexFileContent, {
               styles: request.styles,
