@@ -38,6 +38,7 @@ import { setupCms } from './setup'
 import { DataPayload } from '@tensei/common/config'
 import { changePasswordRoute } from './routes/change-password'
 import { updateProfileRoute } from './routes/update-profile'
+import { inviteMember } from './routes/invite-member'
 
 const indexFileContent = Fs.readFileSync(
   Path.resolve(__dirname, 'template', 'index.mustache')
@@ -72,16 +73,16 @@ class CmsPlugin {
     roleResource: string
     dashboards: DashboardContract[]
   } = {
-    path: 'cms',
-    apiPath: 'cms/api',
-    setup: () => {},
-    cookieOptions: {},
-    dashboards: [],
-    userResource: 'Admin User',
-    permissionResource: 'Admin Permission',
-    roleResource: 'Admin Role',
-    tokenResource: 'Admin Token'
-  }
+      path: 'cms',
+      apiPath: 'cms/api',
+      setup: () => { },
+      cookieOptions: {},
+      dashboards: [],
+      userResource: 'Admin User',
+      permissionResource: 'Admin Permission',
+      roleResource: 'Admin Role',
+      tokenResource: 'Admin Token'
+    }
 
   private router = Router()
 
@@ -111,10 +112,6 @@ class CmsPlugin {
     permission: this.permissionResource()
   }
 
-  public generateRandomToken(length = 32) {
-    return crypto.randomBytes(length).toString('hex')
-  }
-
   private routes = () => [
     route('Get CMS Csrf Token')
       .get()
@@ -126,6 +123,7 @@ class CmsPlugin {
       }),
     changePasswordRoute.path(this.getApiPath('auth/change-password')),
     updateProfileRoute.path(this.getApiPath('auth/update-profile')),
+    inviteMember.path(this.getApiPath('auth/invite-member')),
     route('Logout')
       .path(this.getApiPath('auth/logout'))
       .id('logout')
@@ -618,26 +616,26 @@ class CmsPlugin {
         })
 
         this.router.use(Csurf())
-        ;[...getRoutes(config, this.config), ...this.routes()].forEach(
-          route => {
-            const path = route.config.path.startsWith('/')
-              ? route.config.path
-              : `/${route.config.path}`
-            ;(this.router as any)[route.config.type.toLowerCase()](
-              path,
+          ;[...getRoutes(config, this.config), ...this.routes()].forEach(
+            route => {
+              const path = route.config.path.startsWith('/')
+                ? route.config.path
+                : `/${route.config.path}`
+                ; (this.router as any)[route.config.type.toLowerCase()](
+                  path,
 
-              ...route.config.middleware.map(fn => AsyncHandler(fn)),
-              AsyncHandler(async (request, response, next) => {
-                await this.authorizeResolver(request as any, route)
+                  ...route.config.middleware.map(fn => AsyncHandler(fn)),
+                  AsyncHandler(async (request, response, next) => {
+                    await this.authorizeResolver(request as any, route)
 
-                return next()
-              }),
-              AsyncHandler(async (request, response) =>
-                route.config.handler(request, response)
-              )
-            )
-          }
-        )
+                    return next()
+                  }),
+                  AsyncHandler(async (request, response) =>
+                    route.config.handler(request, response)
+                  )
+                )
+            }
+          )
 
         app.use(`/${this.config.path}`, this.router)
 
@@ -653,9 +651,9 @@ class CmsPlugin {
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({
-                    // @ts-ignore
-                    ...request.user
-                  })
+                  // @ts-ignore
+                  ...request.user
+                })
                 : null,
               resources: JSON.stringify(
                 request.config.resources.map(r => r.serialize())
