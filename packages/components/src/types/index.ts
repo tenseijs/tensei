@@ -13,6 +13,8 @@ export interface UserPermission {
   slug: string
 }
 
+export type Permission = Omit<UserPermission, 'id'>
+
 export interface UserRole {
   id: number
   name: string
@@ -212,7 +214,7 @@ export interface ResourceContract {
   noTimestamps: boolean
   pascalCaseName: string
   perPageOptions: number[]
-  permissions: string[]
+  permissions: Permission[]
   slug: string
   slugPlural: string
   slugSingular: string

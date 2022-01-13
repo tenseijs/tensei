@@ -48,8 +48,7 @@ import {
 
 export * from './config'
 
-import { setup } from './setup'
-import { request, Request } from 'express'
+import { Request } from 'express'
 import { Teams } from './teams/Teams'
 import {
   permission,
@@ -605,6 +604,7 @@ export class Auth implements AuthContract {
         belongsTo(this.config.userResource).nullable()
       ])
       .hideFromNavigation()
+      .noPermissions()
       .hideOnApi()
   }
 
@@ -616,6 +616,7 @@ export class Auth implements AuthContract {
         text('Token').unique().notNullable().hidden(),
         dateTime('Expires At')
       ])
+      .noPermissions()
       .hideOnApi()
   }
 
@@ -631,7 +632,6 @@ export class Auth implements AuthContract {
         text('Provider').rules('required'),
         text('Provider User ID').hidden().hideOnApi()
       ])
-      .hideFromNavigation()
       .hideOnApi()
   }
 

@@ -147,7 +147,8 @@ export default tensei()
   ])
   .db({
     type: 'sqlite',
-    dbName: 'db.sqlite'
+    dbName: 'db.sqlite',
+    debug: true
   })
   .boot(async ({ repositories }) => {
     await seed(repositories)

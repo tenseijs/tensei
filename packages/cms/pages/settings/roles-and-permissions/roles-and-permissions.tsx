@@ -96,7 +96,7 @@ const AccordionItem = styled.div<{
 
 interface PermissionProps {
   isLast?: boolean
-  permission: string
+  permission: { name: string; slug: string }
   checked?: boolean
   resource: ResourceContract
   allPermissions: AdminPermission[]
@@ -129,8 +129,7 @@ const AccordionPermissions: React.FC<PermissionProps> = ({
 }) => {
   function onSwitchChange() {
     const selectedPermission = allPermissions.find(
-      permission =>
-        permission.slug === `${action.toLowerCase()}:${resource.slug}`
+      permission => permission.slug === action.slug
     )
 
     if (!selectedPermission) {
@@ -158,7 +157,7 @@ const AccordionPermissions: React.FC<PermissionProps> = ({
   return (
     <AccordionItem isLast={isLast}>
       <EuiFlexGroup justifyContent="spaceBetween">
-        <EuiText size="s">Can {action}</EuiText>
+        <EuiText size="s">Can {action.name}</EuiText>
         <Switch onChange={onSwitchChange} checked={checked} />
       </EuiFlexGroup>
     </AccordionItem>
@@ -174,20 +173,19 @@ const FlyoutAccordion: React.FC<{
   return (
     <>
       {resources.map(resource => {
-        const resourcePermissions = [
-          `create:${resource.slug}`,
-          `index:${resource.slug}`,
-          `update:${resource.slug}`,
-          `delete:${resource.slug}`
-        ]
-        const resourcePermissionsIds = resourcePermissions.map(
-          permissionSlug =>
-            allPermissions.find(p => p.slug === permissionSlug)!.id
+        const resourcePermissions = resource.permissions
+
+        const resourcePermissionsIds: number[] = resourcePermissions.map(
+          permission => allPermissions.find(p => p.slug === permission.slug)!.id
         )
 
         const checked = resourcePermissionsIds.every(p =>
           createRoleForm.createRoleForm.adminPermissions.includes(p)
         )
+
+        if (resource.permissions.length === 0) {
+          return null
+        }
 
         return (
           <AccordionWrapper key={resource.slug}>
@@ -219,21 +217,19 @@ const FlyoutAccordion: React.FC<{
               />
             </AccordionHeader>
             <Accordionbody>
-              {['Create', 'Index', 'Update', 'Delete'].map(
-                (permission, idx) => (
-                  <AccordionPermissions
-                    isLast={idx === 3}
-                    resource={resource}
-                    permission={permission}
-                    allPermissions={allPermissions}
-                    createRoleForm={createRoleForm}
-                    key={`${permission}-${resource.name}`}
-                    checked={createRoleForm.createRoleForm.adminPermissions.includes(
-                      resourcePermissionsIds[idx]
-                    )}
-                  />
-                )
-              )}
+              {resource.permissions.map((permission, idx) => (
+                <AccordionPermissions
+                  isLast={idx === 3}
+                  resource={resource}
+                  permission={permission}
+                  allPermissions={allPermissions}
+                  createRoleForm={createRoleForm}
+                  key={`${permission.slug}-${resource.name}`}
+                  checked={createRoleForm.createRoleForm.adminPermissions.includes(
+                    resourcePermissionsIds[idx]
+                  )}
+                />
+              ))}
             </Accordionbody>
           </AccordionWrapper>
         )
