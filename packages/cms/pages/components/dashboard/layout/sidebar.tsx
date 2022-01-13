@@ -10,6 +10,7 @@ import { CmsRoute } from '@tensei/components'
 import { useAuthStore } from '../../../../store/auth'
 import { useEffect } from 'react'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
+import { EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 
 const CollapseExpandIcon = styled.button`
   width: 28px;
@@ -261,6 +262,7 @@ interface CollpsedSidebarProps {
   onCloseSidebar: () => void
   pathname: string
   onLogout: () => void
+  SubNav: any[]
 }
 
 const getGroups = () => {
@@ -332,9 +334,11 @@ const getGroups = () => {
 const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
   onCloseSidebar,
   pathname,
-  onLogout
+  onLogout,
+  SubNav
 }) => {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [isSettingPopoverOpen, setIsSettingPopoverOpen] = useState(false)
+  const [isContentPopoverOpen, setIsContentPopoverOpen] = useState(false)
   return (
     <CollapsedSidbarContainer>
       <CollapseExpandIcon onClick={onCloseSidebar}>
@@ -355,13 +359,21 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
           <NavItem
             as={Link as any}
             to="/cms"
-            $active={pathname.includes('cms')}
+            $active={pathname.endsWith('/cms')}
           >
             <Home />
           </NavItem>
           <EuiSpacer size="s" />
           <NavItem>
-            <QuillPen />
+            <EuiPopover
+              onMouseOver={() => setIsContentPopoverOpen(true)}
+              button={<QuillPen />}
+              isOpen={isContentPopoverOpen}
+              closePopover={() => setIsContentPopoverOpen(false)}
+              anchorPosition="downLeft"
+            >
+              {...SubNav}
+            </EuiPopover>
           </NavItem>
           <EuiSpacer size="s" />
 
@@ -376,28 +388,31 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
         </TopNavItemsWrapper>
       </SidebarContainer>
       <Footer>
-        <EuiPopover
-          onMouseOver={() => setIsPopoverOpen(true)}
-          button={<SettingsCog />}
-          isOpen={isPopoverOpen}
-          closePopover={() => setIsPopoverOpen(false)}
-          anchorPosition="downLeft"
-        >
-          <NavItem
-            as={Link as any}
-            to="/cms/settings/profile"
-            $active={pathname.includes('settings')}
+        <EuiSpacer size="m" />
+        <EuiFlexGroup direction="column" alignItems="center">
+          <EuiPopover
+            onMouseOver={() => setIsSettingPopoverOpen(true)}
+            button={<SettingsCog />}
+            isOpen={isSettingPopoverOpen}
+            closePopover={() => setIsSettingPopoverOpen(false)}
+            anchorPosition="downLeft"
           >
-            <EuiText size="m"> Profile</EuiText>
-          </NavItem>
-          <NavItem as={Link as any} onClick={onLogout}>
-            <EuiText color="danger">Logout</EuiText>
-          </NavItem>
-        </EuiPopover>
-        <EuiSpacer size="s" />
-        <NavItem>
-          <EuiIcon type="help" />
-        </NavItem>
+            <NavItem
+              as={Link as any}
+              to="/cms/settings/profile"
+              $active={pathname.includes('settings')}
+            >
+              <EuiText size="m"> Profile</EuiText>
+            </NavItem>
+            <NavItem as={Link as any} onClick={onLogout}>
+              <EuiText color="danger">Logout</EuiText>
+            </NavItem>
+          </EuiPopover>
+          <EuiSpacer size="m" />
+
+          <EuiIcon type="help" size="m" />
+        </EuiFlexGroup>
+
         <EuiSpacer size="s" />
       </Footer>
     </CollapsedSidbarContainer>
@@ -444,6 +459,23 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
     }
   })
 
+  const SubNav = items.map(item => {
+    let hasAnyPermission = item.permissions.map(permission =>
+      hasPermission(permission)
+    )
+    if (hasAnyPermission.every(permission => permission === false)) return
+
+    return (
+      <SubNavItem
+        key={item.path}
+        $active={isActive(item.path)}
+        to={window.Tensei.getPath(`resources/${item.path}`)}
+      >
+        {item.name}
+      </SubNavItem>
+    )
+  })
+  console.log(SubNav)
   return !close ? (
     <Sidebar>
       <CollapseExpandIcon onClick={onCloseSideBar}>
@@ -483,23 +515,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
 
           <EuiSpacer size="s" />
 
-          {items.map(item => {
-            let hasAnyPermission = item.permissions.map(permission =>
-              hasPermission(permission)
-            )
-            if (hasAnyPermission.every(permission => permission === false))
-              return
-
-            return (
-              <SubNavItem
-                key={item.path}
-                $active={isActive(item.path)}
-                to={window.Tensei.getPath(`resources/${item.path}`)}
-              >
-                {item.name}
-              </SubNavItem>
-            )
-          })}
+          {...SubNav}
 
           <EuiSpacer size="s" />
           <NavItem
@@ -540,6 +556,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
       onCloseSidebar={onCloseSideBar}
       pathname={pathname}
       onLogout={onLogout}
+      SubNav={SubNav}
     />
   )
 }
