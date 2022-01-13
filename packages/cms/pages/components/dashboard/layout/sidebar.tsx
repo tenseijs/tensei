@@ -10,7 +10,7 @@ import { CmsRoute } from '@tensei/components'
 import { useAuthStore } from '../../../../store/auth'
 import { useEffect } from 'react'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
-import { EuiFlexGroup } from '@tensei/eui/lib/components/flex'
+import { EuiFlexGroup, EuiFlexItem } from '@tensei/eui/lib/components/flex'
 
 const CollapseExpandIcon = styled.button`
   width: 28px;
@@ -63,6 +63,7 @@ const Footer = styled.div`
 const NavItem = styled.div<{
   $active?: boolean
   to?: string
+  collapsed?: true
 }>`
   display: flex;
   position: relative;
@@ -81,11 +82,12 @@ const NavItem = styled.div<{
   &:hover {
   }
 
-  ${({ $active, theme }) =>
+  ${({ $active, theme, collapsed }) =>
     $active
       ? `
   color: ${theme.colors.primary};
-  background-color: ${theme.colors.primaryTransparent};
+  background-color:   ${() =>
+    collapsed ? theme.colors.primaryTransparent : ' none'};
   cursor: pointer;
 
   svg {
@@ -104,7 +106,9 @@ const TopNavItemsWrapper = styled.div`
   flex-direction: column;
   padding: 0 24px;
 `
-
+const CollapsedTopNavWrapper = styled(TopNavItemsWrapper)`
+  margin-left: 7px;
+`
 const WorkspaceName = styled.div`
   display: flex;
   flex-direction: column;
@@ -337,7 +341,6 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
   onLogout,
   SubNav
 }) => {
-  const [isSettingPopoverOpen, setIsSettingPopoverOpen] = useState(false)
   const [isContentPopoverOpen, setIsContentPopoverOpen] = useState(false)
   return (
     <CollapsedSidbarContainer>
@@ -346,71 +349,75 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
       </CollapseExpandIcon>
       <SidebarContainer>
         <Workspace>
-          <Logo
-            width={40}
-            height={40}
-            src={
-              'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
-            }
-          ></Logo>
+          <EuiFlexGroup direction="column" alignItems="center">
+            <Logo
+              width={40}
+              height={40}
+              src={
+                'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
+              }
+            ></Logo>
+          </EuiFlexGroup>
         </Workspace>
-        <EuiSpacer size="l" />
-        <TopNavItemsWrapper>
-          <NavItem
-            as={Link as any}
-            to="/cms"
-            $active={pathname.endsWith('/cms')}
-          >
-            <Home />
-          </NavItem>
-          <EuiSpacer size="s" />
-          <NavItem>
-            <EuiPopover
-              onMouseOver={() => setIsContentPopoverOpen(true)}
-              button={<QuillPen />}
-              isOpen={isContentPopoverOpen}
-              closePopover={() => setIsContentPopoverOpen(false)}
-              anchorPosition="downLeft"
-            >
-              {...SubNav}
-            </EuiPopover>
-          </NavItem>
-          <EuiSpacer size="s" />
 
-          <EuiSpacer size="s" />
-          <NavItem
-            as={Link as any}
-            to="/cms/assets"
-            $active={pathname.includes('assets')}
-          >
-            <Landscape />
-          </NavItem>
-        </TopNavItemsWrapper>
+        <EuiSpacer size="l" />
+        <CollapsedTopNavWrapper>
+          <EuiFlexGroup direction="column" alignItems="center">
+            <EuiFlexItem>
+              <NavItem
+                as={Link as any}
+                to="/cms"
+                $active={pathname.endsWith('/cms')}
+                collapsed={true}
+              >
+                <Home />
+              </NavItem>
+            </EuiFlexItem>
+            <EuiSpacer size="s" />
+            <NavItem>
+              <EuiPopover
+                onMouseOver={() => setIsContentPopoverOpen(true)}
+                button={<QuillPen />}
+                isOpen={isContentPopoverOpen}
+                closePopover={() => setIsContentPopoverOpen(false)}
+                anchorPosition="downLeft"
+              >
+                {...SubNav}
+              </EuiPopover>
+            </NavItem>
+            <EuiSpacer size="s" />
+
+            <EuiSpacer size="s" />
+            <NavItem
+              as={Link as any}
+              to="/cms/assets"
+              $active={pathname.includes('assets')}
+              collapsed={true}
+            >
+              <Landscape />
+            </NavItem>
+          </EuiFlexGroup>
+        </CollapsedTopNavWrapper>
       </SidebarContainer>
       <Footer>
         <EuiSpacer size="m" />
         <EuiFlexGroup direction="column" alignItems="center">
-          <EuiPopover
-            onMouseOver={() => setIsSettingPopoverOpen(true)}
-            button={<SettingsCog />}
-            isOpen={isSettingPopoverOpen}
-            closePopover={() => setIsSettingPopoverOpen(false)}
-            anchorPosition="downLeft"
-          >
-            <NavItem
-              as={Link as any}
-              to="/cms/settings/profile"
-              $active={pathname.includes('settings')}
-            >
-              <EuiText size="m"> Profile</EuiText>
-            </NavItem>
-            <NavItem as={Link as any} onClick={onLogout}>
-              <EuiText color="danger">Logout</EuiText>
-            </NavItem>
-          </EuiPopover>
           <EuiSpacer size="m" />
-
-          <EuiIcon type="help" size="m" />
+          <NavItem
+            as={Link as any}
+            to="/cms/settings/profile"
+            $active={pathname.includes('settings')}
+          >
+            <SettingsCog />
+          </NavItem>
+          <EuiSpacer size="m" />
+          <NavItem>
+            <EuiIcon type="help" size="m" />
+          </NavItem>
+          <EuiSpacer size="m" />
+          <NavItem as={Link as any} onClick={onLogout}>
+            <Exit />
+          </NavItem>
         </EuiFlexGroup>
 
         <EuiSpacer size="s" />
@@ -475,7 +482,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
       </SubNavItem>
     )
   })
-  console.log(SubNav)
+
   return !close ? (
     <Sidebar>
       <CollapseExpandIcon onClick={onCloseSideBar}>
