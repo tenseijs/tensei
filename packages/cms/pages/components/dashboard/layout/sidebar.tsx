@@ -52,6 +52,18 @@ const Workspace = styled.div`
 const SidebarContainer = styled.div`
   flex-grow: 1;
 `
+const CollapsedTopSidebar = styled(SidebarContainer)`
+  a {
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+`
 
 const Footer = styled.div`
   height: 160px;
@@ -59,11 +71,34 @@ const Footer = styled.div`
   padding: 18px 25px;
   border-top: ${({ theme }) => theme.border.thin};
 `
+const CollapsedFooter = styled(Footer)`
+  svg {
+    margin-right: 10px;
+  }
+`
+
+const CollapsedNavItem = styled.div<{ $active?: boolean; to?: string }>`
+  ${({ $active, theme }) =>
+    $active
+      ? `
+  color: ${theme.colors.primary};
+  background-color:  ${theme.colors.primaryTransparent} ;
+  cursor: pointer;
+
+  svg {
+    path {
+      fill: ${theme.colors.primary};
+    }
+  }
+  `
+      : `
+      color: ${theme.colors.text};
+  `}
+`
 
 const NavItem = styled.div<{
   $active?: boolean
   to?: string
-  collapsed?: true
 }>`
   display: flex;
   position: relative;
@@ -82,12 +117,11 @@ const NavItem = styled.div<{
   &:hover {
   }
 
-  ${({ $active, theme, collapsed }) =>
+  ${({ $active, theme }) =>
     $active
       ? `
   color: ${theme.colors.primary};
-  background-color:   ${() =>
-    collapsed ? theme.colors.primaryTransparent : ' none'};
+  background-color:  ${theme.colors.primaryTransparent} ;
   cursor: pointer;
 
   svg {
@@ -106,9 +140,7 @@ const TopNavItemsWrapper = styled.div`
   flex-direction: column;
   padding: 0 24px;
 `
-const CollapsedTopNavWrapper = styled(TopNavItemsWrapper)`
-  margin-left: 7px;
-`
+
 const WorkspaceName = styled.div`
   display: flex;
   flex-direction: column;
@@ -359,22 +391,18 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
             ></Logo>
           </EuiFlexGroup>
         </Workspace>
-
-        <EuiSpacer size="l" />
-        <CollapsedTopNavWrapper>
-          <EuiFlexGroup direction="column" alignItems="center">
-            <EuiFlexItem>
-              <NavItem
-                as={Link as any}
-                to="/cms"
-                $active={pathname.endsWith('/cms')}
-                collapsed={true}
-              >
-                <Home />
-              </NavItem>
-            </EuiFlexItem>
-            <EuiSpacer size="s" />
-            <NavItem>
+        <TopNavItemsWrapper>
+          <CollapsedTopSidebar>
+            <EuiSpacer size="l" />
+            <CollapsedNavItem
+              as={Link as any}
+              to="/cms"
+              $active={pathname.endsWith('/cms')}
+            >
+              <Home />
+            </CollapsedNavItem>
+            <EuiSpacer size="m" />
+            <CollapsedNavItem>
               <EuiPopover
                 onMouseOver={() => setIsContentPopoverOpen(true)}
                 button={<QuillPen />}
@@ -384,32 +412,32 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
               >
                 {...SubNav}
               </EuiPopover>
-            </NavItem>
-            <EuiSpacer size="s" />
+            </CollapsedNavItem>
+            <EuiSpacer size="m" />
 
             <EuiSpacer size="s" />
-            <NavItem
+            <CollapsedNavItem
               as={Link as any}
               to="/cms/assets"
               $active={pathname.includes('assets')}
-              collapsed={true}
             >
               <Landscape />
-            </NavItem>
-          </EuiFlexGroup>
-        </CollapsedTopNavWrapper>
+            </CollapsedNavItem>
+          </CollapsedTopSidebar>
+        </TopNavItemsWrapper>
       </SidebarContainer>
-      <Footer>
+      <CollapsedFooter>
         <EuiSpacer size="m" />
         <EuiFlexGroup direction="column" alignItems="center">
           <EuiSpacer size="m" />
-          <NavItem
+          <CollapsedNavItem
             as={Link as any}
             to="/cms/settings/profile"
             $active={pathname.includes('settings')}
           >
             <SettingsCog />
-          </NavItem>
+          </CollapsedNavItem>
+
           <EuiSpacer size="m" />
           <NavItem>
             <EuiIcon type="help" size="m" />
@@ -421,7 +449,7 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
         </EuiFlexGroup>
 
         <EuiSpacer size="s" />
-      </Footer>
+      </CollapsedFooter>
     </CollapsedSidbarContainer>
   )
 }
