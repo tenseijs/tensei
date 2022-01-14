@@ -1,5 +1,4 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react'
-
+import React, { FunctionComponent, useEffect, useState } from 'react'
 import { EuiBasicTable } from '@tensei/eui/lib/components/basic_table'
 import {
   EuiFlyout,
@@ -7,16 +6,13 @@ import {
   EuiFlyoutBody,
   EuiFlyoutFooter
 } from '@tensei/eui/lib/components/flyout'
+import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
+import { EuiCallOut } from '@tensei/eui/lib/components/call_out/call_out'
 import { EuiTitle } from '@tensei/eui/lib/components/title'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import {
-  EuiButton,
-  EuiButtonEmpty,
-  EuiButtonIcon
-} from '@tensei/eui/lib/components/button'
+import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { EuiFieldText, EuiTextArea } from '@tensei/eui/lib/components/form'
 import { EuiText } from '@tensei/eui/lib/components/text'
-import { EuiFormLabel } from '@tensei/eui/lib/components/form'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import {
   EuiSwitch,
@@ -30,6 +26,7 @@ import slugify from 'speakingurl'
 import { useForm } from '../../hooks/forms'
 import { useToastStore } from '../../../store/toast'
 import { useAdminUsersStore } from '../../../store/admin-users'
+
 interface CreateRoleForm {
   name: string
   description: string
@@ -99,7 +96,7 @@ const AccordionItem = styled.div<{
 
 interface PermissionProps {
   isLast?: boolean
-  permission: string
+  permission: { name: string; slug: string }
   checked?: boolean
   resource: ResourceContract
   allPermissions: AdminPermission[]
@@ -132,8 +129,7 @@ const AccordionPermissions: React.FC<PermissionProps> = ({
 }) => {
   function onSwitchChange() {
     const selectedPermission = allPermissions.find(
-      permission =>
-        permission.slug === `${action.toLowerCase()}:${resource.slug}`
+      permission => permission.slug === action.slug
     )
 
     if (!selectedPermission) {
@@ -161,7 +157,7 @@ const AccordionPermissions: React.FC<PermissionProps> = ({
   return (
     <AccordionItem isLast={isLast}>
       <EuiFlexGroup justifyContent="spaceBetween">
-        <EuiText size="s">Can {action}</EuiText>
+        <EuiText size="s">Can {action.name}</EuiText>
         <Switch onChange={onSwitchChange} checked={checked} />
       </EuiFlexGroup>
     </AccordionItem>
@@ -177,20 +173,19 @@ const FlyoutAccordion: React.FC<{
   return (
     <>
       {resources.map(resource => {
-        const resourcePermissions = [
-          `create:${resource.slug}`,
-          `index:${resource.slug}`,
-          `update:${resource.slug}`,
-          `delete:${resource.slug}`
-        ]
-        const resourcePermissionsIds = resourcePermissions.map(
-          permissionSlug =>
-            allPermissions.find(p => p.slug === permissionSlug)!.id
+        const resourcePermissions = resource.permissions
+
+        const resourcePermissionsIds: number[] = resourcePermissions.map(
+          permission => allPermissions.find(p => p.slug === permission.slug)!.id
         )
 
         const checked = resourcePermissionsIds.every(p =>
           createRoleForm.createRoleForm.adminPermissions.includes(p)
         )
+
+        if (resource.permissions.length === 0) {
+          return null
+        }
 
         return (
           <AccordionWrapper key={resource.slug}>
@@ -222,21 +217,19 @@ const FlyoutAccordion: React.FC<{
               />
             </AccordionHeader>
             <Accordionbody>
-              {['Create', 'Index', 'Update', 'Delete'].map(
-                (permission, idx) => (
-                  <AccordionPermissions
-                    isLast={idx === 3}
-                    resource={resource}
-                    permission={permission}
-                    allPermissions={allPermissions}
-                    createRoleForm={createRoleForm}
-                    key={`${permission}-${resource.name}`}
-                    checked={createRoleForm.createRoleForm.adminPermissions.includes(
-                      resourcePermissionsIds[idx]
-                    )}
-                  />
-                )
-              )}
+              {resource.permissions.map((permission, idx) => (
+                <AccordionPermissions
+                  isLast={idx === 3}
+                  resource={resource}
+                  permission={permission}
+                  allPermissions={allPermissions}
+                  createRoleForm={createRoleForm}
+                  key={`${permission.slug}-${resource.name}`}
+                  checked={createRoleForm.createRoleForm.adminPermissions.includes(
+                    resourcePermissionsIds[idx]
+                  )}
+                />
+              ))}
             </Accordionbody>
           </AccordionWrapper>
         )
@@ -407,7 +400,11 @@ const RolesTable: React.FC = () => {
   const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
-  const { getAdminUsers, getAdminRoles } = useAdminUsersStore()
+  const { getAdminUsers, getAdminRoles, removeRole } = useAdminUsersStore()
+  const [isRemoveRoleModalVisible, setIsRemoveRoleModalVisible] = useState(
+    false
+  )
+  const { toast } = useToastStore()
 
   const columns = [
     {
@@ -436,6 +433,27 @@ const RolesTable: React.FC = () => {
               adminPermissions: getPermissionIDs(role?.adminPermissions)
             })
             setIsFlyoutOpen(true)
+          }
+        },
+        {
+          name: 'Delete',
+          description: 'Remove role',
+          icon: 'trash',
+          color: 'danger',
+          type: 'icon',
+          onClick: (role: any) => {
+            if (role?.slug === 'super-admin') {
+              toast(undefined, "Can't remove Super Admin", 'danger')
+              return
+            }
+            form.setForm({
+              id: role?.id,
+              name: role?.name,
+              description: role?.description,
+              slug: role?.slug,
+              adminPermissions: getPermissionIDs(role?.adminPermissions)
+            })
+            setIsRemoveRoleModalVisible(true)
           }
         }
       ]
@@ -493,6 +511,38 @@ const RolesTable: React.FC = () => {
     }
   })
 
+  let removeRoleModal
+  if (isRemoveRoleModalVisible) {
+    removeRoleModal = (
+      <EuiConfirmModal
+        title="Remove role"
+        onCancel={() => {
+          setIsRemoveRoleModalVisible(false)
+        }}
+        onConfirm={async () => {
+          setIsRemoveRoleModalVisible(false)
+          const [, error] = await removeRole(form.form.id!)
+          if (!error) {
+            toast('Removed.', <p>Role removed successfully.</p>)
+            fetchAdminRoles()
+          }
+        }}
+        cancelButtonText="Cancel"
+        confirmButtonText="Remove"
+        defaultFocusedButton="confirm"
+        buttonColor="danger"
+      >
+        <p>Are you sure you want to remove this role?</p>
+        <EuiCallOut
+          size="s"
+          title="Once done, this action cannot be undone"
+          color="warning"
+          iconType="alert"
+        />
+      </EuiConfirmModal>
+    )
+  }
+
   return (
     <>
       <TableHeading>
@@ -527,6 +577,7 @@ const RolesTable: React.FC = () => {
           }}
         />
       ) : null}
+      {removeRoleModal}
       <EuiBasicTable
         items={renderedItems}
         columns={columns}

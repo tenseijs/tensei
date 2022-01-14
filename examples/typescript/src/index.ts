@@ -22,7 +22,10 @@ import {
   select,
   boolean,
   dateTime,
+<<<<<<< HEAD
   date,
+=======
+>>>>>>> ffe5d660f34ba5af4818efb6bd8e243b104ad683
   timestamp,
   hasMany
 } from '@tensei/core'
@@ -44,9 +47,14 @@ export default tensei()
         select('Shipping Scope')
           .options(['Worldwide', 'Nationwide', 'Lagos Only'])
           .default('Nationwide'),
+<<<<<<< HEAD
         dateTime('DateTime Issued').nullable(),
         date('Date').nullable(),
         timestamp('Timestamp').nullable(),
+=======
+        dateTime('Date Issued').nullable(),
+        timestamp('Time Created'),
+>>>>>>> ffe5d660f34ba5af4818efb6bd8e243b104ad683
         textarea('Description').creationRules('required', 'max:255'),
         integer('Price').required().sortable(),
         json('Metadata').nullable().required(),
@@ -149,7 +157,8 @@ export default tensei()
   ])
   .db({
     type: 'sqlite',
-    dbName: 'db.sqlite'
+    dbName: 'db.sqlite',
+    debug: true
   })
   .boot(async ({ repositories }) => {
     await seed(repositories)

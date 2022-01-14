@@ -294,6 +294,7 @@ class CmsPlugin {
       .displayField('Name')
       .hideOnApi()
       .hideFromNavigation()
+      .permissions([])
   }
 
   private tokenResource() {
@@ -310,6 +311,7 @@ class CmsPlugin {
         belongsTo(this.config.userResource)
       ])
       .hideFromNavigation()
+      .noPermissions()
       .hideOnApi()
   }
 
@@ -371,6 +373,7 @@ class CmsPlugin {
         text('Invite code').nullable(),
         belongsToMany(this.config.roleResource).rules('array')
       ])
+      .permissions(['Invite', 'Index', 'Update', 'Delete'])
       .displayField('First name')
       .secondaryDisplayField('Email')
       .hideOnApi()

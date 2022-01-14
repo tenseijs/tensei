@@ -285,7 +285,7 @@ export const ResourceFormWrapper: React.FunctionComponent = () => {
     }
 
     if (isEditing) {
-      if (!hasPermission(`create:${found?.slugPlural}`)) {
+      if (!hasPermission(`update:${found?.slugPlural}`)) {
         push(window.Tensei.getPath(`resources/${found?.slugPlural}`))
 
         toast(

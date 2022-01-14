@@ -72,6 +72,15 @@ export const getResolvers = (
           )
           .resource(resource)
           .handle(async (_, args, ctx, info) => {
+            console.log(
+              '@where',
+              args.where,
+              JSON.stringify(
+                parseWhereArgumentsToWhereQuery(args.where),
+                null,
+                3
+              )
+            )
             const data: any[] = await ctx.manager.find(
               resource.data.pascalCaseName,
               parseWhereArgumentsToWhereQuery(args.where),
@@ -547,7 +556,7 @@ export const parseWhereArgumentsToWhereQuery = (whereArgument: any) => {
 
   allOperators.forEach(operator => {
     whereArgumentString = whereArgumentString.replace(
-      `"${operator}"`,
+      new RegExp(`"${operator}"`, 'g'),
       `"$${operator.split('_')[1]}"`
     )
   })
