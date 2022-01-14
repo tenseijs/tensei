@@ -118,7 +118,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
     onSuccess(response) {
       setCreateFlyOutOpen(false)
 
-      setDocuments([response.data.data])
+      setDocuments([...documents, response.data.data])
     }
   })
 
