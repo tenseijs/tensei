@@ -305,7 +305,6 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     rolesCheckboxSelectionMap,
     setRolesCheckboxSelectionMap
   ] = useState<any>({})
-  const { push } = useHistory()
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -524,7 +523,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               {hasPermission('index:admin-users') ? teamMembers.length : 0})
             </h1>
           </EuiTitle>
-          {hasPermission('create:admin-users') && (
+          {hasPermission('invite:admin-users') && (
             <EuiButtonEmpty iconType={'plus'}>Add team members</EuiButtonEmpty>
           )}
         </TableMetaWrapper>
