@@ -9,7 +9,8 @@ import { EuiSpacer } from '@tensei/eui/lib/components/spacer'
 import { CmsRoute } from '@tensei/components'
 import { useAuthStore } from '../../../../store/auth'
 import { useEffect } from 'react'
-import { useCallback } from 'react'
+import { EuiPopover } from '@tensei/eui/lib/components/popover'
+import { EuiFlexGroup, EuiFlexItem } from '@tensei/eui/lib/components/flex'
 
 const CollapseExpandIcon = styled.button`
   width: 28px;
@@ -37,6 +38,9 @@ const Sidebar = styled.div<{
   border-right: ${({ theme }) => theme.border.thin};
   background-color: ${({ theme }) => theme.colors.bgShade};
 `
+const CollapsedSidbarContainer = styled(Sidebar)`
+  width: 90px;
+`
 
 const Workspace = styled.div`
   padding: 18px 25px;
@@ -48,12 +52,48 @@ const Workspace = styled.div`
 const SidebarContainer = styled.div`
   flex-grow: 1;
 `
+const CollapsedTopSidebar = styled(SidebarContainer)`
+  a {
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+`
 
 const Footer = styled.div`
   height: 160px;
   width: 100%;
   padding: 18px 25px;
   border-top: ${({ theme }) => theme.border.thin};
+`
+const CollapsedFooter = styled(Footer)`
+  svg {
+    margin-right: 10px;
+  }
+`
+
+const CollapsedNavItem = styled.div<{ $active?: boolean; to?: string }>`
+  ${({ $active, theme }) =>
+    $active
+      ? `
+  color: ${theme.colors.primary};
+  background-color:  ${theme.colors.primaryTransparent} ;
+  cursor: pointer;
+
+  svg {
+    path {
+      fill: ${theme.colors.primary};
+    }
+  }
+  `
+      : `
+      color: ${theme.colors.text};
+  `}
 `
 
 const NavItem = styled.div<{
@@ -81,7 +121,7 @@ const NavItem = styled.div<{
     $active
       ? `
   color: ${theme.colors.primary};
-  background-color: ${theme.colors.primaryTransparent};
+  background-color:  ${theme.colors.primaryTransparent} ;
   cursor: pointer;
 
   svg {
@@ -222,7 +262,7 @@ function Landscape() {
 }
 
 function Exit() {
-  return(
+  return (
     <svg
       width={16}
       height={16}
@@ -230,12 +270,35 @@ function Exit() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path 
+      <path
         d="M12.535,12.4927 C12.792,12.4927 13.003,12.7027 13.003,12.9607 L13.003,15.5247 C13.003,15.7827 12.795,15.9997 12.537,15.9997 L12.497,15.9997 L3,15.9997 L3,-0.0003 L12.575,-0.0003 L12.595,0.0007 C12.829,0.0257 12.993,0.2227 12.993,0.4627 L12.993,3.0277 C12.993,3.2847 12.782,3.4947 12.525,3.4947 L12.46,3.4947 C12.203,3.4947 11.993,3.2847 11.993,3.0277 L11.993,0.9997 L4,0.9997 L4,14.9997 L12.01,14.9997 L12.003,12.9607 C12.003,12.7027 12.213,12.4927 12.47,12.4927 L12.535,12.4927 Z M11.4390873,4.90355339 L13.5604076,7.02487373 C14.1461941,7.61066017 14.1461941,8.56040764 13.5604076,9.14619408 L11.4390873,11.2675144 C11.2438252,11.4627766 10.9272427,11.4627766 10.7319805,11.2675144 C10.5367184,11.0722523 10.5367184,10.7556698 10.7319805,10.5604076 L12.8533009,8.4390873 C13.048563,8.24382515 13.048563,7.92724266 12.8533009,7.73198052 L10.7319805,5.61066017 C10.5367184,5.41539803 10.5367184,5.09881554 10.7319805,4.90355339 C10.9272427,4.70829124 11.2438252,4.70829124 11.4390873,4.90355339 Z"
         fill="#df4759"
       />
     </svg>
   )
+}
+
+function Home() {
+  return (
+    <svg
+      width="18"
+      height="19"
+      viewBox="0 0 18 19"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 17H16V7.97803L9 2.53403L2 7.97803V17H8V11H10V17ZM18 18C18 18.2652 17.8946 18.5196 17.7071 18.7071C17.5196 18.8947 17.2652 19 17 19H1C0.734784 19 0.48043 18.8947 0.292893 18.7071C0.105357 18.5196 2.4071e-07 18.2652 2.4071e-07 18V7.49003C-0.000105484 7.33764 0.0346172 7.18724 0.101516 7.05033C0.168415 6.91341 0.26572 6.79359 0.386 6.70003L8.386 0.478028C8.56154 0.341473 8.7776 0.267334 9 0.267334C9.2224 0.267334 9.43846 0.341473 9.614 0.478028L17.614 6.70003C17.7343 6.79359 17.8316 6.91341 17.8985 7.05033C17.9654 7.18724 18.0001 7.33764 18 7.49003V18Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+interface CollpsedSidebarProps {
+  onCloseSidebar: () => void
+  pathname: string
+  onLogout: () => void
+  SubNav: any[]
 }
 
 const getGroups = () => {
@@ -304,6 +367,92 @@ const getGroups = () => {
 
   return groups
 }
+const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
+  onCloseSidebar,
+  pathname,
+  onLogout,
+  SubNav
+}) => {
+  const [isContentPopoverOpen, setIsContentPopoverOpen] = useState(false)
+  return (
+    <CollapsedSidbarContainer>
+      <CollapseExpandIcon onClick={onCloseSidebar}>
+        <EuiIcon size="s" type="arrowRight" />
+      </CollapseExpandIcon>
+      <SidebarContainer>
+        <Workspace>
+          <EuiFlexGroup direction="column" alignItems="center">
+            <Logo
+              width={40}
+              height={40}
+              src={
+                'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
+              }
+            ></Logo>
+          </EuiFlexGroup>
+        </Workspace>
+        <TopNavItemsWrapper>
+          <CollapsedTopSidebar>
+            <EuiSpacer size="l" />
+            <CollapsedNavItem
+              as={Link as any}
+              to="/cms"
+              $active={pathname.endsWith('/cms')}
+            >
+              <Home />
+            </CollapsedNavItem>
+            <EuiSpacer size="m" />
+            <CollapsedNavItem>
+              <EuiPopover
+                onMouseOver={() => setIsContentPopoverOpen(true)}
+                button={<QuillPen />}
+                isOpen={isContentPopoverOpen}
+                closePopover={() => setIsContentPopoverOpen(false)}
+                anchorPosition="downLeft"
+              >
+                {...SubNav}
+              </EuiPopover>
+            </CollapsedNavItem>
+            <EuiSpacer size="m" />
+
+            <EuiSpacer size="s" />
+            <CollapsedNavItem
+              as={Link as any}
+              to="/cms/assets"
+              $active={pathname.includes('assets')}
+            >
+              <Landscape />
+            </CollapsedNavItem>
+          </CollapsedTopSidebar>
+        </TopNavItemsWrapper>
+      </SidebarContainer>
+      <CollapsedFooter>
+        <EuiSpacer size="m" />
+        <EuiFlexGroup direction="column" alignItems="center">
+          <EuiSpacer size="m" />
+          <CollapsedNavItem
+            as={Link as any}
+            to="/cms/settings/profile"
+            $active={pathname.includes('settings')}
+          >
+            <SettingsCog />
+          </CollapsedNavItem>
+
+          <EuiSpacer size="m" />
+          <NavItem>
+            <EuiIcon type="help" size="m" />
+          </NavItem>
+          <EuiSpacer size="m" />
+          <NavItem as={Link as any} onClick={onLogout}>
+            <Exit />
+          </NavItem>
+        </EuiFlexGroup>
+
+        <EuiSpacer size="s" />
+      </CollapsedFooter>
+    </CollapsedSidbarContainer>
+  )
+}
 
 export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
   children,
@@ -345,9 +494,26 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
     }
   })
 
-  return (
+  const SubNav = items.map(item => {
+    let hasAnyPermission = item.permissions.map(permission =>
+      hasPermission(permission)
+    )
+    if (hasAnyPermission.every(permission => permission === false)) return
+
+    return (
+      <SubNavItem
+        key={item.path}
+        $active={isActive(item.path)}
+        to={window.Tensei.getPath(`resources/${item.path}`)}
+      >
+        {item.name}
+      </SubNavItem>
+    )
+  })
+
+  return !close ? (
     <Sidebar>
-      <CollapseExpandIcon>
+      <CollapseExpandIcon onClick={onCloseSideBar}>
         <EuiIcon size="s" type="arrowLeft" />
       </CollapseExpandIcon>
 
@@ -384,23 +550,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
 
           <EuiSpacer size="s" />
 
-          {items.map(item => {
-            let hasAnyPermission = item.permissions.map(permission =>
-              hasPermission(permission)
-            )
-            if (hasAnyPermission.every(permission => permission === false))
-              return
-
-            return (
-              <SubNavItem
-                key={item.path}
-                $active={isActive(item.path)}
-                to={window.Tensei.getPath(`resources/${item.path}`)}
-              >
-                {item.name}
-              </SubNavItem>
-            )
-          })}
+          {...SubNav}
 
           <EuiSpacer size="s" />
           <NavItem
@@ -430,14 +580,18 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           <EuiText>Help</EuiText>
         </NavItem>
         <EuiSpacer size="s" />
-        <NavItem
-          as={Link as any}
-          onClick={onLogout}
-        >
+        <NavItem as={Link as any} onClick={onLogout}>
           <Exit />
           <EuiText color="danger">Logout</EuiText>
         </NavItem>
       </Footer>
     </Sidebar>
+  ) : (
+    <CollapsedSidebar
+      onCloseSidebar={onCloseSideBar}
+      pathname={pathname}
+      onLogout={onLogout}
+      SubNav={SubNav}
+    />
   )
 }
