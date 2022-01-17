@@ -5,7 +5,7 @@ import React from 'react'
 import moment from 'moment'
 import { FormComponentProps } from '@tensei/components'
 
-const FormDatePicker: React.FC<FormComponentProps> = ({
+const FormTimestampPicker: React.FC<FormComponentProps> = ({
   field,
   value,
   error,
@@ -14,13 +14,13 @@ const FormDatePicker: React.FC<FormComponentProps> = ({
   const handleChange = (date: moment.Moment) => {
     onChange(date.format(field.format))
   }
-  const isDateField = field.fieldName === 'DateField' ? true : false
+
   return (
     <EuiFormRow fullWidth isInvalid>
       <EuiDatePicker
         inputRef={c => c} // requires inputRef so i just inserted a function that does nothing
-        showTimeSelect={!isDateField}
-        selected={moment(value)}
+        showTimeSelect
+        selected={moment.utc(value)}
         onChange={handleChange}
         fullWidth
         isInvalid={!!error}
@@ -30,4 +30,4 @@ const FormDatePicker: React.FC<FormComponentProps> = ({
   )
 }
 
-export default FormDatePicker
+export default FormTimestampPicker
