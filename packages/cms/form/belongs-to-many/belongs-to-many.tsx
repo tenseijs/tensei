@@ -289,6 +289,20 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
                     isLoading={createResourceForm?.formData?.loading}
                     onClick={async () => {
                       await createResourceForm?.formData?.submit(undefined)
+                      const forms = createResourceForm.formData.form
+                      const resetFormFields = (forms: any) => {
+                        Object.keys(forms).forEach(function (key) {
+                          if (Array.isArray(forms[key])) {
+                            forms[key] = []
+                          } else {
+                            forms[key] = ''
+                          }
+                        })
+                        return forms
+                      }
+
+                      const newFormState = resetFormFields(forms)
+                      createResourceForm.formData.setForm(newFormState)
                     }}
                   >
                     Publish
