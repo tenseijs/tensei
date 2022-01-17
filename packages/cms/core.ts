@@ -30,7 +30,6 @@ import IndexId from './index/id'
 import IndexSlug from './index/slug'
 import IndexNumber from './index/number'
 import { IndexSelect } from './index/select'
-import FormDatePicker from './form/date-picker'
 
 class Core {
   styled = {} as any
@@ -101,11 +100,7 @@ class Core {
       ManyToMany: FormBelongsToMany,
       OneToMany: FormBelongsToMany,
       Date: FormDatePicker,
-<<<<<<< HEAD
       Timestamp: FormTimePicker
-=======
-      Timestamp: FormDatePicker
->>>>>>> ffe5d660f34ba5af4818efb6bd8e243b104ad683
     },
     index: {
       Boolean: IndexBoolean,
