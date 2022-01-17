@@ -21,7 +21,7 @@ import FormSelect from './form/select'
 import FormPassword from './form/password'
 import { BelongsToMany as FormBelongsToMany } from './form/belongs-to-many'
 import FormDatePicker from './form/date-picker'
-import FormTimePicker from './form/time-picker'
+import FormTimePicker from './form/timestamp-picker'
 
 // Index
 import IndexBoolean from './index/boolean'

@@ -5,7 +5,7 @@ import React from 'react'
 import moment from 'moment'
 import { FormComponentProps } from '@tensei/components'
 
-const FormTimePicker: React.FC<FormComponentProps> = ({
+const FormTimestampPicker: React.FC<FormComponentProps> = ({
   field,
   value,
   error,
@@ -30,4 +30,4 @@ const FormTimePicker: React.FC<FormComponentProps> = ({
   )
 }
 
-export default FormTimePicker
+export default FormTimestampPicker
