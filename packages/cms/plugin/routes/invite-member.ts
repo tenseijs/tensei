@@ -29,12 +29,7 @@ export const inviteMember = route('Invite Member')
       )
 
       // check that email does not exist
-      const emailExists = await manager.findOne(
-        resources.AdminUser.data.pascalCaseName,
-        {
-          email: body.email
-        }
-      )
+      const emailExists = await repositories.adminUsers().findOne({ email: body.email })
 
       if (emailExists?.email) {
         return response.status(422).json({
@@ -60,6 +55,16 @@ export const inviteMember = route('Invite Member')
       }
     })
 
+    if (roles.length === 0) {
+      return response.status(422).json({
+        errors: [{
+          message: 'The role is required.',
+          validation: 'required',
+          field: 'adminRoles'
+        }]
+      })
+    }
+
     let payload: any = {
       firstName: body.firstName,
       lastName: body.lastName,
@@ -75,8 +80,6 @@ export const inviteMember = route('Invite Member')
     )
 
     await manager.persistAndFlush(admin)
-
-    emitter.emit('ADMIN_REGISTERED', admin)
 
     return response.status(200).json(admin)
 
