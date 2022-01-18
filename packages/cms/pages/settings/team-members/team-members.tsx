@@ -103,6 +103,8 @@ interface FlyOutProps {
 interface InviteFlyoutProps {
   setIsInviteMemberFlyout: (b: boolean) => void
   invitedMember: TeamMemberProps
+  roles: any[]
+  getRoles: () => void
 }
 interface FormInput {
   firstName: string
@@ -135,9 +137,11 @@ function CopyClipboard() {
 
 const InviteFlyout: React.FC<InviteFlyoutProps> = ({
   setIsInviteMemberFlyout,
-  invitedMember
+  invitedMember,
+  roles,
 }) => {
-  const [options, setOptions] = useState([])
+  //const [options, setOptions] = useState([])
+  const [inviteCode, setInviteCode] = useState<any>([])
   const { toast } = useToastStore()
 
   const simpleFlyoutTitleId = useGeneratedHtmlId({
@@ -145,7 +149,7 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
   })
 
   const generateLink = () => {
-    return 'generated link'
+    
   }
 
   const { form, errors, submit, loading, setValue } = useForm<FormInputProps>({
@@ -156,9 +160,9 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
       adminRoles: []
     },
     onSubmit: (): Promise<[AxiosResponse | null, AxiosError | null]> => {
-      return window.Tensei.api.get(`admin-roles?populate=adminPermissions`)
-    },
-    onSuccess: () => {
+      return window.Tensei.api.post('/auth/invite-member', form)
+    }
+    /*onSuccess: () => {
       toast(
         generateLink(),
         <EuiCopy textToCopy={generateLink()}>
@@ -170,7 +174,7 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
         </EuiCopy>
       )
       setIsInviteMemberFlyout(false)
-    }
+    }*/
   })
 
   return (
@@ -192,7 +196,7 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
         </EuiText>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm>
+        <EuiForm component='form' onSubmit={() => submit()}>
           <EuiFormRow
             label="First name"
             isInvalid={!!errors?.firstName}
@@ -238,10 +242,10 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
             <EuiSelect
               onChange={event => setValue('adminRoles', event.target.value)}
               isInvalid={!!errors?.adminRoles}
-              /*options={[
-                    { value: 'Admin', text: 'Admin' },
-                    { value: 'User', text: 'User' }
-                  ]}*/
+              options={roles.map(role => ({
+                value: role.name,
+                text: role.name
+              }))}
             />
           </EuiFormRow>
         </EuiForm>
@@ -264,7 +268,7 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
               fill
               type="submit"
               isLoading={loading}
-              onClick={() => setIsInviteMemberFlyout(true)}
+              onClick={() => submit()}
             >
               Invite
             </EuiButton>
@@ -720,13 +724,20 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             </h1>
           </EuiTitle>
           {hasPermission('invite:admin-users') && (
-            <EuiButtonEmpty iconType={'plus'}>Add team members</EuiButtonEmpty>
+            <EuiButtonEmpty 
+              iconType={'plus'} 
+              onClick={() => setIsInviteMemberFlyout(true)}
+            >
+              Add team members
+            </EuiButtonEmpty>
           )}
         </TableMetaWrapper>
         {isInviteMemberFlyout ? (
           <InviteFlyout
             setIsInviteMemberFlyout={setIsInviteMemberFlyout}
             invitedMember={invitedMember}
+            roles={roles}
+            getRoles={getRoles}
           />
         ) : null}
         {!hasPermission('index:admin-users') ? null : (
