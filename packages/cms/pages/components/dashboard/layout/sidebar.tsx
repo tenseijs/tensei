@@ -11,6 +11,7 @@ import { useAuthStore } from '../../../../store/auth'
 import { useEffect } from 'react'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
 import { EuiFlexGroup, EuiFlexItem } from '@tensei/eui/lib/components/flex'
+import { useSidebarStore } from '../../../../store/sidebar'
 
 const CollapseExpandIcon = styled.button`
   width: 28px;
@@ -461,11 +462,12 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
   const { logout } = useAuthStore()
   const { pathname } = useLocation()
   const [groups, setGroups] = useState(getGroups())
-  const [close, setClose] = useState(false)
   const { mergePermissions, hasPermission } = useAuthStore()
 
-  const onCloseSideBar = () => setClose(!close)
-
+  const { setSidebarState, sidebarState } = useSidebarStore()
+  const onCloseSideBar = () => {
+    setSidebarState(!sidebarState)
+  }
   const onLogout = async () => {
     await logout()
     window.location.href = window.Tensei.getPath('auth/login')
@@ -511,7 +513,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
     )
   })
 
-  return !close ? (
+  return sidebarState ? (
     <Sidebar>
       <CollapseExpandIcon onClick={onCloseSideBar}>
         <EuiIcon size="s" type="arrowLeft" />

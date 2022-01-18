@@ -40,6 +40,7 @@ import { useToastStore } from '../../../store/toast'
 import { debounce } from 'throttle-debounce'
 import { Filter } from '@tensei/common/config'
 import { useAuthStore } from '../../../store/auth'
+import { useSidebarStore } from '../../../store/sidebar'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -524,6 +525,7 @@ export const ResourceView: React.FunctionComponent = () => {
     }
   }, [resourceSlug])
 
+  const { setSidebarState } = useSidebarStore()
   return (
     <>
       <DashboardLayout.Topbar>
@@ -532,7 +534,13 @@ export const ResourceView: React.FunctionComponent = () => {
         </EuiTitle>
         {hasPermission(`create:${resource?.slugPlural}`) ? (
           <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
-            <EuiButton fill iconType={'plus'}>
+            <EuiButton
+              fill
+              iconType={'plus'}
+              onClick={() => {
+                setSidebarState(false)
+              }}
+            >
               Create {resource?.name?.toLowerCase()}
             </EuiButton>
           </Link>
