@@ -74,12 +74,17 @@ export function useForm<
     return [response, error]
   }
 
+  const resetForm = () => {
+    setForm(defaultValues || {})
+  }
+
   return {
     form,
     errors,
     submit,
     loading,
     setForm,
-    setValue
+    setValue,
+    resetForm
   }
 }
