@@ -8,7 +8,6 @@ export const inviteMember = route('Invite Member')
   .handle(async (request: Request, response: Response) => {
 
     const { config, manager, resources, body, repositories } = request
-    const { emitter } = config
 
     try {
       await request.config.indicative.validator.validateAll(
