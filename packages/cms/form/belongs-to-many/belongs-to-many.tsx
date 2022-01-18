@@ -118,7 +118,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
     onSuccess(response) {
       setCreateFlyOutOpen(false)
 
-      setDocuments([response.data.data])
+      setDocuments([...documents, response.data.data])
     }
   })
 
@@ -289,6 +289,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
                     isLoading={createResourceForm?.formData?.loading}
                     onClick={async () => {
                       await createResourceForm?.formData?.submit(undefined)
+                      createResourceForm.formData.resetForm()
                     }}
                   >
                     Publish
