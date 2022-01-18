@@ -39,6 +39,7 @@ import { DataPayload } from '@tensei/common/config'
 import { changePasswordRoute } from './routes/change-password'
 import { updateProfileRoute } from './routes/update-profile'
 import { inviteMember } from './routes/invite-member'
+import { verifyInviteCode } from './routes/verify-invite-code'
 
 const indexFileContent = Fs.readFileSync(
   Path.resolve(__dirname, 'template', 'index.mustache')
@@ -124,6 +125,7 @@ class CmsPlugin {
     changePasswordRoute.path(this.getApiPath('auth/change-password')),
     updateProfileRoute.path(this.getApiPath('auth/update-profile')),
     inviteMember.path(this.getApiPath('auth/invite-member')),
+    verifyInviteCode.path(this.getApiPath('auth/verify-invite-code')),
     route('Logout')
       .path(this.getApiPath('auth/logout'))
       .id('logout')
