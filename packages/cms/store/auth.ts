@@ -17,6 +17,12 @@ export interface AuthMethods extends State {
   register: (
     credentials: RegisterUserInput
   ) => Promise<[AxiosResponse | null, AxiosError | null]>
+  verifyInviteCode: (
+    inviteCode: string
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
+  joinTeam: (
+    credentials: JoinTeamInput
+  ) => Promise<[AxiosResponse | null, AxiosError | null]>
   logout: () => Promise<[AxiosResponse | null, AxiosError | null]>
   updateProfile: (
     input: UpdateUserProfileInput
@@ -40,6 +46,14 @@ export interface RegisterUserInput {
   lastName: string
   email: string
   password: string
+}
+
+export interface JoinTeamInput {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  inviteCode: string
 }
 
 export interface UpdateUserProfileInput {
@@ -66,6 +80,12 @@ export const useAuthStore = create<AuthState & AuthMethods>(
       return window.Tensei.api.post('/auth/login', input)
     },
     async register(input: RegisterUserInput) {
+      return window.Tensei.api.post('/auth/register', input)
+    },
+    async verifyInviteCode(inviteCode: string) {
+      return window.Tensei.api.post('/auth/verify-invite-code', { inviteCode })
+    },
+    async joinTeam(input: JoinTeamInput) {
       return window.Tensei.api.post('/auth/register', input)
     },
     async logout() {
