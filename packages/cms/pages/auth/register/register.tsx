@@ -12,11 +12,7 @@ import { EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiFieldText } from '@tensei/eui/lib/components/form/field_text'
 import { EuiFieldPassword } from '@tensei/eui/lib/components/form/field_password'
 import { EuiFlexItem } from '@tensei/eui/lib/components/flex/flex_item'
-import {
-  JoinTeamInput,
-  RegisterUserInput,
-  useAuthStore
-} from '../../../store/auth'
+import { RegisterUserInput, useAuthStore } from '../../../store/auth'
 import { useForm } from '../../hooks/forms'
 import { useHistory, useParams } from 'react-router-dom'
 import { useEffect } from 'react'
@@ -34,9 +30,14 @@ export const Register: React.FunctionComponent = () => {
   const { replace } = useHistory()
   const { toast } = useToastStore()
 
-  const { form, errors, submit, loading, setValue, setForm } = useForm<
-    RegisterUserInput & JoinTeamInput
-  >({
+  const {
+    form,
+    errors,
+    submit,
+    loading,
+    setValue,
+    setForm
+  } = useForm<RegisterUserInput>({
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -104,7 +105,7 @@ export const Register: React.FunctionComponent = () => {
                 <EuiFieldText
                   autoFocus
                   isInvalid={!!errors?.firstName}
-                  value={!!params?.invite ? form?.firstName : ''}
+                  value={form?.firstName}
                   onChange={event => setValue('firstName', event.target.value)}
                 />
               </EuiFormRow>
@@ -117,7 +118,7 @@ export const Register: React.FunctionComponent = () => {
               >
                 <EuiFieldText
                   isInvalid={!!errors?.lastName}
-                  value={!!params?.invite ? form?.lastName : ''}
+                  value={form?.lastName}
                   onChange={event => setValue('lastName', event.target.value)}
                 />
               </EuiFormRow>
@@ -135,7 +136,7 @@ export const Register: React.FunctionComponent = () => {
               fullWidth
               isInvalid={!!errors?.email}
               readOnly={!!params?.invite}
-              value={!!params?.invite ? form?.email : ''}
+              value={form?.email}
               onChange={event => setValue('email', event.target.value)}
             />
           </EuiFormRow>
