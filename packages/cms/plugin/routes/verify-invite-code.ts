@@ -2,41 +2,12 @@ import { route, User } from '@tensei/common'
 import { Request, Response } from 'express'
 
 export const verifyInviteCode = route('Verify Invite Code')
-  .post()
+  .get()
   .noCsrf()
   .handle(async (request: Request, response: Response) => {
+    const { params, repositories } = request
 
-    const { body, repositories } = request
+    const invitedMember: User = await repositories.adminUsers().findOne({ inviteCode: request.params.invite, active: false })
 
-    try {
-      await request.config.indicative.validator.validateAll(
-        body,
-        {
-          inviteCode: 'required'
-        },
-        {
-          'inviteCode.required': 'The invite code is required.'
-        }
-      )
-    } catch (error) {
-      return response.status(422).json({
-        errors: error
-      })
-    }
-
-    // check that email does not exist
-    const invitedMember: User = await repositories.adminUsers().findOne({ inviteCode: body.inviteCode })
-
-    if (!!invitedMember?.email == false) {
-      return response.status(422).json({
-        errors: [{
-          message: 'The invite code is invalid.',
-          validation: 'required',
-          field: 'inviteCode'
-        }]
-      })
-    }
-
-    return response.status(200).json(invitedMember)
-
+    return response.status(invitedMember ? 200 : 404).json(invitedMember)
   })
