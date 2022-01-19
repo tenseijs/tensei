@@ -125,7 +125,7 @@ class CmsPlugin {
     changePasswordRoute.path(this.getApiPath('auth/change-password')),
     updateProfileRoute.path(this.getApiPath('auth/update-profile')),
     inviteMember.path(this.getApiPath('auth/invite-member')),
-    verifyInviteCode.path(this.getApiPath('auth/verify-invite-code')),
+    verifyInviteCode.path(this.getApiPath('auth/verify-invite-code/:invite')),
     route('Logout')
       .path(this.getApiPath('auth/logout'))
       .id('logout')
@@ -208,15 +208,33 @@ class CmsPlugin {
     }
 
     if (invitedUser) {
-      manager.assign(invitedUser, {
+
+      // try {
+      //   await request.config.indicative.validator.validateAll(
+      //     request.body,
+      //     {
+      //       password: 'required|min:12'
+      //     },
+      //     {
+      //       'password.required': 'The new password is required.'
+      //     }
+      //   )
+      // } catch (error) {
+      //   return done({
+      //     errors: error
+      //   })
+      // }
+
+      invitedUser = {
+        ...invitedUser,
         active: true,
         inviteCode: null,
         password: body.password,
         firstName: body.firstName ?? invitedUser.firstName,
         lastName: body.lastName ?? invitedUser.lastName
-      })
+      }
 
-      await manager.persistAndFlush(invitedUser)
+      request.repositories.adminUsers().persistAndFlush(invitedUser)
 
       emitter.emit('ADMIN_REGISTERED', invitedUser)
 
@@ -530,17 +548,47 @@ class CmsPlugin {
                   // Passport is weird, so they do not even send the request to the controller when this happens.
                   // In this scenario, we'll perform validation here on the data, and send the correct validation errors back to the frontend.
 
-                  const validator = Utils.validator(
-                    self.userResource(),
-                    request.manager,
-                    request.resources
-                  )
 
-                  const [, payload] = await validator.validate(request.body)
+                  if (request.body.inviteCode) {
+                    console.log('[INVITECODE]', request.body.inviteCode);
+                    try {
+                      await request.config.indicative.validator.validateAll(
+                        request.body,
+                        {
+                          firstName: 'required',
+                          lastName: 'required',
+                          email: 'required|email',
+                          password: 'required|min:12',
+                          inviteCode: 'required'
+                        },
+                        {
+                          'firstName.required': 'The first name is required.',
+                          'lastName.required': 'The last name is required.',
+                          'email.required': 'The email is required.',
+                          'email.email': 'Please provide a valid email.',
+                          'password.required': 'Please provide a valid password.',
+                          // 'password.min:12': 'min validation failed on password.',
+                          'inviteCode.required': 'The invite code is required.'
+                        }
+                      )
+                    } catch (error) {
+                      return response.status(422).json({
+                        errors: error
+                      })
+                    }
+                  } else {
+                    const validator = Utils.validator(
+                      self.userResource(),
+                      request.manager,
+                      request.resources
+                    )
 
-                  return response.status(422).json({
-                    errors: payload
-                  })
+                    const [, payload] = await validator.validate(request.body)
+
+                    return response.status(422).json({
+                      errors: payload
+                    })
+                  }
                 }
 
                 if (error) {
