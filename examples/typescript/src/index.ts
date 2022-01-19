@@ -44,6 +44,10 @@ export default tensei()
         select('Shipping Scope')
           .options(['Worldwide', 'Nationwide', 'Lagos Only'])
           .default('Nationwide'),
+        select('Hash Tags')
+          .multiple()
+          .options(['#Red', '#Green', '#Brown'])
+          .default(['#Red', '#Green']),
         dateTime('DateTime Issued').nullable(),
         date('Date').nullable(),
         timestamp('Timestamp').nullable(),

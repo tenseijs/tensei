@@ -14,6 +14,8 @@ export class Select extends Field {
     detail: 'Select'
   }
 
+  public isMultiple: boolean = false
+
   private selectOptions: Option[] = []
 
   public constructor(name: string, databaseField?: string) {
@@ -65,10 +67,24 @@ export class Select extends Field {
     return this
   }
 
+  public multiple() {
+    this.isMultiple = true
+    this.property.type = 'json'
+    this.property.enum = false
+    this.component = {
+      index: 'MultiSelect',
+      detail: 'MultiSelect',
+      form: 'MultiSelect'
+    }
+
+    return this
+  }
+
   public serialize() {
     return {
       ...super.serialize(),
-      selectOptions: this.selectOptions
+      selectOptions: this.selectOptions,
+      isMultiple: this.isMultiple
     }
   }
 }
