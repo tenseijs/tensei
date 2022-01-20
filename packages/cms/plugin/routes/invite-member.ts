@@ -7,16 +7,6 @@ export const inviteMember = route('Invite Member')
   .authorize(({ user }) => !!user)
   .handle(async (request: Request, response: Response) => {
 
-    // sample data to create member from dev mode on browser
-    // using window.Tensei.api.post('auth/invite-member') only
-    // to be removed later
-    request.body = {
-      firstName: 'Jay',
-      lastName: 'Riven',
-      email: 'jayriven@mail.com',
-      adminRoles: ["2", "3"]
-    }
-
     const { config, manager, resources, body, repositories } = request
 
     try {

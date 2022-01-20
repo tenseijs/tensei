@@ -550,7 +550,6 @@ class CmsPlugin {
 
 
                   if (request.body.inviteCode) {
-                    console.log('[INVITECODE]', request.body.inviteCode);
                     try {
                       await request.config.indicative.validator.validateAll(
                         request.body,
@@ -567,7 +566,7 @@ class CmsPlugin {
                           'email.required': 'The email is required.',
                           'email.email': 'Please provide a valid email.',
                           'password.required': 'Please provide a valid password.',
-                          // 'password.min:12': 'min validation failed on password.',
+                          'password.min:12': 'min validation failed on password.',
                           'inviteCode.required': 'The invite code is required.'
                         }
                       )
