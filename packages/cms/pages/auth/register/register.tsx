@@ -14,26 +14,36 @@ import { EuiFieldPassword } from '@tensei/eui/lib/components/form/field_password
 import { EuiFlexItem } from '@tensei/eui/lib/components/flex/flex_item'
 import { RegisterUserInput, useAuthStore } from '../../../store/auth'
 import { useForm } from '../../hooks/forms'
+import { useHistory, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useState } from 'react'
+import { useToastStore } from '../../../store/toast'
 
 const H3 = styled.h3`
   text-align: center;
 `
 
 export const Register: React.FunctionComponent = () => {
-  const { register } = useAuthStore()
+  const { register, verifyInviteCode } = useAuthStore()
+  const params = useParams<{ invite: string }>()
+  const [verified, setVerified] = useState(false)
+  const { replace } = useHistory()
+  const { toast } = useToastStore()
 
   const {
     form,
     errors,
     submit,
     loading,
-    setValue
+    setValue,
+    setForm
   } = useForm<RegisterUserInput>({
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
-      password: ''
+      password: '',
+      inviteCode: ''
     },
     onSubmit: register,
     onSuccess: () => {
@@ -41,15 +51,44 @@ export const Register: React.FunctionComponent = () => {
     }
   })
 
+  const verifyMember = async () => {
+    const [response, error] = await verifyInviteCode(params?.invite)
+
+    if (error) {
+      toast('Invalid', error.response?.data?.errors[0]?.message)
+      replace(window.Tensei.getPath('auth/login'))
+    } else {
+      setForm({
+        firstName: response?.data?.firstName,
+        lastName: response?.data?.lastName,
+        email: response?.data?.email,
+        password: '',
+        inviteCode: params?.invite
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (params?.invite && !verified) {
+      verifyMember()
+      setVerified(true)
+    }
+  })
+
   return (
     <AuthLayout>
       <EuiTitle size="s">
-        <H3>Create an admin account</H3>
+        <H3>
+          {params?.invite
+            ? 'Join your team on tensei'
+            : 'Create an admin account'}
+        </H3>
       </EuiTitle>
       <EuiSpacer size="l" />
       <EuiText size="s" textAlign="center">
-        Welcome to Tensei. Let's get you started by creating an administrator
-        account. These credentials are securely stored in your database.
+        {params?.invite
+          ? "You've been invited to join the team at tensei CMS, choose your password to get started."
+          : "Welcome to Tensei. Let's get you started by creating an administrator account. These credentials are securely stored in your database."}
       </EuiText>
 
       <EuiSpacer size="xl" />
@@ -66,6 +105,7 @@ export const Register: React.FunctionComponent = () => {
                 <EuiFieldText
                   autoFocus
                   isInvalid={!!errors?.firstName}
+                  value={form?.firstName}
                   onChange={event => setValue('firstName', event.target.value)}
                 />
               </EuiFormRow>
@@ -78,6 +118,7 @@ export const Register: React.FunctionComponent = () => {
               >
                 <EuiFieldText
                   isInvalid={!!errors?.lastName}
+                  value={form?.lastName}
                   onChange={event => setValue('lastName', event.target.value)}
                 />
               </EuiFormRow>
@@ -93,7 +134,9 @@ export const Register: React.FunctionComponent = () => {
           >
             <EuiFieldText
               fullWidth
-              isInvalid={!!errors?.lastName}
+              isInvalid={!!errors?.email}
+              readOnly={!!params?.invite}
+              value={form?.email}
               onChange={event => setValue('email', event.target.value)}
             />
           </EuiFormRow>
@@ -116,7 +159,7 @@ export const Register: React.FunctionComponent = () => {
           <EuiSpacer size="l" />
 
           <EuiButton fullWidth fill type="submit" isLoading={loading}>
-            Get started
+            {params?.invite ? 'Join team' : 'Get started'}
           </EuiButton>
         </EuiForm>
       </form>

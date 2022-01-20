@@ -120,40 +120,6 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({
 }) => {
   return (
     <SidebarWrapper>
-      {/* <StyledSidebar>
-        <SidebarContainer>
-          <Workspace>
-            <Logo
-              width={40}
-              height={40}
-              src={
-                'https://res.cloudinary.com/bahdcoder/image/upload/v1630016927/Asset_5_4x_hykfhh.png'
-              }
-            ></Logo>
-          </Workspace>
-
-          <EuiSpacer size="l" />
-
-          <GroupName textAlign="center">Main</GroupName>
-
-          <EuiSpacer size="l" />
-
-          <GroupName textAlign="center">Team</GroupName>
-        </SidebarContainer>
-
-        <Footer>
-          <NavItem active>
-            <EuiIcon type="gear" />
-          </NavItem>
-          <EuiSpacer size="s" />
-          <NavItem>
-            <EuiIcon type="help" />
-          </NavItem>
-
-          <AvatarContextMenu />
-        </Footer>
-      </StyledSidebar> */}
-
       {hideNestedSidebar ? null : (
         <SidebarMenu title={title} groups={[]}>
           {children}

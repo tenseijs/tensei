@@ -13,8 +13,14 @@ export const AuthRoutes: React.FunctionComponent = () => {
         path={window.Tensei.getPath('auth/login')}
       />
       <Route
+        exact
         component={MustNotBeAuthComponent(Register)}
         path={window.Tensei.getPath('auth/register')}
+      />
+      <Route
+        exact
+        component={MustNotBeAuthComponent(Register)}
+        path={window.Tensei.getPath('auth/register/:invite')}
       />
     </>
   )

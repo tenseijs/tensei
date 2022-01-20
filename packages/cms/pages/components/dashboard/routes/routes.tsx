@@ -46,11 +46,10 @@ const routesConfig = [
   }
 ]
 
-
 export const DashboardRoutes: React.FunctionComponent = () => {
   const location = useLocation()
 
-  if(
+  if (
     location.pathname.includes('auth/login') ||
     location.pathname.includes('auth/register')
   ) {
