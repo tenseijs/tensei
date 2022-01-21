@@ -209,32 +209,46 @@ class CmsPlugin {
 
     if (invitedUser) {
 
-      // try {
-      //   await request.config.indicative.validator.validateAll(
-      //     request.body,
-      //     {
-      //       password: 'required|min:12'
-      //     },
-      //     {
-      //       'password.required': 'The new password is required.'
-      //     }
-      //   )
-      // } catch (error) {
-      //   return done({
-      //     errors: error
-      //   })
-      // }
+      // This is wierd but repeating the validation check here again
+      // helps to capture the check on the password length rule
+      try {
+        await request.config.indicative.validator.validateAll(
+          request.body,
+          // {
+          //   firstName: 'required',
+          //   lastName: 'required',
+          //   email: 'required|email',
+          //   password: 'required|min:12',
+          //   inviteCode: 'required'
+          // },
+          // {
+          //   'firstName.required': 'The first name is required.',
+          //   'lastName.required': 'The last name is required.',
+          //   'email.required': 'The email is required.',
+          //   'email.email': 'Please provide a valid email.',
+          //   'password.required': 'Please provide a valid password.',
+          //   'inviteCode.required': 'The invite code is required.'
+          // }
+          {
+            password: 'required|min:12'
+          },
+          {
+            'password.required': 'Please provide a valid passwords.'
+          }
+        )
+      } catch (error) {
+        return done(error)
+      }
 
-      invitedUser = {
-        ...invitedUser,
+      manager.assign(invitedUser, {
         active: true,
         inviteCode: null,
         password: body.password,
         firstName: body.firstName ?? invitedUser.firstName,
         lastName: body.lastName ?? invitedUser.lastName
-      }
+      })
 
-      request.repositories.adminUsers().persistAndFlush(invitedUser)
+      await manager.persistAndFlush(invitedUser)
 
       emitter.emit('ADMIN_REGISTERED', invitedUser)
 
@@ -557,7 +571,7 @@ class CmsPlugin {
                           firstName: 'required',
                           lastName: 'required',
                           email: 'required|email',
-                          password: 'required|min:12',
+                          password: 'required',
                           inviteCode: 'required'
                         },
                         {
@@ -566,7 +580,6 @@ class CmsPlugin {
                           'email.required': 'The email is required.',
                           'email.email': 'Please provide a valid email.',
                           'password.required': 'Please provide a valid password.',
-                          'password.min:12': 'min validation failed on password.',
                           'inviteCode.required': 'The invite code is required.'
                         }
                       )
@@ -575,6 +588,7 @@ class CmsPlugin {
                         errors: error
                       })
                     }
+
                   } else {
                     const validator = Utils.validator(
                       self.userResource(),
