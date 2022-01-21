@@ -302,12 +302,12 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
       ) : null}
       <Wrapper>
         {documents.map(item => (
-          <SelectedDocument key={item.id}>
+          <SelectedDocument key={item?.id}>
             <ResourceNameWrapper>
               <EuiBadge color="hollow">{relatedResource?.name}</EuiBadge>
 
               <EuiText size="s">
-                {item[relatedResource?.displayFieldSnakeCase]}
+                {item ? item[relatedResource?.displayFieldSnakeCase] : ''}
               </EuiText>
             </ResourceNameWrapper>
 
@@ -319,7 +319,7 @@ export const BelongsToMany: React.FunctionComponent<FormComponentProps> = ({
                 color="accent"
                 onClick={() => {
                   setDocuments(
-                    documents.filter(document => document.id !== item.id)
+                    documents.filter(document => document?.id !== item?.id)
                   )
                 }}
                 aria-label={`Remove ${relatedResource?.label}`}
