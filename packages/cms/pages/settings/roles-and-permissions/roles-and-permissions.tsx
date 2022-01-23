@@ -45,7 +45,6 @@ interface AdminPermission {
 interface CreateRoleFormProps {
   createRoleForm: CreateRoleForm
   setCreateRoleForm: (form: CreateRoleForm) => void
-  fetchAdminRoles: () => void
   loading?: boolean
   errors?: any
   submit?: () => void
@@ -254,7 +253,6 @@ const RolesFlyout: React.FC<{
   createRoleForm: {
     createRoleForm,
     setCreateRoleForm,
-    fetchAdminRoles,
     loading,
     errors,
     submit
@@ -338,8 +336,7 @@ const RolesFlyout: React.FC<{
           <FlyoutAccordion
             createRoleForm={{
               createRoleForm,
-              setCreateRoleForm,
-              fetchAdminRoles
+              setCreateRoleForm
             }}
             allPermissions={allPermissions}
           />
@@ -364,7 +361,6 @@ const RolesFlyout: React.FC<{
                 }
                 loading = false
                 closeFlyout()
-                fetchAdminRoles()
               }}
               isLoading={loading}
               fill
@@ -386,7 +382,9 @@ const RolesTable: React.FC = () => {
       slug: '',
       adminPermissions: []
     },
-    onSuccess() {},
+    onSuccess() {
+      fetchAdminRoles()
+    },
     onSubmit(form) {
       {
         return form.id
@@ -546,7 +544,7 @@ const RolesTable: React.FC = () => {
           const [, error] = await removeRole(form.form.id!)
           if (!error) {
             toast('Removed.', <p>Role removed successfully.</p>)
-            fetchAdminRoles()
+            await fetchAdminRoles()
           }
         }}
         cancelButtonText="Cancel"
@@ -595,7 +593,6 @@ const RolesTable: React.FC = () => {
           createRoleForm={{
             createRoleForm: form.form,
             setCreateRoleForm: form.setForm,
-            fetchAdminRoles,
             loading: form.loading,
             errors: form.errors,
             submit: form.submit
