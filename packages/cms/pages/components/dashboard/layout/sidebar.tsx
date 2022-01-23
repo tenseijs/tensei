@@ -10,8 +10,9 @@ import { CmsRoute } from '@tensei/components'
 import { useAuthStore } from '../../../../store/auth'
 import { useEffect } from 'react'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
-import { EuiFlexGroup, EuiFlexItem } from '@tensei/eui/lib/components/flex'
+import { EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { useSidebarStore } from '../../../../store/sidebar'
+import { EuiConfirmModal } from '@tensei/eui/lib/components/modal'
 
 const CollapseExpandIcon = styled.button`
   width: 28px;
@@ -298,8 +299,10 @@ function Home() {
 interface CollpsedSidebarProps {
   onCloseSidebar: () => void
   pathname: string
-  onLogout: () => void
+  onLogout: () => Promise<void>
   SubNav: any[]
+  isConfirmModalVisible: boolean
+  setIsConfirmModalVisible: (confirmStatus: boolean) => void
 }
 
 const getGroups = () => {
@@ -372,6 +375,8 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
   onCloseSidebar,
   pathname,
   onLogout,
+  isConfirmModalVisible,
+  setIsConfirmModalVisible,
   SubNav
 }) => {
   const [isContentPopoverOpen, setIsContentPopoverOpen] = useState(false)
@@ -444,14 +449,49 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
             <EuiIcon type="help" size="m" />
           </NavItem>
           <EuiSpacer size="m" />
-          <NavItem as={Link as any} onClick={onLogout}>
+          <NavItem
+            as={Link as any}
+            onClick={() => setIsConfirmModalVisible(true)}
+          >
             <Exit />
           </NavItem>
         </EuiFlexGroup>
-
+        {isConfirmModalVisible && (
+          <ConfirmModal
+            onLogout={onLogout}
+            setIsConfirmModalVisible={setIsConfirmModalVisible}
+          />
+        )}
         <EuiSpacer size="s" />
       </CollapsedFooter>
     </CollapsedSidbarContainer>
+  )
+}
+interface ConfirmModalProps {
+  onLogout: () => Promise<void>
+  setIsConfirmModalVisible: (confirmStatus: boolean) => void
+}
+
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  onLogout,
+  setIsConfirmModalVisible
+}) => {
+  const [isLoading, setIsLoading] = useState(false)
+  return (
+    <EuiConfirmModal
+      title="Are you sure you want to logout?"
+      buttonColor="danger"
+      onCancel={() => setIsConfirmModalVisible(false)}
+      onConfirm={async () => {
+        setIsLoading(true)
+        await onLogout()
+        setIsLoading(false)
+        setIsConfirmModalVisible(false)
+      }}
+      cancelButtonText="Cancel"
+      confirmButtonText="Yes"
+      isLoading={isLoading}
+    ></EuiConfirmModal>
   )
 }
 
@@ -495,7 +535,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
       setHasMergedPermissions(true)
     }
   })
-
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false)
   const SubNav = items.map(item => {
     let hasAnyPermission = item.permissions.map(permission =>
       hasPermission(permission)
@@ -582,17 +622,28 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           <EuiText>Help</EuiText>
         </NavItem>
         <EuiSpacer size="s" />
-        <NavItem as={Link as any} onClick={onLogout}>
+        <NavItem
+          as={Link as any}
+          onClick={() => setIsConfirmModalVisible(true)}
+        >
           <Exit />
           <EuiText color="danger">Logout</EuiText>
         </NavItem>
       </Footer>
+      {isConfirmModalVisible && (
+        <ConfirmModal
+          onLogout={onLogout}
+          setIsConfirmModalVisible={setIsConfirmModalVisible}
+        />
+      )}
     </Sidebar>
   ) : (
     <CollapsedSidebar
       onCloseSidebar={onCloseSideBar}
       pathname={pathname}
       onLogout={onLogout}
+      isConfirmModalVisible={isConfirmModalVisible}
+      setIsConfirmModalVisible={setIsConfirmModalVisible}
       SubNav={SubNav}
     />
   )
