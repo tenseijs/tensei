@@ -70,6 +70,14 @@ export async function seed(db: any) {
     return
   }
 
+  const firstAdminUser = db.adminUsers().create({
+    firstName: Faker.name.firstName(),
+    lastName: Faker.name.lastName(),
+    email: 'hey@tenseijs.com',
+    password: 'password',
+    active: true
+  })
+
   const adminUsers = generate(adminUser).map(u => db.adminUsers().create(u))
   const customers = generate(customer).map((c: any) => db.customers().create(c))
   const orders = generate(order)
@@ -100,5 +108,5 @@ export async function seed(db: any) {
 
   await db.orders().persistAndFlush(orders),
     await db.products().persistAndFlush(products),
-    await db.adminUsers().persistAndFlush(adminUsers)
+    await db.adminUsers().persistAndFlush([firstAdminUser, ...adminUsers])
 }
