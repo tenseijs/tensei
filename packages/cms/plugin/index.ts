@@ -214,21 +214,6 @@ class CmsPlugin {
       try {
         await request.config.indicative.validator.validateAll(
           request.body,
-          // {
-          //   firstName: 'required',
-          //   lastName: 'required',
-          //   email: 'required|email',
-          //   password: 'required|min:12',
-          //   inviteCode: 'required'
-          // },
-          // {
-          //   'firstName.required': 'The first name is required.',
-          //   'lastName.required': 'The last name is required.',
-          //   'email.required': 'The email is required.',
-          //   'email.email': 'Please provide a valid email.',
-          //   'password.required': 'Please provide a valid password.',
-          //   'inviteCode.required': 'The invite code is required.'
-          // }
           {
             password: 'required|min:12'
           },
