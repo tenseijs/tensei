@@ -102,6 +102,8 @@ const NavItem = styled.div<{
   $active?: boolean
   to?: string
 }>`
+  cursor: pointer;
+
   display: flex;
   position: relative;
   align-items: center;
@@ -124,8 +126,7 @@ const NavItem = styled.div<{
       ? `
   color: ${theme.colors.primary};
   background-color:  ${theme.colors.primaryTransparent} ;
-  cursor: pointer;
-
+  
   svg {
     path {
       fill: ${theme.colors.primary};
@@ -449,10 +450,7 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
             <EuiIcon type="help" size="m" />
           </NavItem>
           <EuiSpacer size="m" />
-          <NavItem
-            as={Link as any}
-            onClick={() => setIsConfirmModalVisible(true)}
-          >
+          <NavItem onClick={() => setIsConfirmModalVisible(true)}>
             <Exit />
           </NavItem>
         </EuiFlexGroup>
@@ -622,10 +620,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           <EuiText>Help</EuiText>
         </NavItem>
         <EuiSpacer size="s" />
-        <NavItem
-          as={Link as any}
-          onClick={() => setIsConfirmModalVisible(true)}
-        >
+        <NavItem onClick={() => setIsConfirmModalVisible(true)}>
           <Exit />
           <EuiText color="danger">Logout</EuiText>
         </NavItem>
