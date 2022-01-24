@@ -70,13 +70,16 @@ export async function seed(db: any) {
     return
   }
 
-  const firstAdminUser = {
+  const allRoles = await db.adminRoles().find({})
+
+  const firstAdminUser = db.adminUsers().create({
     firstName: Faker.name.firstName(),
     lastName: Faker.name.lastName(),
     email: 'hey@tenseijs.com',
     password: 'password',
-    active: true
-  }
+    active: true,
+    adminRoles: allRoles.map((role: any) => role.id)
+  })
 
   const adminUsers = generate(adminUser).map(u => db.adminUsers().create(u))
   const customers = generate(customer).map((c: any) => db.customers().create(c))

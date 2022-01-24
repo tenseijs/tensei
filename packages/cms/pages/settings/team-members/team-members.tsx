@@ -6,6 +6,7 @@ import { TeamMemberProps, useAdminUsersStore } from '../../../store/admin-users'
 import { useEffect } from 'react'
 import { EuiButton, EuiButtonEmpty } from '@tensei/eui/lib/components/button'
 import { EuiCallOut } from '@tensei/eui/lib/components/call_out/call_out'
+import { EuiCopy } from '@tensei/eui/lib/components/copy'
 import {
   EuiBasicTable,
   EuiBasicTableColumn
@@ -31,7 +32,8 @@ import {
 } from '@tensei/eui/lib/components/form'
 import { AxiosResponse, AxiosError } from 'axios'
 import { EuiBadge } from '@tensei/eui/lib/components/badge'
-
+import { EuiSpacer } from '@tensei/eui/lib/components/spacer/'
+import { EuiText } from '@tensei/eui/lib/components/text'
 import {
   EuiFlyout,
   EuiFlyoutBody,
@@ -39,9 +41,11 @@ import {
   EuiFlyoutFooter
 } from '@tensei/eui/lib/components/flyout'
 import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
+import { EuiSuperSelect } from '@tensei/eui/lib/components/form'
 import { useForm } from '../../hooks/forms'
 import { useAuthStore } from '../../../store/auth'
 import { useHistory } from 'react-router-dom'
+import { AbstractData } from '@tensei/components'
 
 const Wrapper = styled.div`
   display: flex;
@@ -98,6 +102,19 @@ const UserRole = styled.span`
   margin-right: 10px;
 `
 
+const ClipBoardCallOut = styled(EuiCallOut)`
+  box-shadow: -5px 4px 4px 2px rgba(0, 0, 0, 0.3);
+  border-left: 5px solid ${({ theme }) => theme.colors.primary};
+  background-color: #ffffff;
+  width: 600px;
+  margin: 0 20px;
+`
+
+const ClipBoardButton = styled(EuiButtonEmpty)`
+  inline-size: 550px;
+  overflow-wrap: break-word;
+`
+
 interface ProfileProps {}
 interface FlyOutProps {
   setisEditTeamMemberFlyoutVisible: (b: boolean) => void
@@ -105,11 +122,284 @@ interface FlyOutProps {
   showChangeMemberRoleModal: () => void
   getTeamMembers: () => void
 }
+interface InviteFlyoutProps {
+  setIsInviteMemberFlyout: (b: boolean) => void
+  roles: any[]
+  onInvite: () => void
+}
 interface FormInput {
   firstName: string
   lastName: string
   password: string
 }
+interface FormInputProps {
+  firstName: string
+  lastName: string
+  email: string
+  adminRoles: any[]
+}
+
+function CopyClipboard() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M2 2.729V2a1 1 0 011-1h2v1H3v12h4v1H3a1 1 0 01-1-1V2.729zM14 5V2a1 1 0 00-1-1h-2v1h2v3h1zm-1 1h2v9H8V6h5V5H8a1 1 0 00-1 1v9a1 1 0 001 1h7a1 1 0 001-1V6a1 1 0 00-1-1h-2v1z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+const InviteFlyout: React.FC<InviteFlyoutProps> = ({
+  setIsInviteMemberFlyout,
+  roles,
+  onInvite
+}) => {
+  const [inviteCode, setInviteCode] = useState<string>('')
+
+  const simpleFlyoutTitleId = useGeneratedHtmlId({
+    prefix: 'simpleFlyoutTitle'
+  })
+
+  const { form, errors, loading, submit, setValue } = useForm<FormInputProps>({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      adminRoles: []
+    },
+    onSubmit: async (form: AbstractData) => {
+      const response = await window.Tensei.api.post('/auth/invite-member', form)
+
+      const [data, error] = response
+      console.log(data)
+      if (!error) {
+        setInviteCode(data?.data?.inviteCode)
+      }
+      return response
+    }
+  })
+
+  const inviteUrl = `${window.Tensei.state.config.serverUrl}/auth/register/${inviteCode}`
+
+  const options = roles.map(role => ({
+    value: role.id,
+    inputDisplay: role.name
+  }))
+
+  return (
+    <EuiFlyout
+      ownFocus
+      onClose={() => setIsInviteMemberFlyout(false)}
+      aria-labelledby={simpleFlyoutTitleId}
+    >
+      <EuiFlyoutHeader hasBorder>
+        <EuiTitle size="s">
+          <h2 id={simpleFlyoutTitleId} style={{ textAlign: 'center' }}>
+            Invite Teammates
+          </h2>
+        </EuiTitle>
+        <EuiSpacer size="s" />
+        <EuiText textAlign="center">
+          <p>Add other collaborators to your project</p>
+        </EuiText>
+        {inviteCode && (
+          <ClipBoardCallOut>
+            <EuiText size="s" style={{ color: '#333333', paddingLeft: '10px' }}>
+              Copy link to invite a team member
+            </EuiText>
+            <EuiCopy textToCopy={inviteUrl}>
+              {copy => (
+                <ClipBoardButton onClick={copy} iconType={CopyClipboard}>
+                  {inviteUrl}
+                </ClipBoardButton>
+              )}
+            </EuiCopy>
+          </ClipBoardCallOut>
+        )}
+      </EuiFlyoutHeader>
+      <EuiFlyoutBody>
+        <EuiForm component="form">
+          {inviteCode ? (
+            <EuiFormRow
+              label="First name"
+              isInvalid={!!errors?.firstName}
+              error={errors?.firstName}
+              fullWidth
+              isDisabled
+            >
+              <EuiFieldText
+                value={form.firstName}
+                onChange={event => setValue('firstName', event.target.value)}
+                isInvalid={!!errors?.firstName}
+                fullWidth
+              />
+            </EuiFormRow>
+          ) : (
+            <EuiFormRow
+              label="First name"
+              isInvalid={!!errors?.firstName}
+              error={errors?.firstName}
+              fullWidth
+            >
+              <EuiFieldText
+                value={form.firstName}
+                onChange={event => setValue('firstName', event.target.value)}
+                isInvalid={!!errors?.firstName}
+                fullWidth
+              />
+            </EuiFormRow>
+          )}
+          {inviteCode ? (
+            <EuiFormRow
+              label="Last name"
+              error={errors?.lastName}
+              isInvalid={!!errors?.lastName}
+              fullWidth
+              isDisabled
+            >
+              <EuiFieldText
+                value={form.lastName}
+                onChange={event => setValue('lastName', event.target.value)}
+                isInvalid={!!errors?.lastName}
+                fullWidth
+              />
+            </EuiFormRow>
+          ) : (
+            <EuiFormRow
+              label="Last name"
+              error={errors?.lastName}
+              isInvalid={!!errors?.lastName}
+              fullWidth
+            >
+              <EuiFieldText
+                value={form.lastName}
+                onChange={event => setValue('lastName', event.target.value)}
+                isInvalid={!!errors?.lastName}
+                fullWidth
+              />
+            </EuiFormRow>
+          )}
+          <EuiSpacer size="l" />
+          {inviteCode ? (
+            <EuiFormRow
+              label="Email"
+              error={errors?.email}
+              isInvalid={!!errors?.email}
+              fullWidth
+              isDisabled
+            >
+              <EuiFieldText
+                isInvalid={!!errors?.lastName}
+                onChange={event => setValue('email', event.target.value)}
+                fullWidth
+              />
+            </EuiFormRow>
+          ) : (
+            <EuiFormRow
+              label="Email"
+              error={errors?.email}
+              isInvalid={!!errors?.email}
+              fullWidth
+            >
+              <EuiFieldText
+                isInvalid={!!errors?.lastName}
+                onChange={event => setValue('email', event.target.value)}
+                fullWidth
+              />
+            </EuiFormRow>
+          )}
+          {inviteCode ? (
+            <EuiFormRow
+              label="Assign role"
+              error={errors?.adminRoles}
+              isInvalid={!!errors?.adminRoles}
+              fullWidth
+              isDisabled
+            >
+              <EuiSuperSelect
+                options={options}
+                valueOfSelected={
+                  form.adminRoles.length > 0 ? form.adminRoles[0] : undefined
+                }
+                onChange={option => {
+                  setValue('adminRoles', [option])
+                }}
+                isInvalid={!!errors?.adminRoles}
+                fullWidth
+              />
+            </EuiFormRow>
+          ) : (
+            <EuiFormRow
+              label="Assign role"
+              error={errors?.adminRoles}
+              isInvalid={!!errors?.adminRoles}
+              fullWidth
+            >
+              <EuiSuperSelect
+                options={options}
+                valueOfSelected={
+                  form.adminRoles.length > 0 ? form.adminRoles[0] : undefined
+                }
+                onChange={option => {
+                  setValue('adminRoles', [option])
+                }}
+                isInvalid={!!errors?.adminRoles}
+                fullWidth
+              />
+            </EuiFormRow>
+          )}
+        </EuiForm>
+
+        <EuiSpacer size="xl" />
+      </EuiFlyoutBody>
+      <EuiFlyoutFooter>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem grow={false}>
+            {inviteCode ? (
+              <EuiButton
+                fill
+                onClick={() => {
+                  setIsInviteMemberFlyout(false)
+                  onInvite()
+                }}
+              >
+                Close
+              </EuiButton>
+            ) : (
+              <EuiButtonEmpty
+                iconType="cross"
+                flush="left"
+                onClick={() => setIsInviteMemberFlyout(false)}
+              >
+                Cancel
+              </EuiButtonEmpty>
+            )}
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            {inviteCode ? null : (
+              <EuiButton
+                fill
+                type="submit"
+                onClick={() => submit()}
+                isLoading={loading}
+              >
+                Invite
+              </EuiButton>
+            )}
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiFlyoutFooter>
+    </EuiFlyout>
+  )
+}
+
 const FlyOut: React.FC<FlyOutProps> = ({
   setisEditTeamMemberFlyoutVisible,
   selectedMember,
@@ -311,6 +601,8 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
   const [rolesCheckboxSelectionMap, setRolesCheckboxSelectionMap] =
     useState<any>({})
+
+  const [isInviteMemberFlyout, setIsInviteMemberFlyout] = useState(false)
 
   const columns: EuiBasicTableColumn<any>[] = useMemo(() => {
     return [
@@ -544,10 +836,21 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             </h1>
           </EuiTitle>
           {hasPermission('invite:admin-users') && (
-            <EuiButtonEmpty iconType={'plus'}>Add team members</EuiButtonEmpty>
+            <EuiButtonEmpty
+              iconType={'plus'}
+              onClick={() => setIsInviteMemberFlyout(true)}
+            >
+              Add team members
+            </EuiButtonEmpty>
           )}
         </TableMetaWrapper>
-
+        {isInviteMemberFlyout ? (
+          <InviteFlyout
+            setIsInviteMemberFlyout={setIsInviteMemberFlyout}
+            roles={roles}
+            onInvite={getTeamMembers}
+          />
+        ) : null}
         {!hasPermission('index:admin-users') ? null : (
           <EuiBasicTable
             items={teamMembers}
