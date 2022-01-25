@@ -504,7 +504,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
   const [groups, setGroups] = useState(getGroups())
   const { mergePermissions, hasPermission } = useAuthStore()
 
-  const { setSidebarState, sidebarState } = useSidebarStore()
+  const { sidebarState, setSidebarState } = useSidebarStore()
   const onCloseSideBar = () => {
     setSidebarState(!sidebarState)
   }
