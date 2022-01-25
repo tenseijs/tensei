@@ -46,9 +46,27 @@ import { useForm } from '../../hooks/forms'
 import { useAuthStore } from '../../../store/auth'
 import { useHistory } from 'react-router-dom'
 import { AbstractData } from '@tensei/components'
+import { useSidebarStore } from '../../../store/sidebar'
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+
+  @media only screen and (max-width: 757px) {
+    .euiTable.euiTable--responsive
+      .euiTableRow.euiTableRow-isExpandable
+      .euiTableRowCell--isExpander,
+    .euiTable.euiTable--responsive
+      .euiTableRow.euiTableRow-hasActions
+      .euiTableRowCell--hasActions {
+      top: 76px;
+    }
+  }
+  @media only screen and (max-width: 712px) {
+    h1 {
+      display: none;
+    }
+  }
 `
 
 const PageWrapper = styled.div`
@@ -66,7 +84,7 @@ const TableMetaWrapper = styled.div`
 const OwnerBadge = styled.div`
   margin-left: 2px;
   border-radius: 3px;
-  font-size: 12px;
+  font-size: 10px;
   padding: 4px 4px;
   line-height: 1rem;
   color: ${({ theme }) => theme.colors.primary};
@@ -82,7 +100,7 @@ const UserWrapper = styled.div`
   align-items: center;
 `
 const UserRole = styled.span`
-  margin-right: 10px;
+  margin-right: 5px;
 `
 
 const ClipBoardCallOut = styled(EuiCallOut)`
@@ -169,7 +187,7 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
     }
   })
 
-  const inviteUrl = `${window.Tensei.state.config.serverUrl}/auth/register/${inviteCode}`
+  const inviteUrl = `${window.Tensei.state.config.serverUrl}/${window.Tensei.state.config.dashboardPath}/auth/register/${inviteCode}`
 
   const options = roles.map(role => ({
     value: role.id,
@@ -500,19 +518,13 @@ const FlyOut: React.FC<FlyOutProps> = ({
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const {
-    getAdminUsers,
-    removeUser,
-    getAdminRoles,
-    updateUserRoles
-  } = useAdminUsersStore()
+  const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
+    useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [
-    isEditTeamMemberFlyoutVisible,
-    setisEditTeamMemberFlyoutVisible
-  ] = useState(false)
+  const [isEditTeamMemberFlyoutVisible, setisEditTeamMemberFlyoutVisible] =
+    useState(false)
   const { hasPermission } = useAuthStore()
 
   const getTeamMembers = useCallback(async () => {
@@ -578,23 +590,18 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     updatedAt: ''
   })
 
-  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
-    false
-  )
+  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] =
+    useState(false)
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
   const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
-  const [
-    isChangeMemberRoleModalVisible,
-    setChangeMemberRoleModalVisible
-  ] = useState(false)
+  const [isChangeMemberRoleModalVisible, setChangeMemberRoleModalVisible] =
+    useState(false)
   const closeChangeMemberRoleModal = () =>
     setChangeMemberRoleModalVisible(false)
   const showChangeMemberRoleModal = () => setChangeMemberRoleModalVisible(true)
   const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
-  const [
-    rolesCheckboxSelectionMap,
-    setRolesCheckboxSelectionMap
-  ] = useState<any>({})
+  const [rolesCheckboxSelectionMap, setRolesCheckboxSelectionMap] =
+    useState<any>({})
 
   const [isInviteMemberFlyout, setIsInviteMemberFlyout] = useState(false)
 
@@ -602,6 +609,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     return [
       {
         name: 'User',
+        truncateText: true,
         render: (item: any) => {
           return (
             <UserWrapper>
@@ -614,10 +622,24 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               {isOwner(item) ? <OwnerBadge>Owner</OwnerBadge> : ''}
             </UserWrapper>
           )
+        },
+        mobileOptions: {
+          render: item => (
+            <>
+              <span>
+                {item.firstName} {item.lastName}
+              </span>
+              {isOwner(item) ? <OwnerBadge>Owner</OwnerBadge> : ''}
+            </>
+          ),
+          width: '100%',
+          enlarge: true,
+          truncateText: false
         }
       },
       {
         name: 'Role',
+        truncateText: true,
         render: (item: any) => {
           return item?.adminRoles.map((roles: any) => (
             <UserRole>{roles?.name}</UserRole>
@@ -669,9 +691,8 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               const newCheckboxIdToSelectedMap: any = {}
               rolesId.forEach(
                 roleId =>
-                  (newCheckboxIdToSelectedMap[roleId] = adminRolesId.includes(
-                    roleId
-                  ))
+                  (newCheckboxIdToSelectedMap[roleId] =
+                    adminRolesId.includes(roleId))
               )
               setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
             }
@@ -838,6 +859,8 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             hasActions={true}
             loading={loading}
             columns={columns}
+            responsive={true}
+            isExpandable={true}
           />
         )}
 
