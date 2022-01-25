@@ -56,7 +56,13 @@ const RolesAndPermissionWrapper = styled.div`
 const TableHeading = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding-left: 7px;
+  @media screen and (max-width: 720px) {
+    h1 {
+      font-size: 4vw;
+    }
+  }
 `
 const AccordionWrapper = styled.div`
   margin-bottom: 20px;
@@ -400,9 +406,8 @@ const RolesTable: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [isFlyoutOpen, setIsFlyoutOpen] = useState(false)
   const { getAdminUsers, getAdminRoles, removeRole } = useAdminUsersStore()
-  const [isRemoveRoleModalVisible, setIsRemoveRoleModalVisible] = useState(
-    false
-  )
+  const [isRemoveRoleModalVisible, setIsRemoveRoleModalVisible] =
+    useState(false)
   const { toast } = useToastStore()
   const { hasPermission } = useAuthStore()
 
