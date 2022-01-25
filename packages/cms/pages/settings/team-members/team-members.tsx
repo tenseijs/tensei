@@ -46,6 +46,7 @@ import { useForm } from '../../hooks/forms'
 import { useAuthStore } from '../../../store/auth'
 import { useHistory } from 'react-router-dom'
 import { AbstractData } from '@tensei/components'
+import { useSidebarStore } from '../../../store/sidebar'
 
 const Wrapper = styled.div`
   display: flex;
@@ -83,7 +84,7 @@ const TableMetaWrapper = styled.div`
 const OwnerBadge = styled.div`
   margin-left: 2px;
   border-radius: 3px;
-  font-size: 12px;
+  font-size: 10px;
   padding: 4px 4px;
   line-height: 1rem;
   color: ${({ theme }) => theme.colors.primary};
@@ -99,7 +100,7 @@ const UserWrapper = styled.div`
   align-items: center;
 `
 const UserRole = styled.span`
-  margin-right: 10px;
+  margin-right: 5px;
 `
 
 const ClipBoardCallOut = styled(EuiCallOut)`
