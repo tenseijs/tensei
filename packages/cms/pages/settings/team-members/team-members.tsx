@@ -169,7 +169,7 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
     }
   })
 
-  const inviteUrl = `${window.Tensei.state.config.serverUrl}/auth/register/${inviteCode}`
+  const inviteUrl = `${window.Tensei.state.config.serverUrl}/${window.Tensei.state.config.dashboardPath}/auth/register/${inviteCode}`
 
   const options = roles.map(role => ({
     value: role.id,
