@@ -192,7 +192,7 @@ test('cannot register administrator with only some valid data', async () => {
         field: 'firstName'
       },
       {
-        message: 'The last ame is required.',
+        message: 'The last name is required.',
         validation: 'required',
         field: 'lastName'
       }
