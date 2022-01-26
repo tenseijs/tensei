@@ -18,6 +18,13 @@ const StyledLayout = styled.div`
 
 const TabsWrapper = styled.div`
   padding: 20px 40px 0 40px;
+
+  @media screen and (max-width: 420px) {
+    padding 20px 20px 0 20px;
+    .euiTab + .euiTab {
+      margin-left: 10px;
+    }
+  }
 `
 
 const tabs = [
