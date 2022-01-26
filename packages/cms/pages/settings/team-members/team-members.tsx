@@ -64,7 +64,7 @@ const Wrapper = styled.div`
   }
   @media only screen and (max-width: 712px) {
     h1 {
-      display: none;
+      font-size: 3.5vw;
     }
   }
 `
