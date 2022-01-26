@@ -84,16 +84,23 @@ const TableWrapper = styled.div`
   display: flex;
   flex-direction: column;
 
-  @media only screen and (max-width: 757px) {
+  @media only screen and (max-width: 768px) {
     .euiTable.euiTable--responsive
       .euiTableRow.euiTableRow-isExpandable
       .euiTableRowCell--isExpander,
     .euiTable.euiTable--responsive
       .euiTableRow.euiTableRow-hasActions
       .euiTableRowCell--hasActions {
-      top: 150px;
+      top: 25%;
+    }
+    .euiTableRow-hasActions
+      .euiTableCellContent--showOnHover
+      .euiTableCellContent__hoverItem {
+      padding-left: 20px;
     }
   }
+  }
+
 `
 const DeleteButtonContainer = styled.div`
   display: flex;

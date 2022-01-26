@@ -52,7 +52,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 
-  @media only screen and (max-width: 757px) {
+  @media only screen and (max-width: 768px) {
     .euiTable.euiTable--responsive
       .euiTableRow.euiTableRow-isExpandable
       .euiTableRowCell--isExpander,
