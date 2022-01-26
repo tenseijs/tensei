@@ -161,7 +161,7 @@ export const UpdateResourceSidebar: React.FunctionComponent<{
         <Content>
           <EuiText size="s">ID</EuiText>
           {isEditing ? (
-            <EuiCopy textToCopy={resourceData?.id}>
+            <EuiCopy textToCopy={resourceData?.id.toString()}>
               {copy => (
                 <button onClick={copy}>
                   <BadgeInButton color="hollow">

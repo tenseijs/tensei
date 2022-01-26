@@ -14,7 +14,7 @@ const BadgeInButton = styled(EuiBadge)`
 `
 const IndexId: React.FC<IndexComponentProps> = ({ value }) => {
   return (
-    <EuiCopy textToCopy={value}>
+    <EuiCopy textToCopy={value.toString()}>
       {copy => (
         <button onClick={copy}>
           <BadgeInButton color={'hollow'}>{value}</BadgeInButton>
