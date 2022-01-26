@@ -46,6 +46,9 @@ const PageWrapper = styled.div`
   width: 100%;
   padding: 40px;
   margin-bottom: 40px;
+  @media screen and (max-width: 470px) {
+    padding: 20px;
+  }
 `
 
 const HeaderContainer = styled.div`
@@ -61,6 +64,9 @@ const SearchAndFilterContainer = styled.div`
   display: flex;
   width: 50%;
   align-items: center;
+  @media screen and (max-width: 950px) {
+    width: 100%;
+  }
 `
 
 const FilterContent = styled.div`
@@ -77,6 +83,17 @@ const FilterActions = styled.div`
 const TableWrapper = styled.div`
   display: flex;
   flex-direction: column;
+
+  @media only screen and (max-width: 757px) {
+    .euiTable.euiTable--responsive
+      .euiTableRow.euiTableRow-isExpandable
+      .euiTableRowCell--isExpander,
+    .euiTable.euiTable--responsive
+      .euiTableRow.euiTableRow-hasActions
+      .euiTableRowCell--hasActions {
+      top: 150px;
+    }
+  }
 `
 const DeleteButtonContainer = styled.div`
   display: flex;
@@ -535,6 +552,7 @@ export const ResourceView: React.FunctionComponent = () => {
         {hasPermission(`create:${resource?.slugPlural}`) ? (
           <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
             <EuiButton
+              size={'s'}
               fill
               iconType={'plus'}
               onClick={() => {

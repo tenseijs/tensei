@@ -10,6 +10,9 @@ const Topbar = styled.div`
   justify-content: space-between;
   align-items: center;
   border-bottom: ${({ theme }) => theme.border.thin};
+  @media screen and (max-width: 450px) {
+    padding: 17px 10px;
+  }
 `
 
 export const TopbarMenu: React.FunctionComponent = ({ children }) => {
