@@ -102,6 +102,8 @@ const NavItem = styled.div<{
   $active?: boolean
   to?: string
 }>`
+  cursor: pointer;
+
   display: flex;
   position: relative;
   align-items: center;
@@ -124,8 +126,7 @@ const NavItem = styled.div<{
       ? `
   color: ${theme.colors.primary};
   background-color:  ${theme.colors.primaryTransparent} ;
-  cursor: pointer;
-
+  
   svg {
     path {
       fill: ${theme.colors.primary};
@@ -303,6 +304,7 @@ interface CollpsedSidebarProps {
   SubNav: any[]
   isConfirmModalVisible: boolean
   setIsConfirmModalVisible: (confirmStatus: boolean) => void
+  width: number
 }
 
 const getGroups = () => {
@@ -377,14 +379,18 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
   onLogout,
   isConfirmModalVisible,
   setIsConfirmModalVisible,
-  SubNav
+  SubNav,
+  width
 }) => {
   const [isContentPopoverOpen, setIsContentPopoverOpen] = useState(false)
+
   return (
     <CollapsedSidbarContainer>
-      <CollapseExpandIcon onClick={onCloseSidebar}>
-        <EuiIcon size="s" type="arrowRight" />
-      </CollapseExpandIcon>
+      {width > 720 ? (
+        <CollapseExpandIcon onClick={onCloseSidebar}>
+          <EuiIcon size="s" type="arrowRight" />
+        </CollapseExpandIcon>
+      ) : null}
       <SidebarContainer>
         <Workspace>
           <EuiFlexGroup direction="column" alignItems="center">
@@ -449,10 +455,7 @@ const CollapsedSidebar: React.FC<CollpsedSidebarProps> = ({
             <EuiIcon type="help" size="m" />
           </NavItem>
           <EuiSpacer size="m" />
-          <NavItem
-            as={Link as any}
-            onClick={() => setIsConfirmModalVisible(true)}
-          >
+          <NavItem onClick={() => setIsConfirmModalVisible(true)}>
             <Exit />
           </NavItem>
         </EuiFlexGroup>
@@ -553,6 +556,22 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
     )
   })
 
+  const [width, setWidth] = useState(window.innerWidth)
+  const handleResize = () => setWidth(window.innerWidth)
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [width])
+
+  useEffect(() => {})
+  if (width <= 720) {
+    if (sidebarState != false) {
+      setSidebarState(false)
+    }
+  }
   return sidebarState ? (
     <Sidebar>
       <CollapseExpandIcon onClick={onCloseSideBar}>
@@ -622,10 +641,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
           <EuiText>Help</EuiText>
         </NavItem>
         <EuiSpacer size="s" />
-        <NavItem
-          as={Link as any}
-          onClick={() => setIsConfirmModalVisible(true)}
-        >
+        <NavItem onClick={() => setIsConfirmModalVisible(true)}>
           <Exit />
           <EuiText color="danger">Logout</EuiText>
         </NavItem>
@@ -645,6 +661,7 @@ export const SidebarMenu: React.FunctionComponent<SidebarProps> = ({
       isConfirmModalVisible={isConfirmModalVisible}
       setIsConfirmModalVisible={setIsConfirmModalVisible}
       SubNav={SubNav}
+      width={width}
     />
   )
 }

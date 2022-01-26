@@ -218,7 +218,8 @@ class CmsPlugin {
             password: 'required|min:12'
           },
           {
-            'password.required': 'Please provide a valid password.'
+            'password.required': 'Please provide a valid password.',
+            'password.min': 'Please provide a password longer than 12 characters.'
           }
         )
       } catch (error) {
