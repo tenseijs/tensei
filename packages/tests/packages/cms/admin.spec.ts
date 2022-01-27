@@ -133,12 +133,12 @@ test('cannot register administrator without all valid data', async () => {
   expect(response.body).toEqual({
     errors: [
       {
-        message: 'The firstName is required.',
+        message: 'The first name is required.',
         validation: 'required',
         field: 'firstName'
       },
       {
-        message: 'The lastName is required.',
+        message: 'The last name is required.',
         validation: 'required',
         field: 'lastName'
       },
@@ -187,12 +187,12 @@ test('cannot register administrator with only some valid data', async () => {
   expect(response.body).toEqual({
     errors: [
       {
-        message: 'The firstName is required.',
+        message: 'The first name is required.',
         validation: 'required',
         field: 'firstName'
       },
       {
-        message: 'The lastName is required.',
+        message: 'The last name is required.',
         validation: 'required',
         field: 'lastName'
       }

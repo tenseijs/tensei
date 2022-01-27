@@ -412,6 +412,12 @@ class CmsPlugin {
           })
         }
       })
+      .validationMessages({
+        'firstName.required': 'The first name is required.',
+        'lastName.required': 'The last name is required.',
+        'email.required': 'The email is required.',
+        'password.required': 'The password is required.',
+      })
   }
 
   sessionMikroOrmOptions = {
