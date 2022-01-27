@@ -11,6 +11,24 @@ const Panel = styled.div`
   width: 35%;
   background-color: ${({ theme }) => theme.colors.bgShade};
   border-left: ${({ theme }) => theme.border.thin};
+
+  @media screen and (max-width: 349px) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-left: none;
+  }
+  
+  @media screen and (min-width: 350px) and (max-width: 767px) {
+    display: block;
+    width: 100%;
+    height: 90%;
+    border-left: none;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 45%;
+  }
 `
 
 const PanelContentsWrapper = styled.div`
@@ -23,16 +41,39 @@ const PanelContentsWrapper = styled.div`
 const PanelTitle = styled(EuiTitle)`
   font-weight: 500;
   line-height: 24px;
+
+  @media screen and (max-width: 349px) {
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    padding: 0 10px;
+    text-align: center;
+  }
+
 `
 
 const ImagesContainer = styled.div`
   position: relative;
+
 `
 
 const PanelIcon = styled(EuiIcon)`
   width: 66px;
   height: 66px;
   margin: 1.5rem 0;
+
+  @media screen and (max-width: 767px) {
+    width: 40px;
+    height: 40px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 50px;
+    height: 45px;
+    margin-bottom: 0;
+  }
 `
 
 const PanelImageOne = styled.img`
@@ -40,6 +81,25 @@ const PanelImageOne = styled.img`
   position: absolute;
   top: 140px;
   left: 15%;
+  width: 80px;
+  height: 80px;
+
+  @media screen and (max-width: 349px) {
+    width: 40px;
+    height: 40px;
+  }
+
+  @media screen and (min-width: 350px) and (max-width: 767px) {
+    width: 50px;
+    height: 50px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 45px;
+    height: 45px;
+    top: 110px;
+    left: 15%;
+  }
 `
 
 const PanelImageTwo = styled.img`
@@ -47,6 +107,25 @@ const PanelImageTwo = styled.img`
   position: absolute;
   top: 100px;
   right: 48%;
+  width: 65px;
+  height: 65px;
+
+  @media screen and (max-width: 349px) {
+   width: 30px;
+   height: 30px;
+  }
+
+  @media screen and (min-width: 350px) and (max-width: 767px) {
+    width: 40px;
+    height: 40px;
+    right: 45%;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 40px;
+    height: 40px;
+    top: 70px;
+  }
 `
 
 const ImageThreeWrapper = styled.div`
@@ -61,10 +140,38 @@ const ImageThreeWrapper = styled.div`
   top: 80px;
   right: -16px;
   position: absolute;
+
+  @media screen and (max-width: 349px) {
+    width: 100px;
+    height: 110px;
+  }
+  
+  @media screen and (min-width: 350px) and (max-width: 767px) {
+    width: 130px;
+    height: 130px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 110px;
+    height: 110px;
+  }
 `
 
 const PanelImageThree = styled.img`
   border-radius: 50%;
+  width: 80px;
+  height: 80px;
+
+  
+  @media screen and (max-width: 767px) {
+    width: 50px;
+    height: 50px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 45px;
+    height: 45px;
+  }
 `
 
 const PanelImageFour = styled.img`
@@ -72,12 +179,42 @@ const PanelImageFour = styled.img`
   position: absolute;
   top: 196px;
   right: 40%;
+  width: 50px;
+  height: 50px;
+
+  @media screen and (max-width: 767px) {
+    width: 30px;
+    height: 30px;
+    top: 165px;
+    right: 35%;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 32px;
+    height: 32px;
+    top: 150px;
+    right: 32%;
+  }
 `
 
 const PanelLine = styled.img`
   position: absolute;
   top: 110px;
   left: 23%;
+  width: 30px;
+  height: 30px;
+
+  @media screen and (max-width: 767px) {
+    width: 23px;
+    height: 23px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    height: 20px;
+    top: 88px;
+    left: 15%;
+  }
+
 `
 
 const PanelStroke = styled.img`
@@ -85,43 +222,92 @@ const PanelStroke = styled.img`
   top: 87px;
   right: 115px;
   z-index: 100;
+  width: 140px;
+  height: 40px;
+
+  @media screen and (max-width: 349px) {
+    width: 80px;
+    height: 30px;
+    right: 58px;
+    top: 80px;
+  }
+
+  @media screen and (min-width: 350px) and (max-width: 767px) {
+    width: 90px;
+    height: 30px;
+    right: 90px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    width: 100px;
+    height: 35px;
+    top: 50px;
+    right: 40px;
+  }
 `
 
 const PanelSpacer = styled.div`
   height: 320px;
+
+  @media screen and (max-width: 767px) {
+    height: 200px;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    height: 235px;
+  }
 `
+
+const PanelText = styled(EuiText)`
+
+  @media screen and (max-width: 349px) {
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  @media screen and (min-width: 350px) and (max-width: 767px) {
+    padding: 0 30px;
+    text-align: center;
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    padding: 0 20px;
+    text-align: center;
+  }
+`
+
+const PanelButton = styled(EuiButton)`
+ @media screen and (max-width: 349px) {
+    width: 60px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+`
+
 
 export const CommunityPanel: React.FunctionComponent = () => {
   return (
     <Panel>
       <ImagesContainer>
         <PanelImageOne
-          width={80}
-          height={80}
           src={
             'https://res.cloudinary.com/annysah/image/upload/v1637918255/Mask_Group_2_xn6rpy.png'
           }
         ></PanelImageOne>
 
         <PanelLine
-          width={30}
-          height={30}
           src={
             'https://res.cloudinary.com/annysah/image/upload/v1637917573/Group_1_nmeuhs.png'
           }
         ></PanelLine>
 
         <PanelImageTwo
-          width={65}
-          height={65}
           src={
             'https://res.cloudinary.com/annysah/image/upload/v1637917708/Mask_Group_1_g1re8r.png'
           }
         ></PanelImageTwo>
 
         <PanelStroke
-          width={140}
-          height={40}
           src={
             'https://res.cloudinary.com/annysah/image/upload/v1637917599/Line_1_qbxaut.png'
           }
@@ -129,8 +315,6 @@ export const CommunityPanel: React.FunctionComponent = () => {
 
         <ImageThreeWrapper>
           <PanelImageThree
-            width={80}
-            height={80}
             src={
               'https://res.cloudinary.com/annysah/image/upload/v1637918255/Mask_Group_cbu8eg.png'
             }
@@ -138,8 +322,6 @@ export const CommunityPanel: React.FunctionComponent = () => {
         </ImageThreeWrapper>
 
         <PanelImageFour
-          width={50}
-          height={50}
           src={
             'https://res.cloudinary.com/annysah/image/upload/v1637917673/Mask_Group_3_frpngx.png'
           }
@@ -160,15 +342,15 @@ export const CommunityPanel: React.FunctionComponent = () => {
 
         <EuiSpacer size="s" />
 
-        <EuiText size="xs">
+        <PanelText size="xs">
           Our growing community helps you become a Tensei master
-        </EuiText>
+        </PanelText>
 
         <EuiSpacer size="m" />
 
-        <EuiButton iconType="plusInCircle" fill>
+        <PanelButton iconType="plusInCircle" fill>
           Join Discord Group
-        </EuiButton>
+        </PanelButton>
       </PanelContentsWrapper>
     </Panel>
   )
