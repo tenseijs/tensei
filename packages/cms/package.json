@@ -69,6 +69,7 @@
   },
   "dependencies": {
     "@tensei/core": "^0.11.5",
+    "@tensei/eui": "^1.0.6",
     "@tensei/mail": "^0.11.5",
     "@types/csurf": "^1.11.0",
     "@types/express-session": "^1.17.3",

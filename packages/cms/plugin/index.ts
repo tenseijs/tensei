@@ -215,11 +215,20 @@ class CmsPlugin {
         await request.config.indicative.validator.validateAll(
           request.body,
           {
-            password: 'required|min:12'
+            firstName: 'required',
+            lastName: 'required',
+            email: 'required|email',
+            password: 'required|min:12',
+            inviteCode: 'required'
           },
           {
+            'firstName.required': 'The first name is required.',
+            'lastName.required': 'The last name is required.',
+            'email.required': 'The email is required.',
+            'email.email': 'Please provide a valid email.',
             'password.required': 'Please provide a valid password.',
-            'password.min': 'Please provide a password longer than 12 characters.'
+            'password.min': 'Please provide a password longer than 12 characters.',
+            'inviteCode.required': 'The invite code is required.'
           }
         )
       } catch (error) {
@@ -417,6 +426,7 @@ class CmsPlugin {
         'lastName.required': 'The last name is required.',
         'email.required': 'The email is required.',
         'password.required': 'The password is required.',
+        'password.min': 'Please provide a password longer than 12 characters.'
       })
   }
 
@@ -563,7 +573,7 @@ class CmsPlugin {
                           firstName: 'required',
                           lastName: 'required',
                           email: 'required|email',
-                          password: 'required',
+                          password: 'required|min:12',
                           inviteCode: 'required'
                         },
                         {
@@ -572,6 +582,7 @@ class CmsPlugin {
                           'email.required': 'The email is required.',
                           'email.email': 'Please provide a valid email.',
                           'password.required': 'Please provide a valid password.',
+                          'password.min': 'Please provide a password longer than 12 characters.',
                           'inviteCode.required': 'The invite code is required.'
                         }
                       )
