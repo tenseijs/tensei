@@ -271,7 +271,7 @@ export const AssetManager: FunctionComponent = () => {
           selectedFiles.length > 0 && (
             <SelectedFilesActionWrapper>
               <EuiButtonEmpty color='danger' onClick={closeUploadMediaModal}>Cancel</EuiButtonEmpty>
-              <EuiButton iconType="sortUp" fill>Upload</EuiButton>
+              <EuiButton iconType="sortUp" fill>Upload media to the library</EuiButton>
             </SelectedFilesActionWrapper>
           )
         }
