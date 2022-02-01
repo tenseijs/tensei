@@ -160,6 +160,18 @@ export const AssetManager: FunctionComponent = () => {
   const [assets, setAssets] = useState([])
   const [active, setActive] = useState<assetData>()
 
+  const [activePage, setActivePage] = useState(0)
+  const [pageCount, setPageCount] = useState(0)
+  useEffect(() => {
+    const fetchFiles = async () => {
+      const [data, error] = await window.Tensei.api.get('files')
+      if (!error) {
+        setAssets(data?.data.data)
+      }
+    }
+    fetchFiles()
+  }, [])
+
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
   })
@@ -281,15 +293,6 @@ export const AssetManager: FunctionComponent = () => {
       </AssetFlyout>
     )
   }
-  useEffect(() => {
-    const getData = async () => {
-      const [data, error] = await window.Tensei.api.get('files')
-      if (!error) {
-        setAssets(data?.data.data)
-      }
-    }
-    getData()
-  }, [])
 
   return (
     <>
@@ -323,7 +326,7 @@ export const AssetManager: FunctionComponent = () => {
             <EuiFlexGrid columns={4} gutterSize="m">
               {assets.map((asset: assetData) => {
                 const cardFooterContent = (
-                  <EuiFlexGroup justifyContent="flexStart">
+                  <EuiFlexGroup justifyContent="flexStart" key={asset.altText}>
                     <EuiFlexItem grow={false}>
                       <EuiText>{(asset.size / 1000).toFixed(1)}MB</EuiText>
                     </EuiFlexItem>
@@ -359,7 +362,11 @@ export const AssetManager: FunctionComponent = () => {
             </NumberFieldWrapper>
 
             <PaginationWrapper>
-              <EuiPagination aria-label="Many pages example" />
+              <EuiPagination
+                pageCount={pageCount}
+                activePage={activePage}
+                onPageClick={activePage => setActivePage(activePage)}
+              />
             </PaginationWrapper>
           </NumberFieldAndPagination>
         </PageWrapper>
