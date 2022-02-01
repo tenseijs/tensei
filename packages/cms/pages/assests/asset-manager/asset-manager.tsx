@@ -37,6 +37,8 @@ import { EuiCard } from '@tensei/eui/lib/components/card'
 import moment from 'moment'
 
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
+import { EuiSpacer } from '@tensei/eui/lib'
+import { useRef } from 'react'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -124,19 +126,53 @@ const FlyoutBodyContent = styled.div`
 `
 
 const ModalWrapper = styled(EuiModal)`
-  padding: 30px;
+  padding: 35px 30px;
   margin-bottom: 0;
 `
-
-const ModalContentWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-`
-
 const ConfirmModal = styled(EuiConfirmModal)`
   width: 400px;
   height: 230px;
+`
+const InitialPromptTextWrapper = styled.div`
+  text-align: center;
+`
+const SelectedFilesWrapper = styled.div`
+  margin-top: 20px;
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+`
+const SelectedFileWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid grey;
+  padding: 5px 0px;
+  margin-bottom: 10px;
+`
+const SelectedFileContent = styled.div`
+  display: flex;
+  align-items: center;
+  div.__filename {
+    margin: 0px 5px;
+    max-width: 200px;
+    overflow: clip;
+    text-overflow: ellipsis;
+    line-break: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+  div.__filesize {
+    margin: 0px 3px;
+  }
+`
+const SelectedFilesActionWrapper = styled.div`
+  display: flex;
+  justify-content: end;
+  button {
+    margin-left: 10px;
+  }
 `
 
 interface AssetData {
@@ -152,15 +188,14 @@ interface AssetData {
 }
 
 export const AssetManager: FunctionComponent = () => {
-  const [isDestroyModalVisible, setIsDestroyModalVisible] = useState(false)
-  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
+  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
+    useState(false)
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
   const showDestroyModal = () => setIsDestroyModalVisible(true)
 
-  const closeModal = () => setIsModalVisible(false)
-  const showModal = () => setIsModalVisible(true)
   const [assets, setAssets] = useState([])
   const [active, setActive] = useState<AssetData>()
 
@@ -181,19 +216,31 @@ export const AssetManager: FunctionComponent = () => {
     }
     fetchFiles()
   }, [activePage, perPage])
+  const closeUploadMediaModal = () => {
+    setSelectedFiles([])
+    setIsUploadMediaModalVisible(false)
+  }
+  const showUploadMediaModal = () => setIsUploadMediaModalVisible(true)
 
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
   })
 
-  let destroyModal
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
+  const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
 
-  if (isDestroyModalVisible) {
-    destroyModal = (
+  let destroyUploadedMediaModal
+
+  if (isDestroyMediaModalVisible) {
+    destroyUploadedMediaModal = (
       <ConfirmModal
         title="Delete Media"
         onCancel={closeDestroyModal}
-        onConfirm={closeDestroyModal}
+        onConfirm={() => {
+          selectedFiles.splice(selectedFileIndex!, 1)
+          closeDestroyModal()
+        }}
         cancelButtonText="Cancel"
         confirmButtonText="Delete"
         buttonColor="danger"
@@ -204,24 +251,70 @@ export const AssetManager: FunctionComponent = () => {
     )
   }
 
-  let modal
+  const getIconType = (type: string) => {
+    if (/image\//gi.exec(type) !== null) return 'image'
+    else return 'document'
+  }
 
-  if (isModalVisible) {
-    modal = (
-      <ModalWrapper onClose={closeModal}>
+  let uploadMediaModal
+
+  if (isUploadMediaModalVisible) {
+    uploadMediaModal = (
+      <ModalWrapper onClose={closeUploadMediaModal}>
         <EuiFilePicker
+          id={filePickerId}
           multiple
-          initialPromptText="Select or drag and drop a file"
+          initialPromptText={
+            <InitialPromptTextWrapper>
+              <p>Drag and drop files, or browse</p>
+              <small>Max 1MB each. Supported format JPG, GIF, PNG, PDF</small>
+            </InitialPromptTextWrapper>
+          }
+          accept="*/*"
+          isLoading={false}
+          isInvalid={false}
+          onSubmit={() => {}}
+          onChange={(files: FileList) => {
+            files.length > 0 &&
+              setSelectedFiles([...selectedFiles, ...Array.from(files)])
+          }}
         />
-        <ModalContentWrapper>
-          <EuiText>Uploaded file</EuiText>
-          <EuiButtonIcon
-            iconType="trash"
-            color="danger"
-            onClick={showDestroyModal}
-          />
-        </ModalContentWrapper>
-        {destroyModal}
+        {selectedFiles.length > 0 && (
+          <SelectedFilesWrapper>
+            {selectedFiles.map((file, index) => (
+              <SelectedFileWrapper>
+                <SelectedFileContent>
+                  <EuiIcon type={getIconType(file.type)} />
+                  <div className="__filename">{file.name}</div>
+                </SelectedFileContent>
+                <SelectedFileContent>
+                  <div className="__filesize">
+                    {parseInt((file.size / 1024).toString())}kb
+                  </div>
+                  <EuiButtonIcon
+                    iconType="cross"
+                    color="text"
+                    onClick={() => {
+                      setSelectedFileIndex(index)
+                      showDestroyModal()
+                    }}
+                  />
+                </SelectedFileContent>
+              </SelectedFileWrapper>
+            ))}
+          </SelectedFilesWrapper>
+        )}
+        {selectedFiles.length > 0 && (
+          <SelectedFilesActionWrapper>
+            <EuiButtonEmpty color="danger" onClick={closeUploadMediaModal}>
+              Cancel
+            </EuiButtonEmpty>
+            <EuiButton iconType="sortUp" fill>
+              Upload media to the library
+            </EuiButton>
+          </SelectedFilesActionWrapper>
+        )}
+        {destroyUploadedMediaModal}
       </ModalWrapper>
     )
   }
@@ -351,10 +444,10 @@ export const AssetManager: FunctionComponent = () => {
         <EuiTitle size="xs">
           <h3>Asset Manager</h3>
         </EuiTitle>
-        <EuiButton iconType="sortUp" fill onClick={showModal}>
+        <EuiButton iconType="sortUp" fill onClick={showUploadMediaModal}>
           Upload media
         </EuiButton>
-        {modal}
+        {uploadMediaModal}
       </DashboardLayout.Topbar>
 
       <DashboardLayout.Content>
