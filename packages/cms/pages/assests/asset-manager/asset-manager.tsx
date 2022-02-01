@@ -32,8 +32,9 @@ import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 import { EuiCard } from '@tensei/eui/lib/components/card'
 
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import { EuiSpacer } from '@tensei/eui/lib'
+import { EuiProgress } from '@tensei/eui/lib/components/progress/progress'
 import { useRef } from 'react'
+import { useToastStore } from '../../../store/toast'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -161,6 +162,14 @@ div.__filename {
 div.__filesize {
   margin: 0px 3px;
 }
+div.__upload_progress {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  span {
+    margin-left: 3px;
+  }
+}
 `
 const SelectedFilesActionWrapper = styled.div`
   display: flex;
@@ -179,6 +188,7 @@ export const AssetManager: FunctionComponent = () => {
   const showDestroyModal = () => setIsDestroyModalVisible(true)
 
   const closeUploadMediaModal = () => {
+    if (isUploadingFiles) return;
     setSelectedFiles([])
     setIsUploadMediaModalVisible(false)
   }
@@ -191,6 +201,9 @@ export const AssetManager: FunctionComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' });
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
+  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] = useState<{ progress: number, status: boolean }[]>([])
+  const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
+  const { toast } = useToastStore()
 
   let destroyUploadedMediaModal
 
@@ -201,6 +214,8 @@ export const AssetManager: FunctionComponent = () => {
         onCancel={closeDestroyModal}
         onConfirm={() => {
           selectedFiles.splice(selectedFileIndex!, 1);
+          setSelectedFiles([...selectedFiles])
+          setSelectedFilesUploadProgress(Array(selectedFiles.length).fill({ progress: 0, status: true }))
           closeDestroyModal()
         }}
         cancelButtonText="Cancel"
@@ -236,8 +251,10 @@ export const AssetManager: FunctionComponent = () => {
           isLoading={false}
           isInvalid={false}
           onChange={(files: FileList) => {
-            files.length > 0 &&
+            if (files.length > 0) {
               setSelectedFiles([...selectedFiles, ...Array.from(files)])
+              setSelectedFilesUploadProgress(Array(files.length).fill({ progress: 0, status: true }))
+            }
           }}
         />
         {
@@ -245,23 +262,39 @@ export const AssetManager: FunctionComponent = () => {
           <SelectedFilesWrapper>
             {
               selectedFiles.map((file, index) => (
-                <SelectedFileWrapper>
-                  <SelectedFileContent>
-                    <EuiIcon type={getIconType(file.type)} />
-                    <div className='__filename'>{file.name}</div>
-                  </SelectedFileContent>
-                  <SelectedFileContent>
-                    <div className='__filesize'>{parseInt((file.size / 1024).toString())}kb</div>
-                    <EuiButtonIcon
-                      iconType="cross"
-                      color="text"
-                      onClick={() => {
-                        setSelectedFileIndex(index)
-                        showDestroyModal()
-                      }}
-                    />
-                  </SelectedFileContent>
-                </SelectedFileWrapper>
+                <div key={index}>
+                  <SelectedFileWrapper>
+                    <SelectedFileContent>
+                      <EuiIcon type={getIconType(file.type)} />
+                      <div className='__filename'>{file.name}</div>
+                    </SelectedFileContent>
+                    <SelectedFileContent>
+                      {
+                        isUploadingFiles ?
+                          <div className='__upload_progress'>
+                            <EuiProgress
+                              color={selectedFilesUploadProgress[index].status === true ? 'success' : 'danger'}
+                              value={selectedFilesUploadProgress[index].progress}
+                              max={100} size="m"
+                            />
+                            <span>{selectedFilesUploadProgress[index].progress}%</span>
+                          </div>
+                          : <>
+                            <div className='__filesize'>{parseInt((file.size / 1024).toString())}kb</div>
+                            <EuiButtonIcon
+                              iconType="cross"
+                              color="text"
+                              disabled={isUploadingFiles}
+                              onClick={() => {
+                                setSelectedFileIndex(index)
+                                showDestroyModal()
+                              }}
+                            />
+                          </>
+                      }
+                    </SelectedFileContent>
+                  </SelectedFileWrapper>
+                </div>
               ))
             }
           </SelectedFilesWrapper>
@@ -269,24 +302,64 @@ export const AssetManager: FunctionComponent = () => {
         {
           selectedFiles.length > 0 && (
             <SelectedFilesActionWrapper>
-              <EuiButtonEmpty color='danger' onClick={closeUploadMediaModal}>Cancel</EuiButtonEmpty>
-              <EuiButton type='submit' iconType="sortUp" fill
+              <EuiButtonEmpty color='danger' disabled={isUploadingFiles} onClick={closeUploadMediaModal}>Cancel</EuiButtonEmpty>
+              <EuiButton type='submit' iconType="sortUp" fill isLoading={isUploadingFiles}
                 onClick={async () => {
-                  const formData = new FormData();
-                  selectedFiles.forEach(file => {
-                    formData.append("files", file)
-                  })
-                  try {
-                    const response = await window.axios.post('/files/upload', formData, {
-                      xsrfCookieName: 'x-csrf-token',
-                      headers: { "Content-Type": "multipart/form-data" },
-                      onUploadProgress: (progressEvent) => {
-                        console.log('progress', progressEvent)
+
+                  setIsUploadingFiles(true)
+
+                  await Promise.all(
+                    selectedFiles.map(async (file, index) => {
+                      const formData = new FormData();
+                      formData.append("files", file)
+
+                      return window.axios.post('/files/upload', formData, {
+                        xsrfCookieName: 'x-csrf-token',
+                        headers: { "Content-Type": "multipart/form-data" },
+                        onUploadProgress: (progressEvent) => {
+                          const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100)
+                          selectedFilesUploadProgress.splice(index, 1, { ...selectedFilesUploadProgress[index], progress: progress });
+                          setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
+                        }
+                      })
+                        .then(_ => {
+                          return true;
+                        })
+                        .catch(error => {
+                          selectedFilesUploadProgress.splice(index, 1, { ...selectedFilesUploadProgress[index], status: false });
+                          setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
+                          return false;
+                        })
+                    })
+                  )
+                    .then(response => {
+                      const total = response.length
+                      const success = response.filter(upload => upload === true).length
+                      const error = total - success
+
+                      if (error === 0) {
+                        setIsUploadingFiles(false)
+                        closeUploadMediaModal();
+                        toast('Success', `Uploaded ${success} of ${total} media files.`)
+                      } else {
+
+                        response.forEach((upload, index) => {
+                          if (upload === true) {
+                            selectedFiles.splice(index, 1)
+                            setSelectedFiles([...selectedFiles])
+                          }
+                        })
+                        setSelectedFilesUploadProgress(Array(error).fill({ progress: 0, status: true }))
+
+                        setIsUploadingFiles(false)
+                        toast('Error', `${error} media files failed to upload out of ${total}.`, 'danger')
                       }
-                    });
-                  } catch (error) {
-                    console.log(error)
-                  }
+                    })
+                    .catch(_ => {
+                      setSelectedFilesUploadProgress(Array(selectedFiles.length).fill({ progress: 0, status: true }))
+                      setIsUploadingFiles(false)
+                      toast('Error', `Error uploading media files.`, 'danger')
+                    })
                 }}
               >Upload media to the library</EuiButton>
             </SelectedFilesActionWrapper>
