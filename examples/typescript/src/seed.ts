@@ -61,6 +61,24 @@ export function customer() {
   }
 }
 
+export const file = () => {
+  return {
+    extension: 'PNG',
+    size: Faker.random.number({ min: 1000, max: 10000 }),
+    name: Faker.name.findName(),
+    width: Faker.random.number({ min: 100, max: 150 }),
+    height: Faker.random.number({ min: 80, max: 100 }),
+    file: Faker.lorem.word(),
+    mimeType: 'image/png',
+    hash: Faker.random.uuid(),
+    path: 'https://picsum.photos/100',
+    altText: Faker.lorem.sentence(),
+    disk: 'local',
+    description: Faker.lorem.sentence(),
+    diskMeta: { demo: 'seed' }
+  }
+}
+
 export function generate(fn: () => any, length = 20) {
   return Array.from({ length }, () => fn())
 }
@@ -81,6 +99,7 @@ export async function seed(db: any) {
     adminRoles: allRoles.map((role: any) => role.id)
   })
 
+  const files = generate(file).map(f => db.files().create(f))
   const adminUsers = generate(adminUser).map(u => db.adminUsers().create(u))
   const customers = generate(customer).map((c: any) => db.customers().create(c))
   const orders = generate(order)
@@ -111,5 +130,6 @@ export async function seed(db: any) {
 
   await db.orders().persistAndFlush(orders),
     await db.products().persistAndFlush(products),
-    await db.adminUsers().persistAndFlush([firstAdminUser, ...adminUsers])
+    await db.adminUsers().persistAndFlush([firstAdminUser, ...adminUsers]),
+    await db.files().persistAndFlush(files)
 }

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react'
+import React, { FunctionComponent, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { DashboardLayout } from '../../components/dashboard/layout'
@@ -30,6 +30,7 @@ import {
 import { EuiModal } from '@tensei/eui/lib/components/modal/modal'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 import { EuiCard } from '@tensei/eui/lib/components/card'
+import moment from 'moment'
 
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 
@@ -134,6 +135,18 @@ const ConfirmModal = styled(EuiConfirmModal)`
   height: 230px;
 `
 
+interface assetData {
+  name: string
+  path: string
+  createdAt: string
+  width: string
+  height: string
+  size: number
+  extension: string
+  file: string
+  altText: string
+}
+
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyModalVisible, setIsDestroyModalVisible] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -144,6 +157,8 @@ export const AssetManager: FunctionComponent = () => {
 
   const closeModal = () => setIsModalVisible(false)
   const showModal = () => setIsModalVisible(true)
+  const [assets, setAssets] = useState([])
+  const [active, setActive] = useState<assetData>()
 
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
@@ -201,11 +216,7 @@ export const AssetManager: FunctionComponent = () => {
         aria-labelledby={simpleFlyoutTitleId}
       >
         <EuiFlyoutHeader hasBorder>
-          <AssetFlyoutImage
-            src={
-              'https://images.unsplash.com/photo-1617043593449-c881f876a4b4?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNtYXJ0JTIwd2F0Y2h8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60'
-            }
-          ></AssetFlyoutImage>
+          <AssetFlyoutImage src={active?.path}></AssetFlyoutImage>
           <FlyoutHeaderWrapper>
             <EuiTitle size="xs">
               <h3>Information</h3>
@@ -218,14 +229,16 @@ export const AssetManager: FunctionComponent = () => {
             <EuiTitle size="xs">
               <h3>Title</h3>
             </EuiTitle>
-            <EuiText>Smart_watch</EuiText>
+            <EuiText>{active?.file}</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Uploaded on</h3>
             </EuiTitle>
-            <EuiText>2 hours ago</EuiText>
+            <EuiText>
+              {moment(active?.createdAt).toDate().toDateString()}
+            </EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
@@ -239,33 +252,44 @@ export const AssetManager: FunctionComponent = () => {
             <EuiTitle size="xs">
               <h3>Created by</h3>
             </EuiTitle>
-            <EuiText>John Doe</EuiText>
+            <EuiText>{active?.name}</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Size</h3>
             </EuiTitle>
-            <EuiText>2.3MB</EuiText>
+            <EuiText>{active && (active.size / 1000).toFixed(1)}MB</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Dimension</h3>
             </EuiTitle>
-            <EuiText>235 x 300</EuiText>
+            <EuiText>
+              {active?.width} x {active?.height}
+            </EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Format</h3>
             </EuiTitle>
-            <EuiText>PNG</EuiText>
+            <EuiText>{active?.extension}</EuiText>
           </FlyoutBodyContent>
         </EuiFlyoutBody>
       </AssetFlyout>
     )
   }
+  useEffect(() => {
+    const getData = async () => {
+      const [data, error] = await window.Tensei.api.get('files')
+      if (!error) {
+        setAssets(data?.data.data)
+      }
+    }
+    getData()
+  }, [])
 
   return (
     <>
@@ -294,89 +318,38 @@ export const AssetManager: FunctionComponent = () => {
               <EuiContextMenu initialPanelId={0}></EuiContextMenu>
             </AssetPopover>
           </SearchAndFilterContainer>
-
+          {flyout}
           <AssetContainer>
             <EuiFlexGrid columns={4} gutterSize="m">
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                  // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
+              {assets.map((asset: assetData) => {
+                const cardFooterContent = (
+                  <EuiFlexGroup justifyContent="flexStart">
+                    <EuiFlexItem grow={false}>
+                      <EuiText>{(asset.size / 1000).toFixed(1)}MB</EuiText>
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <EuiText>{asset.extension}</EuiText>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                )
+
+                return (
+                  <EuiFlexItem>
+                    <EuiCard
+                      onClick={() => {
+                        setIsFlyoutVisible(true)
+                        setActive(asset)
+                      }}
+                      textAlign="left"
+                      hasBorder
+                      image={asset.path}
+                      title={asset.file}
+                      description={asset.altText}
+                      footer={cardFooterContent}
+                    />
+                  </EuiFlexItem>
+                )
+              })}
             </EuiFlexGrid>
           </AssetContainer>
 
