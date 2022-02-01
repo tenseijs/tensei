@@ -235,7 +235,6 @@ export const AssetManager: FunctionComponent = () => {
           accept='*/*'
           isLoading={false}
           isInvalid={false}
-          onSubmit={() => { }}
           onChange={(files: FileList) => {
             files.length > 0 &&
               setSelectedFiles([...selectedFiles, ...Array.from(files)])
@@ -271,7 +270,25 @@ export const AssetManager: FunctionComponent = () => {
           selectedFiles.length > 0 && (
             <SelectedFilesActionWrapper>
               <EuiButtonEmpty color='danger' onClick={closeUploadMediaModal}>Cancel</EuiButtonEmpty>
-              <EuiButton iconType="sortUp" fill>Upload media to the library</EuiButton>
+              <EuiButton type='submit' iconType="sortUp" fill
+                onClick={async () => {
+                  const formData = new FormData();
+                  selectedFiles.forEach(file => {
+                    formData.append("files", file)
+                  })
+                  try {
+                    const response = await window.axios.post('/files/upload', formData, {
+                      xsrfCookieName: 'x-csrf-token',
+                      headers: { "Content-Type": "multipart/form-data" },
+                      onUploadProgress: (progressEvent) => {
+                        console.log('progress', progressEvent)
+                      }
+                    });
+                  } catch (error) {
+                    console.log(error)
+                  }
+                }}
+              >Upload media to the library</EuiButton>
             </SelectedFilesActionWrapper>
           )
         }
