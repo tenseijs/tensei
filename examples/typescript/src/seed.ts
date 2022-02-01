@@ -71,7 +71,7 @@ export const file = () => {
     file: Faker.lorem.word(),
     mimeType: 'image/png',
     hash: Faker.random.uuid(),
-    path: 'https://picsum.photos/100',
+    path: 'https://picsum.photos/400/200',
     altText: Faker.lorem.sentence(),
     disk: 'local',
     description: Faker.lorem.sentence(),
