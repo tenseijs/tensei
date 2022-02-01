@@ -14,7 +14,11 @@ import {
 } from '@tensei/eui/lib/components/button'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
-import { EuiContextMenu } from '@tensei/eui/lib/components/context_menu'
+import {
+  EuiContextMenu,
+  EuiContextMenuItem,
+  EuiContextMenuPanel
+} from '@tensei/eui/lib/components/context_menu'
 import { EuiFilePicker } from '@tensei/eui/lib/components/form'
 import {
   EuiFlexItem,
@@ -135,7 +139,7 @@ const ConfirmModal = styled(EuiConfirmModal)`
   height: 230px;
 `
 
-interface assetData {
+interface AssetData {
   name: string
   path: string
   createdAt: string
@@ -158,19 +162,25 @@ export const AssetManager: FunctionComponent = () => {
   const closeModal = () => setIsModalVisible(false)
   const showModal = () => setIsModalVisible(true)
   const [assets, setAssets] = useState([])
-  const [active, setActive] = useState<assetData>()
+  const [active, setActive] = useState<AssetData>()
 
   const [activePage, setActivePage] = useState(0)
   const [pageCount, setPageCount] = useState(0)
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [perPage, setPerPage] = useState(10)
+
   useEffect(() => {
     const fetchFiles = async () => {
-      const [data, error] = await window.Tensei.api.get('files')
+      const [data, error] = await window.Tensei.api.get(
+        `files?page=${activePage + 1}&perPage=${perPage}`
+      )
       if (!error) {
         setAssets(data?.data.data)
+        setPageCount(data?.data.meta.pageCount)
       }
     }
     fetchFiles()
-  }, [])
+  }, [activePage, perPage])
 
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
@@ -215,7 +225,7 @@ export const AssetManager: FunctionComponent = () => {
       </ModalWrapper>
     )
   }
-
+  const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)} MB`
   let flyout
 
   if (isFlyoutVisible) {
@@ -271,7 +281,7 @@ export const AssetManager: FunctionComponent = () => {
             <EuiTitle size="xs">
               <h3>Size</h3>
             </EuiTitle>
-            <EuiText>{active && (active.size / 1000).toFixed(1)}MB</EuiText>
+            <EuiText>{active && formatImageSize(active.size)}</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
@@ -293,6 +303,47 @@ export const AssetManager: FunctionComponent = () => {
       </AssetFlyout>
     )
   }
+  const button = (
+    <EuiButtonEmpty
+      size="xs"
+      color="text"
+      iconType="arrowDown"
+      iconSide="right"
+      onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+    >
+      Assets per page: {perPage}
+    </EuiButtonEmpty>
+  )
+
+  const items = [
+    <EuiContextMenuItem
+      key="10 rows"
+      onClick={() => {
+        setPerPage(10)
+        setIsPopoverOpen(false)
+      }}
+    >
+      10 assets
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="20 rows"
+      onClick={() => {
+        setPerPage(20)
+        setIsPopoverOpen(false)
+      }}
+    >
+      20 assets
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="50 rows"
+      onClick={() => {
+        setPerPage(50)
+        setIsPopoverOpen(false)
+      }}
+    >
+      50 assets
+    </EuiContextMenuItem>
+  ]
 
   return (
     <>
@@ -324,11 +375,11 @@ export const AssetManager: FunctionComponent = () => {
           {flyout}
           <AssetContainer>
             <EuiFlexGrid columns={4} gutterSize="m">
-              {assets.map((asset: assetData) => {
+              {assets.map((asset: AssetData) => {
                 const cardFooterContent = (
                   <EuiFlexGroup justifyContent="flexStart" key={asset.altText}>
                     <EuiFlexItem grow={false}>
-                      <EuiText>{(asset.size / 1000).toFixed(1)}MB</EuiText>
+                      <EuiText>{formatImageSize(asset.size)}</EuiText>
                     </EuiFlexItem>
                     <EuiFlexItem grow={false}>
                       <EuiText>{asset.extension}</EuiText>
@@ -357,9 +408,14 @@ export const AssetManager: FunctionComponent = () => {
           </AssetContainer>
 
           <NumberFieldAndPagination>
-            <NumberFieldWrapper>
-              <FieldNumber placeholder="10" />
-            </NumberFieldWrapper>
+            <EuiPopover
+              button={button}
+              isOpen={isPopoverOpen}
+              closePopover={() => setIsPopoverOpen(false)}
+              panelPaddingSize="none"
+            >
+              <EuiContextMenuPanel items={items} />
+            </EuiPopover>
 
             <PaginationWrapper>
               <EuiPagination
