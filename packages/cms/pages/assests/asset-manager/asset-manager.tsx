@@ -122,6 +122,7 @@ const FlyoutBodyContent = styled.div`
 const ModalWrapper = styled(EuiModal)`
   padding: 35px 30px;
   margin-bottom: 0;
+  width: 470px;
 `
 const ConfirmModal = styled(EuiConfirmModal)`
   width: 400px;
@@ -293,10 +294,11 @@ export const AssetManager: FunctionComponent = () => {
 
   if (isUploadMediaModalVisible) {
     uploadMediaModal = (
-      <ModalWrapper onClose={closeUploadMediaModal}>
+      <ModalWrapper maxWidth={false} onClose={closeUploadMediaModal}>
         <EuiFilePicker
           id={filePickerId}
           multiple
+          fullWidth
           initialPromptText={(
             <InitialPromptTextWrapper>
               <p>Drag and drop files, or browse</p>
