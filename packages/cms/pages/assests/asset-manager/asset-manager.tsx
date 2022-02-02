@@ -37,8 +37,8 @@ import { EuiCard } from '@tensei/eui/lib/components/card'
 import moment from 'moment'
 
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
-import { EuiSpacer } from '@tensei/eui/lib'
-import { useRef } from 'react'
+import { EuiLoadingSpinner } from '@tensei/eui/lib/components/loading'
+import { debounce } from 'throttle-debounce'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -174,6 +174,10 @@ const SelectedFilesActionWrapper = styled.div`
     margin-left: 10px;
   }
 `
+const LoadingContainer = styled.div`
+  width: 20%;
+  margin 15% auto;
+`
 
 interface AssetData {
   name: string
@@ -203,19 +207,29 @@ export const AssetManager: FunctionComponent = () => {
   const [pageCount, setPageCount] = useState(0)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [perPage, setPerPage] = useState(10)
+  const [loading, setLoading] = useState(false)
+  const [search, setsearch] = useState('')
 
   useEffect(() => {
+    setLoading(true)
     const fetchFiles = async () => {
-      const [data, error] = await window.Tensei.api.get(
-        `files?page=${activePage + 1}&perPage=${perPage}`
-      )
+      const params = {
+        page: activePage + 1,
+        perPage,
+        ...(search && { search })
+      }
+      const [data, error] = await window.Tensei.api.get('files', { params })
       if (!error) {
+        setLoading(false)
         setAssets(data?.data.data)
         setPageCount(data?.data.meta.pageCount)
+        return
       }
+      setLoading(false)
     }
     fetchFiles()
-  }, [activePage, perPage])
+  }, [activePage, perPage, search])
+
   const closeUploadMediaModal = () => {
     setSelectedFiles([])
     setIsUploadMediaModalVisible(false)
@@ -438,6 +452,10 @@ export const AssetManager: FunctionComponent = () => {
     </EuiContextMenuItem>
   ]
 
+  const onSearchChange = debounce(500, false, (value: string) => {
+    setsearch(value)
+  })
+
   return (
     <>
       <DashboardLayout.Topbar>
@@ -453,7 +471,12 @@ export const AssetManager: FunctionComponent = () => {
       <DashboardLayout.Content>
         <PageWrapper>
           <SearchAndFilterContainer>
-            <EuiFieldSearch placeholder="Search Library" />
+            <EuiFieldSearch
+              placeholder="Search Library"
+              onChange={event => {
+                onSearchChange(event.target.value)
+              }}
+            />
 
             <AssetPopover
               button={
@@ -466,40 +489,49 @@ export const AssetManager: FunctionComponent = () => {
             </AssetPopover>
           </SearchAndFilterContainer>
           {flyout}
-          <AssetContainer>
-            <EuiFlexGrid columns={4} gutterSize="m">
-              {assets.map((asset: AssetData) => {
-                const cardFooterContent = (
-                  <EuiFlexGroup justifyContent="flexStart" key={asset.altText}>
-                    <EuiFlexItem grow={false}>
-                      <EuiText>{formatImageSize(asset.size)}</EuiText>
-                    </EuiFlexItem>
-                    <EuiFlexItem grow={false}>
-                      <EuiText>{asset.extension}</EuiText>
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-                )
+          {loading ? (
+            <LoadingContainer>
+              &nbsp;&nbsp;
+              <EuiLoadingSpinner size="xl" />
+            </LoadingContainer>
+          ) : (
+            <AssetContainer>
+              <EuiFlexGrid columns={4} gutterSize="m">
+                {assets.map((asset: AssetData) => {
+                  const cardFooterContent = (
+                    <EuiFlexGroup
+                      justifyContent="flexStart"
+                      key={asset.altText}
+                    >
+                      <EuiFlexItem grow={false}>
+                        <EuiText>{formatImageSize(asset.size)}</EuiText>
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false}>
+                        <EuiText>{asset.extension}</EuiText>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  )
 
-                return (
-                  <EuiFlexItem>
-                    <EuiCard
-                      onClick={() => {
-                        setIsFlyoutVisible(true)
-                        setActive(asset)
-                      }}
-                      textAlign="left"
-                      hasBorder
-                      image={asset.path}
-                      title={asset.file}
-                      description={asset.altText}
-                      footer={cardFooterContent}
-                    />
-                  </EuiFlexItem>
-                )
-              })}
-            </EuiFlexGrid>
-          </AssetContainer>
-
+                  return (
+                    <EuiFlexItem>
+                      <EuiCard
+                        onClick={() => {
+                          setIsFlyoutVisible(true)
+                          setActive(asset)
+                        }}
+                        textAlign="left"
+                        hasBorder
+                        image={asset.path}
+                        title={asset.file}
+                        description={asset.altText}
+                        footer={cardFooterContent}
+                      />
+                    </EuiFlexItem>
+                  )
+                })}
+              </EuiFlexGrid>
+            </AssetContainer>
+          )}
           <NumberFieldAndPagination>
             <EuiPopover
               button={button}
