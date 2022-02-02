@@ -52,6 +52,9 @@ const SearchAndFilterContainer = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-top: -20px;
+  @media screen and (max-width: 950px) {
+    width: 100%;
+  }
 `
 
 const AssetPopover = styled(EuiPopover)`
@@ -64,13 +67,26 @@ const AssetContainer = styled.div`
 `
 
 const AssetWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 1.5rem;
+  @media screen and (max-width: 768px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  @media screen and (max-width: 650px) {
+    grid-template-columns: 1fr 1fr;
+  }
+  @media screen and (max-width: 550px) {
+    grid-template-columns: 1fr;
+  }
 `
-
+const FooterTextWrapper = styled.div`
+  display: flex;
+  align-item: flex-start;
+  div {
+    margin-right: 15px;
+  }
+`
 const AssetCard = styled(EuiCard)`
   width: 220px;
   height: 230px;
@@ -332,7 +348,7 @@ export const AssetManager: FunctionComponent = () => {
       </ModalWrapper>
     )
   }
-  const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)} MB`
+  const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
   let flyout
 
   if (isFlyoutVisible) {
@@ -496,20 +512,14 @@ export const AssetManager: FunctionComponent = () => {
             </LoadingContainer>
           ) : (
             <AssetContainer>
-              <EuiFlexGrid columns={4} gutterSize="m">
+              <AssetWrapper>
                 {assets.map((asset: AssetData) => {
                   const cardFooterContent = (
-                    <EuiFlexGroup
-                      justifyContent="flexStart"
-                      key={asset.altText}
-                    >
-                      <EuiFlexItem grow={false}>
-                        <EuiText>{formatImageSize(asset.size)}</EuiText>
-                      </EuiFlexItem>
-                      <EuiFlexItem grow={false}>
-                        <EuiText>{asset.extension}</EuiText>
-                      </EuiFlexItem>
-                    </EuiFlexGroup>
+                    <FooterTextWrapper>
+                      <EuiText>{formatImageSize(asset.size)}</EuiText>
+
+                      <EuiText>{asset.extension}</EuiText>
+                    </FooterTextWrapper>
                   )
 
                   return (
@@ -523,13 +533,13 @@ export const AssetManager: FunctionComponent = () => {
                         hasBorder
                         image={asset.path}
                         title={asset.file}
-                        description={asset.altText}
+                        description=""
                         footer={cardFooterContent}
                       />
                     </EuiFlexItem>
                   )
                 })}
-              </EuiFlexGrid>
+              </AssetWrapper>
             </AssetContainer>
           )}
           <NumberFieldAndPagination>
