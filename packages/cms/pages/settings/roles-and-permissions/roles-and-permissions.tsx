@@ -390,6 +390,7 @@ const RolesTable: React.FC = () => {
     },
     onSuccess() {
       fetchAdminRoles()
+      getTeamMembers()
     },
     onSubmit(form) {
       {
@@ -499,7 +500,7 @@ const RolesTable: React.FC = () => {
   useEffect(() => {
     getTeamMembers()
     fetchAdminRoles()
-  }, [adminRoles, teamMembers])
+  }, [])
 
   async function fetchPermissions() {
     const [response] = await window.Tensei.api.get<{
