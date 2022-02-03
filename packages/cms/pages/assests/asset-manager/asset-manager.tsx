@@ -20,11 +20,7 @@ import {
   EuiContextMenuPanel
 } from '@tensei/eui/lib/components/context_menu'
 import { EuiFilePicker } from '@tensei/eui/lib/components/form'
-import {
-  EuiFlexItem,
-  EuiFlexGroup,
-  EuiFlexGrid
-} from '@tensei/eui/lib/components/flex'
+import { EuiFlexItem, EuiFlexGrid } from '@tensei/eui/lib/components/flex'
 import { EuiPagination } from '@tensei/eui/lib/components/pagination'
 import {
   EuiFlyout,
@@ -39,6 +35,8 @@ import moment from 'moment'
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
 import { EuiLoadingSpinner } from '@tensei/eui/lib/components/loading'
 import { debounce } from 'throttle-debounce'
+import { EuiProgress } from '@tensei/eui/lib/components/progress/progress'
+import { useToastStore } from '../../../store/toast'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -144,6 +142,7 @@ const FlyoutBodyContent = styled.div`
 const ModalWrapper = styled(EuiModal)`
   padding: 35px 30px;
   margin-bottom: 0;
+  width: 470px;
 `
 const ConfirmModal = styled(EuiConfirmModal)`
   width: 400px;
@@ -181,6 +180,14 @@ const SelectedFileContent = styled.div`
   }
   div.__filesize {
     margin: 0px 3px;
+  }
+  div.__upload_progress {
+    width: 100px;
+    display: flex;
+    align-items: center;
+    span {
+      margin-left: 3px;
+    }
   }
 `
 const SelectedFilesActionWrapper = styled.div`
@@ -247,6 +254,7 @@ export const AssetManager: FunctionComponent = () => {
   }, [activePage, perPage, search])
 
   const closeUploadMediaModal = () => {
+    if (isUploadingFiles) return
     setSelectedFiles([])
     setIsUploadMediaModalVisible(false)
   }
@@ -259,6 +267,10 @@ export const AssetManager: FunctionComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
+  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] =
+    useState<{ progress: number; status: boolean }[]>([])
+  const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
+  const { toast } = useToastStore()
 
   let destroyUploadedMediaModal
 
@@ -269,6 +281,10 @@ export const AssetManager: FunctionComponent = () => {
         onCancel={closeDestroyModal}
         onConfirm={() => {
           selectedFiles.splice(selectedFileIndex!, 1)
+          setSelectedFiles([...selectedFiles])
+          setSelectedFilesUploadProgress(
+            Array(selectedFiles.length).fill({ progress: 0, status: true })
+          )
           closeDestroyModal()
         }}
         cancelButtonText="Cancel"
@@ -286,14 +302,88 @@ export const AssetManager: FunctionComponent = () => {
     else return 'document'
   }
 
+  const uploadMediaFiles = async () => {
+    setIsUploadingFiles(true)
+
+    Promise.all(
+      selectedFiles.map(async (file, index) => {
+        const formData = new FormData()
+        formData.append('files', file)
+
+        return window.axios
+          .post('/files/upload', formData, {
+            xsrfCookieName: 'x-csrf-token',
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: progressEvent => {
+              const progress = Math.round(
+                (progressEvent.loaded / progressEvent.total) * 100
+              )
+              selectedFilesUploadProgress.splice(index, 1, {
+                ...selectedFilesUploadProgress[index],
+                progress: progress
+              })
+              setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
+            }
+          })
+          .then(_ => {
+            return true
+          })
+          .catch(error => {
+            selectedFilesUploadProgress.splice(index, 1, {
+              ...selectedFilesUploadProgress[index],
+              status: false
+            })
+            setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
+            return false
+          })
+      })
+    )
+      .then(response => {
+        const total = response.length
+        const success = response.filter(upload => upload === true).length
+        const error = total - success
+
+        if (error === 0) {
+          setIsUploadingFiles(false)
+          closeUploadMediaModal()
+          toast('Success', `Uploaded ${success} of ${total} media files.`)
+        } else {
+          response.forEach((upload, index) => {
+            if (upload === true) {
+              selectedFiles.splice(index, 1)
+              setSelectedFiles([...selectedFiles])
+            }
+          })
+          setSelectedFilesUploadProgress(
+            Array(error).fill({ progress: 0, status: true })
+          )
+
+          setIsUploadingFiles(false)
+          toast(
+            'Error',
+            `${error} media files failed to upload out of ${total}.`,
+            'danger'
+          )
+        }
+      })
+      .catch(_ => {
+        setSelectedFilesUploadProgress(
+          Array(selectedFiles.length).fill({ progress: 0, status: true })
+        )
+        setIsUploadingFiles(false)
+        toast('Error', `Error uploading media files.`, 'danger')
+      })
+  }
+
   let uploadMediaModal
 
   if (isUploadMediaModalVisible) {
     uploadMediaModal = (
-      <ModalWrapper onClose={closeUploadMediaModal}>
+      <ModalWrapper maxWidth={false} onClose={closeUploadMediaModal}>
         <EuiFilePicker
           id={filePickerId}
           multiple
+          fullWidth
           initialPromptText={
             <InitialPromptTextWrapper>
               <p>Drag and drop files, or browse</p>
@@ -305,41 +395,78 @@ export const AssetManager: FunctionComponent = () => {
           isInvalid={false}
           onSubmit={() => {}}
           onChange={(files: FileList) => {
-            files.length > 0 &&
+            if (files.length > 0) {
               setSelectedFiles([...selectedFiles, ...Array.from(files)])
+              setSelectedFilesUploadProgress(
+                Array(files.length).fill({ progress: 0, status: true })
+              )
+            }
           }}
         />
         {selectedFiles.length > 0 && (
           <SelectedFilesWrapper>
             {selectedFiles.map((file, index) => (
-              <SelectedFileWrapper>
-                <SelectedFileContent>
-                  <EuiIcon type={getIconType(file.type)} />
-                  <div className="__filename">{file.name}</div>
-                </SelectedFileContent>
-                <SelectedFileContent>
-                  <div className="__filesize">
-                    {parseInt((file.size / 1024).toString())}kb
-                  </div>
-                  <EuiButtonIcon
-                    iconType="cross"
-                    color="text"
-                    onClick={() => {
-                      setSelectedFileIndex(index)
-                      showDestroyModal()
-                    }}
-                  />
-                </SelectedFileContent>
-              </SelectedFileWrapper>
+              <div key={index}>
+                <SelectedFileWrapper>
+                  <SelectedFileContent>
+                    <EuiIcon type={getIconType(file.type)} />
+                    <div className="__filename">{file.name}</div>
+                  </SelectedFileContent>
+                  <SelectedFileContent>
+                    {isUploadingFiles ? (
+                      <div className="__upload_progress">
+                        <EuiProgress
+                          color={
+                            selectedFilesUploadProgress[index]?.status === true
+                              ? 'success'
+                              : 'danger'
+                          }
+                          value={selectedFilesUploadProgress[index]?.progress}
+                          max={100}
+                          size="m"
+                        />
+                        <span>
+                          {selectedFilesUploadProgress[index].progress}%
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="__filesize">
+                          {parseInt((file.size / 1024).toString())}kb
+                        </div>
+                        <EuiButtonIcon
+                          iconType="cross"
+                          color="text"
+                          disabled={isUploadingFiles}
+                          onClick={() => {
+                            setSelectedFileIndex(index)
+                            showDestroyModal()
+                          }}
+                        />
+                      </>
+                    )}
+                  </SelectedFileContent>
+                </SelectedFileWrapper>
+              </div>
             ))}
           </SelectedFilesWrapper>
         )}
         {selectedFiles.length > 0 && (
           <SelectedFilesActionWrapper>
-            <EuiButtonEmpty color="danger" onClick={closeUploadMediaModal}>
+            <EuiButtonEmpty
+              color="danger"
+              disabled={isUploadingFiles}
+              onClick={closeUploadMediaModal}
+            >
               Cancel
             </EuiButtonEmpty>
-            <EuiButton iconType="sortUp" fill>
+            <EuiButton
+              type="submit"
+              iconType="sortUp"
+              fill
+              isLoading={isUploadingFiles}
+              onClick={uploadMediaFiles}
+            >
               Upload media to the library
             </EuiButton>
           </SelectedFilesActionWrapper>
