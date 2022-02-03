@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react'
+import React, { FunctionComponent, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { DashboardLayout } from '../../components/dashboard/layout'
@@ -14,12 +14,13 @@ import {
 } from '@tensei/eui/lib/components/button'
 import { EuiFieldSearch } from '@tensei/eui/lib/components/form/field_search'
 import { EuiPopover } from '@tensei/eui/lib/components/popover'
-import { EuiContextMenu } from '@tensei/eui/lib/components/context_menu'
-import { EuiFilePicker } from '@tensei/eui/lib/components/form'
 import {
-  EuiFlexItem,
-  EuiFlexGrid
-} from '@tensei/eui/lib/components/flex'
+  EuiContextMenu,
+  EuiContextMenuItem,
+  EuiContextMenuPanel
+} from '@tensei/eui/lib/components/context_menu'
+import { EuiFilePicker } from '@tensei/eui/lib/components/form'
+import { EuiFlexItem, EuiFlexGrid } from '@tensei/eui/lib/components/flex'
 import { EuiPagination } from '@tensei/eui/lib/components/pagination'
 import {
   EuiFlyout,
@@ -29,8 +30,11 @@ import {
 import { EuiModal } from '@tensei/eui/lib/components/modal/modal'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
 import { EuiCard } from '@tensei/eui/lib/components/card'
+import moment from 'moment'
 
 import { useGeneratedHtmlId } from '@tensei/eui/lib/services/accessibility'
+import { EuiLoadingSpinner } from '@tensei/eui/lib/components/loading'
+import { debounce } from 'throttle-debounce'
 import { EuiProgress } from '@tensei/eui/lib/components/progress/progress'
 import { useToastStore } from '../../../store/toast'
 
@@ -46,6 +50,9 @@ const SearchAndFilterContainer = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-top: -20px;
+  @media screen and (max-width: 950px) {
+    width: 100%;
+  }
 `
 
 const AssetPopover = styled(EuiPopover)`
@@ -58,13 +65,26 @@ const AssetContainer = styled.div`
 `
 
 const AssetWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 1.5rem;
+  @media screen and (max-width: 768px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  @media screen and (max-width: 650px) {
+    grid-template-columns: 1fr 1fr;
+  }
+  @media screen and (max-width: 550px) {
+    grid-template-columns: 1fr;
+  }
 `
-
+const FooterTextWrapper = styled.div`
+  display: flex;
+  align-item: flex-start;
+  div {
+    margin-right: 15px;
+  }
+`
 const AssetCard = styled(EuiCard)`
   width: 220px;
   height: 230px;
@@ -138,37 +158,37 @@ const SelectedFilesWrapper = styled.div`
   overflow-y: auto;
 `
 const SelectedFileWrapper = styled.div`
-display: flex;
-justify-content: space-between;
-align-items: center;
-border-bottom: 1px solid grey;
-padding: 5px 0px;
-margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid grey;
+  padding: 5px 0px;
+  margin-bottom: 10px;
 `
 const SelectedFileContent = styled.div`
-display: flex;
-align-items: center;
-div.__filename {
-  margin: 0px 5px;
-  max-width: 200px;
-  overflow: clip;
-  text-overflow: ellipsis;
-  line-break: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-}
-div.__filesize {
-  margin: 0px 3px;
-}
-div.__upload_progress {
-  width: 100px;
   display: flex;
   align-items: center;
-  span {
-    margin-left: 3px;
+  div.__filename {
+    margin: 0px 5px;
+    max-width: 200px;
+    overflow: clip;
+    text-overflow: ellipsis;
+    line-break: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
   }
-}
+  div.__filesize {
+    margin: 0px 3px;
+  }
+  div.__upload_progress {
+    width: 100px;
+    display: flex;
+    align-items: center;
+    span {
+      margin-left: 3px;
+    }
+  }
 `
 const SelectedFilesActionWrapper = styled.div`
   display: flex;
@@ -177,17 +197,64 @@ const SelectedFilesActionWrapper = styled.div`
     margin-left: 10px;
   }
 `
+const LoadingContainer = styled.div`
+  width: 20%;
+  margin 15% auto;
+`
+
+interface AssetData {
+  name: string
+  path: string
+  createdAt: string
+  width: string
+  height: string
+  size: number
+  extension: string
+  file: string
+  altText: string
+}
 
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
-  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] = useState(false)
+  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
+    useState(false)
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
   const showDestroyModal = () => setIsDestroyModalVisible(true)
 
+  const [assets, setAssets] = useState([])
+  const [active, setActive] = useState<AssetData>()
+
+  const [activePage, setActivePage] = useState(0)
+  const [pageCount, setPageCount] = useState(0)
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [perPage, setPerPage] = useState(10)
+  const [loading, setLoading] = useState(false)
+  const [search, setsearch] = useState('')
+
+  useEffect(() => {
+    setLoading(true)
+    const fetchFiles = async () => {
+      const params = {
+        page: activePage + 1,
+        perPage,
+        ...(search && { search })
+      }
+      const [data, error] = await window.Tensei.api.get('files', { params })
+      if (!error) {
+        setLoading(false)
+        setAssets(data?.data.data)
+        setPageCount(data?.data.meta.pageCount)
+        return
+      }
+      setLoading(false)
+    }
+    fetchFiles()
+  }, [activePage, perPage, search])
+
   const closeUploadMediaModal = () => {
-    if (isUploadingFiles) return;
+    if (isUploadingFiles) return
     setSelectedFiles([])
     setIsUploadMediaModalVisible(false)
   }
@@ -198,9 +265,10 @@ export const AssetManager: FunctionComponent = () => {
   })
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' });
+  const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
-  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] = useState<{ progress: number, status: boolean }[]>([])
+  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] =
+    useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
 
@@ -212,9 +280,11 @@ export const AssetManager: FunctionComponent = () => {
         title="Delete Media"
         onCancel={closeDestroyModal}
         onConfirm={() => {
-          selectedFiles.splice(selectedFileIndex!, 1);
+          selectedFiles.splice(selectedFileIndex!, 1)
           setSelectedFiles([...selectedFiles])
-          setSelectedFilesUploadProgress(Array(selectedFiles.length).fill({ progress: 0, status: true }))
+          setSelectedFilesUploadProgress(
+            Array(selectedFiles.length).fill({ progress: 0, status: true })
+          )
           closeDestroyModal()
         }}
         cancelButtonText="Cancel"
@@ -228,35 +298,43 @@ export const AssetManager: FunctionComponent = () => {
   }
 
   const getIconType = (type: string) => {
-    if (/image\//gi.exec(type) !== null) return 'image';
-    else return 'document';
-  };
+    if (/image\//gi.exec(type) !== null) return 'image'
+    else return 'document'
+  }
 
   const uploadMediaFiles = async () => {
-
     setIsUploadingFiles(true)
 
     Promise.all(
       selectedFiles.map(async (file, index) => {
-        const formData = new FormData();
-        formData.append("files", file)
+        const formData = new FormData()
+        formData.append('files', file)
 
-        return window.axios.post('/files/upload', formData, {
-          xsrfCookieName: 'x-csrf-token',
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (progressEvent) => {
-            const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100)
-            selectedFilesUploadProgress.splice(index, 1, { ...selectedFilesUploadProgress[index], progress: progress });
-            setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
-          }
-        })
+        return window.axios
+          .post('/files/upload', formData, {
+            xsrfCookieName: 'x-csrf-token',
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: progressEvent => {
+              const progress = Math.round(
+                (progressEvent.loaded / progressEvent.total) * 100
+              )
+              selectedFilesUploadProgress.splice(index, 1, {
+                ...selectedFilesUploadProgress[index],
+                progress: progress
+              })
+              setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
+            }
+          })
           .then(_ => {
-            return true;
+            return true
           })
           .catch(error => {
-            selectedFilesUploadProgress.splice(index, 1, { ...selectedFilesUploadProgress[index], status: false });
+            selectedFilesUploadProgress.splice(index, 1, {
+              ...selectedFilesUploadProgress[index],
+              status: false
+            })
             setSelectedFilesUploadProgress([...selectedFilesUploadProgress])
-            return false;
+            return false
           })
       })
     )
@@ -267,24 +345,31 @@ export const AssetManager: FunctionComponent = () => {
 
         if (error === 0) {
           setIsUploadingFiles(false)
-          closeUploadMediaModal();
+          closeUploadMediaModal()
           toast('Success', `Uploaded ${success} of ${total} media files.`)
         } else {
-
           response.forEach((upload, index) => {
             if (upload === true) {
               selectedFiles.splice(index, 1)
               setSelectedFiles([...selectedFiles])
             }
           })
-          setSelectedFilesUploadProgress(Array(error).fill({ progress: 0, status: true }))
+          setSelectedFilesUploadProgress(
+            Array(error).fill({ progress: 0, status: true })
+          )
 
           setIsUploadingFiles(false)
-          toast('Error', `${error} media files failed to upload out of ${total}.`, 'danger')
+          toast(
+            'Error',
+            `${error} media files failed to upload out of ${total}.`,
+            'danger'
+          )
         }
       })
       .catch(_ => {
-        setSelectedFilesUploadProgress(Array(selectedFiles.length).fill({ progress: 0, status: true }))
+        setSelectedFilesUploadProgress(
+          Array(selectedFiles.length).fill({ progress: 0, status: true })
+        )
         setIsUploadingFiles(false)
         toast('Error', `Error uploading media files.`, 'danger')
       })
@@ -299,79 +384,98 @@ export const AssetManager: FunctionComponent = () => {
           id={filePickerId}
           multiple
           fullWidth
-          initialPromptText={(
+          initialPromptText={
             <InitialPromptTextWrapper>
               <p>Drag and drop files, or browse</p>
               <small>Max 1MB each. Supported format JPG, GIF, PNG, PDF</small>
             </InitialPromptTextWrapper>
-          )}
-          accept='*/*'
+          }
+          accept="*/*"
           isLoading={false}
           isInvalid={false}
+          onSubmit={() => {}}
           onChange={(files: FileList) => {
             if (files.length > 0) {
               setSelectedFiles([...selectedFiles, ...Array.from(files)])
-              setSelectedFilesUploadProgress(Array(files.length).fill({ progress: 0, status: true }))
+              setSelectedFilesUploadProgress(
+                Array(files.length).fill({ progress: 0, status: true })
+              )
             }
           }}
         />
-        {
-          selectedFiles.length > 0 &&
+        {selectedFiles.length > 0 && (
           <SelectedFilesWrapper>
-            {
-              selectedFiles.map((file, index) => (
-                <div key={index}>
-                  <SelectedFileWrapper>
-                    <SelectedFileContent>
-                      <EuiIcon type={getIconType(file.type)} />
-                      <div className='__filename'>{file.name}</div>
-                    </SelectedFileContent>
-                    <SelectedFileContent>
-                      {
-                        isUploadingFiles ?
-                          <div className='__upload_progress'>
-                            <EuiProgress
-                              color={selectedFilesUploadProgress[index]?.status === true ? 'success' : 'danger'}
-                              value={selectedFilesUploadProgress[index]?.progress}
-                              max={100} size="m"
-                            />
-                            <span>{selectedFilesUploadProgress[index].progress}%</span>
-                          </div>
-                          : <>
-                            <div className='__filesize'>{parseInt((file.size / 1024).toString())}kb</div>
-                            <EuiButtonIcon
-                              iconType="cross"
-                              color="text"
-                              disabled={isUploadingFiles}
-                              onClick={() => {
-                                setSelectedFileIndex(index)
-                                showDestroyModal()
-                              }}
-                            />
-                          </>
-                      }
-                    </SelectedFileContent>
-                  </SelectedFileWrapper>
-                </div>
-              ))
-            }
+            {selectedFiles.map((file, index) => (
+              <div key={index}>
+                <SelectedFileWrapper>
+                  <SelectedFileContent>
+                    <EuiIcon type={getIconType(file.type)} />
+                    <div className="__filename">{file.name}</div>
+                  </SelectedFileContent>
+                  <SelectedFileContent>
+                    {isUploadingFiles ? (
+                      <div className="__upload_progress">
+                        <EuiProgress
+                          color={
+                            selectedFilesUploadProgress[index]?.status === true
+                              ? 'success'
+                              : 'danger'
+                          }
+                          value={selectedFilesUploadProgress[index]?.progress}
+                          max={100}
+                          size="m"
+                        />
+                        <span>
+                          {selectedFilesUploadProgress[index].progress}%
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="__filesize">
+                          {parseInt((file.size / 1024).toString())}kb
+                        </div>
+                        <EuiButtonIcon
+                          iconType="cross"
+                          color="text"
+                          disabled={isUploadingFiles}
+                          onClick={() => {
+                            setSelectedFileIndex(index)
+                            showDestroyModal()
+                          }}
+                        />
+                      </>
+                    )}
+                  </SelectedFileContent>
+                </SelectedFileWrapper>
+              </div>
+            ))}
           </SelectedFilesWrapper>
-        }
-        {
-          selectedFiles.length > 0 && (
-            <SelectedFilesActionWrapper>
-              <EuiButtonEmpty color='danger' disabled={isUploadingFiles} onClick={closeUploadMediaModal}>Cancel</EuiButtonEmpty>
-              <EuiButton type='submit' iconType="sortUp" fill isLoading={isUploadingFiles}
-                onClick={uploadMediaFiles}
-              >Upload media to the library</EuiButton>
-            </SelectedFilesActionWrapper>
-          )
-        }
+        )}
+        {selectedFiles.length > 0 && (
+          <SelectedFilesActionWrapper>
+            <EuiButtonEmpty
+              color="danger"
+              disabled={isUploadingFiles}
+              onClick={closeUploadMediaModal}
+            >
+              Cancel
+            </EuiButtonEmpty>
+            <EuiButton
+              type="submit"
+              iconType="sortUp"
+              fill
+              isLoading={isUploadingFiles}
+              onClick={uploadMediaFiles}
+            >
+              Upload media to the library
+            </EuiButton>
+          </SelectedFilesActionWrapper>
+        )}
         {destroyUploadedMediaModal}
       </ModalWrapper>
     )
   }
-
+  const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
   let flyout
 
   if (isFlyoutVisible) {
@@ -384,11 +488,7 @@ export const AssetManager: FunctionComponent = () => {
         aria-labelledby={simpleFlyoutTitleId}
       >
         <EuiFlyoutHeader hasBorder>
-          <AssetFlyoutImage
-            src={
-              'https://images.unsplash.com/photo-1617043593449-c881f876a4b4?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNtYXJ0JTIwd2F0Y2h8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60'
-            }
-          ></AssetFlyoutImage>
+          <AssetFlyoutImage src={active?.path}></AssetFlyoutImage>
           <FlyoutHeaderWrapper>
             <EuiTitle size="xs">
               <h3>Information</h3>
@@ -401,14 +501,16 @@ export const AssetManager: FunctionComponent = () => {
             <EuiTitle size="xs">
               <h3>Title</h3>
             </EuiTitle>
-            <EuiText>Smart_watch</EuiText>
+            <EuiText>{active?.file}</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Uploaded on</h3>
             </EuiTitle>
-            <EuiText>2 hours ago</EuiText>
+            <EuiText>
+              {moment(active?.createdAt).toDate().toDateString()}
+            </EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
@@ -422,33 +524,80 @@ export const AssetManager: FunctionComponent = () => {
             <EuiTitle size="xs">
               <h3>Created by</h3>
             </EuiTitle>
-            <EuiText>John Doe</EuiText>
+            <EuiText>{active?.name}</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Size</h3>
             </EuiTitle>
-            <EuiText>2.3MB</EuiText>
+            <EuiText>{active && formatImageSize(active.size)}</EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Dimension</h3>
             </EuiTitle>
-            <EuiText>235 x 300</EuiText>
+            <EuiText>
+              {active?.width} x {active?.height}
+            </EuiText>
           </FlyoutBodyContent>
 
           <FlyoutBodyContent>
             <EuiTitle size="xs">
               <h3>Format</h3>
             </EuiTitle>
-            <EuiText>PNG</EuiText>
+            <EuiText>{active?.extension}</EuiText>
           </FlyoutBodyContent>
         </EuiFlyoutBody>
       </AssetFlyout>
     )
   }
+  const button = (
+    <EuiButtonEmpty
+      size="xs"
+      color="text"
+      iconType="arrowDown"
+      iconSide="right"
+      onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+    >
+      Assets per page: {perPage}
+    </EuiButtonEmpty>
+  )
+
+  const items = [
+    <EuiContextMenuItem
+      key="10 rows"
+      onClick={() => {
+        setPerPage(10)
+        setIsPopoverOpen(false)
+      }}
+    >
+      10 assets
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="20 rows"
+      onClick={() => {
+        setPerPage(20)
+        setIsPopoverOpen(false)
+      }}
+    >
+      20 assets
+    </EuiContextMenuItem>,
+    <EuiContextMenuItem
+      key="50 rows"
+      onClick={() => {
+        setPerPage(50)
+        setIsPopoverOpen(false)
+      }}
+    >
+      50 assets
+    </EuiContextMenuItem>
+  ]
+
+  const onSearchChange = debounce(500, false, (value: string) => {
+    setsearch(value)
+  })
 
   return (
     <>
@@ -465,7 +614,12 @@ export const AssetManager: FunctionComponent = () => {
       <DashboardLayout.Content>
         <PageWrapper>
           <SearchAndFilterContainer>
-            <EuiFieldSearch placeholder="Search Library" />
+            <EuiFieldSearch
+              placeholder="Search Library"
+              onChange={event => {
+                onSearchChange(event.target.value)
+              }}
+            />
 
             <AssetPopover
               button={
@@ -477,99 +631,60 @@ export const AssetManager: FunctionComponent = () => {
               <EuiContextMenu initialPanelId={0}></EuiContextMenu>
             </AssetPopover>
           </SearchAndFilterContainer>
+          {flyout}
+          {loading ? (
+            <LoadingContainer>
+              &nbsp;&nbsp;
+              <EuiLoadingSpinner size="xl" />
+            </LoadingContainer>
+          ) : (
+            <AssetContainer>
+              <AssetWrapper>
+                {assets.map((asset: AssetData) => {
+                  const cardFooterContent = (
+                    <FooterTextWrapper>
+                      <EuiText>{formatImageSize(asset.size)}</EuiText>
 
-          <AssetContainer>
-            <EuiFlexGrid columns={4} gutterSize="m">
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiCard
-                  textAlign="left"
-                  hasBorder
-                  image="https://source.unsplash.com/400x200/?Water"
-                  title="Elastic in Water"
-                  description="Example of a card's description. Stick to one or two sentences."
-                // footer={cardFooterContent}
-                />
-              </EuiFlexItem>
-            </EuiFlexGrid>
-          </AssetContainer>
+                      <EuiText>{asset.extension}</EuiText>
+                    </FooterTextWrapper>
+                  )
 
+                  return (
+                    <EuiFlexItem>
+                      <EuiCard
+                        onClick={() => {
+                          setIsFlyoutVisible(true)
+                          setActive(asset)
+                        }}
+                        textAlign="left"
+                        hasBorder
+                        image={asset.path}
+                        title={asset.file}
+                        description=""
+                        footer={cardFooterContent}
+                      />
+                    </EuiFlexItem>
+                  )
+                })}
+              </AssetWrapper>
+            </AssetContainer>
+          )}
           <NumberFieldAndPagination>
-            <NumberFieldWrapper>
-              <FieldNumber placeholder="10" />
-            </NumberFieldWrapper>
+            <EuiPopover
+              button={button}
+              isOpen={isPopoverOpen}
+              closePopover={() => setIsPopoverOpen(false)}
+              panelPaddingSize="none"
+            >
+              <EuiContextMenuPanel items={items} />
+            </EuiPopover>
 
             <PaginationWrapper>
-              <EuiPagination aria-label="Many pages example" />
+              <EuiPagination
+                pageCount={pageCount}
+                activePage={activePage}
+                onPageClick={activePage => setActivePage(activePage)}
+              />
             </PaginationWrapper>
           </NumberFieldAndPagination>
         </PageWrapper>
