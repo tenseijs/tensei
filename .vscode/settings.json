@@ -8,5 +8,8 @@
   "search.exclude": {
     "**/build": true,
     "**/node_modules": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

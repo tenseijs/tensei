@@ -535,7 +535,7 @@ export const ResourceView: React.FunctionComponent = () => {
   const { push } = useHistory()
   const { resource, findResource } = useResourceStore()
   const { hasPermission } = useAuthStore()
-  const { toast } = useToastStore()
+  const [isLoading, setIsLoading] = useState(true)
 
   const { resource: resourceSlug } = useParams<{
     resource: string
@@ -547,6 +547,8 @@ export const ResourceView: React.FunctionComponent = () => {
     if (!found) {
       push(window.Tensei.getPath(''))
     }
+
+    setIsLoading(false)
   }, [resourceSlug])
 
   const { setSidebarState } = useSidebarStore()
@@ -559,7 +561,7 @@ export const ResourceView: React.FunctionComponent = () => {
         {hasPermission(`create:${resource?.slugPlural}`) ? (
           <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
             <EuiButton
-              size={'s'}
+              size={'m'}
               fill
               iconType={'plus'}
               onClick={() => {
@@ -573,13 +575,11 @@ export const ResourceView: React.FunctionComponent = () => {
       </DashboardLayout.Topbar>
       <DashboardLayout.Content>
         <PageWrapper>
-          {resource ? (
-            hasPermission(`index:${resource?.slugPlural}`) ? (
-              <Resource resource={resource} />
-            ) : null
-          ) : (
+          {isLoading ? (
             <p>Loading ...</p>
-          )}
+          ) : hasPermission(`index:${resource?.slugPlural}`) ? (
+            <Resource resource={resource!} />
+          ) : null}
         </PageWrapper>
       </DashboardLayout.Content>
     </>
