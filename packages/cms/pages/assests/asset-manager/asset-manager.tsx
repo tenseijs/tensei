@@ -37,6 +37,13 @@ import { EuiLoadingSpinner } from '@tensei/eui/lib/components/loading'
 import { debounce } from 'throttle-debounce'
 import { EuiProgress } from '@tensei/eui/lib/components/progress/progress'
 import { useToastStore } from '../../../store/toast'
+import {
+  EuiForm,
+  EuiFormRow,
+  EuiFieldText
+} from '@tensei/eui/lib/components/form'
+import { useForm } from '../../hooks/forms'
+import { EuiSpacer } from '@tensei/eui/lib'
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -201,6 +208,10 @@ const LoadingContainer = styled.div`
   width: 20%;
   margin 15% auto;
 `
+const EditIconWrapper = styled.div`
+  // width: 100%;
+  // margin-left: 90%;
+`
 
 interface AssetData {
   name: string
@@ -212,6 +223,8 @@ interface AssetData {
   extension: string
   file: string
   altText: string
+  id: number
+  icon: false
 }
 
 export const AssetManager: FunctionComponent = () => {
@@ -223,33 +236,33 @@ export const AssetManager: FunctionComponent = () => {
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
   const showDestroyModal = () => setIsDestroyModalVisible(true)
 
-  const [assets, setAssets] = useState([])
+  const [assets, setAssets] = useState<any>([])
   const [active, setActive] = useState<AssetData>()
 
   const [activePage, setActivePage] = useState(0)
   const [pageCount, setPageCount] = useState(0)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [perPage, setPerPage] = useState(10)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [search, setsearch] = useState('')
 
-  useEffect(() => {
-    setLoading(true)
-    const fetchFiles = async () => {
-      const params = {
-        page: activePage + 1,
-        perPage,
-        ...(search && { search })
-      }
-      const [data, error] = await window.Tensei.api.get('files', { params })
-      if (!error) {
-        setLoading(false)
-        setAssets(data?.data.data)
-        setPageCount(data?.data.meta.pageCount)
-        return
-      }
-      setLoading(false)
+  const fetchFiles = async () => {
+    const params = {
+      page: activePage + 1,
+      perPage,
+      ...(search && { search })
     }
+    const [data, error] = await window.Tensei.api.get('files', { params })
+    if (!error) {
+      setIsLoading(false)
+      setAssets(data?.data.data)
+      setPageCount(data?.data.meta.pageCount)
+      return
+    }
+    setIsLoading(false)
+  }
+  useEffect(() => {
+    setIsLoading(true)
     fetchFiles()
   }, [activePage, perPage, search])
 
@@ -271,7 +284,8 @@ export const AssetManager: FunctionComponent = () => {
     useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
-
+  const [showEditIcon, setShowEditIcon] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
   let destroyUploadedMediaModal
 
   if (isDestroyMediaModalVisible) {
@@ -478,13 +492,37 @@ export const AssetManager: FunctionComponent = () => {
   const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
   let flyout
 
+  interface EditInput {
+    name: string
+    description: string
+    size: number
+  }
+
+  const editAsset = (input: EditInput) =>
+    window.Tensei.api.patch(`files/${active?.id}`, {
+      ...input,
+      size: active?.size
+    })
+  const { form, errors, submit, loading, setValue } = useForm<EditInput>({
+    defaultValues: {
+      name: '',
+      description: '',
+      size: active?.size || 0
+    },
+    onSubmit: editAsset,
+    onSuccess: fetchFiles
+  })
+
   if (isFlyoutVisible) {
     flyout = (
       <AssetFlyout
         ownFocus={false}
         outsideClickCloses
         size="s"
-        onClose={() => setIsFlyoutVisible(false)}
+        onClose={() => {
+          setIsFlyoutVisible(false)
+          setShowEditForm(false)
+        }}
         aria-labelledby={simpleFlyoutTitleId}
       >
         <EuiFlyoutHeader hasBorder>
@@ -549,6 +587,38 @@ export const AssetManager: FunctionComponent = () => {
             </EuiTitle>
             <EuiText>{active?.extension}</EuiText>
           </FlyoutBodyContent>
+
+          <EuiSpacer size="m" />
+          {showEditForm && (
+            <EuiForm component="form" onSubmit={submit} isInvalid={!!errors}>
+              <EuiFormRow
+                label="Filename"
+                isInvalid={!!errors?.name}
+                error={errors?.name}
+              >
+                <EuiFieldText
+                  fullWidth
+                  value={form.name}
+                  isInvalid={!!errors?.name}
+                  onChange={event => {
+                    setValue('name', event.target.value)
+                  }}
+                />
+              </EuiFormRow>
+              <EuiFormRow label="Description">
+                <EuiFieldText
+                  fullWidth
+                  value={form.description}
+                  onChange={event => {
+                    setValue('description', event.target.value)
+                  }}
+                />
+              </EuiFormRow>
+              <EuiButton type="submit" fullWidth>
+                Submit
+              </EuiButton>
+            </EuiForm>
+          )}
         </EuiFlyoutBody>
       </AssetFlyout>
     )
@@ -632,7 +702,7 @@ export const AssetManager: FunctionComponent = () => {
             </AssetPopover>
           </SearchAndFilterContainer>
           {flyout}
-          {loading ? (
+          {isLoading ? (
             <LoadingContainer>
               &nbsp;&nbsp;
               <EuiLoadingSpinner size="xl" />
@@ -640,7 +710,7 @@ export const AssetManager: FunctionComponent = () => {
           ) : (
             <AssetContainer>
               <AssetWrapper>
-                {assets.map((asset: AssetData) => {
+                {assets.map((asset: AssetData, idx: number) => {
                   const cardFooterContent = (
                     <FooterTextWrapper>
                       <EuiText>{formatImageSize(asset.size)}</EuiText>
@@ -650,12 +720,31 @@ export const AssetManager: FunctionComponent = () => {
                   )
 
                   return (
-                    <EuiFlexItem>
+                    <EuiFlexItem key={idx}>
+                      {showEditIcon && (
+                        <EditIconWrapper>
+                          <EuiIcon
+                            size="m"
+                            type="pencil"
+                            onClick={() => {
+                              setShowEditForm(true)
+                              setIsFlyoutVisible(true)
+                              setActive(asset)
+                            }}
+                          />
+                        </EditIconWrapper>
+                      )}
                       <EuiCard
                         onClick={() => {
                           setIsFlyoutVisible(true)
                           setActive(asset)
                         }}
+                        onMouseEnter={() => {
+                          setShowEditIcon(true)
+                        }}
+                        // onMouseLeave={() => {
+                        //   setShowEditIcon(false)
+                        // }}
                         textAlign="left"
                         hasBorder
                         image={asset.path}
