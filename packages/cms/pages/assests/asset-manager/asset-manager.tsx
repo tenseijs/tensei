@@ -211,13 +211,15 @@ interface AssetData {
   size: number
   extension: string
   file: string
+  hash: string
   altText: string
 }
 
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
-  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
-    useState(false)
+  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] = useState(
+    false
+  )
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
@@ -233,25 +235,26 @@ export const AssetManager: FunctionComponent = () => {
   const [loading, setLoading] = useState(false)
   const [search, setsearch] = useState('')
 
+  const fetchFiles = async () => {
+    const params = {
+      page: activePage + 1,
+      perPage,
+      ...(search && { search })
+    }
+    const [data, error] = await window.Tensei.api.get('files', { params })
+    if (!error) {
+      setLoading(false)
+      setAssets(data?.data.data)
+      setPageCount(data?.data.meta.pageCount)
+      return
+    }
+    setLoading(false)
+  }
+
   useEffect(() => {
     setLoading(true)
-    const fetchFiles = async () => {
-      const params = {
-        page: activePage + 1,
-        perPage,
-        ...(search && { search })
-      }
-      const [data, error] = await window.Tensei.api.get('files', { params })
-      if (!error) {
-        setLoading(false)
-        setAssets(data?.data.data)
-        setPageCount(data?.data.meta.pageCount)
-        return
-      }
-      setLoading(false)
-    }
     fetchFiles()
-  }, [activePage, perPage, search])
+  }, [])
 
   const closeUploadMediaModal = () => {
     if (isUploadingFiles) return
@@ -267,8 +270,10 @@ export const AssetManager: FunctionComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
-  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] =
-    useState<{ progress: number; status: boolean }[]>([])
+  const [
+    selectedFilesUploadProgress,
+    setSelectedFilesUploadProgress
+  ] = useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
 
@@ -338,7 +343,7 @@ export const AssetManager: FunctionComponent = () => {
           })
       })
     )
-      .then(response => {
+      .then(async response => {
         const total = response.length
         const success = response.filter(upload => upload === true).length
         const error = total - success
@@ -347,6 +352,7 @@ export const AssetManager: FunctionComponent = () => {
           setIsUploadingFiles(false)
           closeUploadMediaModal()
           toast('Success', `Uploaded ${success} of ${total} media files.`)
+          await fetchFiles()
         } else {
           response.forEach((upload, index) => {
             if (upload === true) {
@@ -375,7 +381,9 @@ export const AssetManager: FunctionComponent = () => {
       })
   }
 
+  let flyout
   let uploadMediaModal
+  const formatImageSize = (size: number) => `${Math.round(size / 1024)}kb`
 
   if (isUploadMediaModalVisible) {
     uploadMediaModal = (
@@ -432,7 +440,7 @@ export const AssetManager: FunctionComponent = () => {
                     ) : (
                       <>
                         <div className="__filesize">
-                          {parseInt((file.size / 1024).toString())}kb
+                          {formatImageSize(file.size)}
                         </div>
                         <EuiButtonIcon
                           iconType="cross"
@@ -475,8 +483,6 @@ export const AssetManager: FunctionComponent = () => {
       </ModalWrapper>
     )
   }
-  const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
-  let flyout
 
   if (isFlyoutVisible) {
     flyout = (
@@ -488,7 +494,9 @@ export const AssetManager: FunctionComponent = () => {
         aria-labelledby={simpleFlyoutTitleId}
       >
         <EuiFlyoutHeader hasBorder>
-          <AssetFlyoutImage src={active?.path}></AssetFlyoutImage>
+          <AssetFlyoutImage
+            src={`/storage${active?.path}${active?.hash}.${active?.extension}`}
+          ></AssetFlyoutImage>
           <FlyoutHeaderWrapper>
             <EuiTitle size="xs">
               <h3>Information</h3>
@@ -658,8 +666,8 @@ export const AssetManager: FunctionComponent = () => {
                         }}
                         textAlign="left"
                         hasBorder
-                        image={asset.path}
-                        title={asset.file}
+                        image={`/storage${asset.path}${asset.hash}.${asset.extension}`}
+                        title={asset.name}
                         description=""
                         footer={cardFooterContent}
                       />
