@@ -390,6 +390,7 @@ const RolesTable: React.FC = () => {
     },
     onSuccess() {
       fetchAdminRoles()
+      getTeamMembers()
     },
     onSubmit(form) {
       {
