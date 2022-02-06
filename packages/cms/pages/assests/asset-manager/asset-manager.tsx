@@ -70,7 +70,10 @@ const AssetContainer = styled.div`
   max-width: 100%;
   padding: 25px 0;
 `
-
+const AssetCardWrapper = styled.div`
+  position: relative;
+  padding: 15px;
+`
 const AssetWrapper = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -209,8 +212,10 @@ const LoadingContainer = styled.div`
   margin 15% auto;
 `
 const EditIconWrapper = styled.div`
-  // width: 100%;
-  // margin-left: 90%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
 `
 
 interface AssetData {
@@ -224,7 +229,7 @@ interface AssetData {
   file: string
   altText: string
   id: number
-  icon: false
+  icon: false | true
 }
 
 export const AssetManager: FunctionComponent = () => {
@@ -284,7 +289,6 @@ export const AssetManager: FunctionComponent = () => {
     useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
-  const [showEditIcon, setShowEditIcon] = useState(false)
   const [showEditForm, setShowEditForm] = useState(false)
   let destroyUploadedMediaModal
 
@@ -510,7 +514,10 @@ export const AssetManager: FunctionComponent = () => {
       size: active?.size || 0
     },
     onSubmit: editAsset,
-    onSuccess: fetchFiles
+    onSuccess: () => {
+      toast('Updated', `You've successfully updated the asset.`)
+      fetchFiles()
+    }
   })
 
   if (isFlyoutVisible) {
@@ -593,8 +600,8 @@ export const AssetManager: FunctionComponent = () => {
             <EuiForm component="form" onSubmit={submit} isInvalid={!!errors}>
               <EuiFormRow
                 label="Filename"
-                isInvalid={!!errors?.name}
                 error={errors?.name}
+                isInvalid={!!errors?.name}
               >
                 <EuiFieldText
                   fullWidth
@@ -614,7 +621,7 @@ export const AssetManager: FunctionComponent = () => {
                   }}
                 />
               </EuiFormRow>
-              <EuiButton type="submit" fullWidth>
+              <EuiButton type="submit" fullWidth isLoading={loading}>
                 Submit
               </EuiButton>
             </EuiForm>
@@ -635,35 +642,19 @@ export const AssetManager: FunctionComponent = () => {
     </EuiButtonEmpty>
   )
 
-  const items = [
-    <EuiContextMenuItem
-      key="10 rows"
-      onClick={() => {
-        setPerPage(10)
-        setIsPopoverOpen(false)
-      }}
-    >
-      10 assets
-    </EuiContextMenuItem>,
-    <EuiContextMenuItem
-      key="20 rows"
-      onClick={() => {
-        setPerPage(20)
-        setIsPopoverOpen(false)
-      }}
-    >
-      20 assets
-    </EuiContextMenuItem>,
-    <EuiContextMenuItem
-      key="50 rows"
-      onClick={() => {
-        setPerPage(50)
-        setIsPopoverOpen(false)
-      }}
-    >
-      50 assets
-    </EuiContextMenuItem>
-  ]
+  const items = [10, 20, 50].map(item => {
+    return (
+      <EuiContextMenuItem
+        key={`${item} rows`}
+        onClick={() => {
+          setPerPage(item)
+          setIsPopoverOpen(false)
+        }}
+      >
+        {item} assets
+      </EuiContextMenuItem>
+    )
+  })
 
   const onSearchChange = debounce(500, false, (value: string) => {
     setsearch(value)
@@ -720,39 +711,55 @@ export const AssetManager: FunctionComponent = () => {
                   )
 
                   return (
-                    <EuiFlexItem key={idx}>
-                      {showEditIcon && (
-                        <EditIconWrapper>
-                          <EuiIcon
-                            size="m"
-                            type="pencil"
-                            onClick={() => {
-                              setShowEditForm(true)
-                              setIsFlyoutVisible(true)
-                              setActive(asset)
-                            }}
-                          />
-                        </EditIconWrapper>
-                      )}
-                      <EuiCard
-                        onClick={() => {
-                          setIsFlyoutVisible(true)
-                          setActive(asset)
-                        }}
-                        onMouseEnter={() => {
-                          setShowEditIcon(true)
-                        }}
-                        // onMouseLeave={() => {
-                        //   setShowEditIcon(false)
-                        // }}
-                        textAlign="left"
-                        hasBorder
-                        image={asset.path}
-                        title={asset.file}
-                        description=""
-                        footer={cardFooterContent}
-                      />
-                    </EuiFlexItem>
+                    <AssetCardWrapper
+                      onMouseLeave={() => {
+                        setAssets(
+                          assets.map((item: AssetData) => {
+                            if (item === asset) {
+                              item.icon = false
+                            }
+                            return item
+                          })
+                        )
+                      }}
+                      onMouseEnter={() => {
+                        setAssets(
+                          assets.map((item: AssetData) => {
+                            if (item === asset) {
+                              item.icon = true
+                            }
+                            return item
+                          })
+                        )
+                      }}
+                    >
+                      <EuiFlexItem key={idx}>
+                        {asset.icon && (
+                          <EditIconWrapper>
+                            <EuiIcon
+                              size="m"
+                              type="pencil"
+                              onClick={() => {
+                                setShowEditForm(true)
+                                setIsFlyoutVisible(true)
+                                setActive(asset)
+                              }}
+                            />
+                          </EditIconWrapper>
+                        )}
+                        <EuiCard
+                          onClick={() => {
+                            setIsFlyoutVisible(true)
+                            setActive(asset)
+                          }}
+                          textAlign="left"
+                          image={asset.path}
+                          title={asset.file}
+                          description=""
+                          footer={cardFooterContent}
+                        />
+                      </EuiFlexItem>
+                    </AssetCardWrapper>
                   )
                 })}
               </AssetWrapper>
