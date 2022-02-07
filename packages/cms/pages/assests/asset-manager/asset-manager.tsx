@@ -241,7 +241,10 @@ export const AssetManager: FunctionComponent = () => {
       perPage,
       ...(search && { search })
     }
-    const [data, error] = await window.Tensei.api.get('files', { params })
+    const [
+      data,
+      error
+    ] = await window.Tensei.api.get('files?[where][file][_eq]=null', { params })
     if (!error) {
       setLoading(false)
       setAssets(data?.data.data)
