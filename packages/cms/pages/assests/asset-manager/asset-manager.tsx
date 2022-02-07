@@ -232,6 +232,71 @@ interface AssetData {
   icon: false | true
 }
 
+interface AssetProps {
+  onClick: () => void
+  asset: AssetData
+  setActive: (arg: AssetData) => void
+  setShowEditForm: (arg: boolean) => void
+  setIsFlyoutVisible: (arg: boolean) => void
+}
+
+type AssetArray = Array<AssetData>
+const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
+
+const Assets: React.FC<AssetProps> = ({
+  asset,
+  setActive,
+  setShowEditForm,
+  setIsFlyoutVisible
+}) => {
+  const [hovered, setHovered] = useState(false)
+  const cardFooterContent = (
+    <FooterTextWrapper>
+      <EuiText>{formatImageSize(asset.size)}</EuiText>
+
+      <EuiText>{asset.extension}</EuiText>
+    </FooterTextWrapper>
+  )
+
+  return (
+    <AssetCardWrapper
+      onMouseLeave={() => {
+        setHovered(false)
+      }}
+      onMouseEnter={() => {
+        setHovered(true)
+      }}
+    >
+      <EuiFlexItem>
+        {hovered && (
+          <EditIconWrapper>
+            <EuiIcon
+              size="m"
+              type="pencil"
+              onClick={() => {
+                setShowEditForm(true)
+                setIsFlyoutVisible(true)
+                setActive(asset)
+              }}
+            />
+          </EditIconWrapper>
+        )}
+        <EuiCard
+          onClick={() => {
+            setIsFlyoutVisible(true)
+            setActive(asset)
+          }}
+          textAlign="left"
+          image={asset.path}
+          title={asset.file}
+          description=""
+          footer={cardFooterContent}
+        />
+      </EuiFlexItem>
+    </AssetCardWrapper>
+  )
+}
+
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
   const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
@@ -241,7 +306,7 @@ export const AssetManager: FunctionComponent = () => {
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
   const showDestroyModal = () => setIsDestroyModalVisible(true)
 
-  const [assets, setAssets] = useState<any>([])
+  const [assets, setAssets] = useState<AssetArray>([])
   const [active, setActive] = useState<AssetData>()
 
   const [activePage, setActivePage] = useState(0)
@@ -257,11 +322,11 @@ export const AssetManager: FunctionComponent = () => {
       perPage,
       ...(search && { search })
     }
-    const [data, error] = await window.Tensei.api.get('files', { params })
+    const [response, error] = await window.Tensei.api.get('files', { params })
     if (!error) {
       setIsLoading(false)
-      setAssets(data?.data.data)
-      setPageCount(data?.data.meta.pageCount)
+      setAssets(response?.data.data)
+      setPageCount(response?.data.meta.pageCount)
       return
     }
     setIsLoading(false)
@@ -493,8 +558,6 @@ export const AssetManager: FunctionComponent = () => {
       </ModalWrapper>
     )
   }
-  const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
-  let flyout
 
   interface EditInput {
     name: string
@@ -519,6 +582,7 @@ export const AssetManager: FunctionComponent = () => {
       fetchFiles()
     }
   })
+  let flyout
 
   if (isFlyoutVisible) {
     flyout = (
@@ -597,7 +661,7 @@ export const AssetManager: FunctionComponent = () => {
 
           <EuiSpacer size="m" />
           {showEditForm && (
-            <EuiForm component="form" onSubmit={submit} isInvalid={!!errors}>
+            <EuiForm component="form" onSubmit={submit}>
               <EuiFormRow
                 label="Filename"
                 error={errors?.name}
@@ -701,67 +765,19 @@ export const AssetManager: FunctionComponent = () => {
           ) : (
             <AssetContainer>
               <AssetWrapper>
-                {assets.map((asset: AssetData, idx: number) => {
-                  const cardFooterContent = (
-                    <FooterTextWrapper>
-                      <EuiText>{formatImageSize(asset.size)}</EuiText>
-
-                      <EuiText>{asset.extension}</EuiText>
-                    </FooterTextWrapper>
-                  )
-
-                  return (
-                    <AssetCardWrapper
-                      onMouseLeave={() => {
-                        setAssets(
-                          assets.map((item: AssetData) => {
-                            if (item === asset) {
-                              item.icon = false
-                            }
-                            return item
-                          })
-                        )
-                      }}
-                      onMouseEnter={() => {
-                        setAssets(
-                          assets.map((item: AssetData) => {
-                            if (item === asset) {
-                              item.icon = true
-                            }
-                            return item
-                          })
-                        )
-                      }}
-                    >
-                      <EuiFlexItem key={idx}>
-                        {asset.icon && (
-                          <EditIconWrapper>
-                            <EuiIcon
-                              size="m"
-                              type="pencil"
-                              onClick={() => {
-                                setShowEditForm(true)
-                                setIsFlyoutVisible(true)
-                                setActive(asset)
-                              }}
-                            />
-                          </EditIconWrapper>
-                        )}
-                        <EuiCard
-                          onClick={() => {
-                            setIsFlyoutVisible(true)
-                            setActive(asset)
-                          }}
-                          textAlign="left"
-                          image={asset.path}
-                          title={asset.file}
-                          description=""
-                          footer={cardFooterContent}
-                        />
-                      </EuiFlexItem>
-                    </AssetCardWrapper>
-                  )
-                })}
+                {assets.map((asset, idx: number) => (
+                  <Assets
+                    key={idx}
+                    onClick={() => {
+                      setIsFlyoutVisible(true)
+                      setActive(asset)
+                    }}
+                    asset={asset}
+                    setActive={setActive}
+                    setShowEditForm={setShowEditForm}
+                    setIsFlyoutVisible={setIsFlyoutVisible}
+                  />
+                ))}
               </AssetWrapper>
             </AssetContainer>
           )}
