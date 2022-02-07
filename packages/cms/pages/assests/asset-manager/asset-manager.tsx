@@ -203,6 +203,7 @@ const LoadingContainer = styled.div`
 `
 
 interface AssetData {
+  id: number | string
   name: string
   path: string
   createdAt: string
@@ -233,18 +234,27 @@ export const AssetManager: FunctionComponent = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [perPage, setPerPage] = useState(10)
   const [loading, setLoading] = useState(false)
-  const [search, setsearch] = useState('')
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (search?: string) => {
     const params = {
       page: activePage + 1,
       perPage,
-      ...(search && { search })
+      where: {
+        _and: [
+          {
+            file: null
+          },
+          search &&
+            search!.length > 0 && {
+              name: {
+                _like: `%${search}%`
+              }
+            }
+        ]
+      }
     }
-    const [
-      data,
-      error
-    ] = await window.Tensei.api.get('files?[where][file][_eq]=null', { params })
+
+    const [data, error] = await window.Tensei.api.get('files', { params })
     if (!error) {
       setLoading(false)
       setAssets(data?.data.data)
@@ -606,8 +616,8 @@ export const AssetManager: FunctionComponent = () => {
     </EuiContextMenuItem>
   ]
 
-  const onSearchChange = debounce(500, false, (value: string) => {
-    setsearch(value)
+  const onSearchChange = debounce(500, false, async (value: string) => {
+    await fetchFiles(value)
   })
 
   return (
@@ -631,16 +641,6 @@ export const AssetManager: FunctionComponent = () => {
                 onSearchChange(event.target.value)
               }}
             />
-
-            <AssetPopover
-              button={
-                <EuiButtonEmpty iconSide="right" iconType="arrowDown">
-                  Filters
-                </EuiButtonEmpty>
-              }
-            >
-              <EuiContextMenu initialPanelId={0}></EuiContextMenu>
-            </AssetPopover>
           </SearchAndFilterContainer>
           {flyout}
           {loading ? (
@@ -661,7 +661,7 @@ export const AssetManager: FunctionComponent = () => {
                   )
 
                   return (
-                    <EuiFlexItem>
+                    <EuiFlexItem key={asset.id}>
                       <EuiCard
                         onClick={() => {
                           setIsFlyoutVisible(true)

@@ -610,10 +610,10 @@ export const Resource: React.FunctionComponent<ResourceProps> = ({
     setFilters([...filters, filter])
   }
 
-  const [search, setsearch] = useState('')
+  const [search, setSearch] = useState('')
 
   const onSearchChange = debounce(500, false, (value: string) => {
-    setsearch(value)
+    setSearch(value)
   })
   return (
     <TableWrapper>
