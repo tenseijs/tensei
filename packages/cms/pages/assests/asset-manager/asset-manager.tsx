@@ -77,7 +77,6 @@ const AssetCardWrapper = styled.div`
 const AssetWrapper = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 1.5rem;
   @media screen and (max-width: 768px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
@@ -147,6 +146,9 @@ const FlyoutBodyContent = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
+`
+const EditHeading = styled.h2`
+  font-size: 30px;
 `
 
 const ModalWrapper = styled(EuiModal)`
@@ -562,7 +564,7 @@ export const AssetManager: FunctionComponent = () => {
   interface EditInput {
     name: string
     description: string
-    size: number
+    size?: number
   }
 
   const editAsset = (input: EditInput) =>
@@ -570,11 +572,11 @@ export const AssetManager: FunctionComponent = () => {
       ...input,
       size: active?.size
     })
+
   const { form, errors, submit, loading, setValue } = useForm<EditInput>({
     defaultValues: {
       name: '',
-      description: '',
-      size: active?.size || 0
+      description: ''
     },
     onSubmit: editAsset,
     onSuccess: () => {
@@ -606,62 +608,68 @@ export const AssetManager: FunctionComponent = () => {
           </FlyoutHeaderWrapper>
         </EuiFlyoutHeader>
         <EuiFlyoutBody>
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Title</h3>
-            </EuiTitle>
-            <EuiText>{active?.file}</EuiText>
-          </FlyoutBodyContent>
+          {!showEditForm && (
+            <>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Title</h3>
+                </EuiTitle>
+                <EuiText>{active?.file}</EuiText>
+              </FlyoutBodyContent>
 
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Uploaded on</h3>
-            </EuiTitle>
-            <EuiText>
-              {moment(active?.createdAt).toDate().toDateString()}
-            </EuiText>
-          </FlyoutBodyContent>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Uploaded on</h3>
+                </EuiTitle>
+                <EuiText>
+                  {moment(active?.createdAt).toDate().toDateString()}
+                </EuiText>
+              </FlyoutBodyContent>
 
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Status</h3>
-            </EuiTitle>
-            <EuiText>Draft</EuiText>
-          </FlyoutBodyContent>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Status</h3>
+                </EuiTitle>
+                <EuiText>Draft</EuiText>
+              </FlyoutBodyContent>
 
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Created by</h3>
-            </EuiTitle>
-            <EuiText>{active?.name}</EuiText>
-          </FlyoutBodyContent>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Created by</h3>
+                </EuiTitle>
+                <EuiText>{active?.name}</EuiText>
+              </FlyoutBodyContent>
 
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Size</h3>
-            </EuiTitle>
-            <EuiText>{active && formatImageSize(active.size)}</EuiText>
-          </FlyoutBodyContent>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Size</h3>
+                </EuiTitle>
+                <EuiText>{active && formatImageSize(active.size)}</EuiText>
+              </FlyoutBodyContent>
 
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Dimension</h3>
-            </EuiTitle>
-            <EuiText>
-              {active?.width} x {active?.height}
-            </EuiText>
-          </FlyoutBodyContent>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Dimension</h3>
+                </EuiTitle>
+                <EuiText>
+                  {active?.width} x {active?.height}
+                </EuiText>
+              </FlyoutBodyContent>
 
-          <FlyoutBodyContent>
-            <EuiTitle size="xs">
-              <h3>Format</h3>
-            </EuiTitle>
-            <EuiText>{active?.extension}</EuiText>
-          </FlyoutBodyContent>
+              <FlyoutBodyContent>
+                <EuiTitle size="xs">
+                  <h3>Format</h3>
+                </EuiTitle>
+                <EuiText>{active?.extension}</EuiText>
+              </FlyoutBodyContent>
+            </>
+          )}
 
           <EuiSpacer size="m" />
           {showEditForm && (
             <EuiForm component="form" onSubmit={submit}>
+              <EditHeading>Edit Asset</EditHeading>
+              <EuiSpacer size="l" />
               <EuiFormRow
                 label="Filename"
                 error={errors?.name}
@@ -676,6 +684,7 @@ export const AssetManager: FunctionComponent = () => {
                   }}
                 />
               </EuiFormRow>
+
               <EuiFormRow label="Description">
                 <EuiFieldText
                   fullWidth
