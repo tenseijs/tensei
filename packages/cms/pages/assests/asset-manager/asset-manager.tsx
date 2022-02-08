@@ -232,7 +232,6 @@ interface AssetData {
   file: string
   hash: string
   altText: string
-  id: number
   icon: false | true
 }
 
@@ -291,8 +290,8 @@ const Assets: React.FC<AssetProps> = ({
             setActive(asset)
           }}
           textAlign="left"
-          image={asset.path}
-          title={asset.file}
+          image={`/storage${asset.path}${asset.hash}.${asset.extension}`}
+          title={asset.name}
           description=""
           footer={cardFooterContent}
         />
@@ -318,7 +317,7 @@ export const AssetManager: FunctionComponent = () => {
   const [pageCount, setPageCount] = useState(0)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [perPage, setPerPage] = useState(10)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(false)
 
   const fetchFiles = async (search?: string) => {
     const params = {
@@ -605,7 +604,6 @@ export const AssetManager: FunctionComponent = () => {
       fetchFiles()
     }
   })
-  let flyout
 
   if (isFlyoutVisible) {
     flyout = (
@@ -787,36 +785,9 @@ export const AssetManager: FunctionComponent = () => {
           ) : (
             <AssetContainer>
               <AssetWrapper>
-                {assets.map((asset: AssetData) => {
-                  const cardFooterContent = (
-                    <FooterTextWrapper>
-                      <EuiText>{formatImageSize(asset.size)}</EuiText>
-
-                      <EuiText>{asset.extension}</EuiText>
-                    </FooterTextWrapper>
-                  )
-
-                  return (
-                    <EuiFlexItem key={asset.id}>
-                      <EuiCard
-                        onClick={() => {
-                          setIsFlyoutVisible(true)
-                          setActive(asset)
-                        }}
-                        textAlign="left"
-                        hasBorder
-                        image={`/storage${asset.path}${asset.hash}.${asset.extension}`}
-                        title={asset.name}
-                        description=""
-                        footer={cardFooterContent}
-                      />
-                    </EuiFlexItem>
-                  )
-                })}
-
-                {/* {assets.map((asset, idx: number) => (
+                {assets.map((asset: AssetData, idx: number) => (
                   <Assets
-                    key={idx}
+                    key={asset.id}
                     onClick={() => {
                       setIsFlyoutVisible(true)
                       setActive(asset)
@@ -826,8 +797,7 @@ export const AssetManager: FunctionComponent = () => {
                     setShowEditForm={setShowEditForm}
                     setIsFlyoutVisible={setIsFlyoutVisible}
                   />
-                ))} */}
-        
+                ))}
               </AssetWrapper>
             </AssetContainer>
           )}
