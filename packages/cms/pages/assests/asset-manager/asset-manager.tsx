@@ -221,6 +221,7 @@ const EditIconWrapper = styled.div`
 `
 
 interface AssetData {
+  id: number | string
   name: string
   path: string
   createdAt: string
@@ -229,8 +230,8 @@ interface AssetData {
   size: number
   extension: string
   file: string
+  hash: string
   altText: string
-  id: number
   icon: false | true
 }
 
@@ -289,8 +290,8 @@ const Assets: React.FC<AssetProps> = ({
             setActive(asset)
           }}
           textAlign="left"
-          image={asset.path}
-          title={asset.file}
+          image={`/storage${asset.path}${asset.hash}.${asset.extension}`}
+          title={asset.name}
           description=""
           footer={cardFooterContent}
         />
@@ -301,8 +302,9 @@ const Assets: React.FC<AssetProps> = ({
 
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
-  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
-    useState(false)
+  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] = useState(
+    false
+  )
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
@@ -315,28 +317,41 @@ export const AssetManager: FunctionComponent = () => {
   const [pageCount, setPageCount] = useState(0)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [perPage, setPerPage] = useState(10)
-  const [isLoading, setIsLoading] = useState(false)
-  const [search, setsearch] = useState('')
+  const [isLoading, setLoading] = useState(false)
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (search?: string) => {
     const params = {
       page: activePage + 1,
       perPage,
-      ...(search && { search })
+      where: {
+        _and: [
+          {
+            file: null
+          },
+          search &&
+            search!.length > 0 && {
+              name: {
+                _like: `%${search}%`
+              }
+            }
+        ]
+      }
     }
-    const [response, error] = await window.Tensei.api.get('files', { params })
+
+    const [data, error] = await window.Tensei.api.get('files', { params })
     if (!error) {
-      setIsLoading(false)
-      setAssets(response?.data.data)
-      setPageCount(response?.data.meta.pageCount)
+      setLoading(false)
+      setAssets(data?.data.data)
+      setPageCount(data?.data.meta.pageCount)
       return
     }
-    setIsLoading(false)
+    setLoading(false)
   }
+
   useEffect(() => {
-    setIsLoading(true)
+    setLoading(true)
     fetchFiles()
-  }, [activePage, perPage, search])
+  }, [])
 
   const closeUploadMediaModal = () => {
     if (isUploadingFiles) return
@@ -352,8 +367,10 @@ export const AssetManager: FunctionComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
-  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] =
-    useState<{ progress: number; status: boolean }[]>([])
+  const [
+    selectedFilesUploadProgress,
+    setSelectedFilesUploadProgress
+  ] = useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
   const [showEditForm, setShowEditForm] = useState(false)
@@ -423,7 +440,7 @@ export const AssetManager: FunctionComponent = () => {
           })
       })
     )
-      .then(response => {
+      .then(async response => {
         const total = response.length
         const success = response.filter(upload => upload === true).length
         const error = total - success
@@ -432,6 +449,7 @@ export const AssetManager: FunctionComponent = () => {
           setIsUploadingFiles(false)
           closeUploadMediaModal()
           toast('Success', `Uploaded ${success} of ${total} media files.`)
+          await fetchFiles()
         } else {
           response.forEach((upload, index) => {
             if (upload === true) {
@@ -460,7 +478,9 @@ export const AssetManager: FunctionComponent = () => {
       })
   }
 
+  let flyout
   let uploadMediaModal
+  const formatImageSize = (size: number) => `${Math.round(size / 1024)}kb`
 
   if (isUploadMediaModalVisible) {
     uploadMediaModal = (
@@ -517,7 +537,7 @@ export const AssetManager: FunctionComponent = () => {
                     ) : (
                       <>
                         <div className="__filesize">
-                          {parseInt((file.size / 1024).toString())}kb
+                          {formatImageSize(file.size)}
                         </div>
                         <EuiButtonIcon
                           iconType="cross"
@@ -584,7 +604,6 @@ export const AssetManager: FunctionComponent = () => {
       fetchFiles()
     }
   })
-  let flyout
 
   if (isFlyoutVisible) {
     flyout = (
@@ -599,7 +618,9 @@ export const AssetManager: FunctionComponent = () => {
         aria-labelledby={simpleFlyoutTitleId}
       >
         <EuiFlyoutHeader hasBorder>
-          <AssetFlyoutImage src={active?.path}></AssetFlyoutImage>
+          <AssetFlyoutImage
+            src={`/storage${active?.path}${active?.hash}.${active?.extension}`}
+          ></AssetFlyoutImage>
           <FlyoutHeaderWrapper>
             <EuiTitle size="xs">
               <h3>Information</h3>
@@ -729,8 +750,8 @@ export const AssetManager: FunctionComponent = () => {
     )
   })
 
-  const onSearchChange = debounce(500, false, (value: string) => {
-    setsearch(value)
+  const onSearchChange = debounce(500, false, async (value: string) => {
+    await fetchFiles(value)
   })
 
   return (
@@ -754,16 +775,6 @@ export const AssetManager: FunctionComponent = () => {
                 onSearchChange(event.target.value)
               }}
             />
-
-            <AssetPopover
-              button={
-                <EuiButtonEmpty iconSide="right" iconType="arrowDown">
-                  Filters
-                </EuiButtonEmpty>
-              }
-            >
-              <EuiContextMenu initialPanelId={0}></EuiContextMenu>
-            </AssetPopover>
           </SearchAndFilterContainer>
           {flyout}
           {isLoading ? (
@@ -774,9 +785,9 @@ export const AssetManager: FunctionComponent = () => {
           ) : (
             <AssetContainer>
               <AssetWrapper>
-                {assets.map((asset, idx: number) => (
+                {assets.map((asset: AssetData, idx: number) => (
                   <Assets
-                    key={idx}
+                    key={asset.id}
                     onClick={() => {
                       setIsFlyoutVisible(true)
                       setActive(asset)
