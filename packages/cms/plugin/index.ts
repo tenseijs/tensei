@@ -74,16 +74,16 @@ class CmsPlugin {
     roleResource: string
     dashboards: DashboardContract[]
   } = {
-      path: 'cms',
-      apiPath: 'cms/api',
-      setup: () => { },
-      cookieOptions: {},
-      dashboards: [],
-      userResource: 'Admin User',
-      permissionResource: 'Admin Permission',
-      roleResource: 'Admin Role',
-      tokenResource: 'Admin Token'
-    }
+    path: 'cms',
+    apiPath: 'cms/api',
+    setup: () => {},
+    cookieOptions: {},
+    dashboards: [],
+    userResource: 'Admin User',
+    permissionResource: 'Admin Permission',
+    roleResource: 'Admin Role',
+    tokenResource: 'Admin Token'
+  }
 
   private router = Router()
 
@@ -208,7 +208,6 @@ class CmsPlugin {
     }
 
     if (invitedUser) {
-
       // This is wierd but repeating the validation check here again
       // helps to capture the check on the password length rule
       try {
@@ -227,7 +226,8 @@ class CmsPlugin {
             'email.required': 'The email is required.',
             'email.email': 'Please provide a valid email.',
             'password.required': 'Please provide a valid password.',
-            'password.min': 'Please provide a password longer than 12 characters.',
+            'password.min':
+              'Please provide a password longer than 12 characters.',
             'inviteCode.required': 'The invite code is required.'
           }
         )
@@ -564,7 +564,6 @@ class CmsPlugin {
                   // Passport is weird, so they do not even send the request to the controller when this happens.
                   // In this scenario, we'll perform validation here on the data, and send the correct validation errors back to the frontend.
 
-
                   if (request.body.inviteCode) {
                     try {
                       await request.config.indicative.validator.validateAll(
@@ -581,8 +580,10 @@ class CmsPlugin {
                           'lastName.required': 'The last name is required.',
                           'email.required': 'The email is required.',
                           'email.email': 'Please provide a valid email.',
-                          'password.required': 'Please provide a valid password.',
-                          'password.min': 'Please provide a password longer than 12 characters.',
+                          'password.required':
+                            'Please provide a valid password.',
+                          'password.min':
+                            'Please provide a password longer than 12 characters.',
                           'inviteCode.required': 'The invite code is required.'
                         }
                       )
@@ -591,7 +592,6 @@ class CmsPlugin {
                         errors: error
                       })
                     }
-
                   } else {
                     const validator = Utils.validator(
                       self.userResource(),
@@ -682,26 +682,26 @@ class CmsPlugin {
         })
 
         this.router.use(Csurf())
-          ;[...getRoutes(config, this.config), ...this.routes()].forEach(
-            route => {
-              const path = route.config.path.startsWith('/')
-                ? route.config.path
-                : `/${route.config.path}`
-                ; (this.router as any)[route.config.type.toLowerCase()](
-                  path,
+        ;[...getRoutes(config, this.config), ...this.routes()].forEach(
+          route => {
+            const path = route.config.path.startsWith('/')
+              ? route.config.path
+              : `/${route.config.path}`
+            ;(this.router as any)[route.config.type.toLowerCase()](
+              path,
 
-                  ...route.config.middleware.map(fn => AsyncHandler(fn)),
-                  AsyncHandler(async (request, response, next) => {
-                    await this.authorizeResolver(request as any, route)
+              ...route.config.middleware.map(fn => AsyncHandler(fn)),
+              AsyncHandler(async (request, response, next) => {
+                await this.authorizeResolver(request as any, route)
 
-                    return next()
-                  }),
-                  AsyncHandler(async (request, response) =>
-                    route.config.handler(request, response)
-                  )
-                )
-            }
-          )
+                return next()
+              }),
+              AsyncHandler(async (request, response) =>
+                route.config.handler(request, response)
+              )
+            )
+          }
+        )
 
         app.use(`/${this.config.path}`, this.router)
 
@@ -717,9 +717,9 @@ class CmsPlugin {
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({
-                  // @ts-ignore
-                  ...request.user
-                })
+                    // @ts-ignore
+                    ...request.user
+                  })
                 : null,
               resources: JSON.stringify(
                 request.config.resources.map(r => r.serialize())
