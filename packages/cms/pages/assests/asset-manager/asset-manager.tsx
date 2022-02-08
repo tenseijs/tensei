@@ -20,12 +20,13 @@ import {
   EuiContextMenuPanel
 } from '@tensei/eui/lib/components/context_menu'
 import { EuiFilePicker } from '@tensei/eui/lib/components/form'
-import { EuiFlexItem, EuiFlexGrid } from '@tensei/eui/lib/components/flex'
+import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiPagination } from '@tensei/eui/lib/components/pagination'
 import {
   EuiFlyout,
   EuiFlyoutBody,
-  EuiFlyoutHeader
+  EuiFlyoutHeader,
+  EuiFlyoutFooter
 } from '@tensei/eui/lib/components/flyout'
 import { EuiModal } from '@tensei/eui/lib/components/modal/modal'
 import { EuiConfirmModal } from '@tensei/eui/lib/components/modal/confirm_modal'
@@ -40,7 +41,8 @@ import { useToastStore } from '../../../store/toast'
 import {
   EuiForm,
   EuiFormRow,
-  EuiFieldText
+  EuiFieldText,
+  EuiTextArea
 } from '@tensei/eui/lib/components/form'
 import { useForm } from '../../hooks/forms'
 import { EuiSpacer } from '@tensei/eui/lib'
@@ -72,10 +74,11 @@ const AssetContainer = styled.div`
 `
 const AssetCardWrapper = styled.div`
   position: relative;
-  padding: 15px;
+  // padding: 15px;
 `
 const AssetWrapper = styled.div`
   display: grid;
+  gap: 20px;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   @media screen and (max-width: 768px) {
     grid-template-columns: 1fr 1fr 1fr;
@@ -218,10 +221,12 @@ const EditIconWrapper = styled.div`
   top: 0;
   right: 0;
   z-index: 10;
+  svg {
+    margin-left: 8px;
+  }
 `
 
 interface AssetData {
-  id: number | string
   name: string
   path: string
   createdAt: string
@@ -230,8 +235,8 @@ interface AssetData {
   size: number
   extension: string
   file: string
-  hash: string
   altText: string
+  id: number
   icon: false | true
 }
 
@@ -241,6 +246,9 @@ interface AssetProps {
   setActive: (arg: AssetData) => void
   setShowEditForm: (arg: boolean) => void
   setIsFlyoutVisible: (arg: boolean) => void
+  selectedItemsForDelete: selectedItems
+  setSelectedItemsForDelete: (arg: selectedItems) => void
+  setIsDeleteModalVisible: (arg: boolean) => void
 }
 
 type AssetArray = Array<AssetData>
@@ -250,7 +258,10 @@ const Assets: React.FC<AssetProps> = ({
   asset,
   setActive,
   setShowEditForm,
-  setIsFlyoutVisible
+  setIsFlyoutVisible,
+  selectedItemsForDelete,
+  setSelectedItemsForDelete,
+  setIsDeleteModalVisible
 }) => {
   const [hovered, setHovered] = useState(false)
   const cardFooterContent = (
@@ -276,10 +287,21 @@ const Assets: React.FC<AssetProps> = ({
             <EuiIcon
               size="m"
               type="pencil"
+              color="green"
               onClick={() => {
                 setShowEditForm(true)
                 setIsFlyoutVisible(true)
                 setActive(asset)
+              }}
+            />
+
+            <EuiIcon
+              size="m"
+              type="trash"
+              color="red"
+              onClick={() => {
+                setSelectedItemsForDelete([...selectedItemsForDelete, asset.id])
+                setIsDeleteModalVisible(true)
               }}
             />
           </EditIconWrapper>
@@ -290,8 +312,8 @@ const Assets: React.FC<AssetProps> = ({
             setActive(asset)
           }}
           textAlign="left"
-          image={`/storage${asset.path}${asset.hash}.${asset.extension}`}
-          title={asset.name}
+          image={asset.path}
+          title={asset.file}
           description=""
           footer={cardFooterContent}
         />
@@ -300,11 +322,11 @@ const Assets: React.FC<AssetProps> = ({
   )
 }
 
+type selectedItems = number[]
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
-  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] = useState(
-    false
-  )
+  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
+    useState(false)
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
@@ -317,41 +339,30 @@ export const AssetManager: FunctionComponent = () => {
   const [pageCount, setPageCount] = useState(0)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [perPage, setPerPage] = useState(10)
-  const [isLoading, setLoading] = useState(false)
-
-  const fetchFiles = async (search?: string) => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [search, setsearch] = useState('')
+  const [selectedItemsForDelete, setSelectedItemsForDelete] =
+    useState<selectedItems>([])
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
+  const fetchFiles = async () => {
     const params = {
       page: activePage + 1,
       perPage,
-      where: {
-        _and: [
-          {
-            file: null
-          },
-          search &&
-            search!.length > 0 && {
-              name: {
-                _like: `%${search}%`
-              }
-            }
-        ]
-      }
+      ...(search && { search })
     }
-
-    const [data, error] = await window.Tensei.api.get('files', { params })
+    const [response, error] = await window.Tensei.api.get('files', { params })
     if (!error) {
-      setLoading(false)
-      setAssets(data?.data.data)
-      setPageCount(data?.data.meta.pageCount)
+      setIsLoading(false)
+      setAssets(response?.data.data)
+      setPageCount(response?.data.meta.pageCount)
       return
     }
-    setLoading(false)
+    setIsLoading(false)
   }
-
   useEffect(() => {
-    setLoading(true)
+    setIsLoading(true)
     fetchFiles()
-  }, [])
+  }, [activePage, perPage, search])
 
   const closeUploadMediaModal = () => {
     if (isUploadingFiles) return
@@ -367,10 +378,8 @@ export const AssetManager: FunctionComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
-  const [
-    selectedFilesUploadProgress,
-    setSelectedFilesUploadProgress
-  ] = useState<{ progress: number; status: boolean }[]>([])
+  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] =
+    useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
   const [showEditForm, setShowEditForm] = useState(false)
@@ -440,7 +449,7 @@ export const AssetManager: FunctionComponent = () => {
           })
       })
     )
-      .then(async response => {
+      .then(response => {
         const total = response.length
         const success = response.filter(upload => upload === true).length
         const error = total - success
@@ -449,7 +458,6 @@ export const AssetManager: FunctionComponent = () => {
           setIsUploadingFiles(false)
           closeUploadMediaModal()
           toast('Success', `Uploaded ${success} of ${total} media files.`)
-          await fetchFiles()
         } else {
           response.forEach((upload, index) => {
             if (upload === true) {
@@ -478,9 +486,7 @@ export const AssetManager: FunctionComponent = () => {
       })
   }
 
-  let flyout
   let uploadMediaModal
-  const formatImageSize = (size: number) => `${Math.round(size / 1024)}kb`
 
   if (isUploadMediaModalVisible) {
     uploadMediaModal = (
@@ -537,7 +543,7 @@ export const AssetManager: FunctionComponent = () => {
                     ) : (
                       <>
                         <div className="__filesize">
-                          {formatImageSize(file.size)}
+                          {parseInt((file.size / 1024).toString())}kb
                         </div>
                         <EuiButtonIcon
                           iconType="cross"
@@ -593,6 +599,16 @@ export const AssetManager: FunctionComponent = () => {
       size: active?.size
     })
 
+  const deleteAsset = async (ids: number[]) => {
+    const [_response, err] = await window.Tensei.api.delete(`files/`, {
+      params: { where: { id: { _in: ids } } }
+    })
+    fetchFiles()
+    if (!err) {
+      toast('Deleted', `You've succesfully deleted the asset`)
+    }
+  }
+
   const { form, errors, submit, loading, setValue } = useForm<EditInput>({
     defaultValues: {
       name: '',
@@ -604,6 +620,8 @@ export const AssetManager: FunctionComponent = () => {
       fetchFiles()
     }
   })
+
+  let flyout
 
   if (isFlyoutVisible) {
     flyout = (
@@ -618,9 +636,7 @@ export const AssetManager: FunctionComponent = () => {
         aria-labelledby={simpleFlyoutTitleId}
       >
         <EuiFlyoutHeader hasBorder>
-          <AssetFlyoutImage
-            src={`/storage${active?.path}${active?.hash}.${active?.extension}`}
-          ></AssetFlyoutImage>
+          <AssetFlyoutImage src={active?.path}></AssetFlyoutImage>
           <FlyoutHeaderWrapper>
             <EuiTitle size="xs">
               <h3>Information</h3>
@@ -707,7 +723,7 @@ export const AssetManager: FunctionComponent = () => {
               </EuiFormRow>
 
               <EuiFormRow label="Description">
-                <EuiFieldText
+                <EuiTextArea
                   fullWidth
                   value={form.description}
                   onChange={event => {
@@ -715,12 +731,31 @@ export const AssetManager: FunctionComponent = () => {
                   }}
                 />
               </EuiFormRow>
-              <EuiButton type="submit" fullWidth isLoading={loading}>
-                Submit
-              </EuiButton>
             </EuiForm>
           )}
         </EuiFlyoutBody>
+        <EuiFlyoutFooter>
+          <EuiFlexGroup justifyContent="spaceBetween">
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty
+                iconType="cross"
+                onClick={() => setIsFlyoutVisible(false)}
+              >
+                Cancel
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton
+                type="submit"
+                isLoading={loading}
+                onClick={() => submit()}
+                fill
+              >
+                Submit
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiFlyoutFooter>
       </AssetFlyout>
     )
   }
@@ -750,8 +785,8 @@ export const AssetManager: FunctionComponent = () => {
     )
   })
 
-  const onSearchChange = debounce(500, false, async (value: string) => {
-    await fetchFiles(value)
+  const onSearchChange = debounce(500, false, (value: string) => {
+    setsearch(value)
   })
 
   return (
@@ -775,6 +810,16 @@ export const AssetManager: FunctionComponent = () => {
                 onSearchChange(event.target.value)
               }}
             />
+
+            <AssetPopover
+              button={
+                <EuiButtonEmpty iconSide="right" iconType="arrowDown">
+                  Filters
+                </EuiButtonEmpty>
+              }
+            >
+              <EuiContextMenu initialPanelId={0}></EuiContextMenu>
+            </AssetPopover>
           </SearchAndFilterContainer>
           {flyout}
           {isLoading ? (
@@ -785,9 +830,9 @@ export const AssetManager: FunctionComponent = () => {
           ) : (
             <AssetContainer>
               <AssetWrapper>
-                {assets.map((asset: AssetData, idx: number) => (
+                {assets.map((asset, idx: number) => (
                   <Assets
-                    key={asset.id}
+                    key={idx}
                     onClick={() => {
                       setIsFlyoutVisible(true)
                       setActive(asset)
@@ -796,9 +841,30 @@ export const AssetManager: FunctionComponent = () => {
                     setActive={setActive}
                     setShowEditForm={setShowEditForm}
                     setIsFlyoutVisible={setIsFlyoutVisible}
+                    selectedItemsForDelete={selectedItemsForDelete}
+                    setSelectedItemsForDelete={setSelectedItemsForDelete}
+                    setIsDeleteModalVisible={setIsDeleteModalVisible}
                   />
                 ))}
+                {console.log(selectedItemsForDelete)}
               </AssetWrapper>
+              {isDeleteModalVisible && (
+                <EuiConfirmModal
+                  title="Are you sure you want to delete this asset?"
+                  onCancel={() => {
+                    setIsDeleteModalVisible(false)
+                    setSelectedItemsForDelete([])
+                  }}
+                  onConfirm={() => {
+                    deleteAsset(selectedItemsForDelete)
+                    setSelectedItemsForDelete([])
+                    setIsDeleteModalVisible(false)
+                  }}
+                  cancelButtonText="Cancel"
+                  confirmButtonText="Delete"
+                  buttonColor="danger"
+                ></EuiConfirmModal>
+              )}
             </AssetContainer>
           )}
           <NumberFieldAndPagination>
