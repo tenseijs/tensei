@@ -20,6 +20,7 @@ import {
 } from '../../../store/auth'
 import { useToastStore } from '../../../store/toast'
 import { useForm } from '../../hooks/forms'
+import md5 from 'md5'
 
 const PageTitle = styled.div`
   display: flex;
@@ -98,13 +99,18 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
 
   const { toast } = useToastStore()
 
+  const getUserGravatar = () => {
+    const hash = md5(window.Tensei.state.admin.email)
+    return `https://www.gravatar.com/avatar/${hash}`
+  }
+
   return (
     <PageWrapper>
       <Wrapper>
         <PageTitle>
           <EuiAvatar
             size="xl"
-            imageUrl="https://avatars0.githubusercontent.com/u/19477966"
+            imageUrl={getUserGravatar()}
             name={`${user.firstName} ${user.lastName}`}
           ></EuiAvatar>
 
