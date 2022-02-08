@@ -14,7 +14,9 @@ export const changePasswordRoute = route('Change password')
         },
         {
           'currentPassword.required': 'The current password is required.',
-          'newPassword.required': 'The new password is required.'
+          'newPassword.required': 'The new password is required.',
+          'newPassword.min':
+            'Please provide a password longer than 12 characters'
         }
       )
     } catch (error) {
