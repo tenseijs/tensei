@@ -616,6 +616,7 @@ export const AssetManager: FunctionComponent = () => {
     },
     onSubmit: editAsset,
     onSuccess: () => {
+      setIsFlyoutVisible(false)
       toast('Updated', `You've successfully updated the asset.`)
       fetchFiles()
     }
@@ -748,10 +749,7 @@ export const AssetManager: FunctionComponent = () => {
               <EuiButton
                 type="submit"
                 isLoading={loading}
-                onClick={async () => {
-                  await submit()
-                  setIsFlyoutVisible(false)
-                }}
+                onClick={() => submit()}
                 fill
               >
                 Submit
