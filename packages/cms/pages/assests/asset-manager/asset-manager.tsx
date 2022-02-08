@@ -748,7 +748,10 @@ export const AssetManager: FunctionComponent = () => {
               <EuiButton
                 type="submit"
                 isLoading={loading}
-                onClick={() => submit()}
+                onClick={async () => {
+                  await submit()
+                  setIsFlyoutVisible(false)
+                }}
                 fill
               >
                 Submit
