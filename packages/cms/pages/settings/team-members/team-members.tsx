@@ -426,8 +426,6 @@ const FlyOut: React.FC<FlyOutProps> = ({
     }
   })
 
-  const { toast } = useToastStore()
-
   return (
     <EuiFlyout
       ownFocus
@@ -517,7 +515,7 @@ const FlyOut: React.FC<FlyOutProps> = ({
 }
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
-  const { toast } = useToastStore()
+  const { toast, toasts, removeAllToast } = useToastStore()
   const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
     useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
@@ -678,6 +676,11 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               }
 
               if (isOwner(item)) {
+                if (toasts.length) {
+                  removeAllToast()
+                  toast(undefined, "Owner role can't be changed", 'danger')
+                  return
+                }
                 toast(undefined, "Owner role can't be changed", 'danger')
                 return
               }
@@ -715,6 +718,11 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               }
 
               if (isOwner(item)) {
+                if (toasts.length) {
+                  removeAllToast()
+                  toast(undefined, "Can't remove Owner", 'danger')
+                  return
+                }
                 toast(undefined, "Can't remove Owner", 'danger')
                 return
               }
@@ -726,7 +734,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         ]
       }
     ]
-  }, [roles])
+  }, [roles, toasts])
 
   let removeMemberModal
 
