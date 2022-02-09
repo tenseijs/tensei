@@ -107,6 +107,19 @@ const DeleteButtonContainer = styled.div`
   align-self: flex-end;
 `
 
+const TopbarTitle = styled(EuiTitle)`
+  @media screen and (max-width: 360px) {
+    font-size: 15px;
+  }
+`
+
+const TopbarButton = styled(EuiButton)`
+  @media screen and (max-width: 360px) {
+    width: 115px;
+    font-size: 12px;
+  }
+`
+
 type FieldWithPanelId = FieldContract & {
   panel: string
 }
@@ -555,12 +568,12 @@ export const ResourceView: React.FunctionComponent = () => {
   return (
     <>
       <DashboardLayout.Topbar>
-        <EuiTitle size="xs">
+        <TopbarTitle size="xs">
           <h3>{resource?.namePlural}</h3>
-        </EuiTitle>
+        </TopbarTitle>
         {hasPermission(`create:${resource?.slugPlural}`) ? (
           <Link to={window.Tensei.getPath(`resources/${resourceSlug}/create`)}>
-            <EuiButton
+            <TopbarButton
               size={'m'}
               fill
               iconType={'plus'}
@@ -569,7 +582,7 @@ export const ResourceView: React.FunctionComponent = () => {
               }}
             >
               Create {resource?.name?.toLowerCase()}
-            </EuiButton>
+            </TopbarButton>
           </Link>
         ) : null}
       </DashboardLayout.Topbar>
@@ -610,10 +623,10 @@ export const Resource: React.FunctionComponent<ResourceProps> = ({
     setFilters([...filters, filter])
   }
 
-  const [search, setsearch] = useState('')
+  const [search, setSearch] = useState('')
 
   const onSearchChange = debounce(500, false, (value: string) => {
-    setsearch(value)
+    setSearch(value)
   })
   return (
     <TableWrapper>
