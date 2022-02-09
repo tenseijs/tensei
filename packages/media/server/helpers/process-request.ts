@@ -287,6 +287,8 @@ export const handle = async (
     )
   )
 
+  console.log('@savedTransformsz', storedTransforms)
+
   files = (files.map((file, index) => ({
     ...file,
     size: storedFiles[index].size,
