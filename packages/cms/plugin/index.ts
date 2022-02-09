@@ -391,9 +391,6 @@ class CmsPlugin {
           .notNullable()
           .creationRules('required', 'email', 'unique:email')
           .updateRules('unique:email'),
-        text('Gravatar').virtual(function (this: any) {
-          return `https://gravatar.com`
-        }),
         boolean('Active')
           .nullable()
           .sortable()
