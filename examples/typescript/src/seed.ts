@@ -128,8 +128,8 @@ export async function seed(db: any) {
     return order
   })
 
-  await db.orders().persistAndFlush(orders),
-    await db.products().persistAndFlush(products),
-    await db.adminUsers().persistAndFlush([firstAdminUser, ...adminUsers]),
-    await db.files().persistAndFlush(files)
+  await db.orders().persistAndFlush(orders)
+  await db.products().persistAndFlush(products)
+  await db.adminUsers().persistAndFlush([firstAdminUser, ...adminUsers])
+  // await db.files().persistAndFlush(files)
 }

@@ -140,9 +140,6 @@ class Database {
       .forEach(field => {
         Object.defineProperty(entityClass.prototype, field.databaseField, {
           get: function (this: any, value: any) {
-            this.ctx = config // Set the config on the value of this
-            this.ctx.manager = config.orm?.em.fork()
-            this.repositories = config.repositories // Set the repositories on the value of this
             const fn = field.property.virtualGetter?.bind(this)
 
             return fn?.(value)
