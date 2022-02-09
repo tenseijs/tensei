@@ -400,7 +400,6 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
     </EuiFlyout>
   )
 }
-
 const FlyOut: React.FC<FlyOutProps> = ({
   setisEditTeamMemberFlyoutVisible,
   selectedMember,
@@ -410,6 +409,8 @@ const FlyOut: React.FC<FlyOutProps> = ({
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
   })
+  const { toast } = useToastStore()
+
   const { form, errors, submit, loading, setValue } = useForm<FormInput>({
     defaultValues: {
       firstName: selectedMember.firstName,
