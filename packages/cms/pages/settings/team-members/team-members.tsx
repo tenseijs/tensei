@@ -44,10 +44,7 @@ import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiSuperSelect } from '@tensei/eui/lib/components/form'
 import { useForm } from '../../hooks/forms'
 import { useAuthStore } from '../../../store/auth'
-import { useHistory } from 'react-router-dom'
 import { AbstractData } from '@tensei/components'
-import { useSidebarStore } from '../../../store/sidebar'
-import { getUserGravatar } from '../../../utils/gravatar'
 
 const Wrapper = styled.div`
   display: flex;
@@ -627,7 +624,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
             <UserWrapper>
               <AvatarWrapper>
                 <EuiAvatar
-                  imageUrl={getUserGravatar(item.email)}
+                  imageUrl={item.gravatar}
                   name={`${item.firstName} ${item.lastName}`}
                 />
               </AvatarWrapper>

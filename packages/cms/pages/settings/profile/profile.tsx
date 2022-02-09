@@ -20,7 +20,6 @@ import {
 } from '../../../store/auth'
 import { useToastStore } from '../../../store/toast'
 import { useForm } from '../../hooks/forms'
-import { getUserGravatar } from '../../../utils/gravatar'
 
 const PageTitle = styled.div`
   display: flex;
@@ -105,7 +104,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
         <PageTitle>
           <EuiAvatar
             size="xl"
-            imageUrl={getUserGravatar()}
+            imageUrl={user?.gravatar!}
             name={`${user.firstName} ${user.lastName}`}
           ></EuiAvatar>
 
