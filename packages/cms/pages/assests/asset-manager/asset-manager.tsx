@@ -628,7 +628,7 @@ export const AssetManager: FunctionComponent = () => {
     const [_response, err] = await window.Tensei.api.delete(`files/`, {
       params: { where: { id: { _in: ids } } }
     })
-    fetchFiles()
+    await fetchFiles()
     if (!err) {
       toast('Deleted', `You've succesfully deleted the asset`)
     }
@@ -762,28 +762,30 @@ export const AssetManager: FunctionComponent = () => {
             </EuiForm>
           )}
         </EuiFlyoutBody>
-        <EuiFlyoutFooter>
-          <EuiFlexGroup justifyContent="spaceBetween">
-            <EuiFlexItem grow={false}>
-              <EuiButtonEmpty
-                iconType="cross"
-                onClick={() => setIsFlyoutVisible(false)}
-              >
-                Cancel
-              </EuiButtonEmpty>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiButton
-                type="submit"
-                isLoading={loading}
-                onClick={() => submit()}
-                fill
-              >
-                Submit
-              </EuiButton>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        </EuiFlyoutFooter>
+        {showEditForm && (
+          <EuiFlyoutFooter>
+            <EuiFlexGroup justifyContent="spaceBetween">
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty
+                  iconType="cross"
+                  onClick={() => setIsFlyoutVisible(false)}
+                >
+                  Cancel
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiButton
+                  type="submit"
+                  isLoading={loading}
+                  onClick={() => submit()}
+                  fill
+                >
+                  Submit
+                </EuiButton>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiFlyoutFooter>
+        )}
       </AssetFlyout>
     )
   }
