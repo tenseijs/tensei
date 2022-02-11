@@ -104,7 +104,7 @@ export const Profile: FunctionComponent<ProfileProps> = () => {
         <PageTitle>
           <EuiAvatar
             size="xl"
-            imageUrl="https://avatars0.githubusercontent.com/u/19477966"
+            imageUrl={user?.gravatar!}
             name={`${user.firstName} ${user.lastName}`}
           ></EuiAvatar>
 

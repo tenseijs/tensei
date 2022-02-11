@@ -40,6 +40,7 @@ import { changePasswordRoute } from './routes/change-password'
 import { updateProfileRoute } from './routes/update-profile'
 import { inviteMember } from './routes/invite-member'
 import { verifyInviteCode } from './routes/verify-invite-code'
+import md5 from 'md5'
 
 const indexFileContent = Fs.readFileSync(
   Path.resolve(__dirname, 'template', 'index.mustache')
@@ -74,16 +75,16 @@ class CmsPlugin {
     roleResource: string
     dashboards: DashboardContract[]
   } = {
-    path: 'cms',
-    apiPath: 'cms/api',
-    setup: () => {},
-    cookieOptions: {},
-    dashboards: [],
-    userResource: 'Admin User',
-    permissionResource: 'Admin Permission',
-    roleResource: 'Admin Role',
-    tokenResource: 'Admin Token'
-  }
+      path: 'cms',
+      apiPath: 'cms/api',
+      setup: () => { },
+      cookieOptions: {},
+      dashboards: [],
+      userResource: 'Admin User',
+      permissionResource: 'Admin Permission',
+      roleResource: 'Admin Role',
+      tokenResource: 'Admin Token'
+    }
 
   private router = Router()
 
@@ -398,6 +399,11 @@ class CmsPlugin {
           .default(true)
           .rules('boolean'),
         text('Invite code').nullable(),
+        text('Gravatar')
+          .virtual(function (this: any) {
+            const hash = md5(this.email)
+            return `https://www.gravatar.com/avatar/${hash}`
+          }),
         belongsToMany(this.config.roleResource).rules('array')
       ])
       .permissions(['Invite', 'Index', 'Update', 'Delete'])
@@ -406,6 +412,7 @@ class CmsPlugin {
       .hideOnApi()
       .hideFromNavigation()
       .beforeCreate(({ entity, em }) => {
+        const hash = md5(entity.email)
         const payload: DataPayload = {
           password: entity.password
             ? Bcrypt.hashSync(entity.password)
@@ -682,26 +689,26 @@ class CmsPlugin {
         })
 
         this.router.use(Csurf())
-        ;[...getRoutes(config, this.config), ...this.routes()].forEach(
-          route => {
-            const path = route.config.path.startsWith('/')
-              ? route.config.path
-              : `/${route.config.path}`
-            ;(this.router as any)[route.config.type.toLowerCase()](
-              path,
+          ;[...getRoutes(config, this.config), ...this.routes()].forEach(
+            route => {
+              const path = route.config.path.startsWith('/')
+                ? route.config.path
+                : `/${route.config.path}`
+                ; (this.router as any)[route.config.type.toLowerCase()](
+                  path,
 
-              ...route.config.middleware.map(fn => AsyncHandler(fn)),
-              AsyncHandler(async (request, response, next) => {
-                await this.authorizeResolver(request as any, route)
+                  ...route.config.middleware.map(fn => AsyncHandler(fn)),
+                  AsyncHandler(async (request, response, next) => {
+                    await this.authorizeResolver(request as any, route)
 
-                return next()
-              }),
-              AsyncHandler(async (request, response) =>
-                route.config.handler(request, response)
-              )
-            )
-          }
-        )
+                    return next()
+                  }),
+                  AsyncHandler(async (request, response) =>
+                    route.config.handler(request, response)
+                  )
+                )
+            }
+          )
 
         app.use(`/${this.config.path}`, this.router)
 
@@ -717,9 +724,9 @@ class CmsPlugin {
               // @ts-ignore
               user: request.user
                 ? JSON.stringify({
-                    // @ts-ignore
-                    ...request.user
-                  })
+                  // @ts-ignore
+                  ...request.user
+                })
                 : null,
               resources: JSON.stringify(
                 request.config.resources.map(r => r.serialize())

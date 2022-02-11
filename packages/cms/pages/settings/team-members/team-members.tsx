@@ -44,9 +44,7 @@ import { EuiFlexItem, EuiFlexGroup } from '@tensei/eui/lib/components/flex'
 import { EuiSuperSelect } from '@tensei/eui/lib/components/form'
 import { useForm } from '../../hooks/forms'
 import { useAuthStore } from '../../../store/auth'
-import { useHistory } from 'react-router-dom'
 import { AbstractData } from '@tensei/components'
-import { useSidebarStore } from '../../../store/sidebar'
 
 const Wrapper = styled.div`
   display: flex;
@@ -518,13 +516,19 @@ const FlyOut: React.FC<FlyOutProps> = ({
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
   const { toast } = useToastStore()
-  const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
-    useAdminUsersStore()
+  const {
+    getAdminUsers,
+    removeUser,
+    getAdminRoles,
+    updateUserRoles
+  } = useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
   const [roles, setRoles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [isEditTeamMemberFlyoutVisible, setisEditTeamMemberFlyoutVisible] =
-    useState(false)
+  const [
+    isEditTeamMemberFlyoutVisible,
+    setisEditTeamMemberFlyoutVisible
+  ] = useState(false)
   const { hasPermission } = useAuthStore()
 
   const getTeamMembers = useCallback(async () => {
@@ -590,18 +594,23 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
     updatedAt: ''
   })
 
-  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] =
-    useState(false)
+  const [isRemoveMemberModalVisible, setIsRemoveMemberModalVisible] = useState(
+    false
+  )
   const closeRemoveMemberModal = () => setIsRemoveMemberModalVisible(false)
   const showRemoveMemberModal = () => setIsRemoveMemberModalVisible(true)
-  const [isChangeMemberRoleModalVisible, setChangeMemberRoleModalVisible] =
-    useState(false)
+  const [
+    isChangeMemberRoleModalVisible,
+    setChangeMemberRoleModalVisible
+  ] = useState(false)
   const closeChangeMemberRoleModal = () =>
     setChangeMemberRoleModalVisible(false)
   const showChangeMemberRoleModal = () => setChangeMemberRoleModalVisible(true)
   const modalFormId = useGeneratedHtmlId({ prefix: 'modalForm' })
-  const [rolesCheckboxSelectionMap, setRolesCheckboxSelectionMap] =
-    useState<any>({})
+  const [
+    rolesCheckboxSelectionMap,
+    setRolesCheckboxSelectionMap
+  ] = useState<any>({})
 
   const [isInviteMemberFlyout, setIsInviteMemberFlyout] = useState(false)
 
@@ -614,7 +623,10 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
           return (
             <UserWrapper>
               <AvatarWrapper>
-                <EuiAvatar name={`${item.firstName} ${item.lastName}`} />
+                <EuiAvatar
+                  imageUrl={item.gravatar}
+                  name={`${item.firstName} ${item.lastName}`}
+                />
               </AvatarWrapper>
               <div>
                 {item.firstName} {item.lastName}
@@ -691,8 +703,9 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               const newCheckboxIdToSelectedMap: any = {}
               rolesId.forEach(
                 roleId =>
-                  (newCheckboxIdToSelectedMap[roleId] =
-                    adminRolesId.includes(roleId))
+                  (newCheckboxIdToSelectedMap[roleId] = adminRolesId.includes(
+                    roleId
+                  ))
               )
               setRolesCheckboxSelectionMap(newCheckboxIdToSelectedMap)
             }

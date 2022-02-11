@@ -33,6 +33,7 @@ export interface User {
   updatedAt: string
   adminRoles: UserRole[]
   adminPermissions: string[]
+  gravatar?: string
 }
 
 export interface CmsRoute {
