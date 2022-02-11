@@ -399,7 +399,11 @@ class CmsPlugin {
           .default(true)
           .rules('boolean'),
         text('Invite code').nullable(),
-        text('Gravatar').nullable(),
+        text('Gravatar')
+          .virtual(function (this: any) {
+            const hash = md5(this.email)
+            return `https://www.gravatar.com/avatar/${hash}`
+          }),
         belongsToMany(this.config.roleResource).rules('array')
       ])
       .permissions(['Invite', 'Index', 'Update', 'Delete'])
@@ -412,8 +416,7 @@ class CmsPlugin {
         const payload: DataPayload = {
           password: entity.password
             ? Bcrypt.hashSync(entity.password)
-            : undefined,
-          gravatar: `https://www.gravatar.com/avatar/${hash}`
+            : undefined
         }
 
         em.assign(entity, payload)
