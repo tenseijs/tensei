@@ -223,7 +223,7 @@ const EditIconWrapper = styled.div`
   z-index: 10;
   padding: 8px 10px;
   cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(255, 255, 255, 0.6);
   svg:nth-child(2) {
     margin-left: 8px;
   }
@@ -291,7 +291,7 @@ const Assets: React.FC<AssetProps> = ({
             <EuiIcon
               size="m"
               type="pencil"
-              color="white"
+              color="primary"
               onClick={() => {
                 setShowEditForm(true)
                 setIsFlyoutVisible(true)
@@ -302,7 +302,7 @@ const Assets: React.FC<AssetProps> = ({
             <EuiIcon
               size="m"
               type="trash"
-              color="white"
+              color="danger"
               onClick={() => {
                 setSelectedItemsForDelete([...selectedItemsForDelete, asset.id])
                 setIsDeleteModalVisible(true)
