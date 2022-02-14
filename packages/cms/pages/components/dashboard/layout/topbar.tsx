@@ -11,7 +11,9 @@ const Topbar = styled.div`
   align-items: center;
   border-bottom: ${({ theme }) => theme.border.thin};
   @media screen and (max-width: 450px) {
-    padding: 17px 10px;
+    flex-direction: column;
+    height: 140px;
+    padding: 17px 5px;
   }
 `
 

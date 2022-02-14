@@ -61,6 +61,10 @@ const AddButtonsWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
+
+  @media only screen and (max-width: 767px) {
+    display: block;
+  }
 `
 
 const CreateActionButtonsWrapper = styled.div`
@@ -68,6 +72,10 @@ const CreateActionButtonsWrapper = styled.div`
   align-items: center;
   justify-content: center;
   gap: 8px;
+
+  @media only screen and (max-width: 767px) {
+    display: block;
+  }
 `
 
 const CreateResourceWrapper = styled.div`
