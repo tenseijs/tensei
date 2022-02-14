@@ -1,10 +1,10 @@
 declare module '@tensei/common/plugins' {
   import { Application } from 'express'
   import {
-    Storage,
-    StorageManager,
-    StorageManagerConfig
-  } from '@slynova/flydrive'
+    StorageDriverInterface,
+    DefaultDriverConfig,
+    StorageManagerInterface
+  } from '@tensei/common'
   import { DocumentNode } from 'graphql'
   import { Server } from 'http'
   import { CommandContract } from '@tensei/common/commands'
@@ -15,8 +15,6 @@ declare module '@tensei/common/plugins' {
     Asset,
     Config,
     Permission,
-    SupportedStorageDrivers,
-    StorageConstructor,
     GraphQLPluginExtension,
     RouteContract,
     GraphQlQueryContract,
@@ -37,14 +35,7 @@ declare module '@tensei/common/plugins' {
     resourcesMap: {
       [key: string]: ResourceContract
     }
-    storageDriver<
-      StorageDriverImplementation extends Storage,
-      DriverConfig extends unknown
-    >(
-      driverName: SupportedStorageDrivers,
-      driverConfig: DriverConfig,
-      storageImplementation: StorageConstructor<StorageDriverImplementation>
-    ): void
+    storage: StorageDriverInterface
     manager: EntityManager | null
     setPluginConfig: (name: string, config: any) => void
     gql: (types: string | TemplateStringsArray) => DocumentNode

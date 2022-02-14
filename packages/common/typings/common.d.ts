@@ -8,4 +8,5 @@ declare module '@tensei/common' {
   export * from '@tensei/common/dashboards'
   export * from '@tensei/common/events'
   export * from '@tensei/common/commands'
+  export * from '@tensei/common/storage'
 }

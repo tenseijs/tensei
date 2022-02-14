@@ -17,7 +17,7 @@ import { MediaLibraryPluginConfig } from './types'
 
 class MediaLibrary {
   private config: MediaLibraryPluginConfig = {
-    disk: '',
+    disk: 'local',
     maxFiles: 10,
     path: 'files/upload',
     maxFieldSize: 1000000, // 1 MB
@@ -98,20 +98,15 @@ class MediaLibrary {
     return plugin('Media Library').register(
       ({
         app,
-        style,
         script,
+        storage,
         currentCtx,
         extendRoutes,
-        storageConfig,
         extendResources,
         extendGraphQlTypeDefs,
         extendGraphQlQueries
       }) => {
         script('media.js', Path.resolve(__dirname, 'public/app.js'))
-
-        if (!this.config.disk) {
-          this.config.disk = storageConfig.default!
-        }
 
         const MediaResource = mediaResource(this.config)
 

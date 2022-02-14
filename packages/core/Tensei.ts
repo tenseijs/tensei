@@ -1,14 +1,19 @@
 import pino from 'pino'
+import Path from 'path'
 import Emittery from 'emittery'
 import BodyParser from 'body-parser'
 import * as indicative from 'indicative'
 import CookieParser from 'cookie-parser'
 import { createServer, Server } from 'http'
-import Express, { Application } from 'express'
+import Express, { Application, static as Static } from 'express'
 import { mail, MailConfig } from '@tensei/mail'
 import AsyncHandler from 'express-async-handler'
+import {
+  DefaultStorageDriverConfig,
+  StorageDriverInterface,
+  StorageDriverManager
+} from '@tensei/common'
 import { responseEnhancer } from 'express-response-formatter'
-import { StorageManager, Storage } from '@slynova/flydrive'
 
 import {
   Asset,
@@ -18,8 +23,6 @@ import {
   ResourceContract,
   SetupFunctions,
   DashboardContract,
-  StorageConstructor,
-  SupportedStorageDrivers,
   ExtendMailCallback,
   EventContract,
   DataPayload,
@@ -88,18 +91,6 @@ export class Tensei implements TenseiContract {
       graphQlMiddleware: [],
       rootBoot: () => {},
       rootRegister: () => {},
-      storageConfig: {
-        default: 'local',
-        disks: {
-          local: {
-            driver: 'local',
-            config: {
-              root: `${this.ctx.root}/storage`,
-              publicPath: ``
-            }
-          }
-        }
-      },
       databaseClient: null,
       clientUrl: '',
       resources: [],
@@ -120,6 +111,7 @@ export class Tensei implements TenseiContract {
               }
             : false
       }),
+      storage: new StorageDriverManager(),
       indicative,
       graphQlExtensions: [],
       extendGraphQlMiddleware: (...middleware: any[]) => {
@@ -175,19 +167,6 @@ export class Tensei implements TenseiContract {
         }
       }
     }
-
-    this.ctx.storage = new StorageManager({
-      default: 'local',
-      disks: {
-        local: {
-          driver: 'local',
-          config: {
-            root: `${this.ctx.root}/storage`,
-            publicPath: ``
-          }
-        }
-      }
-    })
   }
 
   public setConfigOnResourceFields() {
@@ -198,6 +177,23 @@ export class Tensei implements TenseiContract {
         field.afterConfigSet()
       })
     })
+  }
+
+  public storageDriver<DriverConfig extends DefaultStorageDriverConfig>(
+    driver: StorageDriverInterface<DriverConfig>
+  ) {
+    driver.config = {
+      ...driver.config,
+      tenseiConfig: {
+        serverUrl: this.ctx.serverUrl,
+        clientUrl: this.ctx.clientUrl,
+        serverHost: this.ctx.serverHost
+      }
+    }
+
+    this.ctx.storage.addDriver<DriverConfig>(driver)
+
+    return this
   }
 
   public routes(routes: RouteContract[]) {
@@ -488,7 +484,6 @@ export class Tensei implements TenseiContract {
       },
       inProduction: process.env.NODE_ENV === 'production',
       currentCtx: () => this.ctx,
-      storageDriver: this.storageDriver.bind(this),
       getQuery: this.getQuery.bind(this),
       getRoute: this.getRoute.bind(this),
       extendMailer: this.extendMailer.bind(this),
@@ -588,16 +583,10 @@ export class Tensei implements TenseiContract {
 
     this.app.use(CookieParser())
 
+    // Any public assets will be stored in the public folder.
+    this.app.use('/public', Static(Path.resolve(this.ctx.root, 'public')))
+
     this.app.disable('x-powered-by')
-
-    if (this.ctx.storageConfig.default === 'local') {
-      const rootStorage = (this.ctx.storageConfig.disks?.local?.config as any)
-        .root
-      const publicPath = (this.ctx.storageConfig.disks?.local?.config as any)
-        .publicPath
-
-      this.app.use(Express.static(`${rootStorage}`))
-    }
 
     this.app.use(
       (
@@ -744,46 +733,6 @@ export class Tensei implements TenseiContract {
 
   public commands(commands: CommandContract[]) {
     this.ctx.commands = [...this.ctx.commands, ...commands]
-
-    return this
-  }
-
-  private storageDriver<
-    StorageDriverImplementation extends Storage,
-    DriverConfig extends unknown
-  >(
-    driverName: SupportedStorageDrivers,
-    driverConfig: DriverConfig,
-    storageImplementation: StorageConstructor<StorageDriverImplementation>
-  ) {
-    this.ctx.storageConfig = {
-      ...this.ctx.storageConfig,
-      disks: {
-        ...this.ctx.storageConfig.disks,
-        [driverName]: {
-          driver: driverName,
-          config: driverConfig
-        }
-      }
-    }
-
-    this.ctx.storage = new StorageManager(this.ctx.storageConfig)
-
-    this.ctx.storage.registerDriver<StorageDriverImplementation>(
-      driverName,
-      storageImplementation
-    )
-
-    return this
-  }
-
-  public defaultStorageDriver(driverName: string) {
-    this.ctx.storageConfig = {
-      ...this.ctx.storageConfig,
-      default: driverName
-    }
-
-    this.ctx.storage = new StorageManager(this.ctx.storageConfig)
 
     return this
   }

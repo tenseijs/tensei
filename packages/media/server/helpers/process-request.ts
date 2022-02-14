@@ -207,11 +207,11 @@ export const handle = async (
     }
   )
 
-  await Promise.all(
+  const uploadedMainFiles = await Promise.all(
     files.map(file =>
       ctx.storage
         .disk(config.disk)
-        .put(file.storage_filename, file.createReadStream())
+        .upload(file.storage_filename, file.createReadStream())
     )
   )
 
@@ -232,7 +232,7 @@ export const handle = async (
     )
   )) as sharp.Metadata[]
 
-  await Promise.all([
+  const uploadedTransformedFiles = await Promise.all([
     Promise.all(
       files.map((file, idx) =>
         Promise.all(
@@ -246,7 +246,7 @@ export const handle = async (
             .map(([stream, name]) =>
               ctx.storage
                 .disk(config.disk)
-                .put(
+                .upload(
                   `${file.path}${name}___${file.hash}.${file.extension}`,
                   stream as NodeJS.ReadableStream
                 )
@@ -255,6 +255,11 @@ export const handle = async (
       )
     ).catch(ctx.logger.error)
   ]).catch(ctx.logger.error)
+
+  console.log(
+    '@uploadResults',
+    JSON.stringify({ uploadedMainFiles, uploadedTransformedFiles }, null, 3)
+  )
 
   const savedTransforms = (files.map((file, idx) =>
     config.transformations
@@ -287,7 +292,7 @@ export const handle = async (
     )
   )
 
-  console.log('@savedTransformsz', storedTransforms)
+  // console.log('@savedTransformsz', storedTransforms)
 
   files = (files.map((file, index) => ({
     ...file,

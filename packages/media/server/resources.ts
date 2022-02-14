@@ -39,14 +39,14 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
     .afterDelete((event, ctx) => {
       ctx.storage
         .disk(event.entity.disk)
-        .delete(
+        .destroy(
           `${event.entity.path}${event.entity.hash}.${event.entity.extension}`
         )
 
       event.entity.toJSON().transformations.forEach((file: any) => {
         ctx.storage
           .disk(event.entity.disk)
-          .delete(`${file.path}${file.hash}.${file.extension}`)
+          .destroy(`${file.path}${file.hash}.${file.extension}`)
       })
     })
     .noPermissions()

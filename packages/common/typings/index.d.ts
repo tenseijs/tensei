@@ -9,3 +9,4 @@
 /// <reference path="dashboards.d.ts" />
 /// <reference path="events.d.ts" />
 /// <reference path="commands.d.ts" />
+/// <reference path="storage.d.ts" />

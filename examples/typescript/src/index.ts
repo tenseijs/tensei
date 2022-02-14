@@ -26,7 +26,8 @@ import {
   dateTime,
   date,
   timestamp,
-  hasMany
+  hasMany,
+  LocalStorageDriver
 } from '@tensei/core'
 import { PluginSetupConfig } from '@tensei/common'
 
@@ -138,6 +139,11 @@ export default tensei()
       ])
       .hideFromNavigation()
   ])
+  .storageDriver(
+    new LocalStorageDriver({
+      root: Path.resolve(__dirname, '..', 'public', 'storage')
+    })
+  )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
@@ -161,11 +167,6 @@ export default tensei()
   .boot(async (config: PluginSetupConfig) => {
     const { repositories, app } = config
     await seed(repositories)
-
-    app.use(
-      '/storage',
-      Static(Path.resolve(__dirname, '..', 'storage'))
-    )
 
     console.log('App running on http://localhost:8810')
   })

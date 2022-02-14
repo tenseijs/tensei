@@ -1,7 +1,6 @@
 import { Logger } from 'pino'
 import { Request } from 'express'
 import { MailManagerContract } from '@tensei/mail'
-import { StorageManager } from '@slynova/flydrive'
 import { MikroORM, EntityManager } from '@mikro-orm/core'
 import {
   User,
@@ -9,7 +8,8 @@ import {
   Config,
   ManagerContract,
   ResourceContract,
-  DashboardContract
+  DashboardContract,
+  StorageManagerInterface
 } from '@tensei/common'
 
 declare global {
@@ -26,7 +26,7 @@ declare global {
       orm: MikroORM
       db: import('@tensei/orm').OrmContract
       repositories: import('@tensei/orm').OrmContract
-      storage: StorageManager
+      storage: StorageManagerInterface
       manager: EntityManager
       scripts: Asset[]
       styles: Asset[]
