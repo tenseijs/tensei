@@ -261,90 +261,92 @@ export const handle = async (
     JSON.stringify({ uploadedMainFiles, uploadedTransformedFiles }, null, 3)
   )
 
-  const savedTransforms = (files.map((file, idx) =>
-    config.transformations
-      .map(([t, name]) => [
-        file,
-        `${name}___${file.hash}`,
-        t(metacallbacks[idx])
-      ])
-      .filter(([, , transformed]) => !!transformed)
-  ) as unknown) as [[UploadFile, string, sharp.Sharp][]]
+  return []
 
-  const storedFiles = await Promise.all(
-    files.map(file =>
-      ctx.storage.disk(config.disk).getStat(file.storage_filename)
-    )
-  )
+  // const savedTransforms = (files.map((file, idx) =>
+  //   config.transformations
+  //     .map(([t, name]) => [
+  //       file,
+  //       `${name}___${file.hash}`,
+  //       t(metacallbacks[idx])
+  //     ])
+  //     .filter(([, , transformed]) => !!transformed)
+  // ) as unknown) as [[UploadFile, string, sharp.Sharp][]]
 
-  const storedTransforms = await Promise.all(
-    savedTransforms.map(transforms =>
-      transforms.length === 0
-        ? null
-        : Promise.all(
-            transforms.map(([file, name]) =>
-              ctx.storage
-                .disk(config.disk)
-                .getStat(`${file.path}${name}.${file.extension}`)
-                .catch(() => null)
-            )
-          )
-    )
-  )
+  // const storedFiles = await Promise.all(
+  //   files.map(file =>
+  //     ctx.storage.disk(config.disk).getStat(file.storage_filename)
+  //   )
+  // )
 
-  // console.log('@savedTransformsz', storedTransforms)
+  // const storedTransforms = await Promise.all(
+  //   savedTransforms.map(transforms =>
+  //     transforms.length === 0
+  //       ? null
+  //       : Promise.all(
+  //           transforms.map(([file, name]) =>
+  //             ctx.storage
+  //               .disk(config.disk)
+  //               .getStat(`${file.path}${name}.${file.extension}`)
+  //               .catch(() => null)
+  //           )
+  //         )
+  //   )
+  // )
 
-  files = (files.map((file, index) => ({
-    ...file,
-    size: storedFiles[index].size,
-    transformations:
-      storedTransforms[index] === null
-        ? []
-        : storedTransforms[index]!.map((stats, tIndex) => {
-            if (!savedTransforms[index] || !savedTransforms[index]![tIndex]) {
-              return null
-            }
+  // // console.log('@savedTransformsz', storedTransforms)
 
-            const [transformedFile, name, sharpInstance] = savedTransforms[
-              index
-            ]![tIndex]
+  // files = (files.map((file, index) => ({
+  //   ...file,
+  //   size: storedFiles[index].size,
+  //   transformations:
+  //     storedTransforms[index] === null
+  //       ? []
+  //       : storedTransforms[index]!.map((stats, tIndex) => {
+  //           if (!savedTransforms[index] || !savedTransforms[index]![tIndex]) {
+  //             return null
+  //           }
 
-            return {
-              size: stats?.size,
-              // @ts-ignore
-              width: sharpInstance.options.width,
-              // @ts-ignore
-              height: sharpInstance.options.height,
-              disk: config.disk,
-              mime_type: transformedFile.mimetype,
-              extension: transformedFile.extension,
-              name: name,
-              path: transformedFile.path,
-              hash: name
-            }
-          }).filter(Boolean)
-  })) as unknown) as UploadFile[]
+  //           const [transformedFile, name, sharpInstance] = savedTransforms[
+  //             index
+  //           ]![tIndex]
 
-  const resourceName = mediaResource(config).data.pascalCaseName
+  //           return {
+  //             size: stats?.size,
+  //             // @ts-ignore
+  //             width: sharpInstance.options.width,
+  //             // @ts-ignore
+  //             height: sharpInstance.options.height,
+  //             disk: config.disk,
+  //             mime_type: transformedFile.mimetype,
+  //             extension: transformedFile.extension,
+  //             name: name,
+  //             path: transformedFile.path,
+  //             hash: name
+  //           }
+  //         }).filter(Boolean)
+  // })) as unknown) as UploadFile[]
 
-  const entities = files.map((file, idx) =>
-    ctx.manager.create(resourceName, {
-      size: file.size,
-      hash: file.hash,
-      path: file.path,
-      disk: config.disk,
-      mime_type: file.mimetype,
-      extension: file.extension,
-      name: file.filename,
-      width: metacallbacks[idx]?.width,
-      height: metacallbacks[idx]?.height,
-      transformations: file.transformations.map(t =>
-        ctx.manager.create(resourceName, t)
-      )
-    })
-  )
+  // const resourceName = mediaResource(config).data.pascalCaseName
 
-  await ctx.manager.persistAndFlush(entities)
+  // const entities = files.map((file, idx) =>
+  //   ctx.manager.create(resourceName, {
+  //     size: file.size,
+  //     hash: file.hash,
+  //     path: file.path,
+  //     disk: config.disk,
+  //     mime_type: file.mimetype,
+  //     extension: file.extension,
+  //     name: file.filename,
+  //     width: metacallbacks[idx]?.width,
+  //     height: metacallbacks[idx]?.height,
+  //     transformations: file.transformations.map(t =>
+  //       ctx.manager.create(resourceName, t)
+  //     )
+  //   })
+  // )
 
-  return entities
+  // await ctx.manager.persistAndFlush(entities)
+
+  // return entities
 }
