@@ -409,7 +409,7 @@ const RolesTable: React.FC = () => {
   const { getAdminUsers, getAdminRoles, removeRole } = useAdminUsersStore()
   const [isRemoveRoleModalVisible, setIsRemoveRoleModalVisible] =
     useState(false)
-  const { toast } = useToastStore()
+  const { toast, removeAllToast, toasts } = useToastStore()
   const { hasPermission } = useAuthStore()
 
   const columns = [
@@ -469,6 +469,11 @@ const RolesTable: React.FC = () => {
             }
 
             if (role?.slug === 'super-admin') {
+              if (toasts.length) {
+                removeAllToast()
+                toast(undefined, "Can't remove Super Admin", 'danger')
+                return
+              }
               toast(undefined, "Can't remove Super Admin", 'danger')
               return
             }
