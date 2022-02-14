@@ -64,7 +64,7 @@ export function customer() {
 export const file = () => {
   return {
     extension: 'PNG',
-    size: Faker.random.number({ min: 1000, max: 10000 }),
+    size: Faker.random.number({ min: 1000, max: 10000000 }),
     name: Faker.name.findName(),
     width: Faker.random.number({ min: 100, max: 150 }),
     height: Faker.random.number({ min: 80, max: 100 }),
@@ -131,5 +131,5 @@ export async function seed(db: any) {
   await db.orders().persistAndFlush(orders)
   await db.products().persistAndFlush(products)
   await db.adminUsers().persistAndFlush([firstAdminUser, ...adminUsers])
-  // await db.files().persistAndFlush(files)
+  await db.files().persistAndFlush(files)
 }
