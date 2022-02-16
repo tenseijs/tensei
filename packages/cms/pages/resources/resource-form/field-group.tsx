@@ -9,6 +9,10 @@ const FieldGroupWrapper = styled.div<{
   transition: all 0.25s ease-in-out;
   border-left: ${({ theme, focused }) =>
     `3px solid ${focused ? theme.colors.primary : theme.border.color}`};
+
+  @media only screen and (max-width: 767px) {
+    padding-left: 5px; 
+  }
 `
 
 interface FieldGroupProps {

@@ -49,6 +49,10 @@ const SidebarCollapseExpandIcon = styled.button<{ close: boolean }>`
   left: ${({ close }) => (close ? '-60px' : '-14px')};
   z-index: 99;
   background-color: ${({ theme }) => theme.colors.ghost};
+
+  @media only screen and (max-width: 767px) {
+    top: 5px;
+  }
 `
 
 const Title = styled.button`
@@ -201,22 +205,43 @@ const PublishAndSaveToDraftContainer = styled.div`
   gap: 0.75rem;
   display: flex;
   align-items: center;
+
+  @media only screen and (max-width: 450px) {
+    width: 100%;
+    justify-content: space-evenly;
+  }
 `
 const TitleAndBackButtonContainer = styled.div`
   gap: 0.75rem;
   display: flex;
   align-items: center;
+
+  @media only screen and (max-width: 450px) {
+    width: 100%;
+    justify-content: space-around;
+    margin-right: 30px;
+  }
 `
 const PageWrapper = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
   padding: 40px;
+
+  @media screen and (max-width: 450px) {
+    overflow-x: hidden;
+  }
 `
 const PageContent = styled.div`
   // width: 50%;
   width: 650px;
   margin: 0px auto;
+`
+
+const ResourceTitle = styled(EuiTitle)`
+  @media screen and (max-width: 450px) {
+    font-size: 14px;
+  }
 `
 
 export function resolveDefaultFormValues(
@@ -358,11 +383,11 @@ export const ResourceFormView: React.FunctionComponent<{
           >
             Back
           </EuiButtonEmpty>
-          <EuiTitle size="xs">
+          <ResourceTitle size="xs">
             <h3>
               {isEditing ? 'Edit' : 'Create'} {resource?.name?.toLowerCase()}
             </h3>
-          </EuiTitle>
+          </ResourceTitle>
         </TitleAndBackButtonContainer>
         <PublishAndSaveToDraftContainer>
           <EuiButton fill>Save as draft</EuiButton>
@@ -457,6 +482,12 @@ export function useCreateResourceForm({
   }
 }
 
+const ResourceFormRow = styled(EuiFormRow)`
+  @media only screen and (max-width: 767px) {
+    width: 70vw;
+  }
+`
+
 export const ResourceForm: React.FunctionComponent<{
   isEditing?: boolean
   createResourceForm: ReturnType<typeof useCreateResourceForm>
@@ -511,7 +542,7 @@ export const ResourceForm: React.FunctionComponent<{
             key={field.inputName}
             focused={activeField?.inputName === field.inputName}
           >
-            <EuiFormRow
+            <ResourceFormRow
               fullWidth
               label={field.label || field.name}
               helpText={field.description}
@@ -539,7 +570,7 @@ export const ResourceForm: React.FunctionComponent<{
                   setValue(field.inputName, value)
                 }}
               />
-            </EuiFormRow>
+            </ResourceFormRow>
           </FieldGroup>
         )
       })}
