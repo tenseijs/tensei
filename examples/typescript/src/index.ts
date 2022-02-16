@@ -27,7 +27,8 @@ import {
   date,
   timestamp,
   hasMany,
-  LocalStorageDriver
+  LocalStorageDriver,
+  CloudinaryStorageDriver
 } from '@tensei/core'
 import { PluginSetupConfig } from '@tensei/common'
 
@@ -140,15 +141,18 @@ export default tensei()
       .hideFromNavigation()
   ])
   .storageDriver(
-    new LocalStorageDriver({
-      root: Path.resolve(__dirname, '..', 'public', 'storage')
+    new CloudinaryStorageDriver({
+      name: '',
+      cloud_name: '',
+      api_key: '',
+      api_secret: ''
     })
   )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
-    media().plugin(),
+    media().disk('').plugin(),
     auth()
       .user('Customer')
       .configureTokens({

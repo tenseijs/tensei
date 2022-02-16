@@ -16,6 +16,14 @@ declare module '@tensei/common/storage' {
     root: string
   }
 
+  export interface CloudinaryDriverInterface {
+    name: string
+    shortName: string
+    cloud_name: string
+    api_key: string
+    api_secret: string
+  }
+
   export interface StorageManagerInterface {
     drivers: StorageDriverInterface<any>[]
     addDriver: <Config extends DefaultStorageDriverConfig>(
@@ -40,7 +48,8 @@ declare module '@tensei/common/storage' {
   }
 
   export class LocalStorageDriver
-    implements StorageDriverInterface<LocalStorageConfig> {
+    implements StorageDriverInterface<LocalStorageConfig>
+  {
     upload: (
       location: string,
       content: Buffer | NodeJS.ReadableStream | string
@@ -58,5 +67,15 @@ declare module '@tensei/common/storage' {
     disk: <Config extends DefaultStorageDriverConfig>(
       name: string
     ) => StorageDriverInterface<Config>['config']
+  }
+
+  export class CloudinaryStorageDriver {
+    upload: (
+      location: string,
+      content: Buffer | NodeJS.ReadableStream | string
+    ) => Promise<any>
+    destroy: (location: string) => void
+    config: CloudinaryDriverInterface
+    constructor(config: Partial<CloudinaryDriverInterface>): this
   }
 }
