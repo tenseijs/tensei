@@ -11,7 +11,8 @@
     "@tensei/graphql": "^0.11.5",
     "@tensei/mde": "^0.9.7",
     "@tensei/media": "^0.11.5",
-    "@tensei/social-auth": "^0.11.5"
+    "@tensei/social-auth": "^0.11.5",
+    "streamifier": "^0.1.1"
   },
   "scripts": {
     "example:dev": "nodemon --watch src/** --exec 'ts-node src/index.ts'",
