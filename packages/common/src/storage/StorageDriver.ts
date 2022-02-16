@@ -88,7 +88,8 @@ export class CloudinaryStorageDriver
     location: string,
     content: Buffer | NodeJS.ReadableStream | string
   ) {
-    const cloudinary = require('cloudinary')
+    const cloudinary = require('cloudinary').v2
+    const streamifier = require('streamifier')
 
     cloudinary.config({
       cloud_name: this.config.cloud_name,
@@ -96,29 +97,41 @@ export class CloudinaryStorageDriver
       api_secret: this.config.api_secret
     })
 
-    if (isReadableStream(content)) {
-      const uploadFunc = (content: NodeJS.ReadableStream) => {
-        return new Promise((resolve, reject) => {
-          let uploadStream = cloudinary.v2.uploader.upload_stream(
-            (error: Error, result: { url: string }) => {
-              if (result) {
-                resolve(result)
-              } else {
-                reject(error)
-              }
+    const uploadFunc = (content: Buffer | NodeJS.ReadableStream | string) => {
+      return new Promise((resolve, reject) => {
+        let uploadStream = cloudinary.uploader.upload_stream(
+          (error: any, result: any) => {
+            if (result) {
+              resolve(result)
+            } else {
+              reject(error)
             }
-          )
-
+          }
+        )
+        if (isReadableStream(content)) {
           content.pipe(uploadStream)
-        })
-      }
-      try {
-        let result: any = await uploadFunc(content)
+        }
+        if (Buffer.isBuffer(content)) {
+          streamifier.createReadStream(content).pipe(uploadStream)
+        }
+        if (typeof content === 'string') {
+          cloudinary.uploader.upload(content, (err: any, result: any) => {
+            if (result) {
+              resolve(result)
+            } else {
+              reject(err)
+            }
+          })
+        }
+      })
+    }
 
-        return { url: result.url }
-      } catch (error: any) {
-        console.log('an eror occured', error)
-      }
+    try {
+      let result: any = await uploadFunc(content)
+
+      return { url: result.url }
+    } catch (error: any) {
+      console.log('an eror occured', error)
     }
     return { url: '' }
   }
