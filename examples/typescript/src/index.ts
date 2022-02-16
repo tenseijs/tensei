@@ -27,7 +27,8 @@ import {
   date,
   timestamp,
   hasMany,
-  LocalStorageDriver
+  LocalStorageDriver,
+  S3StorageDriver
 } from '@tensei/core'
 import { PluginSetupConfig } from '@tensei/common'
 
@@ -140,15 +141,26 @@ export default tensei()
       .hideFromNavigation()
   ])
   .storageDriver(
-    new LocalStorageDriver({
-      root: Path.resolve(__dirname, '..', 'public', 'storage')
+    // for local storage driver
+    // new LocalStorageDriver({
+    //   root: Path.resolve(__dirname, '..', 'public', 'storage')
+    // })
+
+    // for s3 storage driver
+    new S3StorageDriver({
+      bucket: 'xender-ish',
+      accessKeyId: 'AKIA22B43RGAE247KZHL',
+      secretAccessKey: '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',
+      region: 'eu-central-1'
     })
   )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
-    media().plugin(),
+    media()
+      .disk('S3')
+      .plugin(),
     auth()
       .user('Customer')
       .configureTokens({
