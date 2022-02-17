@@ -39,7 +39,7 @@ export {
   LocalStorageDriver,
   S3StorageDriver,
   StorageDriverManager
-} from './storage/StorageDriver'
+} from './storage'
 
 export { Utils } from './utils'
 export { route, Route } from './api/Route'
