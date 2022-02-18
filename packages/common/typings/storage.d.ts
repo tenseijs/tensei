@@ -19,9 +19,9 @@ declare module '@tensei/common/storage' {
   export interface CloudinaryDriverInterface {
     name: string
     shortName: string
-    cloud_name: string
-    api_key: string
-    api_secret: string
+    cloudName: string
+    apiKey: string
+    apiSecret: string
   }
 
   export interface StorageManagerInterface {

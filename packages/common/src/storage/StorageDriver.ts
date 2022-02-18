@@ -71,17 +71,17 @@ export class CloudinaryStorageDriver
   config = {
     name: '',
     shortName: '',
-    cloud_name: '',
-    api_key: '',
-    api_secret: ''
+    cloudName: '',
+    apiKey: '',
+    apiSecret: ''
   }
 
   constructor(config?: Partial<CloudinaryDriverInterface>) {
     this.config.name = config?.name || 'Cloudinary'
     this.config.shortName = config?.shortName || paramCase(this.config.name)
-    this.config.cloud_name = config?.cloud_name || ''
-    this.config.api_key = config?.api_key || ''
-    this.config.api_secret = config?.api_secret || ''
+    this.config.cloudName = config?.cloudName || ''
+    this.config.apiKey = config?.apiKey || ''
+    this.config.apiSecret = config?.apiSecret || ''
   }
 
   async upload(
@@ -92,9 +92,9 @@ export class CloudinaryStorageDriver
     const streamifier = require('streamifier')
 
     cloudinary.config({
-      cloud_name: this.config.cloud_name,
-      api_key: this.config.api_key,
-      api_secret: this.config.api_secret
+      cloud_name: this.config.cloudName,
+      api_key: this.config.apiKey,
+      api_secret: this.config.apiSecret
     })
 
     const uploadFunc = (content: Buffer | NodeJS.ReadableStream | string) => {
@@ -111,9 +111,11 @@ export class CloudinaryStorageDriver
         if (isReadableStream(content)) {
           content.pipe(uploadStream)
         }
+
         if (Buffer.isBuffer(content)) {
           streamifier.createReadStream(content).pipe(uploadStream)
         }
+
         if (typeof content === 'string') {
           cloudinary.uploader.upload(content, (err: any, result: any) => {
             if (result) {
@@ -128,12 +130,10 @@ export class CloudinaryStorageDriver
 
     try {
       let result: any = await uploadFunc(content)
-
-      return { url: result.url }
+      return { url: result.url, metadata: result.asset_id }
     } catch (error: any) {
-      console.log('an eror occured', error)
+      return error
     }
-    return { url: '' }
   }
   destroy() {}
 }

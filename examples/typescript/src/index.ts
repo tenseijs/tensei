@@ -6,6 +6,7 @@ import { files, media } from '@tensei/media'
 import { jsonPlugin } from '@tensei/field-json'
 import { static as Static } from 'express'
 import Path from 'path'
+require('dotenv').config()
 
 import { seed } from './seed'
 
@@ -27,7 +28,6 @@ import {
   date,
   timestamp,
   hasMany,
-  LocalStorageDriver,
   CloudinaryStorageDriver
 } from '@tensei/core'
 import { PluginSetupConfig } from '@tensei/common'
@@ -133,6 +133,11 @@ export default tensei()
       .hideFromNavigation(),
     resource('Product Option')
       .fields([
+        text('Name').required(),
+        slug('short name')
+          .creationRules('required', 'unique:slug')
+          .unique()
+          .from('Name'),
         belongsToMany('Option'),
         belongsToMany('Option Value'),
         belongsToMany('Product'),
@@ -142,17 +147,17 @@ export default tensei()
   ])
   .storageDriver(
     new CloudinaryStorageDriver({
-      name: '',
-      cloud_name: '',
-      api_key: '',
-      api_secret: ''
+      name: 'Cloudinary',
+      cloudName: process.env.CLOUD_NAME,
+      apiKey: process.env.API_KEY,
+      apiSecret: process.env.API_SECRET
     })
   )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
-    media().disk('').plugin(),
+    media().disk('Cloudinary').plugin(),
     auth()
       .user('Customer')
       .configureTokens({
