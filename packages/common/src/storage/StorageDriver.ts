@@ -139,6 +139,12 @@ export class CloudinaryStorageDriver
   async destroy(id: string) {
     const cloudinary = require('cloudinary').v2
 
+    cloudinary.config({
+      cloud_name: this.config.cloudName,
+      api_key: this.config.apiKey,
+      api_secret: this.config.apiSecret
+    })
+
     const deleteItem = (id: string) => {
       return new Promise((resolve, reject) => {
         cloudinary.uploader.destroy(id, (err: any, result: any) => {
