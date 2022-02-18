@@ -41,7 +41,7 @@ declare module '@tensei/common/storage' {
       location: string,
       content: Buffer | NodeJS.ReadableStream | string
     ) => Promise<DefaultStorageResponse>
-    destroy: (location: string) => void
+    destroy: (location: string, metadata?: any) => void
     register?: () => void
     boot?: () => Promise<void>
     config: DriverConfig

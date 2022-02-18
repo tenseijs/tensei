@@ -174,7 +174,7 @@ export default tensei()
     dbName: 'db.sqlite'
   })
   .boot(async (config: PluginSetupConfig) => {
-    const { repositories, app } = config
+    const { repositories } = config
     await seed(repositories)
 
     console.log('App running on http://localhost:8810')
