@@ -20,6 +20,7 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
       integer('Width').nullable(),
       integer('Height').nullable(),
       text('Name').nullable().searchable(),
+      text('Url').searchable(),
       text('Extension')
         .description('The file extension, for example psd, pdf, png')
         .searchable(),
@@ -40,13 +41,17 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
       ctx.storage
         .disk(event.entity.disk)
         .destroy(
-          `${event.entity.path}${event.entity.hash}.${event.entity.extension}`
+          `${event.entity.path}${event.entity.hash}.${event.entity.extension}`,
+          event.entity.metadata
         )
 
       event.entity.toJSON().transformations.forEach((file: any) => {
         ctx.storage
           .disk(event.entity.disk)
-          .destroy(`${file.path}${file.hash}.${file.extension}`)
+          .destroy(
+            `${file.path}${file.hash}.${file.extension}`,
+            event.entity.metadata
+          )
       })
     })
     .noPermissions()

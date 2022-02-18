@@ -23,10 +23,10 @@ class MediaLibrary {
     maxFieldSize: 1000000, // 1 MB
     maxFileSize: 10000000,
     transformations: [
-      [245, 156, 'thumbnail'],
       [1000, 1000, 'large'],
       [750, 750, 'medium'],
-      [500, 500, 'small']
+      [500, 500, 'small'],
+      [245, 156, 'thumbnail']
     ].map(dimensions => [
       meta => {
         if (!meta) {
@@ -43,11 +43,13 @@ class MediaLibrary {
           return
         }
 
-        return sharp().resize({
-          width: dimensions[0] as number,
-          height: dimensions[1] as number,
-          fit: 'inside'
-        })
+        return sharp()
+          .withMetadata()
+          .resize({
+            width: dimensions[0] as number,
+            height: dimensions[1] as number,
+            fit: 'inside'
+          })
       },
       dimensions[2] as string
     ])
