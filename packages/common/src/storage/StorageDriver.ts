@@ -130,7 +130,8 @@ export class CloudinaryStorageDriver
 
     try {
       let result: any = await uploadFunc(content)
-      return { url: result.url, metadata: result.asset_id }
+
+      return { url: result.url, metadata: result.public_id }
     } catch (error: any) {
       return error
     }
