@@ -136,7 +136,28 @@ export class CloudinaryStorageDriver
       return error
     }
   }
-  destroy() {}
+  async destroy(id: string) {
+    const cloudinary = require('cloudinary').v2
+
+    const deleteItem = (id: string) => {
+      return new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(id, (err: any, result: any) => {
+          if (result) {
+            resolve(result)
+          } else {
+            reject(err)
+          }
+        })
+      })
+    }
+
+    try {
+      const result = await deleteItem(id)
+      return result
+    } catch (err) {
+      return err
+    }
+  }
 }
 
 export class StorageDriverManager implements StorageManagerInterface {
