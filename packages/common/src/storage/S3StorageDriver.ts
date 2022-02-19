@@ -44,25 +44,16 @@ export class S3StorageDriver
 
     location = location.slice(1)
 
-    if (isReadableStream(content)) {
-      try {
-        const params = {
-          Bucket: this.config.bucket,
-          Key: location,
-          Body: content
-        }
-
-        const response = await client.upload(params).promise();
-
-        return { url: response.Location }
-      } catch (e) {
-        console.log(e)
-      }
+    const params = {
+      Bucket: this.config.bucket,
+      Key: location,
+      Body: content
     }
 
-    // do the upload as not stream, but direct
+    const response = await client.upload(params).promise();
 
-    return { url: join(`https://${this.config.bucket}.s3.${this.config.region}.amazonaws.com/${location}`) }
+    return { url: response.Location }
+
   }
 
   async destroy(location: string, metadata?: any) {
