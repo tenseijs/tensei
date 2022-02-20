@@ -11,7 +11,7 @@ import { MediaLibraryPluginConfig, UploadFile } from '../types'
 import { mediaResource } from '../resources'
 
 const ignoreStream = (stream: NodeJS.ReadableStream) => {
-  stream.on('error', () => {})
+  stream.on('error', () => { })
 
   stream.resume()
 }
@@ -274,7 +274,7 @@ export const handle = async (
     filesWithMetadataAndTransformations.map(({ transformations }) =>
       Promise.all(
         transformations.map(transformation =>
-          transformation.metadataCallback.metadata()
+          transformation?.metadataCallback?.metadata!()
         )
       )
     )
