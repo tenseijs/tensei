@@ -145,24 +145,24 @@ export default tensei()
   ])
   .storageDriver(
     // for local storage driver
-    new LocalStorageDriver({
-      root: Path.resolve(__dirname, '..', 'public', 'storage')
-    })
+    // new LocalStorageDriver({
+    //   root: Path.resolve(__dirname, '..', 'public', 'storage')
+    // })
 
     // for s3 storage driver
-    // new S3StorageDriver({
-    //   bucket: process.env.AWS_BUCKET_NAME,
-    //   accessKeyId: process.env.AWS_ACCESS_KEY,
-    //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    //   region: process.env.AWS_S3_REGION
-    // })
+    new S3StorageDriver({
+      bucket: process.env.AWS_BUCKET_NAME,
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_S3_REGION
+    })
   )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
     media()
-      .disk('Local')
+      .disk('S3')
       .plugin(),
     auth()
       .user('Customer')
