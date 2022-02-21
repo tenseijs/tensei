@@ -3,16 +3,18 @@ declare module '@tensei/common/storage' {
 
   export interface File<Metadata = any> {
     name: string
-    mime_type: string
+    mimeType: string
     extension: string
 
     hash: string
     path: string
     disk: string
-    hash_prefix?: string
+    hashPrefix?: string
+    extension: string
+    disk: string
 
     url: string
-    metadata: Metadata
+    diskMeta: Metadata
   }
 
   export interface DefaultStorageDriverConfig {
