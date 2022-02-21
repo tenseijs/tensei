@@ -1,6 +1,20 @@
 declare module '@tensei/common/storage' {
   import { Config } from '@tensei/common/config'
 
+  export interface File<Metadata = any> {
+    name: string
+    mime_type: string
+    extension: string
+
+    hash: string
+    path: string
+    disk: string
+    hash_prefix?: string
+
+    url: string
+    metadata: Metadata
+  }
+
   export interface DefaultStorageDriverConfig {
     name: string
     shortName: string
@@ -33,7 +47,7 @@ declare module '@tensei/common/storage' {
       location: string,
       content: Buffer | NodeJS.ReadableStream | string
     ) => Promise<DefaultStorageResponse>
-    destroy: (location: string, metadata?: any) => void
+    destroy: (file: File) => void
     register?: () => void
     boot?: () => Promise<void>
     config: DriverConfig
@@ -45,7 +59,7 @@ declare module '@tensei/common/storage' {
       location: string,
       content: Buffer | NodeJS.ReadableStream | string
     ) => Promise<DefaultStorageResponse>
-    destroy: (location: string) => void
+    destroy: (file: File) => void
     config: LocalStorageConfig
     constructor(config: Partial<LocalStorageConfig>): this
   }
