@@ -1,7 +1,7 @@
 declare module '@tensei/common/storage' {
   import { Config } from '@tensei/common/config'
 
-  export interface File<Metadata = any> {
+  export interface File {
     name: string
     mimeType: string
     extension: string
@@ -14,7 +14,7 @@ declare module '@tensei/common/storage' {
     disk: string
 
     url: string
-    diskMeta: Metadata
+    diskMeta: any
   }
 
   export interface DefaultStorageDriverConfig {
