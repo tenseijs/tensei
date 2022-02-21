@@ -23,12 +23,12 @@ class MediaLibrary {
     maxFieldSize: 1000000, // 1 MB
     maxFileSize: 10000000,
     transformations: [
-      [1000, 1000, 'large'],
-      [750, 750, 'medium'],
-      [500, 500, 'small'],
-      [245, 156, 'thumbnail']
-    ].map(dimensions => [
-      meta => {
+      [80, 'large'],
+      [60, 'medium'],
+      [40, 'small'],
+      [20, 'thumbnail']
+    ].map(dimensions => ({
+      transformer: meta => {
         if (!meta) {
           return
         }
@@ -36,23 +36,29 @@ class MediaLibrary {
         const { width, height } = meta
 
         if (!width || !height) {
-          return
+          return undefined
         }
+
+        const transformedWidth = Math.ceil(
+          width * ((dimensions[0] as number) / 100)
+        )
+        const transformedHeight = Math.ceil(
+          height * ((dimensions[0] as number) / 100)
+        )
 
         if (width < dimensions[0] || height < dimensions[0]) {
           return
         }
 
-        return sharp()
-          .withMetadata()
-          .resize({
-            width: dimensions[0] as number,
-            height: dimensions[1] as number,
-            fit: 'inside'
-          })
+        return sharp().withMetadata().resize({
+          width: transformedWidth,
+          height: transformedHeight,
+          fit: 'inside'
+        })
       },
-      dimensions[2] as string
-    ])
+      transform_name: dimensions[1] as string,
+      percentage_reduction: dimensions[0] as number
+    }))
   }
 
   private usesGraphQl: boolean = false
