@@ -31,6 +31,9 @@ import {
   S3StorageDriver
 } from '@tensei/core'
 import { PluginSetupConfig } from '@tensei/common'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export default tensei()
   .resources([
@@ -148,10 +151,10 @@ export default tensei()
 
     // for s3 storage driver
     new S3StorageDriver({
-      bucket: 'xender-ish',
-      accessKeyId: 'AKIA22B43RGAE247KZHL',
-      secretAccessKey: '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',
-      region: 'eu-central-1'
+      bucket: process.env.AWS_BUCKET_NAME,
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_S3_REGION
     })
   )
   .plugins([

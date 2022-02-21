@@ -66,18 +66,13 @@ export class S3StorageDriver
 
     location = location.slice(1)
 
-    try {
-
-      const params = {
-        Bucket: this.config.bucket,
-        Key: location
-      }
-
-      await client.deleteObject(params).promise();
-
-    } catch (e) {
-      console.log(e);
+    const params = {
+      Bucket: this.config.bucket,
+      Key: location
     }
+
+    await client.deleteObject(params).promise();
+
   }
 
 }
