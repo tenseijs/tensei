@@ -4,7 +4,8 @@ import { join, sep, resolve, dirname } from 'path'
 import {
   StorageDriverInterface,
   LocalStorageConfig,
-  DefaultStorageResponse
+  DefaultStorageResponse,
+  File
 } from '@tensei/common'
 import { isReadableStream, pipeline } from './StorageDriverUtils'
 

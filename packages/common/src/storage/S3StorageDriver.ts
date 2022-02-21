@@ -4,7 +4,8 @@ import { join, sep, resolve, dirname } from 'path'
 import {
   StorageDriverInterface,
   DefaultStorageResponse,
-  S3StorageConfig
+  S3StorageConfig,
+  File
 } from '@tensei/common'
 import { isReadableStream } from './StorageDriverUtils'
 
@@ -64,7 +65,7 @@ export class S3StorageDriver
       region: this.config.region
     });
 
-    // location = location.slice(1)
+    const location = `${file.hashPrefix ?? ''}${file.hash}.${file.extension}`
 
     const params = {
       Bucket: this.config.bucket,
