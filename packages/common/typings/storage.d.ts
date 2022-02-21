@@ -79,7 +79,7 @@ declare module '@tensei/common/storage' {
       location: string,
       content: Buffer | NodeJS.ReadableStream | string
     ) => Promise<DefaultStorageResponse>
-    destroy: (location: string) => void
+    destroy: (file: File) => void
     config: S3StorageConfig
     constructor(config: Partial<S3StorageConfig>): this
   }

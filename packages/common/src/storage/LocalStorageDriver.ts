@@ -58,5 +58,5 @@ export class LocalStorageDriver
     return { url: fileUrl }
   }
 
-  async destroy(location: string, metadata?: any) { }
+  destroy(file: File) { }
 }

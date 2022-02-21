@@ -56,7 +56,7 @@ export class S3StorageDriver
 
   }
 
-  async destroy(location: string, metadata?: any) {
+  destroy(file: File) {
 
     const client = new this.S3({
       accessKeyId: this.config.accessKeyId,
@@ -64,14 +64,14 @@ export class S3StorageDriver
       region: this.config.region
     });
 
-    location = location.slice(1)
+    // location = location.slice(1)
 
     const params = {
       Bucket: this.config.bucket,
       Key: location
     }
 
-    await client.deleteObject(params).promise();
+    client.deleteObject(params).promise();
 
   }
 
