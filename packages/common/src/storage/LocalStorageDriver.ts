@@ -14,19 +14,21 @@ export class LocalStorageDriver
   config: LocalStorageConfig = {
     name: '',
     shortName: '',
-    root: ''
+    root: '',
+    resolvedRoot: ''
   }
 
   private _fullPath(relativePath: string): string {
-    return join(this.config.root, join(sep, relativePath))
+    return join(this.config.resolvedRoot, join(sep, relativePath))
   }
 
   constructor(config?: Partial<LocalStorageConfig>) {
     this.config.name = config?.name || 'Local'
     this.config.shortName = config?.shortName || paramCase(this.config.name)
+    this.config.root = config?.root! || 'public/storage'
 
-    this.config.root = resolve(
-      config?.root || join(process.cwd(), 'public/storage')
+    this.config.resolvedRoot = resolve(
+      join(process.cwd(), config?.root!)
     )
   }
 
@@ -37,8 +39,7 @@ export class LocalStorageDriver
     const fullPath = this._fullPath(location)
 
     const fileUrl = `${this.config?.tenseiConfig?.serverUrl}/${join(
-      'public',
-      'storage',
+      this.config.root,
       location
     )}`
 
@@ -59,5 +60,11 @@ export class LocalStorageDriver
     return { url: fileUrl }
   }
 
-  destroy(file: File) { }
+  destroy(file: File) {
+
+    const location = `${this.config.resolvedRoot}${file.path}${file.hashPrefix ?? ''}${file.hash}.${file.extension}`
+
+    fse.unlink(location)
+
+  }
 }
