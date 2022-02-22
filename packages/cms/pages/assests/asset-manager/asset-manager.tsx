@@ -253,7 +253,18 @@ interface AssetProps {
 }
 
 type AssetArray = Array<AssetData>
-const formatImageSize = (size: number) => `${(size / 1000).toFixed(1)}MB`
+
+const units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+const formatImageSize = (x: any) => {
+  let l = 0,
+    n = parseInt(x, 10) || 0
+
+  while (n >= 1024 && ++l) {
+    n = n / 1024
+  }
+
+  return n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]
+}
 
 const Assets: React.FC<AssetProps> = ({
   asset,
@@ -858,7 +869,6 @@ export const AssetManager: FunctionComponent = () => {
                     setIsDeleteModalVisible={setIsDeleteModalVisible}
                   />
                 ))}
-                {console.log(selectedItemsForDelete)}
               </AssetWrapper>
               {isDeleteModalVisible && (
                 <EuiConfirmModal

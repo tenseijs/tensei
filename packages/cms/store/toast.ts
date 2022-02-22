@@ -24,6 +24,7 @@ interface ToastMethodsState extends State {
   ) => void
   remove: (toast: Toast) => void
   toastId: () => string
+  removeAllToast: () => void
 }
 
 export const useToastStore = create<ToastState & ToastMethodsState>(
@@ -46,6 +47,12 @@ export const useToastStore = create<ToastState & ToastMethodsState>(
     remove(removedToast) {
       set({
         toasts: get().toasts.filter(toast => removedToast.id !== toast.id)
+      })
+    },
+
+    removeAllToast() {
+      set({
+        toasts: []
       })
     }
   }))

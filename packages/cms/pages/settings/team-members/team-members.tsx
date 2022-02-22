@@ -400,7 +400,6 @@ const InviteFlyout: React.FC<InviteFlyoutProps> = ({
     </EuiFlyout>
   )
 }
-
 const FlyOut: React.FC<FlyOutProps> = ({
   setisEditTeamMemberFlyoutVisible,
   selectedMember,
@@ -410,6 +409,8 @@ const FlyOut: React.FC<FlyOutProps> = ({
   const simpleFlyoutTitleId = useGeneratedHtmlId({
     prefix: 'simpleFlyoutTitle'
   })
+  const { toast } = useToastStore()
+
   const { form, errors, submit, loading, setValue } = useForm<FormInput>({
     defaultValues: {
       firstName: selectedMember.firstName,
@@ -425,8 +426,6 @@ const FlyOut: React.FC<FlyOutProps> = ({
       getTeamMembers()
     }
   })
-
-  const { toast } = useToastStore()
 
   return (
     <EuiFlyout
@@ -517,7 +516,7 @@ const FlyOut: React.FC<FlyOutProps> = ({
 }
 
 export const TeamMembers: FunctionComponent<ProfileProps> = () => {
-  const { toast } = useToastStore()
+  const { toast, toasts, removeAllToast } = useToastStore()
   const { getAdminUsers, removeUser, getAdminRoles, updateUserRoles } =
     useAdminUsersStore()
   const [teamMembers, setTeamMembers] = useState<TeamMemberProps[]>([])
@@ -678,6 +677,11 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               }
 
               if (isOwner(item)) {
+                if (toasts.length) {
+                  removeAllToast()
+                  toast(undefined, "Owner role can't be changed", 'danger')
+                  return
+                }
                 toast(undefined, "Owner role can't be changed", 'danger')
                 return
               }
@@ -715,6 +719,11 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
               }
 
               if (isOwner(item)) {
+                if (toasts.length) {
+                  removeAllToast()
+                  toast(undefined, "Can't remove Owner", 'danger')
+                  return
+                }
                 toast(undefined, "Can't remove Owner", 'danger')
                 return
               }
@@ -726,7 +735,7 @@ export const TeamMembers: FunctionComponent<ProfileProps> = () => {
         ]
       }
     ]
-  }, [roles])
+  }, [roles, toasts])
 
   let removeMemberModal
 
