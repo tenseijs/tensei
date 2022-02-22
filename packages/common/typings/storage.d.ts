@@ -29,7 +29,8 @@ declare module '@tensei/common/storage' {
   }
 
   export interface LocalStorageConfig extends DefaultStorageDriverConfig {
-    root: string
+    root: string,
+    resolvedRoot: root
   }
 
   export interface S3StorageConfig extends DefaultStorageDriverConfig {

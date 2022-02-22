@@ -4,7 +4,6 @@ import { auth } from '@tensei/auth'
 import { graphql } from '@tensei/graphql'
 import { files, media } from '@tensei/media'
 import { jsonPlugin } from '@tensei/field-json'
-import { static as Static } from 'express'
 import Path from 'path'
 
 import { seed } from './seed'
@@ -145,24 +144,24 @@ export default tensei()
   ])
   .storageDriver(
     // for local storage driver
-    // new LocalStorageDriver({
-    //   root: Path.resolve(__dirname, '..', 'public', 'storage')
-    // })
+    new LocalStorageDriver({
+      root: 'public/storage/media'
+    })
 
     // for s3 storage driver
-    new S3StorageDriver({
-      bucket: process.env.AWS_BUCKET_NAME,
-      accessKeyId: process.env.AWS_ACCESS_KEY,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      region: process.env.AWS_S3_REGION
-    })
+    // new S3StorageDriver({
+    //   bucket: process.env.AWS_BUCKET_NAME,
+    //   accessKeyId: process.env.AWS_ACCESS_KEY,
+    //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    //   region: process.env.AWS_S3_REGION
+    // })
   )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
     media()
-      .disk('S3')
+      .disk('Local')
       .plugin(),
     auth()
       .user('Customer')
