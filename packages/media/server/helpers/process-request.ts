@@ -11,7 +11,7 @@ import { MediaLibraryPluginConfig, UploadFile } from '../types'
 import { mediaResource } from '../resources'
 
 const ignoreStream = (stream: NodeJS.ReadableStream) => {
-  stream.on('error', () => {})
+  stream.on('error', () => { })
 
   stream.resume()
 }
@@ -231,11 +231,12 @@ export const handle = async (
   const filesWithMetadataAndTransformations = filesWithMetadata.map(
     (file, idx) => ({
       ...file,
+      ...file.file,
       transformations: config.transformations
-        .map(([transformCallback, name]) => ({
-          metadataCallback: transformCallback(metacallbacks[idx]),
-          // metadata: metacallbacks[idx],
-          name
+        .map(transform => ({
+          ...transform,
+          metadataCallback: transform.transformer(metacallbacks[idx]),
+          name: transform.transform_name
         }))
         .filter(({ metadataCallback }) => metadataCallback !== undefined)
         .map(transformation => ({
@@ -262,7 +263,7 @@ export const handle = async (
           ctx.storage
             .disk(config.disk)
             .upload(
-              `${file.path}${transformation.name}___${file.hash}.${file.extension}`,
+              `${file.path}${transformation.transform_name}___${file.hash}.${file.extension}`,
               transformation.stream as NodeJS.ReadableStream
             )
         )
@@ -274,7 +275,7 @@ export const handle = async (
     filesWithMetadataAndTransformations.map(({ transformations }) =>
       Promise.all(
         transformations.map(transformation =>
-          transformation.metadataCallback.metadata()
+          transformation?.metadataCallback?.metadata!()
         )
       )
     )
@@ -300,31 +301,49 @@ export const handle = async (
   const entities = filesWithMetadataAndTransformationsUploaded.map(
     (file, idx) =>
       ctx.manager.create(resourceName, {
-        size: file.size,
+        size: metacallbacks[idx]?.size,
         hash: file.hash,
         path: file.path,
         disk: config.disk,
 
         url: file.fileUploadResult.url,
-        metadata: file.fileUploadResult.metadata,
+        diskMeta: file.fileUploadResult.metadata,
 
-        mime_type: file.mimetype,
+        mimeType: file.mimetype,
         extension: file.extension,
         name: file.filename,
         width: metacallbacks[idx]?.width,
         height: metacallbacks[idx]?.height,
         transformations: file.transformations.map(t =>
           ctx.manager.create(resourceName, {
-            name: t.name,
-            mime_type: file.mimetype,
+            name: t.transform_name,
+            mimeType: file.mimetype,
             extension: file.extension,
 
             hash: file.hash,
             path: file.path,
             disk: config.disk,
+            hashPrefix: `${t.transform_name}___`,
+
+            size: metacallbacks[idx]?.size
+              ? Math.ceil(
+                metacallbacks[idx]?.size! * (t.percentage_reduction / 100)
+              )
+              : null,
+
+            width: metacallbacks[idx]?.width
+              ? Math.ceil(
+                metacallbacks[idx]?.width! * (t.percentage_reduction / 100)
+              )
+              : null,
+            height: metacallbacks[idx]?.height
+              ? Math.ceil(
+                metacallbacks[idx]?.height! * (t.percentage_reduction / 100)
+              )
+              : null,
 
             url: t.transformationUploadResult.url,
-            metadata: t.transformationUploadResult.metadata
+            diskMeta: t.transformationUploadResult.metadata
           })
         )
       })

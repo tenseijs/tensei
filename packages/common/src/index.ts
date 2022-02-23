@@ -37,9 +37,9 @@ export { dashboard, Dashboard } from './dashboard/Dashboard'
 export { valueMetric, ValueMetrics } from './metrics/Value'
 export {
   LocalStorageDriver,
-  StorageDriverManager,
-  CloudinaryStorageDriver
-} from './storage/StorageDriver'
+  S3StorageDriver,
+  StorageDriverManager
+} from './storage'
 
 export { Utils } from './utils'
 export { route, Route } from './api/Route'

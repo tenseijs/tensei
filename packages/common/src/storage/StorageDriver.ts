@@ -7,9 +7,10 @@ import {
   StorageManagerInterface,
   CloudinaryDriverInterface,
   LocalStorageConfig,
-  DefaultStorageResponse
+  DefaultStorageResponse,
+  File
 } from '@tensei/common'
-import { isReadableStream, pipeline } from './LocalStorageDriver'
+import { isReadableStream, pipeline } from './StorageDriverUtils'
 
 export class LocalStorageDriver
   implements StorageDriverInterface<LocalStorageConfig>
@@ -17,7 +18,8 @@ export class LocalStorageDriver
   config: LocalStorageConfig = {
     name: '',
     shortName: '',
-    root: ''
+    root: '',
+    resolvedRoot: ''
   }
 
   private _fullPath(relativePath: string): string {
@@ -62,108 +64,7 @@ export class LocalStorageDriver
     return { url: fileUrl }
   }
 
-  async destroy(location: string, metadata?: any) {}
-}
-
-export class CloudinaryStorageDriver
-  implements StorageDriverInterface<CloudinaryDriverInterface>
-{
-  config = {
-    name: '',
-    shortName: '',
-    cloudName: '',
-    apiKey: '',
-    apiSecret: ''
-  }
-
-  constructor(config?: Partial<CloudinaryDriverInterface>) {
-    this.config.name = config?.name || 'Cloudinary'
-    this.config.shortName = config?.shortName || paramCase(this.config.name)
-    this.config.cloudName = config?.cloudName || ''
-    this.config.apiKey = config?.apiKey || ''
-    this.config.apiSecret = config?.apiSecret || ''
-  }
-
-  async upload(
-    location: string,
-    content: Buffer | NodeJS.ReadableStream | string
-  ) {
-    const cloudinary = require('cloudinary').v2
-    const streamifier = require('streamifier')
-
-    cloudinary.config({
-      cloud_name: this.config.cloudName,
-      api_key: this.config.apiKey,
-      api_secret: this.config.apiSecret
-    })
-
-    const uploadFunc = (content: Buffer | NodeJS.ReadableStream | string) => {
-      return new Promise((resolve, reject) => {
-        let uploadStream = cloudinary.uploader.upload_stream(
-          (error: any, result: any) => {
-            if (result) {
-              resolve(result)
-            } else {
-              reject(error)
-            }
-          }
-        )
-        if (isReadableStream(content)) {
-          content.pipe(uploadStream)
-        }
-
-        if (Buffer.isBuffer(content)) {
-          streamifier.createReadStream(content).pipe(uploadStream)
-        }
-
-        if (typeof content === 'string') {
-          cloudinary.uploader.upload(content, (err: any, result: any) => {
-            if (result) {
-              resolve(result)
-            } else {
-              reject(err)
-            }
-          })
-        }
-      })
-    }
-
-    try {
-      let result: any = await uploadFunc(content)
-
-      return { url: result.url, metadata: result.public_id }
-    } catch (error: any) {
-      return error
-    }
-  }
-  async destroy(id: string) {
-    const cloudinary = require('cloudinary').v2
-
-    cloudinary.config({
-      cloud_name: this.config.cloudName,
-      api_key: this.config.apiKey,
-      api_secret: this.config.apiSecret
-    })
-
-    const deleteItem = (id: string) => {
-      return new Promise((resolve, reject) => {
-        cloudinary.uploader.destroy(id, (err: any, result: any) => {
-          if (result) {
-            resolve(result)
-          } else {
-            reject(err)
-          }
-        })
-      })
-    }
-
-    try {
-      const result = await deleteItem(id)
-      return result
-    } catch (err) {
-      return err
-    }
-  }
+  async destroy(file: File) {}
 }
 
 export class StorageDriverManager implements StorageManagerInterface {
