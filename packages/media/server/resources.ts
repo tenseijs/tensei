@@ -41,9 +41,9 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
     .afterDelete((event, ctx) => {
       ctx.storage.disk(event.entity.disk).destroy(event.entity as any)
 
-      event.entity.toJSON().transformations.forEach((file: any) => {
-        ctx.storage.disk(event.entity.disk).destroy(file)
-      })
+      // event.entity.toJSON().transformations.forEach((file: any) => {
+      //   ctx.storage.disk(event.entity.disk).destroy(file)
+      // })
     })
     .noPermissions()
     .perPageOptions([10, 20, 30, 50, 100])

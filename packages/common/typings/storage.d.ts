@@ -29,7 +29,15 @@ declare module '@tensei/common/storage' {
   }
 
   export interface LocalStorageConfig extends DefaultStorageDriverConfig {
-    root: string
+    root: string,
+    resolvedRoot: root
+  }
+
+  export interface S3StorageConfig extends DefaultStorageDriverConfig {
+    bucket: string
+    accessKeyId: string
+    secretAccessKey: string
+    region: string
   }
 
   export interface StorageManagerInterface {
@@ -44,7 +52,7 @@ declare module '@tensei/common/storage' {
 
   export interface StorageDriverInterface<
     DriverConfig extends DefaultStorageDriverConfig
-  > {
+    > {
     upload: (
       location: string,
       content: Buffer | NodeJS.ReadableStream | string
@@ -64,6 +72,17 @@ declare module '@tensei/common/storage' {
     destroy: (file: File) => void
     config: LocalStorageConfig
     constructor(config: Partial<LocalStorageConfig>): this
+  }
+
+  export class S3StorageDriver
+    implements StorageDriverInterface<S3StorageConfig> {
+    upload: (
+      location: string,
+      content: Buffer | NodeJS.ReadableStream | string
+    ) => Promise<DefaultStorageResponse>
+    destroy: (file: File) => void
+    config: S3StorageConfig
+    constructor(config: Partial<S3StorageConfig>): this
   }
 
   export class StorageDriverManager implements StorageManagerInterface {

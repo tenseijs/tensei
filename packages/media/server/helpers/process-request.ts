@@ -11,7 +11,7 @@ import { MediaLibraryPluginConfig, UploadFile } from '../types'
 import { mediaResource } from '../resources'
 
 const ignoreStream = (stream: NodeJS.ReadableStream) => {
-  stream.on('error', () => {})
+  stream.on('error', () => { })
 
   stream.resume()
 }
@@ -275,7 +275,7 @@ export const handle = async (
     filesWithMetadataAndTransformations.map(({ transformations }) =>
       Promise.all(
         transformations.map(transformation =>
-          transformation.metadataCallback.metadata()
+          transformation?.metadataCallback?.metadata!()
         )
       )
     )
@@ -327,19 +327,19 @@ export const handle = async (
 
             size: metacallbacks[idx]?.size
               ? Math.ceil(
-                  metacallbacks[idx]?.size * (t.percentage_reduction / 100)
-                )
+                metacallbacks[idx]?.size! * (t.percentage_reduction / 100)
+              )
               : null,
 
             width: metacallbacks[idx]?.width
               ? Math.ceil(
-                  metacallbacks[idx]?.width * (t.percentage_reduction / 100)
-                )
+                metacallbacks[idx]?.width! * (t.percentage_reduction / 100)
+              )
               : null,
             height: metacallbacks[idx]?.height
               ? Math.ceil(
-                  metacallbacks[idx]?.height * (t.percentage_reduction / 100)
-                )
+                metacallbacks[idx]?.height! * (t.percentage_reduction / 100)
+              )
               : null,
 
             url: t.transformationUploadResult.url,
