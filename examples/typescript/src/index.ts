@@ -5,6 +5,7 @@ import { graphql } from '@tensei/graphql'
 import { files, media } from '@tensei/media'
 import { jsonPlugin } from '@tensei/field-json'
 import Path from 'path'
+require('dotenv').config()
 
 import { seed } from './seed'
 
@@ -26,6 +27,7 @@ import {
   date,
   timestamp,
   hasMany,
+  CloudinaryStorageDriver,
   LocalStorageDriver,
   S3StorageDriver
 } from '@tensei/core'
@@ -135,6 +137,11 @@ export default tensei()
       .hideFromNavigation(),
     resource('Product Option')
       .fields([
+        text('Name').required(),
+        slug('short name')
+          .creationRules('required', 'unique:slug')
+          .unique()
+          .from('Name'),
         belongsToMany('Option'),
         belongsToMany('Option Value'),
         belongsToMany('Product'),
@@ -147,7 +154,6 @@ export default tensei()
     new LocalStorageDriver({
       root: 'public/storage/media'
     })
-
     // for s3 storage driver
     // new S3StorageDriver({
     //   bucket: process.env.AWS_BUCKET_NAME,
@@ -155,14 +161,19 @@ export default tensei()
     //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     //   region: process.env.AWS_S3_REGION
     // })
+
+    //for Cloudinary driver
+    // new CloudinaryStorageDriver({
+    //   cloudName: process.env.CLOUD_NAME,
+    //   apiKey: process.env.API_KEY,
+    //   apiSecret: process.env.API_SECRET
+    // })
   )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
-    media()
-      .disk('Local')
-      .plugin(),
+    media().disk('Local').plugin(),
     auth()
       .user('Customer')
       .configureTokens({

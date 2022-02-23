@@ -12,6 +12,7 @@
     "@tensei/mde": "^0.9.7",
     "@tensei/media": "^0.11.5",
     "@tensei/social-auth": "^0.11.5",
+    "streamifier": "^0.1.1",
     "@types/aws-sdk": "^2.7.0",
     "aws-sdk": "^2.1074.0"
   },
@@ -24,7 +25,10 @@
   },
   "devDependencies": {
     "@types/node": "^15.12.4",
+    "cloudinary": "^1.28.1",
+    "dotenv": "^16.0.0",
     "nodemon": "^2.0.7",
+    "streamifier": "^0.1.1",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
   },
