@@ -4,7 +4,6 @@ import { auth } from '@tensei/auth'
 import { graphql } from '@tensei/graphql'
 import { files, media } from '@tensei/media'
 import { jsonPlugin } from '@tensei/field-json'
-import { static as Static } from 'express'
 import Path from 'path'
 
 import { seed } from './seed'
@@ -26,9 +25,14 @@ import {
   dateTime,
   date,
   timestamp,
-  hasMany
+  hasMany,
+  LocalStorageDriver,
+  S3StorageDriver
 } from '@tensei/core'
 import { PluginSetupConfig } from '@tensei/common'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export default tensei()
   .resources([
@@ -138,11 +142,27 @@ export default tensei()
       ])
       .hideFromNavigation()
   ])
+  .storageDriver(
+    // for local storage driver
+    new LocalStorageDriver({
+      root: 'public/storage/media'
+    })
+
+    // for s3 storage driver
+    // new S3StorageDriver({
+    //   bucket: process.env.AWS_BUCKET_NAME,
+    //   accessKeyId: process.env.AWS_ACCESS_KEY,
+    //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    //   region: process.env.AWS_S3_REGION
+    // })
+  )
   .plugins([
     welcome(),
     jsonPlugin().plugin(),
     cms().plugin(),
-    media().plugin(),
+    media()
+      .disk('Local')
+      .plugin(),
     auth()
       .user('Customer')
       .configureTokens({
@@ -159,13 +179,8 @@ export default tensei()
     dbName: 'db.sqlite'
   })
   .boot(async (config: PluginSetupConfig) => {
-    const { repositories, app } = config
+    const { repositories } = config
     await seed(repositories)
-
-    app.use(
-      '/storage',
-      Static(Path.resolve(__dirname, '..', 'storage'))
-    )
 
     console.log('App running on http://localhost:8810')
   })

@@ -40,6 +40,9 @@ declare module '@tensei/core' {
     serverUrl(url: string): this
     clientUrl(url: string): this
     root(path: string): this
+    storageDriver<DriverConfig extends DefaultStorageDriverConfig>(
+      driver: StorageDriverInterface<DriverConfig>
+    ): this
     resources(resources: ResourceContract[]): this
     dashboards(dashboards: DashboardContract[]): this
     plugins(plugins: PluginContract[]): this

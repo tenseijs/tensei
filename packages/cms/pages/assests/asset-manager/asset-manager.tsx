@@ -232,6 +232,7 @@ interface AssetData {
   createdAt: string
   width: string
   height: string
+  url: string
   size: number
   extension: string
   file: string
@@ -323,7 +324,7 @@ const Assets: React.FC<AssetProps> = ({
             setActive(asset)
           }}
           textAlign="left"
-          image={asset.path}
+          image={asset.url}
           title={asset.file}
           description=""
           footer={cardFooterContent}
@@ -336,8 +337,9 @@ const Assets: React.FC<AssetProps> = ({
 type selectedItems = number[]
 export const AssetManager: FunctionComponent = () => {
   const [isDestroyMediaModalVisible, setIsDestroyModalVisible] = useState(false)
-  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] =
-    useState(false)
+  const [isUploadMediaModalVisible, setIsUploadMediaModalVisible] = useState(
+    false
+  )
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false)
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false)
@@ -352,14 +354,21 @@ export const AssetManager: FunctionComponent = () => {
   const [perPage, setPerPage] = useState(10)
   const [isLoading, setIsLoading] = useState(false)
   const [search, setsearch] = useState('')
-  const [selectedItemsForDelete, setSelectedItemsForDelete] =
-    useState<selectedItems>([])
+  const [
+    selectedItemsForDelete,
+    setSelectedItemsForDelete
+  ] = useState<selectedItems>([])
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
   const fetchFiles = async () => {
     const params = {
       page: activePage + 1,
       perPage,
-      ...(search && { search })
+      ...(search && { search }),
+      where: {
+        file: {
+          _eq: null
+        }
+      }
     }
     const [response, error] = await window.Tensei.api.get('files', { params })
     if (!error) {
@@ -389,8 +398,10 @@ export const AssetManager: FunctionComponent = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const filePickerId = useGeneratedHtmlId({ prefix: 'filePicker' })
   const [selectedFileIndex, setSelectedFileIndex] = useState<number>()
-  const [selectedFilesUploadProgress, setSelectedFilesUploadProgress] =
-    useState<{ progress: number; status: boolean }[]>([])
+  const [
+    selectedFilesUploadProgress,
+    setSelectedFilesUploadProgress
+  ] = useState<{ progress: number; status: boolean }[]>([])
   const [isUploadingFiles, setIsUploadingFiles] = useState<boolean>(false)
   const { toast } = useToastStore()
   const [showEditForm, setShowEditForm] = useState(false)
