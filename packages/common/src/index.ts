@@ -38,7 +38,8 @@ export { valueMetric, ValueMetrics } from './metrics/Value'
 export {
   LocalStorageDriver,
   S3StorageDriver,
-  StorageDriverManager
+  StorageDriverManager,
+  CloudinaryStorageDriver
 } from './storage'
 
 export { Utils } from './utils'

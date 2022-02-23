@@ -5,7 +5,6 @@ import {
   DefaultStorageDriverConfig,
   StorageDriverInterface,
   StorageManagerInterface,
-  CloudinaryDriverInterface,
   LocalStorageConfig,
   DefaultStorageResponse,
   File

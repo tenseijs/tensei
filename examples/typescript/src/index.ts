@@ -150,12 +150,6 @@ export default tensei()
       .hideFromNavigation()
   ])
   .storageDriver(
-    //for Cloudinary driver
-    // new CloudinaryStorageDriver({
-    //   name: 'Cloudinary',
-    //   cloudName: process.env.CLOUD_NAME,
-    //   apiKey: process.env.API_KEY,
-    //   apiSecret: process.env.API_SECRET})
     // for local storage driver
     new LocalStorageDriver({
       root: 'public/storage/media'
@@ -166,6 +160,13 @@ export default tensei()
     //   accessKeyId: process.env.AWS_ACCESS_KEY,
     //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     //   region: process.env.AWS_S3_REGION
+    // })
+
+    //for Cloudinary driver
+    // new CloudinaryStorageDriver({
+    //   cloudName: process.env.CLOUD_NAME,
+    //   apiKey: process.env.API_KEY,
+    //   apiSecret: process.env.API_SECRET
     // })
   )
   .plugins([
