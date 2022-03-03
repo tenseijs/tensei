@@ -1,6 +1,7 @@
 import { id } from '../fields/ID'
 import { Action } from '../actions/Action'
 import { timestamp } from '../fields/Timestamp'
+import { hasOne } from '../fields/OneToOne'
 
 import {
   Permission,
@@ -40,14 +41,14 @@ export class Resource<T extends ApiType = 'rest'>
     authorizedToRunAction: AuthorizeFunction[]
     authorizedToFetchRelation: AuthorizeFunction[]
   } = {
-    authorizedToShow: [],
-    authorizedToFetch: [],
-    authorizedToCreate: [],
-    authorizedToUpdate: [],
-    authorizedToDelete: [],
-    authorizedToRunAction: [],
-    authorizedToFetchRelation: []
-  }
+      authorizedToShow: [],
+      authorizedToFetch: [],
+      authorizedToCreate: [],
+      authorizedToUpdate: [],
+      authorizedToDelete: [],
+      authorizedToRunAction: [],
+      authorizedToFetchRelation: []
+    }
 
   public dashboardAuthorizeCallbacks: {
     authorizedToShow: AuthorizeFunction[]
@@ -57,13 +58,13 @@ export class Resource<T extends ApiType = 'rest'>
     authorizedToDelete: AuthorizeFunction[]
     authorizedToRunAction: AuthorizeFunction[]
   } = {
-    authorizedToShow: [],
-    authorizedToFetch: [],
-    authorizedToCreate: [],
-    authorizedToUpdate: [],
-    authorizedToDelete: [],
-    authorizedToRunAction: []
-  }
+      authorizedToShow: [],
+      authorizedToFetch: [],
+      authorizedToCreate: [],
+      authorizedToUpdate: [],
+      authorizedToDelete: [],
+      authorizedToRunAction: []
+    }
 
   public hooks: {
     onInit: HookFunction[]
@@ -77,17 +78,17 @@ export class Resource<T extends ApiType = 'rest'>
     onFlush: FlushHookFunction[]
     afterFlush: FlushHookFunction[]
   } = {
-    onInit: [],
-    beforeCreate: [],
-    afterCreate: [],
-    beforeUpdate: [],
-    afterUpdate: [],
-    beforeDelete: [],
-    afterDelete: [],
-    beforeFlush: [],
-    onFlush: [],
-    afterFlush: []
-  }
+      onInit: [],
+      beforeCreate: [],
+      afterCreate: [],
+      beforeUpdate: [],
+      afterUpdate: [],
+      beforeDelete: [],
+      afterDelete: [],
+      beforeFlush: [],
+      onFlush: [],
+      afterFlush: []
+    }
 
   constructor(name: string, tableName?: string) {
     this.data.name = name
@@ -111,6 +112,14 @@ export class Resource<T extends ApiType = 'rest'>
         slug: `${name.toLowerCase()}:${this.data.slugPlural}`
       })
     )
+
+    this.beforeCreate(async ({ entity, em }, { request }) => {
+      if (request.authUser && request.authUser.id) {
+        em.assign(entity, {
+          createdBy: request.authUser.id
+        })
+      }
+    })
   }
 
   public Model = (): any => {
@@ -144,6 +153,14 @@ export class Resource<T extends ApiType = 'rest'>
   public data: ResourceDataWithFields<T> = {
     fields: [
       id('ID'),
+      hasOne('Admin User', 'Created By')
+        .nullable()
+        .sortable()
+        .hideOnCreateApi()
+        .hideOnUpdateApi()
+        .hideOnUpdate()
+        .hideOnIndex()
+        .hideOnCreate(),
       timestamp('Created At')
         .defaultToNow()
         .nullable()
@@ -221,9 +238,9 @@ export class Resource<T extends ApiType = 'rest'>
     this.data.permissions = permissions.map(permission =>
       typeof permission === 'string'
         ? {
-            name: `${permission} ${this.data.namePlural}`,
-            slug: `${permission.toLowerCase()}:${this.data.slugPlural}`
-          }
+          name: `${permission} ${this.data.namePlural}`,
+          slug: `${permission.toLowerCase()}:${this.data.slugPlural}`
+        }
         : permission
     )
 

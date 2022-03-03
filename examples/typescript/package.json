@@ -8,6 +8,7 @@
     "@tensei/cli": "^0.11.5",
     "@tensei/cms": "^0.11.5",
     "@tensei/core": "^0.11.5",
+    "@tensei/field-json": "^0.11.5",
     "@tensei/graphql": "^0.11.5",
     "@tensei/mde": "^0.9.7",
     "@tensei/media": "^0.11.5",
