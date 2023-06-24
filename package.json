@@ -43,7 +43,7 @@
     ]
   },
   "dependencies": {
-    "@commitlint/cli": "^11.0.0",
+    "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "commitizen": "^4.2.2",
     "husky": "^4.3.0",
