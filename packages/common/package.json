@@ -29,7 +29,7 @@
   "dependencies": {
     "@tensei/mail": "^0.11.5",
     "@types/luxon": "^1.25.0",
-    "@types/pluralize": "^0.0.29",
+    "@types/pluralize": "^0.0.31",
     "change-case": "^4.1.1",
     "csstype": "^3.0.2",
     "dayjs": "^1.8.34",
