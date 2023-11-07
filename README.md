@@ -27,7 +27,7 @@
 [![GitHub Workflow SQlite Status)](https://img.shields.io/github/actions/workflow/status/tenseijs/tensei/sqlite.yml?style=for-the-badge&label=SQlite)](https://github.com/tenseijs/tensei/actions/workflows/sqlite.yml)
 [![npm](https://img.shields.io/npm/v/%40tensei%2Fcore?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/@tensei/core)
 ![Typescript Badge](https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript)
-[![ License](https://img.shields.io/github/license/tenseijs/tensei?style=for-the-badge)](/LICENSE.md)
+[![License](https://img.shields.io/github/license/tenseijs/tensei?style=for-the-badge)](/LICENSE.md)
 
 </div>
 
