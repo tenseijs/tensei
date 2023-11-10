@@ -35,7 +35,7 @@
     "@types/styled-components": "^5.1.15",
     "@types/throttle-debounce": "^2.1.0",
     "autoprefixer": "^10.2.5",
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "classnames": "^2.2.6",
     "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",

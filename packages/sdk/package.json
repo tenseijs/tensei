@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@types/axios": "^0.14.0",
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "consola": "^2.15.3",
     "proxy-polyfill": "^0.3.2"
   },
