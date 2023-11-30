@@ -35,7 +35,7 @@
     "@types/express-session": "^1.17.0",
     "@types/faker": "^4.1.12",
     "@types/mustache": "^4.0.1",
-    "@types/pino": "^6.3.4",
+    "@types/pino": "^7.0.0",
     "@types/pluralize": "^0.0.29",
     "@types/supertest": "^2.0.9",
     "body-parser": "^1.19.0",
