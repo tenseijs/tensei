@@ -45,7 +45,7 @@
   "dependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
-    "commitizen": "^4.2.2",
+    "commitizen": "^4.2.4",
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
     "prettier": "^2.0.5",
