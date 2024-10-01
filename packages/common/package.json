@@ -33,6 +33,7 @@
     "change-case": "^4.1.1",
     "csstype": "^3.0.2",
     "dayjs": "^1.8.34",
+    "fs-extra": "^10.0.0",
     "indicative": "^7.4.4",
     "luxon": "^1.25.0",
     "pluralize": "^8.0.0",

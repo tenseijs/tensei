@@ -20,11 +20,13 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
       integer('Width').nullable(),
       integer('Height').nullable(),
       text('Name').nullable().searchable(),
+      text('Url').searchable(),
       text('Extension')
         .description('The file extension, for example psd, pdf, png')
         .searchable(),
       text('Mime Type').nullable().searchable(),
       text('Hash').searchable(),
+      text('Hash Prefix').searchable().nullable(),
       text('Path').nullable().searchable(),
       text('Alt Text').nullable().searchable(),
       text('Disk').nullable(),
@@ -37,17 +39,11 @@ export const mediaResource = (config: MediaLibraryPluginConfig) =>
     .hideOnUpdateApi()
     .displayField('Name')
     .afterDelete((event, ctx) => {
-      ctx.storage
-        .disk(event.entity.disk)
-        .delete(
-          `${event.entity.path}${event.entity.hash}.${event.entity.extension}`
-        )
+      ctx.storage.disk(event.entity.disk).destroy(event.entity as any)
 
-      event.entity.toJSON().transformations.forEach((file: any) => {
-        ctx.storage
-          .disk(event.entity.disk)
-          .delete(`${file.path}${file.hash}.${file.extension}`)
-      })
+      // event.entity.toJSON().transformations.forEach((file: any) => {
+      //   ctx.storage.disk(event.entity.disk).destroy(file)
+      // })
     })
     .noPermissions()
     .perPageOptions([10, 20, 30, 50, 100])

@@ -2,6 +2,11 @@ declare module '@tensei/common/config' {
   import { Logger } from 'pino'
   import { Server } from 'http'
   import Emittery from 'emittery'
+  import {
+    DefaultStorageDriverConfig,
+    StorageDriverInterface,
+    StorageManagerInterface
+  } from '@tensei/common'
   import { Request, Response, Application } from 'express'
   import { EntityManager, AnyEntity } from '@mikro-orm/core'
   import { sanitizer, validator } from 'indicative'
@@ -27,11 +32,6 @@ declare module '@tensei/common/config' {
     FlushEventArgs,
     MikroORMOptions
   } from '@mikro-orm/core'
-  import {
-    Storage,
-    StorageManager,
-    StorageManagerConfig
-  } from '@slynova/flydrive'
   import {
     Request,
     Handler,
@@ -255,11 +255,6 @@ declare module '@tensei/common/config' {
     withRelationships?: string[]
     noPagination?: 'true' | 'false'
   }
-  interface StorageConstructor<T extends Storage = Storage> {
-    new (...args: any[]): T
-  }
-
-  type SupportedStorageDrivers = 'local' | 's3' | any
 
   interface FetchAllResults<Model = any> {
     data: Model[]
@@ -355,10 +350,9 @@ declare module '@tensei/common/config' {
     clientUrl: string
     viewsPath: string
     mailer: MailManagerContract
-    storage: StorageManager
+    storage: StorageManagerInterface
     rootBoot: PluginSetupFunction
     rootRegister: PluginSetupFunction
-    storageConfig: StorageManagerConfig
     routes: RouteContract[]
     graphQlTypeDefs: (string | DocumentNode)[]
     graphQlQueries: GraphQlQueryContract[]
@@ -586,6 +580,9 @@ declare module '@tensei/common/config' {
     register(register: PluginSetupFunction): this
     listen(): Promise<Server>
     migrate(): Promise<void>
+    storageDriver<DriverConfig extends DefaultStorageDriverConfig>(
+      driver: StorageDriverInterface<DriverConfig>
+    ): this
     routes(routes: RouteContract[]): this
     graphQlQueries(routes: GraphQlQueryContract[]): this
     graphQlTypeDefs(defs: TenseiContext['graphQlTypeDefs']): this

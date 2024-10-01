@@ -17,18 +17,18 @@ import { MediaLibraryPluginConfig } from './types'
 
 class MediaLibrary {
   private config: MediaLibraryPluginConfig = {
-    disk: '',
+    disk: 'local',
     maxFiles: 10,
     path: 'files/upload',
     maxFieldSize: 1000000, // 1 MB
     maxFileSize: 10000000,
     transformations: [
-      [245, 156, 'thumbnail'],
-      [1000, 1000, 'large'],
-      [750, 750, 'medium'],
-      [500, 500, 'small']
-    ].map(dimensions => [
-      meta => {
+      [80, 'large'],
+      [60, 'medium'],
+      [40, 'small'],
+      [20, 'thumbnail']
+    ].map(dimensions => ({
+      transformer: meta => {
         if (!meta) {
           return
         }
@@ -36,21 +36,29 @@ class MediaLibrary {
         const { width, height } = meta
 
         if (!width || !height) {
-          return
+          return undefined
         }
+
+        const transformedWidth = Math.ceil(
+          width * ((dimensions[0] as number) / 100)
+        )
+        const transformedHeight = Math.ceil(
+          height * ((dimensions[0] as number) / 100)
+        )
 
         if (width < dimensions[0] || height < dimensions[0]) {
           return
         }
 
-        return sharp().resize({
-          width: dimensions[0] as number,
-          height: dimensions[1] as number,
+        return sharp().withMetadata().resize({
+          width: transformedWidth,
+          height: transformedHeight,
           fit: 'inside'
         })
       },
-      dimensions[2] as string
-    ])
+      transform_name: dimensions[1] as string,
+      percentage_reduction: dimensions[0] as number
+    }))
   }
 
   private usesGraphQl: boolean = false
@@ -98,20 +106,15 @@ class MediaLibrary {
     return plugin('Media Library').register(
       ({
         app,
-        style,
         script,
+        storage,
         currentCtx,
         extendRoutes,
-        storageConfig,
         extendResources,
         extendGraphQlTypeDefs,
         extendGraphQlQueries
       }) => {
         script('media.js', Path.resolve(__dirname, 'public/app.js'))
-
-        if (!this.config.disk) {
-          this.config.disk = storageConfig.default!
-        }
 
         const MediaResource = mediaResource(this.config)
 

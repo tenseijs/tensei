@@ -11,7 +11,7 @@ import { MediaLibraryPluginConfig, UploadFile } from '../types'
 import { mediaResource } from '../resources'
 
 const ignoreStream = (stream: NodeJS.ReadableStream) => {
-  stream.on('error', () => {})
+  stream.on('error', () => { })
 
   stream.resume()
 }
@@ -192,10 +192,7 @@ export const handle = async (
 
       const hash = Crypto.randomBytes(24).toString('hex')
 
-      let file_path: string = ctx.body.path || '/'
-
-      file_path = file_path.startsWith('/') ? file_path : `/${file_path}`
-      file_path = file_path.endsWith('/') ? file_path : `${file_path}/`
+      let file_path: string = '/'
 
       return {
         ...file,
@@ -205,14 +202,6 @@ export const handle = async (
         storage_filename: `${file_path}${hash}.${extension}`
       }
     }
-  )
-
-  await Promise.all(
-    files.map(file =>
-      ctx.storage
-        .disk(config.disk)
-        .put(file.storage_filename, file.createReadStream())
-    )
   )
 
   const metacallbacks = (await Promise.all(
@@ -232,111 +221,132 @@ export const handle = async (
     )
   )) as sharp.Metadata[]
 
-  await Promise.all([
-    Promise.all(
-      files.map((file, idx) =>
-        Promise.all(
-          config.transformations
-            .map(([t, name]) => [t(metacallbacks[idx]), name])
-            .filter(([t]) => t !== undefined)
-            .map(([transform, name]) => [
-              file.createReadStream().pipe(transform as sharp.Sharp),
-              name
-            ])
-            .map(([stream, name]) =>
-              ctx.storage
-                .disk(config.disk)
-                .put(
-                  `${file.path}${name}___${file.hash}.${file.extension}`,
-                  stream as NodeJS.ReadableStream
-                )
-            )
-        ).catch(ctx.logger.error)
-      )
-    ).catch(ctx.logger.error)
-  ]).catch(ctx.logger.error)
+  // maybe we should associate the files with the transformations here instead
 
-  const savedTransforms = (files.map((file, idx) =>
-    config.transformations
-      .map(([t, name]) => [
-        file,
-        `${name}___${file.hash}`,
-        t(metacallbacks[idx])
-      ])
-      .filter(([, , transformed]) => !!transformed)
-  ) as unknown) as [[UploadFile, string, sharp.Sharp][]]
+  const filesWithMetadata = files.map((file, idx) => ({
+    file,
+    metadata: metacallbacks[idx]
+  }))
 
-  const storedFiles = await Promise.all(
+  const filesWithMetadataAndTransformations = filesWithMetadata.map(
+    (file, idx) => ({
+      ...file,
+      ...file.file,
+      transformations: config.transformations
+        .map(transform => ({
+          ...transform,
+          metadataCallback: transform.transformer(metacallbacks[idx]),
+          name: transform.transform_name
+        }))
+        .filter(({ metadataCallback }) => metadataCallback !== undefined)
+        .map(transformation => ({
+          ...transformation,
+          stream: file.file
+            .createReadStream()
+            .pipe(transformation.metadataCallback as sharp.Sharp)
+        }))
+    })
+  )
+
+  const uploadedMainFiles = await Promise.all(
     files.map(file =>
-      ctx.storage.disk(config.disk).getStat(file.storage_filename)
+      ctx.storage
+        .disk(config.disk)
+        .upload(file.storage_filename, file.createReadStream())
     )
   )
 
-  const storedTransforms = await Promise.all(
-    savedTransforms.map(transforms =>
-      transforms.length === 0
-        ? null
-        : Promise.all(
-            transforms.map(([file, name]) =>
-              ctx.storage
-                .disk(config.disk)
-                .getStat(`${file.path}${name}.${file.extension}`)
-                .catch(() => null)
+  const uploadedTransformations = await Promise.all(
+    filesWithMetadataAndTransformations.map(({ file, transformations }) =>
+      Promise.all(
+        transformations.map(transformation =>
+          ctx.storage
+            .disk(config.disk)
+            .upload(
+              `${file.path}${transformation.transform_name}___${file.hash}.${file.extension}`,
+              transformation.stream as NodeJS.ReadableStream
             )
-          )
+        )
+      )
     )
   )
 
-  console.log('@savedTransformsz', storedTransforms)
+  const transformationsInfoData = await Promise.all(
+    filesWithMetadataAndTransformations.map(({ transformations }) =>
+      Promise.all(
+        transformations.map(transformation =>
+          transformation?.metadataCallback?.metadata!()
+        )
+      )
+    )
+  )
 
-  files = (files.map((file, index) => ({
-    ...file,
-    size: storedFiles[index].size,
-    transformations:
-      storedTransforms[index] === null
-        ? []
-        : storedTransforms[index]!.map((stats, tIndex) => {
-            if (!savedTransforms[index] || !savedTransforms[index]![tIndex]) {
-              return null
-            }
-
-            const [transformedFile, name, sharpInstance] = savedTransforms[
-              index
-            ]![tIndex]
-
-            return {
-              size: stats?.size,
-              // @ts-ignore
-              width: sharpInstance.options.width,
-              // @ts-ignore
-              height: sharpInstance.options.height,
-              disk: config.disk,
-              mime_type: transformedFile.mimetype,
-              extension: transformedFile.extension,
-              name: name,
-              path: transformedFile.path,
-              hash: name
-            }
-          }).filter(Boolean)
-  })) as unknown) as UploadFile[]
+  const filesWithMetadataAndTransformationsUploaded = filesWithMetadataAndTransformations.map(
+    (file, fileIdx) => ({
+      ...file.file,
+      fileUploadResult: uploadedMainFiles[fileIdx],
+      transformations: file.transformations.map(
+        (transformation, transformationIdx) => ({
+          ...transformation,
+          transformationUploadResult:
+            uploadedTransformations[fileIdx][transformationIdx],
+          metadata: transformationsInfoData[fileIdx][transformationIdx]
+        })
+      )
+    })
+  )
 
   const resourceName = mediaResource(config).data.pascalCaseName
 
-  const entities = files.map((file, idx) =>
-    ctx.manager.create(resourceName, {
-      size: file.size,
-      hash: file.hash,
-      path: file.path,
-      disk: config.disk,
-      mime_type: file.mimetype,
-      extension: file.extension,
-      name: file.filename,
-      width: metacallbacks[idx]?.width,
-      height: metacallbacks[idx]?.height,
-      transformations: file.transformations.map(t =>
-        ctx.manager.create(resourceName, t)
-      )
-    })
+  const entities = filesWithMetadataAndTransformationsUploaded.map(
+    (file, idx) =>
+      ctx.manager.create(resourceName, {
+        size: metacallbacks[idx]?.size,
+        hash: file.hash,
+        path: file.path,
+        disk: config.disk,
+
+        url: file.fileUploadResult.url,
+        diskMeta: file.fileUploadResult.metadata,
+
+        mimeType: file.mimetype,
+        extension: file.extension,
+        name: file.filename,
+        width: metacallbacks[idx]?.width,
+        height: metacallbacks[idx]?.height,
+        transformations: file.transformations.map(t =>
+          ctx.manager.create(resourceName, {
+            name: t.transform_name,
+            mimeType: file.mimetype,
+            extension: file.extension,
+
+            hash: file.hash,
+            path: file.path,
+            disk: config.disk,
+            hashPrefix: `${t.transform_name}___`,
+
+            size: metacallbacks[idx]?.size
+              ? Math.ceil(
+                metacallbacks[idx]?.size! * (t.percentage_reduction / 100)
+              )
+              : null,
+
+            width: metacallbacks[idx]?.width
+              ? Math.ceil(
+                metacallbacks[idx]?.width! * (t.percentage_reduction / 100)
+              )
+              : null,
+            height: metacallbacks[idx]?.height
+              ? Math.ceil(
+                metacallbacks[idx]?.height! * (t.percentage_reduction / 100)
+              )
+              : null,
+
+            url: t.transformationUploadResult.url,
+            diskMeta: t.transformationUploadResult.metadata
+          })
+        )
+      })
   )
 
   await ctx.manager.persistAndFlush(entities)

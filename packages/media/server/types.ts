@@ -15,7 +15,11 @@ export interface UploadFile {
   createReadStream: () => Fs.ReadStream
 }
 
-export type TransformCallback = [(meta?: Metadata) => Sharp | undefined, string]
+export type TransformCallback = {
+  transformer: (meta?: Metadata) => Sharp | undefined
+  transform_name: string
+  percentage_reduction: number
+}
 
 export interface MediaLibraryPluginConfig {
   disk: string
