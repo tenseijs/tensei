@@ -49,7 +49,7 @@
     "husky": "^4.3.0",
     "lerna": "^3.22.1",
     "prettier": "^2.0.5",
-    "rimraf": "^3.0.2"
+    "rimraf": "^4.3.1"
   },
   "devDependencies": {
     "wsrun": "^5.2.4"
